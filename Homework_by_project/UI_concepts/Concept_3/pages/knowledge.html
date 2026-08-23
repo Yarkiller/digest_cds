@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>База знаний — Digest CDS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/tokens.css">
+  <link rel="stylesheet" href="../styles/typography.css">
+  <link rel="stylesheet" href="../styles/layout.css">
+  <link rel="stylesheet" href="../styles/components.css">
+</head>
+<body>
+  <div class="concept-nav">
+    <a href="../index.html">← Concept 3</a>
+    <strong>База знаний</strong>
+  </div>
+
+  <div class="app-shell">
+    <header class="header">
+      <div class="header__inner">
+        <a class="logo" href="issue.html">
+          <span class="logo__title">Digest CDS</span>
+          <span class="logo__subtitle">СВА · издание</span>
+        </a>
+        <nav class="nav">
+          <a class="nav__link" href="issue.html">Выпуск</a>
+          <a class="nav__link" href="archive.html">Архив</a>
+          <a class="nav__link nav__link--active" href="knowledge.html">База</a>
+          <a class="nav__link" href="voting.html">Голосование</a>
+          <a class="nav__link" href="razbory.html">Разборы</a>
+          <a class="nav__link" href="admin-digest.html">Админ</a>
+        </nav>
+        <div class="header__search">
+          <div class="search-bar" role="search">
+            <span class="search-bar__icon">⌕</span>
+            <input class="search-bar__input" type="search" placeholder="Поиск…" value="RAG корпоративная">
+          </div>
+        </div>
+        <div class="header__user">
+          <span class="user-name">Иван Петров</span>
+          <span class="role-badge role-badge--ds">DS-эксперт</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="main main--wide">
+      <h1 class="text-h1" style="margin-bottom: var(--space-6);">База знаний</h1>
+
+      <div class="search-bar search-bar--lg" role="search" style="margin-bottom: var(--space-6);">
+        <span class="search-bar__icon">⌕</span>
+        <input class="search-bar__input" type="search" placeholder="Спросите своими словами…" value="как построить RAG для корпоративных документов">
+      </div>
+
+      <div class="filters">
+        <select class="filter-select" aria-label="Теги">
+          <option>Теги: все</option>
+          <option>#RAG</option>
+          <option>#LLM</option>
+        </select>
+        <select class="filter-select" aria-label="Формат">
+          <option>Формат: все</option>
+          <option>Статья</option>
+          <option>Презентация</option>
+        </select>
+        <button class="btn btn--ghost" type="button">Сбросить</button>
+      </div>
+
+      <p class="text-caption" style="margin-bottom: var(--space-4);">Найдено 24 материала</p>
+
+      <a class="material-list-row" href="material.html">
+        <img class="material-list-row__thumb" src="../assets/covers/rag-systems.png" alt="">
+        <div>
+          <h3 class="material-list-row__title">Building Production RAG Systems</h3>
+          <p class="material-list-row__snippet">…<mark>корпоративной базы знаний</mark> с гибридным поиском и reranking…</p>
+          <div class="material-list-row__tags">
+            <span class="tag-pill">#RAG</span>
+            <span class="tag-pill">#LLM</span>
+          </div>
+        </div>
+      </a>
+
+      <a class="material-list-row" href="material.html">
+        <img class="material-list-row__thumb" src="../assets/covers/pgvector.png" alt="">
+        <div>
+          <h3 class="material-list-row__title">pgvector for Enterprise Search</h3>
+          <p class="material-list-row__snippet">PostgreSQL + pgvector как основа <mark>корпоративного</mark> семантического поиска…</p>
+          <div class="material-list-row__tags">
+            <span class="tag-pill">#pgvector</span>
+            <span class="tag-pill">#PostgreSQL</span>
+          </div>
+        </div>
+      </a>
+
+      <a class="material-list-row" href="material.html">
+        <img class="material-list-row__thumb" src="../assets/covers/langgraph-agents.png" alt="">
+        <div>
+          <h3 class="material-list-row__title">LangGraph Multi-Agent Systems</h3>
+          <p class="material-list-row__snippet">Оркестрация агентов для многошаговых задач анализа данных…</p>
+          <div class="material-list-row__tags">
+            <span class="tag-pill">#LangGraph</span>
+            <span class="tag-pill">#agents</span>
+          </div>
+        </div>
+      </a>
+
+      <button class="btn btn--secondary" type="button" style="margin-top: var(--space-8);">Загрузить ещё</button>
+    </main>
+  </div>
+</body>
+</html>

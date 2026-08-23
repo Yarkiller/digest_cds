@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Building Production RAG Systems — Digest CDS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/tokens.css">
+  <link rel="stylesheet" href="../styles/typography.css">
+  <link rel="stylesheet" href="../styles/layout.css">
+  <link rel="stylesheet" href="../styles/components.css">
+</head>
+<body>
+  <div class="reading-progress" aria-hidden="true"></div>
+
+  <div class="concept-nav">
+    <a href="../index.html">← Concept 3</a>
+    <strong>Статья</strong>
+  </div>
+
+  <div class="app-shell">
+    <header class="header">
+      <div class="header__inner">
+        <a class="logo" href="issue.html">
+          <span class="logo__title">Digest CDS</span>
+          <span class="logo__subtitle">СВА · издание</span>
+        </a>
+        <nav class="nav">
+          <a class="nav__link" href="issue.html">Выпуск</a>
+          <a class="nav__link" href="archive.html">Архив</a>
+          <a class="nav__link nav__link--active" href="knowledge.html">База</a>
+          <a class="nav__link" href="voting.html">Голосование</a>
+          <a class="nav__link" href="razbory.html">Разборы</a>
+          <a class="nav__link" href="admin-digest.html">Админ</a>
+        </nav>
+        <div class="header__search">
+          <div class="search-bar" role="search">
+            <span class="search-bar__icon">⌕</span>
+            <input class="search-bar__input" type="search" placeholder="Поиск…">
+          </div>
+        </div>
+        <div class="header__user">
+          <span class="user-name">Иван Петров</span>
+          <span class="role-badge role-badge--ds">DS-эксперт</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="main main--reading">
+      <div class="split-layout split-layout--reading">
+        <article class="prose prose--column">
+          <p class="text-overline format-overline">Статья · RAG</p>
+          <h1 class="text-display">Building Production RAG Systems</h1>
+          <p class="text-caption byline">
+            20 марта 2026 · arXiv / Medium · ~8 мин чтения
+          </p>
+          <hr class="rule">
+
+          <figure class="material-hero">
+            <img src="../assets/covers/rag-systems.png" alt="Building Production RAG Systems — обложка">
+          </figure>
+
+          <h2 id="summary">Резюме</h2>
+          <p>
+            Статья описывает полный цикл построения RAG-системы для корпоративной базы знаний:
+            ingestion документов, chunking, embedding через FoundryModels, гибридный retrieval
+            (векторный + BM25) и reranking. Автор показывает метрики качества и типичные ошибки
+            при деплое в закрытом контуре.
+          </p>
+
+          <blockquote class="pull-quote">
+            Для СВА наиболее релевантны сценарии поиска по регламентам с цитированием источников.
+          </blockquote>
+
+          <p>
+            Для СВА наиболее релевантны сценарии поиска по регламентам, методологиям аудита
+            и внутренним отчётам с цитированием источников.
+          </p>
+
+          <div style="display: flex; gap: var(--space-2); flex-wrap: wrap; margin: var(--space-6) 0;" id="tags">
+            <a class="tag-pill" href="knowledge.html">#RAG</a>
+            <a class="tag-pill" href="knowledge.html">#LLM</a>
+            <a class="tag-pill" href="knowledge.html">#pgvector</a>
+            <a class="tag-pill" href="knowledge.html">#аудит</a>
+          </div>
+
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4);" id="fulltext">
+            <h2 style="margin: 0;">Полный текст</h2>
+            <button class="collapsible__toggle" type="button">Развернуть ▼</button>
+          </div>
+          <p class="text-caption text-secondary">Текст статьи скрыт. Нажмите «Развернуть» для просмотра на русском.</p>
+
+          <aside class="editorial-box">
+            <div class="editorial-box__title">В выпуске</div>
+            <p class="text-body-sm" style="margin: 0;">
+              <a href="issue.html">Выпуск №14</a> · позиция 01<br>
+              Связанные темы: <a href="voting.html">RAG в корпоративной среде</a>
+            </p>
+          </aside>
+        </article>
+
+        <nav class="toc" aria-label="Содержание">
+          <span class="text-overline" style="display: block; margin-bottom: var(--space-3);">Содержание</span>
+          <ul class="toc__list">
+            <li><a class="toc__link toc__link--active" href="#summary">Резюме</a></li>
+            <li><a class="toc__link" href="#tags">Теги</a></li>
+            <li><a class="toc__link" href="#fulltext">Полный текст</a></li>
+          </ul>
+        </nav>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

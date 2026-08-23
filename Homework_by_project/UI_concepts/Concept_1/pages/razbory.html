@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Разборы — Digest CDS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/tokens.css">
+  <link rel="stylesheet" href="../styles/typography.css">
+  <link rel="stylesheet" href="../styles/layout.css">
+  <link rel="stylesheet" href="../styles/components.css">
+</head>
+<body>
+  <div class="concept-nav">
+    <a href="../index.html">← Все экраны</a>
+    <strong>Разборы</strong>
+  </div>
+
+  <div class="app-shell">
+    <header class="header">
+      <div class="header__inner">
+        <a class="logo" href="home.html">
+          <span class="logo__title">Digest CDS</span>
+          <span class="logo__subtitle">СВА · DS-направление</span>
+        </a>
+        <nav class="nav">
+          <a class="nav__link" href="home.html">Главная</a>
+          <a class="nav__link" href="digest.html">Дайджест</a>
+          <a class="nav__link" href="knowledge.html">База знаний</a>
+          <a class="nav__link" href="voting.html">Голосование</a>
+          <a class="nav__link nav__link--active" href="razbory.html">Разборы</a>
+          <a class="nav__link" href="admin-digest.html">Админ</a>
+        </nav>
+        <div class="header__search">
+          <div class="search-bar" role="search">
+            <span class="search-bar__icon">⌕</span>
+            <input class="search-bar__input" type="search" placeholder="Поиск по базе знаний…">
+          </div>
+        </div>
+        <div class="header__user">
+          <span class="user-name">Иван Петров</span>
+          <span class="role-badge role-badge--ds-expert">DS-эксперт</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="main">
+      <h1 class="text-h1">Разборы</h1>
+      <p class="text-caption" style="margin: var(--space-2) 0 var(--space-8);">
+        Встречи раз в две недели · материалы от DS-экспертов
+      </p>
+
+      <div class="card card--flat">
+        <div class="list-item">
+          <span class="list-item__date">14 апреля 2026 · предстоящий</span>
+          <h2 class="text-h2">RAG в корпоративной среде</h2>
+          <p class="text-body-sm text-secondary">
+            Иван Петров · <span class="role-badge role-badge--ds-expert">DS-эксперт</span>
+          </p>
+          <a class="btn btn--secondary" href="razbor.html" style="align-self: flex-start; margin-top: var(--space-2);">Открыть разбор →</a>
+        </div>
+
+        <div class="list-item">
+          <span class="list-item__date">31 марта 2026</span>
+          <h2 class="text-h2">LLM для анализа аудиторских данных</h2>
+          <p class="text-body-sm text-secondary">
+            Алексей Козлов · <span class="role-badge role-badge--ds-expert">DS-эксперт</span>
+          </p>
+          <a class="btn btn--secondary" href="razbor.html" style="align-self: flex-start; margin-top: var(--space-2);">Открыть разбор →</a>
+        </div>
+
+        <div class="list-item">
+          <span class="list-item__date">17 марта 2026</span>
+          <h2 class="text-h2">Anomaly Detection во внутреннем аудите</h2>
+          <p class="text-body-sm text-secondary">
+            Мария Сидорова · <span class="role-badge role-badge--ds-expert">DS-эксперт</span>
+          </p>
+          <a class="btn btn--secondary" href="razbor.html" style="align-self: flex-start; margin-top: var(--space-2);">Открыть разбор →</a>
+        </div>
+
+        <div class="list-item">
+          <span class="list-item__date">3 марта 2026</span>
+          <h2 class="text-h2">Vector Search с pgvector</h2>
+          <p class="text-body-sm text-secondary">
+            Иван Петров · <span class="role-badge role-badge--ds-expert">DS-эксперт</span>
+          </p>
+          <a class="btn btn--secondary" href="razbor.html" style="align-self: flex-start; margin-top: var(--space-2);">Открыть разбор →</a>
+        </div>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

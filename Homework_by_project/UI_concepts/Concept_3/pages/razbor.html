@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RAG в корпоративной среде — Разбор — Digest CDS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/tokens.css">
+  <link rel="stylesheet" href="../styles/typography.css">
+  <link rel="stylesheet" href="../styles/layout.css">
+  <link rel="stylesheet" href="../styles/components.css">
+</head>
+<body>
+  <div class="concept-nav">
+    <a href="../index.html">← Concept 3</a>
+    <strong>Разбор (longread)</strong>
+  </div>
+
+  <div class="app-shell">
+    <header class="header">
+      <div class="header__inner">
+        <a class="logo" href="issue.html">
+          <span class="logo__title">Digest CDS</span>
+          <span class="logo__subtitle">СВА · издание</span>
+        </a>
+        <nav class="nav">
+          <a class="nav__link" href="issue.html">Выпуск</a>
+          <a class="nav__link" href="archive.html">Архив</a>
+          <a class="nav__link" href="knowledge.html">База</a>
+          <a class="nav__link" href="voting.html">Голосование</a>
+          <a class="nav__link nav__link--active" href="razbory.html">Разборы</a>
+          <a class="nav__link" href="admin-digest.html">Админ</a>
+        </nav>
+        <div class="header__search">
+          <div class="search-bar" role="search">
+            <span class="search-bar__icon">⌕</span>
+            <input class="search-bar__input" type="search" placeholder="Поиск…">
+          </div>
+        </div>
+        <div class="header__user">
+          <span class="user-name">Иван Петров</span>
+          <span class="role-badge role-badge--ds">DS-эксперт</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="main main--reading">
+      <p style="margin-bottom: var(--space-6);">
+        <a class="text-body-sm text-secondary" href="razbory.html">← Все разборы</a>
+      </p>
+
+      <div class="info-banner">
+        Код не выполняется — только просмотр. Notebook отрендерен из .ipynb через nbconvert.
+      </div>
+
+      <div class="split-layout split-layout--reading">
+        <article class="prose prose--column">
+          <p class="text-overline">Разбор</p>
+          <h1 class="text-display">RAG в корпоративной среде</h1>
+          <p class="text-caption byline">
+            14 апреля 2026 · Иван Петров · <span class="role-badge role-badge--ds">DS-эксперт</span>
+          </p>
+          <hr class="rule">
+
+          <h2 id="intro">Введение</h2>
+          <p>
+            Этот разбор демонстрирует минимальный RAG-пайплайн для поиска по регламентам СВА
+            с использованием pgvector и FoundryModels для эмбеддингов.
+          </p>
+
+          <h2 id="setup">Настройка окружения</h2>
+          <div class="code-block">pip install psycopg2-binary pgvector sentence-transformers</div>
+
+          <h2 id="indexing">Индексация документов</h2>
+          <p>Загружаем карточки знаний из базы, разбиваем на чанки и сохраняем эмбеддинги:</p>
+          <div class="code-block">def chunk_document(text: str, size: int = 512) -> list[str]:
+    words = text.split()
+    return [" ".join(words[i:i+size]) for i in range(0, len(words), size)]</div>
+
+          <h2 id="retrieval">Гибридный retrieval</h2>
+          <p>
+            Комбинируем векторный поиск (pgvector) с полнотекстовым (PostgreSQL tsvector)
+            для повышения recall на терминах аудита.
+          </p>
+
+          <h2 id="audit">Применение в аудите</h2>
+          <p>
+            Пример запроса: «Какие процедуры применяются при проверке IT-общих элементов?»
+            Система возвращает релевантные фрагменты с цитированием источника.
+          </p>
+        </article>
+
+        <nav class="toc" aria-label="Содержание notebook">
+          <span class="text-overline" style="display: block; margin-bottom: var(--space-3);">Содержание</span>
+          <ul class="toc__list">
+            <li><a class="toc__link" href="#intro">Введение</a></li>
+            <li><a class="toc__link" href="#setup">Настройка окружения</a></li>
+            <li><a class="toc__link" href="#indexing">Индексация документов</a></li>
+            <li><a class="toc__link" href="#retrieval">Гибридный retrieval</a></li>
+            <li><a class="toc__link" href="#audit">Применение в аудите</a></li>
+          </ul>
+        </nav>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

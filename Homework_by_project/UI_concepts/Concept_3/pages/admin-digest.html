@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shortlist дайджеста — Админ — Digest CDS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/tokens.css">
+  <link rel="stylesheet" href="../styles/typography.css">
+  <link rel="stylesheet" href="../styles/layout.css">
+  <link rel="stylesheet" href="../styles/components.css">
+</head>
+<body>
+  <div class="concept-nav">
+    <a href="../index.html">← Concept 3</a>
+    <strong>Админ: Shortlist</strong>
+  </div>
+
+  <div class="app-shell">
+    <header class="header">
+      <div class="header__inner">
+        <a class="logo" href="issue.html">
+          <span class="logo__title">Digest CDS</span>
+          <span class="logo__subtitle">СВА · издание</span>
+        </a>
+        <nav class="nav">
+          <a class="nav__link" href="issue.html">Выпуск</a>
+          <a class="nav__link" href="archive.html">Архив</a>
+          <a class="nav__link" href="knowledge.html">База</a>
+          <a class="nav__link" href="voting.html">Голосование</a>
+          <a class="nav__link" href="razbory.html">Разборы</a>
+          <a class="nav__link nav__link--active" href="admin-digest.html">Админ</a>
+        </nav>
+        <div class="header__search">
+          <div class="search-bar" role="search">
+            <span class="search-bar__icon">⌕</span>
+            <input class="search-bar__input" type="search" placeholder="Поиск…">
+          </div>
+        </div>
+        <div class="header__user">
+          <span class="user-name">CDS Admin</span>
+          <span class="role-badge role-badge--admin">Админ</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="main main--wide">
+      <span class="text-overline">Админ</span>
+      <h1 class="text-h1" style="margin: var(--space-2) 0; font-family: var(--font-sans);">Shortlist дайджеста</h1>
+      <p class="text-caption" style="margin-bottom: var(--space-8);">
+        Неделя 18–24 марта 2026 · топ-5 после авто-ранжирования
+      </p>
+
+      <div class="admin-list">
+        <div class="admin-row">
+          <input type="checkbox" checked aria-label="Включить материал 1">
+          <span class="admin-row__rank">1</span>
+          <a class="admin-row__mini" href="material.html">
+            <img class="admin-row__mini-thumb" src="../assets/covers/rag-systems.png" alt="">
+            <span class="admin-row__mini-title">Building Production RAG Systems</span>
+          </a>
+          <span class="admin-row__score">0.92</span>
+          <a class="text-body-sm" href="issue.html">preview</a>
+        </div>
+
+        <div class="admin-row">
+          <input type="checkbox" checked aria-label="Включить материал 2">
+          <span class="admin-row__rank">2</span>
+          <a class="admin-row__mini" href="material.html">
+            <img class="admin-row__mini-thumb" src="../assets/covers/anomaly-detection.png" alt="">
+            <span class="admin-row__mini-title">Anomaly Detection in Audit Pipelines</span>
+          </a>
+          <span class="admin-row__score">0.87</span>
+          <a class="text-body-sm" href="issue.html">preview</a>
+        </div>
+
+        <div class="admin-row">
+          <input type="checkbox" checked aria-label="Включить материал 3">
+          <span class="admin-row__rank">3</span>
+          <a class="admin-row__mini" href="material.html">
+            <img class="admin-row__mini-thumb" src="../assets/covers/langgraph-agents.png" alt="">
+            <span class="admin-row__mini-title">LangGraph Multi-Agent Systems</span>
+          </a>
+          <span class="admin-row__score">0.81</span>
+          <a class="text-body-sm" href="issue.html">preview</a>
+        </div>
+
+        <div class="admin-row">
+          <input type="checkbox" aria-label="Включить материал 4">
+          <span class="admin-row__rank">4</span>
+          <a class="admin-row__mini" href="material.html">
+            <img class="admin-row__mini-thumb" src="../assets/covers/pgvector.png" alt="">
+            <span class="admin-row__mini-title">pgvector for Enterprise Search</span>
+          </a>
+          <span class="admin-row__score">0.76</span>
+          <a class="text-body-sm" href="issue.html">preview</a>
+        </div>
+
+        <div class="admin-row">
+          <input type="checkbox" aria-label="Включить материал 5">
+          <span class="admin-row__rank">5</span>
+          <a class="admin-row__mini" href="material.html">
+            <img class="admin-row__mini-thumb" src="../assets/covers/prompt-engineering.png" alt="">
+            <span class="admin-row__mini-title">Prompt Engineering Patterns 2026</span>
+          </a>
+          <span class="admin-row__score">0.71</span>
+          <a class="text-body-sm" href="issue.html">preview</a>
+        </div>
+      </div>
+
+      <div class="sticky-footer">
+        <button class="btn btn--secondary" type="button">Предпросмотр письма</button>
+        <button class="btn btn--success" type="button">Отправить дайджест →</button>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

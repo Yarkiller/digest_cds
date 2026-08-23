@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shortlist дайджеста — Админ — Digest CDS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/tokens.css">
+  <link rel="stylesheet" href="../styles/typography.css">
+  <link rel="stylesheet" href="../styles/layout.css">
+  <link rel="stylesheet" href="../styles/components.css">
+</head>
+<body>
+  <div class="concept-nav">
+    <a href="../index.html">← Все экраны</a>
+    <strong>Админ: Shortlist дайджеста</strong>
+  </div>
+
+  <div class="app-shell">
+    <header class="header">
+      <div class="header__inner">
+        <a class="logo" href="home.html">
+          <span class="logo__title">Digest CDS</span>
+          <span class="logo__subtitle">СВА · DS-направление</span>
+        </a>
+        <nav class="nav">
+          <a class="nav__link" href="home.html">Главная</a>
+          <a class="nav__link" href="digest.html">Дайджест</a>
+          <a class="nav__link" href="knowledge.html">База знаний</a>
+          <a class="nav__link" href="voting.html">Голосование</a>
+          <a class="nav__link" href="razbory.html">Разборы</a>
+          <a class="nav__link nav__link--active" href="admin-digest.html">Админ</a>
+        </nav>
+        <div class="header__search">
+          <div class="search-bar" role="search">
+            <span class="search-bar__icon">⌕</span>
+            <input class="search-bar__input" type="search" placeholder="Поиск по базе знаний…">
+          </div>
+        </div>
+        <div class="header__user">
+          <span class="user-name">CDS Admin</span>
+          <span class="role-badge role-badge--admin">Админ</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="main">
+      <span class="text-overline">Админ</span>
+      <h1 class="text-h1" style="margin: var(--space-2) 0;">Shortlist дайджеста</h1>
+      <p class="text-caption" style="margin-bottom: var(--space-8);">
+        Неделя 18–24 марта 2026 · топ-5 после авто-ранжирования
+      </p>
+
+      <div class="admin-list">
+        <div class="admin-row">
+          <input class="admin-row__checkbox" type="checkbox" checked aria-label="Включить материал 1">
+          <span class="admin-row__rank">1</span>
+          <div class="admin-row__content">
+            <a class="card material-card" href="material.html">
+              <div class="material-card__thumb-wrap">
+                <img class="material-card__thumb" src="../assets/covers/rag-systems.png" alt="">
+                <span class="material-card__format">Статья</span>
+              </div>
+              <div class="material-card__body">
+                <h3 class="text-h3 material-card__title">Building Production RAG Systems</h3>
+                <p class="material-card__summary">Архитектура RAG для корпоративных баз знаний.</p>
+              </div>
+            </a>
+          </div>
+          <span class="admin-row__score">0.92</span>
+          <a class="text-body-sm" href="digest.html">preview</a>
+        </div>
+
+        <div class="admin-row">
+          <input class="admin-row__checkbox" type="checkbox" checked aria-label="Включить материал 2">
+          <span class="admin-row__rank">2</span>
+          <div class="admin-row__content">
+            <a class="card material-card" href="material.html">
+              <div class="material-card__thumb-wrap">
+                <img class="material-card__thumb" src="../assets/covers/anomaly-detection.png" alt="">
+                <span class="material-card__format">Презентация</span>
+              </div>
+              <div class="material-card__body">
+                <h3 class="text-h3 material-card__title">Anomaly Detection with Isolation Forest</h3>
+                <p class="material-card__summary">Isolation Forest для выявления аномалий в транзакциях.</p>
+              </div>
+            </a>
+          </div>
+          <span class="admin-row__score">0.88</span>
+          <a class="text-body-sm" href="digest.html">preview</a>
+        </div>
+
+        <div class="admin-row admin-row--unchecked">
+          <input class="admin-row__checkbox" type="checkbox" aria-label="Включить материал 3">
+          <span class="admin-row__rank">3</span>
+          <div class="admin-row__content">
+            <a class="card material-card" href="material.html">
+              <div class="material-card__thumb-wrap">
+                <img class="material-card__thumb" src="../assets/covers/langgraph-agents.png" alt="">
+                <span class="material-card__format">Статья</span>
+              </div>
+              <div class="material-card__body">
+                <h3 class="text-h3 material-card__title">LangGraph for Multi-Agent Workflows</h3>
+                <p class="material-card__summary">Оркестрация LLM-агентов для аналитических задач.</p>
+              </div>
+            </a>
+          </div>
+          <span class="admin-row__score">0.85</span>
+          <a class="text-body-sm" href="digest.html">preview</a>
+        </div>
+
+        <div class="admin-row">
+          <input class="admin-row__checkbox" type="checkbox" checked aria-label="Включить материал 4">
+          <span class="admin-row__rank">4</span>
+          <div class="admin-row__content">
+            <a class="card material-card" href="material.html">
+              <div class="material-card__thumb-wrap">
+                <img class="material-card__thumb" src="../assets/covers/pgvector.png" alt="">
+                <span class="material-card__format">Презентация</span>
+              </div>
+              <div class="material-card__body">
+                <h3 class="text-h3 material-card__title">Vector Databases Compared: pgvector vs Qdrant</h3>
+                <p class="material-card__summary">Сравнение pgvector и Qdrant для on-prem.</p>
+              </div>
+            </a>
+          </div>
+          <span class="admin-row__score">0.83</span>
+          <a class="text-body-sm" href="digest.html">preview</a>
+        </div>
+
+        <div class="admin-row">
+          <input class="admin-row__checkbox" type="checkbox" checked aria-label="Включить материал 5">
+          <span class="admin-row__rank">5</span>
+          <div class="admin-row__content">
+            <a class="card material-card" href="material.html">
+              <div class="material-card__thumb-wrap">
+                <img class="material-card__thumb" src="../assets/covers/prompt-engineering.png" alt="">
+                <span class="material-card__format">Статья</span>
+              </div>
+              <div class="material-card__body">
+                <h3 class="text-h3 material-card__title">Prompt Engineering for Structured Extraction</h3>
+                <p class="material-card__summary">Извлечение полей из аудиторских документов через LLM.</p>
+              </div>
+            </a>
+          </div>
+          <span class="admin-row__score">0.81</span>
+          <a class="text-body-sm" href="digest.html">preview</a>
+        </div>
+      </div>
+
+      <div class="sticky-footer">
+        <button class="btn btn--secondary" type="button">Предпросмотр письма</button>
+        <button class="btn btn--success" type="button">Отправить дайджест →</button>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
