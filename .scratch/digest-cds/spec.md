@@ -1,4 +1,4 @@
-# Digital CDS — Spec v1
+# Digest CDS — Spec v1
 
 **Status:** accepted (grill-with-docs, 2026-08-23)  
 **Инициатор:** CDS, СВА Сбербанка  
