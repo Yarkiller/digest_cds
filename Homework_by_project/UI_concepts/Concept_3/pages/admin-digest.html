@@ -46,75 +46,165 @@
       </div>
     </header>
 
-    <main class="main main--wide">
+    <main class="main main--wide" data-admin>
       <span class="text-overline">Админ</span>
       <h1 class="text-h1" style="margin: var(--space-2) 0; font-family: var(--font-sans);">Shortlist дайджеста</h1>
-      <p class="text-caption" style="margin-bottom: var(--space-8);">
+      <p class="text-caption" style="margin-bottom: var(--space-6);">
         Неделя 18–24 марта 2026 · топ-5 после авто-ранжирования
       </p>
 
+      <div class="admin-toolbar">
+        <button type="button" class="btn btn--ghost" id="admin-select-all">Выбрать все</button>
+        <button type="button" class="btn btn--secondary" id="admin-approve">Approve selected</button>
+        <button type="button" class="btn btn--ghost" id="admin-reject">Reject selected</button>
+      </div>
+
       <div class="admin-list">
-        <div class="admin-row">
+        <div class="admin-row" data-status="ready" data-title="Building Production RAG Systems" data-dek="Как быстро находить фрагменты регламентов СВА.">
           <input type="checkbox" checked aria-label="Включить материал 1">
           <span class="admin-row__rank">1</span>
-          <a class="admin-row__mini" href="material.html">
-            <img class="admin-row__mini-thumb" src="../assets/covers/rag-systems.png" alt="">
-            <span class="admin-row__mini-title">Building Production RAG Systems</span>
-          </a>
-          <span class="admin-row__score">0.92</span>
-          <a class="text-body-sm" href="issue.html">preview</a>
+          <div class="admin-row__body">
+            <div class="admin-row__mini">
+              <img class="admin-row__mini-thumb" src="../assets/covers/rag-systems.png" alt="">
+              <span class="admin-row__mini-title">Building Production RAG Systems</span>
+            </div>
+            <div class="admin-row__meta">
+              <span class="status-badge status-badge--ready">ready</span>
+              <span class="admin-row__exclusion" hidden></span>
+            </div>
+          </div>
+          <div class="admin-row__score-block">
+            <span class="admin-row__score">0.92</span>
+            <span class="admin-row__rationale">relevance 0.40 · freshness 0.28 · engagement 0.24</span>
+          </div>
+          <button type="button" class="btn btn--ghost admin-row__preview" data-preview>preview</button>
         </div>
 
-        <div class="admin-row">
+        <div class="admin-row" data-status="ready" data-title="Anomaly Detection in Audit Pipelines" data-dek="Как замечать аномалии в аудиторских выборках.">
           <input type="checkbox" checked aria-label="Включить материал 2">
           <span class="admin-row__rank">2</span>
-          <a class="admin-row__mini" href="material.html">
-            <img class="admin-row__mini-thumb" src="../assets/covers/anomaly-detection.png" alt="">
-            <span class="admin-row__mini-title">Anomaly Detection in Audit Pipelines</span>
-          </a>
-          <span class="admin-row__score">0.87</span>
-          <a class="text-body-sm" href="issue.html">preview</a>
+          <div class="admin-row__body">
+            <div class="admin-row__mini">
+              <img class="admin-row__mini-thumb" src="../assets/covers/anomaly-detection.png" alt="">
+              <span class="admin-row__mini-title">Anomaly Detection in Audit Pipelines</span>
+            </div>
+            <div class="admin-row__meta">
+              <span class="status-badge status-badge--ready">ready</span>
+              <span class="admin-row__exclusion" hidden></span>
+            </div>
+          </div>
+          <div class="admin-row__score-block">
+            <span class="admin-row__score">0.87</span>
+            <span class="admin-row__rationale">relevance 0.38 · freshness 0.26 · engagement 0.23</span>
+          </div>
+          <button type="button" class="btn btn--ghost admin-row__preview" data-preview>preview</button>
         </div>
 
-        <div class="admin-row">
+        <div class="admin-row" data-status="draft" data-title="LangGraph Multi-Agent Systems" data-dek="Черновик: оркестрация агентов для многошаговых проверок.">
           <input type="checkbox" checked aria-label="Включить материал 3">
           <span class="admin-row__rank">3</span>
-          <a class="admin-row__mini" href="material.html">
-            <img class="admin-row__mini-thumb" src="../assets/covers/langgraph-agents.png" alt="">
-            <span class="admin-row__mini-title">LangGraph Multi-Agent Systems</span>
-          </a>
-          <span class="admin-row__score">0.81</span>
-          <a class="text-body-sm" href="issue.html">preview</a>
+          <div class="admin-row__body">
+            <div class="admin-row__mini">
+              <img class="admin-row__mini-thumb" src="../assets/covers/langgraph-agents.png" alt="">
+              <span class="admin-row__mini-title">LangGraph Multi-Agent Systems</span>
+            </div>
+            <div class="admin-row__meta">
+              <span class="status-badge status-badge--draft">draft</span>
+              <span class="admin-row__exclusion" hidden></span>
+            </div>
+          </div>
+          <div class="admin-row__score-block">
+            <span class="admin-row__score">0.81</span>
+            <span class="admin-row__rationale">relevance 0.35 · freshness 0.30 · engagement 0.16</span>
+          </div>
+          <button type="button" class="btn btn--ghost admin-row__preview" data-preview>preview</button>
         </div>
 
-        <div class="admin-row">
+        <div class="admin-row admin-row--excluded" data-status="ready" data-title="pgvector for Enterprise Search" data-dek="Поиск по внутренним документам на PostgreSQL.">
           <input type="checkbox" aria-label="Включить материал 4">
           <span class="admin-row__rank">4</span>
-          <a class="admin-row__mini" href="material.html">
-            <img class="admin-row__mini-thumb" src="../assets/covers/pgvector.png" alt="">
-            <span class="admin-row__mini-title">pgvector for Enterprise Search</span>
-          </a>
-          <span class="admin-row__score">0.76</span>
-          <a class="text-body-sm" href="issue.html">preview</a>
+          <div class="admin-row__body">
+            <div class="admin-row__mini">
+              <img class="admin-row__mini-thumb" src="../assets/covers/pgvector.png" alt="">
+              <span class="admin-row__mini-title">pgvector for Enterprise Search</span>
+            </div>
+            <div class="admin-row__meta">
+              <span class="status-badge status-badge--ready">ready</span>
+              <span class="admin-row__exclusion">ниже порога авторанга</span>
+            </div>
+          </div>
+          <div class="admin-row__score-block">
+            <span class="admin-row__score">0.76</span>
+            <span class="admin-row__rationale">relevance 0.32 · freshness 0.22 · engagement 0.22</span>
+          </div>
+          <button type="button" class="btn btn--ghost admin-row__preview" data-preview>preview</button>
         </div>
 
-        <div class="admin-row">
+        <div class="admin-row admin-row--excluded" data-status="ready" data-title="Prompt Engineering Patterns 2026" data-dek="Паттерны формулировок запросов к LLM для аудита.">
           <input type="checkbox" aria-label="Включить материал 5">
           <span class="admin-row__rank">5</span>
-          <a class="admin-row__mini" href="material.html">
-            <img class="admin-row__mini-thumb" src="../assets/covers/prompt-engineering.png" alt="">
-            <span class="admin-row__mini-title">Prompt Engineering Patterns 2026</span>
-          </a>
-          <span class="admin-row__score">0.71</span>
-          <a class="text-body-sm" href="issue.html">preview</a>
+          <div class="admin-row__body">
+            <div class="admin-row__mini">
+              <img class="admin-row__mini-thumb" src="../assets/covers/prompt-engineering.png" alt="">
+              <span class="admin-row__mini-title">Prompt Engineering Patterns 2026</span>
+            </div>
+            <div class="admin-row__meta">
+              <span class="status-badge status-badge--ready">ready</span>
+              <span class="admin-row__exclusion">отложен админом</span>
+            </div>
+          </div>
+          <div class="admin-row__score-block">
+            <span class="admin-row__score">0.71</span>
+            <span class="admin-row__rationale">relevance 0.28 · freshness 0.25 · engagement 0.18</span>
+          </div>
+          <button type="button" class="btn btn--ghost admin-row__preview" data-preview>preview</button>
         </div>
       </div>
 
+      <p class="text-caption" id="admin-send-hint" style="margin-top: var(--space-4);">
+        Сначала откройте превью письма. Send недоступен, пока в selection есть draft.
+      </p>
+
       <div class="sticky-footer">
-        <button class="btn btn--secondary" type="button">Предпросмотр письма</button>
-        <button class="btn btn--success" type="button">Отправить дайджест →</button>
+        <button class="btn btn--secondary" type="button" id="admin-email-preview">Предпросмотр письма</button>
+        <button class="btn btn--success" type="button" id="admin-send" disabled>Отправить дайджест →</button>
       </div>
     </main>
   </div>
+
+  <div class="modal" id="item-preview-modal" hidden>
+    <div class="modal__backdrop" data-close-modal></div>
+    <div class="modal__dialog" role="dialog" aria-labelledby="item-preview-title">
+      <div class="modal__header">
+        <h2 class="text-h2" id="item-preview-title" style="font-family: var(--font-sans); margin: 0;">Превью материала</h2>
+        <button type="button" class="btn btn--ghost" data-close-modal aria-label="Закрыть">✕</button>
+      </div>
+      <div class="modal__body">
+        <p class="text-overline" id="item-preview-status"></p>
+        <h3 class="text-h3" id="item-preview-heading" style="font-family: var(--font-serif);"></h3>
+        <p class="text-body-sm text-secondary" id="item-preview-dek"></p>
+        <p class="text-caption" style="margin-top: var(--space-4);">Админ-контекст: shortlist остаётся открытым после закрытия.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="email-preview-modal" hidden>
+    <div class="modal__backdrop" data-close-modal></div>
+    <div class="modal__dialog modal__dialog--wide" role="dialog" aria-labelledby="email-preview-title">
+      <div class="modal__header">
+        <h2 class="text-h2" id="email-preview-title" style="margin: 0; font-family: var(--font-serif);">Превью письма</h2>
+        <button type="button" class="btn btn--ghost" data-close-modal aria-label="Закрыть">✕</button>
+      </div>
+      <div class="modal__body">
+        <p class="text-overline">Digest CDS · Выпуск №14</p>
+        <h3 class="text-display" style="font-size: 1.75rem; margin: var(--space-3) 0;">Новости DS для СВА</h3>
+        <p class="text-caption">18–24 марта 2026 · только approved ready</p>
+        <hr class="rule">
+        <ol class="email-preview-list" id="email-preview-list"></ol>
+      </div>
+    </div>
+  </div>
+
+  <script src="../scripts/app.js"></script>
 </body>
 </html>

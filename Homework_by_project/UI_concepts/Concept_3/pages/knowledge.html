@@ -36,78 +36,165 @@
         <div class="header__search">
           <div class="search-bar" role="search">
             <span class="search-bar__icon">⌕</span>
-            <input class="search-bar__input" type="search" placeholder="Поиск…" value="RAG корпоративная">
+            <input class="search-bar__input" type="search" placeholder="Поиск…" id="nav-search">
           </div>
         </div>
         <div class="header__user">
-          <span class="user-name">Иван Петров</span>
-          <span class="role-badge role-badge--ds">DS-эксперт</span>
+          <span class="user-name">Елена Орлова</span>
+          <span class="role-badge role-badge--analyst">Data Analyst</span>
         </div>
       </div>
     </header>
 
-    <main class="main main--wide">
+    <main class="main main--wide" data-knowledge>
       <h1 class="text-h1" style="margin-bottom: var(--space-6);">База знаний</h1>
 
-      <div class="search-bar search-bar--lg" role="search" style="margin-bottom: var(--space-6);">
+      <div class="search-bar search-bar--lg" role="search" style="margin-bottom: var(--space-4);">
         <span class="search-bar__icon">⌕</span>
-        <input class="search-bar__input" type="search" placeholder="Спросите своими словами…" value="как построить RAG для корпоративных документов">
+        <input class="search-bar__input" type="search" id="kb-search" placeholder="Спросите своими словами: SQL, дашборды, RAG…">
+      </div>
+
+      <div class="hint-chips" aria-label="Подсказки по роли">
+        <button type="button" class="hint-chip" data-hint="SQL дашборды аналитика отчётность">для аналитика</button>
+        <button type="button" class="hint-chip" data-hint="RAG корпоративные документы">для Data Scientist</button>
       </div>
 
       <div class="filters">
-        <select class="filter-select" aria-label="Теги">
-          <option>Теги: все</option>
-          <option>#RAG</option>
-          <option>#LLM</option>
+        <select class="filter-select" id="filter-role" aria-label="Роль">
+          <option value="">Роль: все</option>
+          <option value="sva">Сотрудник СВА</option>
+          <option value="analyst">Data Analyst</option>
+          <option value="ds">Data Scientist</option>
         </select>
-        <select class="filter-select" aria-label="Формат">
-          <option>Формат: все</option>
-          <option>Статья</option>
-          <option>Презентация</option>
+        <select class="filter-select" id="filter-tag" aria-label="Теги">
+          <option value="">Теги: все</option>
+          <option value="SQL">#SQL</option>
+          <option value="BI">#BI</option>
+          <option value="DQ">#DQ</option>
+          <option value="аудит">#аудит</option>
+          <option value="RAG">#RAG</option>
+          <option value="LLM">#LLM</option>
+          <option value="pgvector">#pgvector</option>
+          <option value="LangGraph">#LangGraph</option>
         </select>
-        <button class="btn btn--ghost" type="button">Сбросить</button>
+        <select class="filter-select" id="filter-format" aria-label="Формат">
+          <option value="">Формат: все</option>
+          <option value="Статья">Статья</option>
+          <option value="Презентация">Презентация</option>
+        </select>
+        <select class="filter-select" id="filter-topic" aria-label="Тема">
+          <option value="">Тема: все</option>
+          <option value="reporting">Отчётность / BI</option>
+          <option value="data-quality">Качество данных</option>
+          <option value="ml-search">ML / поиск</option>
+          <option value="agents">Агенты</option>
+        </select>
+        <button class="btn btn--ghost" type="button" id="kb-reset">Сбросить</button>
       </div>
 
-      <p class="text-caption" style="margin-bottom: var(--space-4);">Найдено 24 материала</p>
+      <p class="text-caption" id="kb-count" style="margin-bottom: var(--space-4);">Показано 3 из 6</p>
 
-      <a class="material-list-row" href="material.html">
-        <img class="material-list-row__thumb" src="../assets/covers/rag-systems.png" alt="">
-        <div>
-          <h3 class="material-list-row__title">Building Production RAG Systems</h3>
-          <p class="material-list-row__snippet">…<mark>корпоративной базы знаний</mark> с гибридным поиском и reranking…</p>
-          <div class="material-list-row__tags">
-            <span class="tag-pill">#RAG</span>
-            <span class="tag-pill">#LLM</span>
+      <div id="kb-empty" class="empty-state" hidden>
+        <h2 class="text-h2">Ничего не нашли</h2>
+        <p class="text-body-sm text-secondary">По запросу нет материалов для аналитиков — уточните фильтры или предложите тему.</p>
+        <button type="button" class="btn btn--secondary" id="kb-empty-reset">Сбросить фильтры</button>
+      </div>
+
+      <div id="kb-results">
+        <a class="material-list-row" href="material.html"
+           data-role="ds sva" data-tags="RAG LLM" data-format="Статья" data-topic="ml-search"
+           data-keywords="rag llm корпоративн документ поиск">
+          <img class="material-list-row__thumb" src="../assets/covers/rag-systems.png" alt="">
+          <div>
+            <h3 class="material-list-row__title">Building Production RAG Systems</h3>
+            <p class="material-list-row__snippet">Гибридный поиск по корпоративной базе знаний с reranking…</p>
+            <div class="material-list-row__tags">
+              <span class="tag-pill">#RAG</span>
+              <span class="tag-pill">#LLM</span>
+            </div>
           </div>
-        </div>
-      </a>
+        </a>
 
-      <a class="material-list-row" href="material.html">
-        <img class="material-list-row__thumb" src="../assets/covers/pgvector.png" alt="">
-        <div>
-          <h3 class="material-list-row__title">pgvector for Enterprise Search</h3>
-          <p class="material-list-row__snippet">PostgreSQL + pgvector как основа <mark>корпоративного</mark> семантического поиска…</p>
-          <div class="material-list-row__tags">
-            <span class="tag-pill">#pgvector</span>
-            <span class="tag-pill">#PostgreSQL</span>
+        <a class="material-list-row" href="material.html"
+           data-role="analyst sva" data-tags="SQL BI аудит" data-format="Статья" data-topic="reporting"
+           data-keywords="sql дашборд аналитик отчётность bi reporting dashboard">
+          <img class="material-list-row__thumb" src="../assets/covers/anomaly-detection.png" alt="">
+          <div>
+            <h3 class="material-list-row__title">SQL-дашборды для аудиторской отчётности</h3>
+            <p class="material-list-row__snippet">Шаблоны витрин и дашбордов для ежемесячной отчётности аналитика СВА…</p>
+            <div class="material-list-row__tags">
+              <span class="tag-pill">#SQL</span>
+              <span class="tag-pill">#BI</span>
+              <span class="tag-pill">#аудит</span>
+            </div>
           </div>
-        </div>
-      </a>
+        </a>
 
-      <a class="material-list-row" href="material.html">
-        <img class="material-list-row__thumb" src="../assets/covers/langgraph-agents.png" alt="">
-        <div>
-          <h3 class="material-list-row__title">LangGraph Multi-Agent Systems</h3>
-          <p class="material-list-row__snippet">Оркестрация агентов для многошаговых задач анализа данных…</p>
-          <div class="material-list-row__tags">
-            <span class="tag-pill">#LangGraph</span>
-            <span class="tag-pill">#agents</span>
+        <a class="material-list-row" href="material.html"
+           data-role="ds sva" data-tags="pgvector RAG" data-format="Статья" data-topic="ml-search"
+           data-keywords="pgvector postgresql семантическ поиск rag">
+          <img class="material-list-row__thumb" src="../assets/covers/pgvector.png" alt="">
+          <div>
+            <h3 class="material-list-row__title">pgvector for Enterprise Search</h3>
+            <p class="material-list-row__snippet">PostgreSQL + pgvector как основа корпоративного семантического поиска…</p>
+            <div class="material-list-row__tags">
+              <span class="tag-pill">#pgvector</span>
+              <span class="tag-pill">#RAG</span>
+            </div>
           </div>
-        </div>
-      </a>
+        </a>
 
-      <button class="btn btn--secondary" type="button" style="margin-top: var(--space-8);">Загрузить ещё</button>
+        <a class="material-list-row is-extra" href="material.html" hidden
+           data-role="analyst sva" data-tags="DQ SQL аудит" data-format="Презентация" data-topic="data-quality"
+           data-keywords="dq data quality качество данных sql контроль">
+          <img class="material-list-row__thumb" src="../assets/covers/prompt-engineering.png" alt="">
+          <div>
+            <h3 class="material-list-row__title">Контроль качества данных (DQ) в пайплайнах СВА</h3>
+            <p class="material-list-row__snippet">Чек-листы DQ и SQL-проверки полноты витрин перед отчётным циклом…</p>
+            <div class="material-list-row__tags">
+              <span class="tag-pill">#DQ</span>
+              <span class="tag-pill">#SQL</span>
+            </div>
+          </div>
+        </a>
+
+        <a class="material-list-row is-extra" href="material.html" hidden
+           data-role="ds" data-tags="LangGraph LLM agents" data-format="Статья" data-topic="agents"
+           data-keywords="langgraph агент multi-agent llm">
+          <img class="material-list-row__thumb" src="../assets/covers/langgraph-agents.png" alt="">
+          <div>
+            <h3 class="material-list-row__title">LangGraph Multi-Agent Systems</h3>
+            <p class="material-list-row__snippet">Оркестрация агентов для многошаговых задач анализа данных…</p>
+            <div class="material-list-row__tags">
+              <span class="tag-pill">#LangGraph</span>
+              <span class="tag-pill">#LLM</span>
+            </div>
+          </div>
+        </a>
+
+        <a class="material-list-row is-extra" href="material.html" hidden
+           data-role="analyst sva" data-tags="BI аудит" data-format="Презентация" data-topic="reporting"
+           data-keywords="bi дашборд отчётность аналитик kpi">
+          <img class="material-list-row__thumb" src="../assets/covers/anomaly-detection.png" alt="">
+          <div>
+            <h3 class="material-list-row__title">KPI-дашборд цикла аудита</h3>
+            <p class="material-list-row__snippet">Визуализация сроков, выборки и покрытия контролей для senior-аналитика…</p>
+            <div class="material-list-row__tags">
+              <span class="tag-pill">#BI</span>
+              <span class="tag-pill">#аудит</span>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <div id="kb-skeleton" class="list-skeleton" hidden aria-hidden="true">
+        <div class="list-skeleton__row"></div>
+        <div class="list-skeleton__row"></div>
+      </div>
+
+      <button class="btn btn--secondary" type="button" id="kb-load-more" style="margin-top: var(--space-8);">Загрузить ещё</button>
     </main>
   </div>
+  <script src="../scripts/app.js"></script>
 </body>
 </html>

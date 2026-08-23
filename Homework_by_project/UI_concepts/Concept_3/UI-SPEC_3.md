@@ -229,12 +229,14 @@ Numbered list item (не card):
 
 ```
 01  Building Production RAG Systems     Статья · 8 мин    →
+    Как быстро находить нужные фрагменты регламентов СВА…
 ```
 
 | Part | Style |
 |------|-------|
 | Number | mono, `--text-caption`, `--color-text-muted`, width 32px |
 | Title | `--text-h3`, serif optional for title only |
+| Dek | `--text-body-sm`, `--color-text-secondary`, 1 предложение «зачем СВА»; **вне** `<a>` (X-01) |
 | Meta | `--text-caption`, `--color-text-secondary` |
 | Arrow | `→` on hover, `--color-primary` |
 
@@ -277,8 +279,11 @@ Radio-style voting (не card grid):
 | Row | padding `--space-5`, border-bottom |
 | Radio | 20px circle, border 2px; selected fill `--color-primary` |
 | Title | `--text-h3` |
-| Meta | tags + vote count, `--text-caption` |
+| Meta | tags + vote count; лидер: «Лидирует · N» без путаницы с «ваш выбор» |
 | Selected row | bg `--color-bg-callout` subtle |
+| Default | **ни один** row не selected, пока пользователь не выбрал; статус «Ваш голос: не отдан» |
+
+Confirm → toast «Голос сохранён (прототип)»; статус обновляется на выбранную тему.
 
 ### 4.7 TagPill
 
@@ -287,6 +292,10 @@ As Concept 1, but `--color-accent` text on `--color-bg-muted` bg, radius `--radi
 ### 4.8 RoleBadge, SearchBar, VotingTimer, NotebookViewer, AdminShortlistRow
 
 Наследуют поведение из UI-SPEC v1 с editorial tokens (serif только где указано; admin — sans-only).
+
+**AdminShortlistRow (C3):** checkbox · rank · title · `draft`/`ready` badge · score + rationale caption · exclusion copy · preview button (modal, не переход на reader). Toolbar: Select all / Approve / Reject. Email preview modal (serif headlines) обязателен перед Send; Send disabled при draft в selection.
+
+**NotebookViewer:** disclaimer + CTA «Скачать .ipynb»; секции metrics / refs / end-of-article.
 
 ### 4.9 MaterialListRow (knowledge search)
 
@@ -297,6 +306,8 @@ Alternative to MaterialCard for search results — horizontal row:
 ```
 
 Rule line separator, no card shadow.
+
+**Filters:** Role (СВА / Data Analyst / Data Scientist) · Tag (SQL/BI/DQ/аудит + ML) · Format · Topic. Default search **empty** + hint chips «для аналитика» / «для DS». Load more: skeleton + «Показано N из M». Empty state без подмены ML-топом.
 
 ### 4.10 PullQuote
 

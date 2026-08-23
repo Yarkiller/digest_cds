@@ -41,7 +41,7 @@
         </div>
         <div class="header__user">
           <span class="user-name">Иван Петров</span>
-          <span class="role-badge role-badge--ds">DS-эксперт</span>
+          <span class="role-badge role-badge--ds">Data Scientist</span>
         </div>
       </div>
     </header>
@@ -51,8 +51,9 @@
         <a class="text-body-sm text-secondary" href="razbory.html">← Все разборы</a>
       </p>
 
-      <div class="info-banner">
-        Код не выполняется — только просмотр. Notebook отрендерен из .ipynb через nbconvert.
+      <div class="info-banner info-banner--with-action">
+        <span>Код не выполняется — только просмотр. Longread собран из notebook через nbconvert.</span>
+        <a class="btn btn--secondary" href="../assets/notebooks/hybrid-retrieval.ipynb" download>Скачать .ipynb</a>
       </div>
 
       <div class="split-layout split-layout--reading">
@@ -60,7 +61,7 @@
           <p class="text-overline">Разбор</p>
           <h1 class="text-display">RAG в корпоративной среде</h1>
           <p class="text-caption byline">
-            14 апреля 2026 · Иван Петров · <span class="role-badge role-badge--ds">DS-эксперт</span>
+            14 апреля 2026 · Иван Петров · <span class="role-badge role-badge--ds">Data Scientist</span>
           </p>
           <hr class="rule">
 
@@ -82,14 +83,79 @@
           <h2 id="retrieval">Гибридный retrieval</h2>
           <p>
             Комбинируем векторный поиск (pgvector) с полнотекстовым (PostgreSQL tsvector)
-            для повышения recall на терминах аудита.
+            через Reciprocal Rank Fusion. Веса fusion подобраны на gold-set аудита:
           </p>
+          <div class="code-block"># RRF fusion (k=60)
+dense_w, sparse_w = 0.55, 0.45
+score = dense_w / (k + dense_rank) + sparse_w / (k + sparse_rank)
+
+# Ablation (nDCG@10 на audit gold-set)
+# dense only: 0.61  |  sparse only: 0.54  |  RRF hybrid: 0.78</div>
+
+          <h2 id="metrics">Оценка качества</h2>
+          <p>Метрики на hold-out из 120 запросов аудиторов СВА (март 2026):</p>
+          <table class="metrics-table">
+            <thead>
+              <tr>
+                <th>Метод</th>
+                <th>Precision@5</th>
+                <th>Recall@10</th>
+                <th>MRR</th>
+                <th>nDCG@10</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Dense only</td>
+                <td>0.58</td>
+                <td>0.71</td>
+                <td>0.64</td>
+                <td>0.61</td>
+              </tr>
+              <tr>
+                <td>Sparse only</td>
+                <td>0.51</td>
+                <td>0.66</td>
+                <td>0.57</td>
+                <td>0.54</td>
+              </tr>
+              <tr>
+                <td>RRF hybrid</td>
+                <td>0.72</td>
+                <td>0.84</td>
+                <td>0.79</td>
+                <td>0.78</td>
+              </tr>
+            </tbody>
+          </table>
 
           <h2 id="audit">Применение в аудите</h2>
           <p>
             Пример запроса: «Какие процедуры применяются при проверке IT-общих элементов?»
             Система возвращает релевантные фрагменты с цитированием источника.
+            Precision@5 на таких запросах — 0.72 при hybrid RRF (см. таблицу выше).
           </p>
+
+          <h2 id="refs">Источники и бенчмарки</h2>
+          <ul>
+            <li>BEIR / NFCorpus — baseline dense retrieval</li>
+            <li>внутренний gold-set СВА · 120 запросов · март 2026</li>
+            <li>Cormack et al., Reciprocal Rank Fusion (SIGIR 2009)</li>
+            <li>Dataset stub: <code>audit_regs_chunks_v3.parquet</code> (не публикуется)</li>
+          </ul>
+
+          <hr class="rule">
+
+          <div class="editorial-box" id="end">
+            <p class="editorial-box__title">Конец разбора</p>
+            <p class="text-body-sm" style="margin: 0 0 var(--space-4);">
+              Notebook и метрики выше — прототип для DS СВА. Следующий шаг — воспроизвести пайплайн локально.
+            </p>
+            <p style="margin: 0; display: flex; flex-wrap: wrap; gap: var(--space-3);">
+              <a class="btn btn--secondary" href="../assets/notebooks/hybrid-retrieval.ipynb" download>Скачать .ipynb</a>
+              <a class="btn btn--ghost" href="razbory.html">← К списку разборов</a>
+            </p>
+          </div>
         </article>
 
         <nav class="toc" aria-label="Содержание notebook">
@@ -99,7 +165,10 @@
             <li><a class="toc__link" href="#setup">Настройка окружения</a></li>
             <li><a class="toc__link" href="#indexing">Индексация документов</a></li>
             <li><a class="toc__link" href="#retrieval">Гибридный retrieval</a></li>
+            <li><a class="toc__link" href="#metrics">Оценка качества</a></li>
             <li><a class="toc__link" href="#audit">Применение в аудите</a></li>
+            <li><a class="toc__link" href="#refs">Источники</a></li>
+            <li><a class="toc__link" href="#end">Конец разбора</a></li>
           </ul>
         </nav>
       </div>

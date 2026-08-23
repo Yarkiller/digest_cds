@@ -702,9 +702,10 @@ Option B с purple border до явного действия пользоват�
 ## Концепт 3 — editorial longread (победитель сравнения)
 
 Путь: `Homework_by_project/UI_concepts/Concept_3/`  
-Экраны в прогоне: `pages/issue.html`, `voting.html`, `knowledge.html`, `razbor.html`, `admin-digest.html`.
+Экраны в прогоне: `pages/issue.html`, `voting.html`, `knowledge.html`, `razbor.html`, `admin-digest.html`.  
+**Статус прототипа:** C3-01…C3-18 закрыты в Concept_3 (2026-08-23).
 
-### C3-01 · Заголовки материалов на выпуске — DS-жаргон без расшифровки для СВА
+### C3-01 · Заголовки материалов на выпуске — DS-жаргон без расшифровки для СВА · FIXED (2026-08-23)
 
 | Поле | Значение |
 |------|----------|
@@ -722,7 +723,7 @@ Editorial dek под заголовком: 1 предложение «зачем
 
 ---
 
-### C3-02 · На ballot: radio pre-selected при статусе «Ваш голос: не отдан»
+### C3-02 · На ballot: radio pre-selected при статусе «Ваш голос: не отдан» · FIXED (2026-08-23)
 
 | Поле | Значение |
 |------|----------|
@@ -739,7 +740,7 @@ Editorial dek под заголовком: 1 предложение «зачем
 
 ---
 
-### C3-03 · Knowledge: дефолтный RAG-запрос при входе
+### C3-03 · Knowledge: дефолтный RAG-запрос при входе · FIXED (2026-08-23)
 
 | Поле | Значение |
 |------|----------|
@@ -754,7 +755,7 @@ Editorial dek под заголовком: 1 предложение «зачем
 
 ---
 
-### C3-04 · Поиск по analyst-интенту возвращает только ML-выдачу
+### C3-04 · Поиск по analyst-интенту возвращает только ML-выдачу · FIXED (2026-08-23)
 
 | Поле | Значение |
 |------|----------|
@@ -772,7 +773,7 @@ Editorial dek под заголовком: 1 предложение «зачем
 
 ---
 
-### C3-05 · Теги только `#RAG` и `#LLM` — нет analyst taxonomy
+### C3-05 · Теги только `#RAG` и `#LLM` — нет analyst taxonomy · FIXED (2026-08-23)
 
 | Поле | Значение |
 |------|----------|
@@ -786,7 +787,7 @@ Facet полностью ML-centric. Нет SQL/BI/audit-reporting тегов. R
 
 ---
 
-### C3-06 · Нет фильтров Role / Format / Topic вне ML-тегов
+### C3-06 · Нет фильтров Role / Format / Topic вне ML-тегов · FIXED (2026-08-23)
 
 | Поле | Значение |
 |------|----------|
@@ -803,7 +804,7 @@ Facet полностью ML-centric. Нет SQL/BI/audit-reporting тегов. R
 
 ---
 
-### C3-07 · «Загрузить ещё» без видимого изменения выдачи
+### C3-07 · «Загрузить ещё» без видимого изменения выдачи · FIXED (2026-08-23)
 
 | Поле | Значение |
 |------|----------|
@@ -817,7 +818,7 @@ Facet полностью ML-centric. Нет SQL/BI/audit-reporting тегов. R
 
 ---
 
-### C3-08 · Разбор: секция «Применение в аудите» без метрик
+### C3-08 · Разбор: секция «Применение в аудите» без метрик · FIXED (2026-08-23)
 
 | Поле | Значение |
 |------|----------|
@@ -832,7 +833,7 @@ Facet полностью ML-centric. Нет SQL/BI/audit-reporting тегов. R
 
 ---
 
-### C3-09 · «Гибридный retrieval» без кода, весов fusion, ablation
+### C3-09 · «Гибридный retrieval» без кода, весов fusion, ablation · FIXED (2026-08-23)
 
 | Поле | Значение |
 |------|----------|
@@ -846,7 +847,7 @@ Facet полностью ML-centric. Нет SQL/BI/audit-reporting тегов. R
 
 ---
 
-### C3-10 · Disclaimer nbconvert, но нет ссылки на `.ipynb`
+### C3-10 · Disclaimer nbconvert, но нет ссылки на `.ipynb` · FIXED (2026-08-23)
 
 | Поле | Значение |
 |------|----------|
@@ -860,7 +861,7 @@ Facet полностью ML-centric. Нет SQL/BI/audit-reporting тегов. R
 
 ---
 
-### C3-11 · Нет references / benchmarks / datasets
+### C3-11 · Нет references / benchmarks / datasets · FIXED (2026-08-23)
 
 | Поле | Значение |
 |------|----------|
@@ -874,7 +875,7 @@ Facet полностью ML-centric. Нет SQL/BI/audit-reporting тегов. R
 
 ---
 
-### C3-12 · Нет end-of-article affordance — повторные скроллы
+### C3-12 · Нет end-of-article affordance — повторные скроллы · FIXED (2026-08-23)
 
 | Поле | Значение |
 |------|----------|
@@ -888,7 +889,7 @@ Facet полностью ML-centric. Нет SQL/BI/audit-reporting тегов. R
 
 ---
 
-### C3-13 · Admin: нет batch approve/reject
+### C3-13 · Admin: нет batch approve/reject · FIXED (2026-08-23)
 
 | Поле | Значение |
 |------|----------|
@@ -903,7 +904,7 @@ Facet полностью ML-centric. Нет SQL/BI/audit-reporting тегов. R
 
 ---
 
-### C3-14 · Admin: нет draft vs ready per item
+### C3-14 · Admin: нет draft vs ready per item · FIXED (2026-08-23)
 
 | Поле | Значение |
 |------|----------|
@@ -917,7 +918,7 @@ Facet полностью ML-centric. Нет SQL/BI/audit-reporting тегов. R
 
 ---
 
-### C3-15 · Admin: score без «why in shortlist»
+### C3-15 · Admin: score без «why in shortlist» · FIXED (2026-08-23)
 
 | Поле | Значение |
 |------|----------|
@@ -931,7 +932,7 @@ Facet полностью ML-centric. Нет SQL/BI/audit-reporting тегов. R
 
 ---
 
-### C3-16 · Unchecked items 4–5 без пояснения статуса исключения
+### C3-16 · Unchecked items 4–5 без пояснения статуса исключения · FIXED (2026-08-23)
 
 | Поле | Значение |
 |------|----------|
@@ -945,7 +946,7 @@ Facet полностью ML-centric. Нет SQL/BI/audit-reporting тегов. R
 
 ---
 
-### C3-17 · Preview item → reader digest (потеря admin-контекста)
+### C3-17 · Preview item → reader digest (потеря admin-контекста) · FIXED (2026-08-23)
 
 | Поле | Значение |
 |------|----------|
@@ -960,7 +961,7 @@ Facet полностью ML-centric. Нет SQL/BI/audit-reporting тегов. R
 
 ---
 
-### C3-18 · «Предпросмотр письма» не даёт превью
+### C3-18 · «Предпросмотр письма» не даёт превью · FIXED (2026-08-23)
 
 | Поле | Значение |
 |------|----------|
@@ -979,7 +980,7 @@ Checkpoint перед send отсутствует функционально. Se
 
 Эти пункты относятся не к одному визуальному языку, а к общим свойствам прототипов или среды теста.
 
-### X-01 · Multiline text внутри `<a>` → BADSTRING / хрупкие клики
+### X-01 · Multiline text внутри `<a>` → BADSTRING / хрупкие клики · FIXED in Concept_3 (2026-08-23)
 
 | Поле | Значение |
 |------|----------|
@@ -992,7 +993,7 @@ Checkpoint перед send отсутствует функционально. Se
 
 ---
 
-### X-02 · Статические CTA без JS выглядят рабочими
+### X-02 · Статические CTA без JS выглядят рабочими · FIXED in Concept_3 (2026-08-23)
 
 | Поле | Значение |
 |------|----------|
@@ -1008,7 +1009,7 @@ Checkpoint перед send отсутствует функционально. Se
 
 ---
 
-### X-03 · Смешение ролей Data Analyst и Data Scientist в контенте/навигации
+### X-03 · Смешение ролей Data Analyst и Data Scientist в контенте/навигации · FIXED in Concept_3 (2026-08-23)
 
 | Поле | Значение |
 |------|----------|

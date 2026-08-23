@@ -2,6 +2,8 @@
 
 Визуальный прототип **Concept 3** («Digest CDS: издание») на основе [UI-SPEC_3.md](./UI-SPEC_3.md).
 
+**Backlog C3 (2026-08-23):** пункты C3-01…C3-18 закрыты в прототипе (см. [backlog_UI.md](../backlog_UI.md)).
+
 ## Как открыть
 
 Откройте в браузере:
@@ -10,38 +12,37 @@
 Homework_by_project/UI_concepts/Concept_3/index.html
 ```
 
-Или конкретный экран, например `pages/issue.html`.
+Или конкретный экран, например `pages/issue.html`.  
+Для stubs (голосование, KB-фильтры, admin modal) нужен HTTP-сервер или `file://` с разрешённым JS.
 
 ## Содержимое
 
-| Путь | Экран |
-|------|-------|
-| `pages/issue.html` | Текущий выпуск (главная) |
-| `pages/archive.html` | Архив выпусков |
-| `pages/knowledge.html` | База знаний (MaterialListRow) |
-| `pages/material.html` | Статья с prose-колонкой и TOC |
-| `pages/voting.html` | TopicBallot |
-| `pages/razbory.html` | Список разборов |
-| `pages/razbor.html` | Longread разбора |
-| `pages/login.html` | Авторизация |
-| `pages/admin-digest.html` | Shortlist дайджеста |
+| Путь | Экран | Stubs (`scripts/app.js`) |
+|------|-------|--------------------------|
+| `pages/issue.html` | Текущий выпуск + audit dek | — |
+| `pages/archive.html` | Архив выпусков | — |
+| `pages/knowledge.html` | База: Role/Tag/Format/Topic, analyst corpus | фильтры, load more, empty |
+| `pages/material.html` | Статья с prose-колонкой и TOC | — |
+| `pages/voting.html` | TopicBallot (без pre-select) | выбор + confirm toast |
+| `pages/razbory.html` | Список разборов | — |
+| `pages/razbor.html` | Longread: metrics, RRF, `.ipynb`, refs | — |
+| `pages/login.html` | Авторизация | — |
+| `pages/admin-digest.html` | Shortlist: batch, draft/ready, preview | approve/reject, email modal |
 
 ## Структура
 
 ```
 Concept_3/
 ├── UI-SPEC_3.md
-├── index.html          # галерея экранов
+├── index.html
 ├── README.md
+├── scripts/app.js      # прототипные stubs
 ├── styles/
-│   ├── tokens.css      # warm paper palette
-│   ├── typography.css  # Source Serif 4 + IBM Plex Sans
-│   ├── layout.css
-│   └── components.css  # IssueTOC, TopicBallot, …
+├── assets/
+│   ├── covers/
+│   └── notebooks/hybrid-retrieval.ipynb
 └── pages/
 ```
-
-Обложки материалов — локально в `assets/covers/` (5 PNG + SVG).
 
 ## Отличия от Concept 1 и 2
 
