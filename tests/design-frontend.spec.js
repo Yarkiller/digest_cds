@@ -56,3 +56,34 @@ test("preserves the outlined secondary action", async ({ page }) => {
   const borderColor = await button.evaluate((element) => getComputedStyle(element).borderTopColor);
   expect(borderColor).not.toBe("rgba(0, 0, 0, 0)");
 });
+
+test("keeps admin row spacing on the 4-point scale", async ({ page }) => {
+  await page.goto("/design-frontend/pages/admin-digest.html");
+
+  const rank = page.locator(".admin-row__rank").first();
+  await expect(rank).toHaveCSS("padding-top", "8px");
+});
+
+test("reserves intrinsic space for cover images", async ({ page }) => {
+  for (const path of [
+    "/design-frontend/pages/knowledge.html",
+    "/design-frontend/pages/material.html",
+    "/design-frontend/pages/archive.html",
+    "/design-frontend/pages/admin-digest.html",
+  ]) {
+    await page.goto(path);
+
+    const images = page.locator('img[src*="/assets/covers/"]');
+    await expect(images).not.toHaveCount(0);
+    const dimensions = await images.evaluateAll((elements) =>
+      elements.map((image) => ({
+        width: image.getAttribute("width"),
+        height: image.getAttribute("height"),
+      }))
+    );
+
+    expect(dimensions).toEqual(
+      dimensions.map(() => ({ width: "480", height: "270" }))
+    );
+  }
+});
