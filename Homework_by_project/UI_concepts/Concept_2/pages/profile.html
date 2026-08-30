@@ -20,10 +20,11 @@
         <a class="logo" href="home.html"><span class="logo__title">Digest CDS</span></a>
         <nav class="nav">
           <a class="nav__link" href="home.html">Главная</a>
+          <a class="nav__link" href="knowledge.html">База знаний</a>
           <a class="nav__link" href="leaderboard.html">Лидерборд</a>
-          <a class="nav__link nav__link--active" href="profile.html">Профиль</a>
+          <a class="nav__link" href="archive.html">Архив</a>
+          <a class="nav__link" href="admin-digest.html">Админ</a>
         </nav>
-        <div class="header__search"><div class="search-bar"><span class="search-bar__icon">⌕</span><input class="search-bar__input" type="search" placeholder="Поиск…"></div></div>
         <div class="header__gamification">
           <span class="streak-pill"><span class="streak-pill__icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C12 2 7 10 7 14a5 5 0 0 0 10 0c0-4-5-12-5-12z"/></svg></span>12</span>
           <div class="xp-widget"><span class="xp-widget__level">Ур. 7</span><div class="xp-widget__track"><div class="xp-widget__fill"></div></div></div>
@@ -59,19 +60,19 @@
           <h2 class="text-h2" style="margin-bottom:var(--space-5);">Достижения</h2>
           <div class="badges-grid">
             <div class="hex-badge__wrap">
-              <div class="hex-badge"><svg viewBox="0 0 40 44" width="48" height="52"><polygon points="20,2 38,12 38,32 20,42 2,32 2,12" fill="rgba(139,92,246,0.2)" stroke="#8B5CF6" stroke-width="1.5"/><text x="20" y="26" text-anchor="middle" fill="#A3E635" font-size="16">✓</text></svg></div>
+              <div class="hex-badge"><svg viewBox="0 0 40 44" width="48" height="52"><polygon points="20,2 38,12 38,32 20,42 2,32 2,12" fill="var(--color-primary-soft)" stroke="var(--color-primary)" stroke-width="1.5"/><text x="20" y="26" text-anchor="middle" fill="var(--color-xp)" font-size="16">✓</text></svg></div>
               <div class="hex-badge__label">Первый голос</div>
             </div>
             <div class="hex-badge__wrap">
-              <div class="hex-badge"><svg viewBox="0 0 40 44" width="48" height="52"><polygon points="20,2 38,12 38,32 20,42 2,32 2,12" fill="rgba(6,182,212,0.15)" stroke="#06B6D4" stroke-width="1.5"/><text x="20" y="26" text-anchor="middle" fill="#06B6D4" font-size="14">4</text></svg></div>
+              <div class="hex-badge"><svg viewBox="0 0 40 44" width="48" height="52"><polygon points="20,2 38,12 38,32 20,42 2,32 2,12" fill="var(--color-accent-soft)" stroke="var(--color-accent)" stroke-width="1.5"/><text x="20" y="26" text-anchor="middle" fill="var(--color-accent)" font-size="14">4</text></svg></div>
               <div class="hex-badge__label">Читатель дайджеста</div>
             </div>
             <div class="hex-badge__wrap hex-badge--locked">
-              <div class="hex-badge"><svg viewBox="0 0 40 44" width="48" height="52"><polygon points="20,2 38,12 38,32 20,42 2,32 2,12" fill="none" stroke="#64748B" stroke-width="1.5"/><text x="20" y="28" text-anchor="middle" fill="#64748B" font-size="10">?</text></svg></div>
+              <div class="hex-badge"><svg viewBox="0 0 40 44" width="48" height="52"><polygon points="20,2 38,12 38,32 20,42 2,32 2,12" fill="none" stroke="var(--color-text-disabled)" stroke-width="1.5"/><text x="20" y="28" text-anchor="middle" fill="var(--color-text-disabled)" font-size="10">?</text></svg></div>
               <div class="hex-badge__label">Тест сдан</div>
             </div>
             <div class="hex-badge__wrap hex-badge--locked">
-              <div class="hex-badge"><svg viewBox="0 0 40 44" width="48" height="52"><polygon points="20,2 38,12 38,32 20,42 2,32 2,12" fill="none" stroke="#64748B" stroke-width="1.5"/></svg></div>
+              <div class="hex-badge"><svg viewBox="0 0 40 44" width="48" height="52"><polygon points="20,2 38,12 38,32 20,42 2,32 2,12" fill="none" stroke="var(--color-text-disabled)" stroke-width="1.5"/></svg></div>
               <div class="hex-badge__label">Автор разбора</div>
             </div>
           </div>
@@ -84,7 +85,7 @@
               <p class="text-body-sm" style="margin:0;">Скрыть меня из лидерборда</p>
               <p class="text-caption">Другие увидят «Участник скрыт»</p>
             </div>
-            <div class="toggle" role="switch" aria-checked="false" tabindex="0"><span class="toggle__knob"></span></div>
+            <div class="toggle" role="switch" aria-label="Скрыть меня из лидерборда" aria-checked="false" tabindex="0" data-setting="hide-from-leaderboard"><span class="toggle__knob"></span></div>
           </div>
           <div class="toggle-row">
             <div>

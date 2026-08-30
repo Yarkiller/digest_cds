@@ -22,7 +22,7 @@
 | Акценты | Синий + teal | **Violet + cyan** + lime для XP |
 | Карточки | Flat shadow | Glass / subtle border glow |
 | Прогресс | Только voting timer | XP, streak, weekly quest, лидерборд |
-| Материалы | Статьи / презентации | То же + **карточки с вопросами** |
+| Материалы | Подготовленные статьи | То же + **карточки с вопросами** |
 
 ---
 
@@ -44,6 +44,12 @@
 - Confetti / particle effects на каждое действие
 - Звуковые эффекты по умолчанию
 - Детская цветовая палитра (bubblegum pink, candy yellow как primary)
+
+### Контентный контракт
+
+В UI отображается только подготовленная агентом статья. Она строится на транскрипции внешнего видео или импортированном тексте, затем дополняется уточняющим поиском и анализом; статья может быть гайдом по установке/использованию технологии или описанием нового подхода. Видео, аудио и необработанный транскрипт не являются материалом, не встраиваются и не сохраняются как материал. Внешний источник допускается только в provenance-блоке.
+
+Если статья использует сложный термин или подход, описанный отдельной статьёй в базе, первое уместное упоминание должно быть внутренней ссылкой на неё. На странице также нужен блок связанных статей с обратными переходами, если они существуют.
 
 ---
 
@@ -266,7 +272,7 @@ Hover: brightness 1.08, не scale bounce.
 - Cover 128×72, radius `--radius-md`, border `1px solid var(--color-border)`.
 - Hover: `--shadow-glow`, translateY -2px (150ms).
 - Footer: tags + **«+5 XP»** hint (caption, `--color-xp`) если материал не прочитан.
-- Format badge: «Статья» / «Презентация» (как v1).
+- Format badge: «Статья».
 
 ### 5.3 TopicCard v2
 
@@ -466,7 +472,7 @@ GET  /quests/current
 - [ ] No casual mascots / comic visuals in component inventory.
 - [ ] Карточка с вопросами flow complete (prompt → quiz → score → XP).
 - [ ] Domain terms from CONTEXT.md used consistently.
-- [ ] Material format = статья / презентация (cover image, no video).
+- [ ] Material format = подготовленная статья (cover image, no video, no raw transcript).
 - [ ] QuestBanner dismissible; progress persists.
 - [ ] Level-up shown once, accessible, reducible motion.
 

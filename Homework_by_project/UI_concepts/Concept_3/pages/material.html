@@ -6,7 +6,7 @@
   <title>Building Production RAG Systems — Digest CDS</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600&family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../styles/tokens.css">
   <link rel="stylesheet" href="../styles/typography.css">
   <link rel="stylesheet" href="../styles/layout.css">
@@ -15,11 +15,6 @@
 <body>
   <div class="reading-progress" aria-hidden="true"></div>
 
-  <div class="concept-nav">
-    <a href="../index.html">← Concept 3</a>
-    <strong>Статья</strong>
-  </div>
-
   <div class="app-shell">
     <header class="header">
       <div class="header__inner">
@@ -27,7 +22,7 @@
           <span class="logo__title">Digest CDS</span>
           <span class="logo__subtitle">СВА · издание</span>
         </a>
-        <nav class="nav">
+        <nav class="nav" id="primary-nav">
           <a class="nav__link" href="issue.html">Выпуск</a>
           <a class="nav__link" href="archive.html">Архив</a>
           <a class="nav__link nav__link--active" href="knowledge.html">База</a>
@@ -35,6 +30,7 @@
           <a class="nav__link" href="razbory.html">Разборы</a>
           <a class="nav__link" href="admin-digest.html">Админ</a>
         </nav>
+        <button class="nav-toggle" type="button" aria-controls="primary-nav" aria-expanded="false">Меню</button>
         <div class="header__search">
           <div class="search-bar" role="search">
             <span class="search-bar__icon">⌕</span>
@@ -51,10 +47,18 @@
     <main class="main main--reading">
       <div class="split-layout split-layout--reading">
         <article class="prose prose--column">
+          <details class="toc-mobile">
+            <summary class="toc-mobile__summary">Содержание <span aria-hidden="true">⌄</span></summary>
+            <ul class="toc-mobile__list">
+              <li><a href="#summary">Резюме</a></li>
+              <li><a href="#tags">Теги</a></li>
+              <li><a href="#fulltext">Полный текст</a></li>
+            </ul>
+          </details>
           <p class="text-overline format-overline">Статья · RAG</p>
           <h1 class="text-display">Building Production RAG Systems</h1>
           <p class="text-caption byline">
-            20 марта 2026 · arXiv / Medium · ~8 мин чтения
+            20 марта 2026 · provenance: внешний текстовый источник · ~8 мин чтения
           </p>
           <hr class="rule">
 
@@ -64,7 +68,7 @@
 
           <h2 id="summary">Резюме</h2>
           <p>
-            Статья описывает полный цикл построения RAG-системы для корпоративной базы знаний:
+            Статья описывает полный цикл построения <a href="razbor.html">RAG-системы</a> для корпоративной базы знаний:
             ingestion документов, chunking, embedding через FoundryModels, гибридный retrieval
             (векторный + BM25) и reranking. Автор показывает метрики качества и типичные ошибки
             при деплое в закрытом контуре.
@@ -88,9 +92,25 @@
 
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4);" id="fulltext">
             <h2 style="margin: 0;">Полный текст</h2>
-            <button class="collapsible__toggle" type="button">Развернуть ▼</button>
+            <button class="collapsible__toggle" type="button" aria-expanded="false" aria-controls="fulltext-content">Развернуть</button>
           </div>
-          <p class="text-caption text-secondary">Текст статьи скрыт. Нажмите «Развернуть» для просмотра на русском.</p>
+          <div id="fulltext-content" class="collapsible__content" hidden>
+            <p>
+              Подготовленная статья переводит технический подход в контекст аудита:
+              сначала документы нормализуются и разбиваются на фрагменты, затем для
+              каждого фрагмента рассчитывается embedding.
+            </p>
+            <p>
+              На этапе поиска система объединяет семантическое совпадение с точным
+              совпадением терминов. Это помогает находить нужный фрагмент регламента
+              и одновременно сохранять цитату для проверки результата.
+            </p>
+          </div>
+
+          <aside class="editorial-box">
+            <div class="editorial-box__title">Связанные статьи</div>
+            <p class="text-body-sm" style="margin: 0;">Связанная статья: <a href="razbor.html">RAG в корпоративной среде</a>. Сложные термины связываются при первом уместном упоминании.</p>
+          </aside>
 
           <aside class="editorial-box">
             <div class="editorial-box__title">В выпуске</div>
@@ -111,6 +131,11 @@
         </nav>
       </div>
     </main>
+    <footer class="site-footer">
+      <p class="site-footer__statement">Хороший материал оставляет после себя ясный следующий шаг.</p>
+      <div class="site-footer__meta"><span>Digest CDS · статья</span><a href="issue.html">Выпуск</a><a href="knowledge.html">База знаний</a></div>
+    </footer>
   </div>
+  <script src="../scripts/app.js"></script>
 </body>
 </html>

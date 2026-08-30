@@ -23,21 +23,15 @@
       <div class="header__inner">
         <a class="logo" href="home.html">
           <span class="logo__title">Digest CDS</span>
-          <span class="logo__subtitle">СВА · DS</span>
         </a>
         <nav class="nav">
           <a class="nav__link nav__link--active" href="home.html">Главная</a>
-          <a class="nav__link" href="material.html">База знаний</a>
+          <a class="nav__link" href="knowledge.html">База знаний</a>
           <a class="nav__link" href="voting.html">Голосование</a>
           <a class="nav__link" href="leaderboard.html">Лидерборд</a>
-          <a class="nav__link" href="profile.html">Профиль</a>
+          <a class="nav__link" href="archive.html">Архив</a>
+          <a class="nav__link" href="admin-digest.html">Админ</a>
         </nav>
-        <div class="header__search">
-          <div class="search-bar" role="search">
-            <span class="search-bar__icon">⌕</span>
-            <input class="search-bar__input" type="search" placeholder="Поиск по базе знаний…">
-          </div>
-        </div>
         <div class="header__gamification">
           <span class="streak-pill">
             <span class="streak-pill__icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C12 2 7 10 7 14a5 5 0 0 0 10 0c0-4-5-12-5-12z"/></svg></span>
@@ -59,7 +53,7 @@
     <main class="main">
       <div id="quest-banner" class="quest-banner" style="margin-bottom: var(--space-6);">
         <div>
-          <span class="text-overline">Задание недели</span>
+          <h2 class="text-h3">Задание недели</h2>
           <p class="text-body-sm" style="margin: var(--space-2) 0 0;">2/3 материала прочитано · +50 XP за выполнение</p>
           <div class="quest-banner__progress"><div class="quest-banner__fill"></div></div>
         </div>
@@ -89,23 +83,23 @@
             <span>Ранг <a href="leaderboard.html"><strong>#8</strong></a></span>
           </div>
           <div class="divider"></div>
-          <span class="text-overline">Достижения</span>
+          <h3 class="text-h3">Достижения</h3>
           <div class="badges-grid" style="margin-top:var(--space-3);">
             <div class="hex-badge__wrap">
               <div class="hex-badge">
-                <svg viewBox="0 0 40 44"><polygon points="20,2 38,12 38,32 20,42 2,32 2,12" fill="rgba(139,92,246,0.2)" stroke="#8B5CF6" stroke-width="1.5"/><text x="20" y="26" text-anchor="middle" fill="#A3E635" font-size="14" font-weight="700">✓</text></svg>
+                <svg viewBox="0 0 40 44"><polygon points="20,2 38,12 38,32 20,42 2,32 2,12" fill="var(--color-primary-soft)" stroke="var(--color-primary)" stroke-width="1.5"/><text x="20" y="26" text-anchor="middle" fill="var(--color-xp)" font-size="14" font-weight="700">✓</text></svg>
               </div>
               <div class="hex-badge__label">Голос</div>
             </div>
             <div class="hex-badge__wrap">
               <div class="hex-badge">
-                <svg viewBox="0 0 40 44"><polygon points="20,2 38,12 38,32 20,42 2,32 2,12" fill="rgba(6,182,212,0.15)" stroke="#06B6D4" stroke-width="1.5"/><text x="20" y="26" text-anchor="middle" fill="#06B6D4" font-size="12" font-weight="700">4</text></svg>
+                <svg viewBox="0 0 40 44"><polygon points="20,2 38,12 38,32 20,42 2,32 2,12" fill="var(--color-accent-soft)" stroke="var(--color-accent)" stroke-width="1.5"/><text x="20" y="26" text-anchor="middle" fill="var(--color-accent)" font-size="12" font-weight="700">4</text></svg>
               </div>
               <div class="hex-badge__label">Дайджест</div>
             </div>
             <div class="hex-badge__wrap hex-badge--locked">
               <div class="hex-badge">
-                <svg viewBox="0 0 40 44"><polygon points="20,2 38,12 38,32 20,42 2,32 2,12" fill="none" stroke="#64748B" stroke-width="1.5"/></svg>
+                <svg viewBox="0 0 40 44"><polygon points="20,2 38,12 38,32 20,42 2,32 2,12" fill="none" stroke="var(--color-text-disabled)" stroke-width="1.5"/></svg>
               </div>
               <div class="hex-badge__label">Тест</div>
             </div>
@@ -117,14 +111,13 @@
           <section class="voting-block">
             <div class="voting-block__header">
               <div>
-                <span class="text-overline">Цикл голосования · 3–16 апр</span>
                 <h2 class="text-h2" style="margin-top:var(--space-2);">RAG в корпоративной среде</h2>
                 <p class="text-caption text-xp" style="margin-top:var(--space-2);">+25 XP за участие</p>
               </div>
               <a class="btn btn--primary btn--sm" href="voting.html">Проголосовать</a>
             </div>
             <div class="bento">
-              <div class="topic-card topic-card--selected topic-card--pulse">
+              <div class="topic-card topic-card--leader">
                 <h3 class="text-h3">RAG в корпоративной среде</h3>
                 <span class="text-caption">5 материалов · 31 голос</span>
                 <div class="vote-bar"><div class="vote-bar__fill" style="width:62%"></div></div>
@@ -140,7 +133,7 @@
           <section>
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-4);">
               <h2 class="text-h2">Дайджест №12</h2>
-              <a class="text-body-sm" href="#">Архив →</a>
+              <a class="text-body-sm" href="archive.html">Архив →</a>
             </div>
             <a class="card card--glow material-card" href="material.html">
               <div class="material-card__thumb-wrap">
@@ -175,7 +168,7 @@
               <a class="card card--glow material-card" href="material.html">
                 <div class="material-card__thumb-wrap">
                   <img class="material-card__thumb" src="../assets/covers/anomaly-detection.png" alt="">
-                  <span class="material-card__format">Презентация</span>
+                  <span class="material-card__format">Статья</span>
                 </div>
                 <div class="material-card__body">
                   <h3 class="text-h3 material-card__title">Anomaly Detection with Isolation Forest</h3>

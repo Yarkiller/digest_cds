@@ -6,18 +6,13 @@
   <title>RAG в корпоративной среде — Разбор — Digest CDS</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600&family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../styles/tokens.css">
   <link rel="stylesheet" href="../styles/typography.css">
   <link rel="stylesheet" href="../styles/layout.css">
   <link rel="stylesheet" href="../styles/components.css">
 </head>
 <body>
-  <div class="concept-nav">
-    <a href="../index.html">← Concept 3</a>
-    <strong>Разбор (longread)</strong>
-  </div>
-
   <div class="app-shell">
     <header class="header">
       <div class="header__inner">
@@ -25,7 +20,7 @@
           <span class="logo__title">Digest CDS</span>
           <span class="logo__subtitle">СВА · издание</span>
         </a>
-        <nav class="nav">
+        <nav class="nav" id="primary-nav">
           <a class="nav__link" href="issue.html">Выпуск</a>
           <a class="nav__link" href="archive.html">Архив</a>
           <a class="nav__link" href="knowledge.html">База</a>
@@ -33,6 +28,7 @@
           <a class="nav__link nav__link--active" href="razbory.html">Разборы</a>
           <a class="nav__link" href="admin-digest.html">Админ</a>
         </nav>
+        <button class="nav-toggle" type="button" aria-controls="primary-nav" aria-expanded="false">Меню</button>
         <div class="header__search">
           <div class="search-bar" role="search">
             <span class="search-bar__icon">⌕</span>
@@ -58,6 +54,19 @@
 
       <div class="split-layout split-layout--reading">
         <article class="prose prose--column">
+          <details class="toc-mobile">
+            <summary class="toc-mobile__summary">Содержание <span aria-hidden="true">⌄</span></summary>
+            <ul class="toc-mobile__list">
+              <li><a href="#intro">Введение</a></li>
+              <li><a href="#setup">Настройка окружения</a></li>
+              <li><a href="#indexing">Индексация документов</a></li>
+              <li><a href="#retrieval">Гибридный retrieval</a></li>
+              <li><a href="#metrics">Оценка качества</a></li>
+              <li><a href="#audit">Применение в аудите</a></li>
+              <li><a href="#refs">Источники</a></li>
+              <li><a href="#end">Конец разбора</a></li>
+            </ul>
+          </details>
           <p class="text-overline">Разбор</p>
           <h1 class="text-display">RAG в корпоративной среде</h1>
           <p class="text-caption byline">
@@ -67,7 +76,7 @@
 
           <h2 id="intro">Введение</h2>
           <p>
-            Этот разбор демонстрирует минимальный RAG-пайплайн для поиска по регламентам СВА
+            Этот разбор демонстрирует минимальный <a href="material.html">RAG-пайплайн</a> для поиска по регламентам СВА
             с использованием pgvector и FoundryModels для эмбеддингов.
           </p>
 
@@ -83,17 +92,17 @@
           <h2 id="retrieval">Гибридный retrieval</h2>
           <p>
             Комбинируем векторный поиск (pgvector) с полнотекстовым (PostgreSQL tsvector)
-            через Reciprocal Rank Fusion. Веса fusion подобраны на gold-set аудита:
+            через Reciprocal Rank Fusion. Веса fusion и метрики gold-set требуют подтверждения:
           </p>
           <div class="code-block"># RRF fusion (k=60)
 dense_w, sparse_w = 0.55, 0.45
 score = dense_w / (k + dense_rank) + sparse_w / (k + sparse_rank)
 
-# Ablation (nDCG@10 на audit gold-set)
-# dense only: 0.61  |  sparse only: 0.54  |  RRF hybrid: 0.78</div>
+# Ablation (nDCG@10 на audit gold-set — метрики уточняются)
+# dense only: —  |  sparse only: —  |  RRF hybrid: —</div>
 
           <h2 id="metrics">Оценка качества</h2>
-          <p>Метрики на hold-out из 120 запросов аудиторов СВА (март 2026):</p>
+          <p>Метрики на hold-out и объём выборки: <strong>уточняются</strong>.</p>
           <table class="metrics-table">
             <thead>
               <tr>
@@ -107,24 +116,24 @@ score = dense_w / (k + dense_rank) + sparse_w / (k + sparse_rank)
             <tbody>
               <tr>
                 <td>Dense only</td>
-                <td>0.58</td>
-                <td>0.71</td>
-                <td>0.64</td>
-                <td>0.61</td>
+                <td>—</td>
+                <td>—</td>
+                <td>—</td>
+                <td>—</td>
               </tr>
               <tr>
                 <td>Sparse only</td>
-                <td>0.51</td>
-                <td>0.66</td>
-                <td>0.57</td>
-                <td>0.54</td>
+                <td>—</td>
+                <td>—</td>
+                <td>—</td>
+                <td>—</td>
               </tr>
               <tr>
                 <td>RRF hybrid</td>
-                <td>0.72</td>
-                <td>0.84</td>
-                <td>0.79</td>
-                <td>0.78</td>
+                <td>—</td>
+                <td>—</td>
+                <td>—</td>
+                <td>—</td>
               </tr>
             </tbody>
           </table>
@@ -133,13 +142,13 @@ score = dense_w / (k + dense_rank) + sparse_w / (k + sparse_rank)
           <p>
             Пример запроса: «Какие процедуры применяются при проверке IT-общих элементов?»
             Система возвращает релевантные фрагменты с цитированием источника.
-            Precision@5 на таких запросах — 0.72 при hybrid RRF (см. таблицу выше).
+            Precision@5 на таких запросах: <strong>метрика уточняется</strong> (см. таблицу выше).
           </p>
 
           <h2 id="refs">Источники и бенчмарки</h2>
           <ul>
             <li>BEIR / NFCorpus — baseline dense retrieval</li>
-            <li>внутренний gold-set СВА · 120 запросов · март 2026</li>
+            <li>внутренний gold-set СВА · состав и объём уточняются</li>
             <li>Cormack et al., Reciprocal Rank Fusion (SIGIR 2009)</li>
             <li>Dataset stub: <code>audit_regs_chunks_v3.parquet</code> (не публикуется)</li>
           </ul>
@@ -174,5 +183,10 @@ score = dense_w / (k + dense_rank) + sparse_w / (k + sparse_rank)
       </div>
     </main>
   </div>
+  <footer class="site-footer">
+    <p class="site-footer__statement">Проверяем идеи на данных, чтобы ими можно было пользоваться.</p>
+    <div class="site-footer__meta"><span>Digest CDS · разбор</span><a href="razbory.html">Все разборы</a><a href="knowledge.html">База знаний</a></div>
+  </footer>
+  <script src="../scripts/app.js"></script>
 </body>
 </html>

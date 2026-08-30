@@ -20,10 +20,12 @@
         <a class="logo" href="home.html"><span class="logo__title">Digest CDS</span></a>
         <nav class="nav">
           <a class="nav__link" href="home.html">Главная</a>
+          <a class="nav__link" href="knowledge.html">База знаний</a>
           <a class="nav__link nav__link--active" href="voting.html">Голосование</a>
           <a class="nav__link" href="leaderboard.html">Лидерборд</a>
+          <a class="nav__link" href="archive.html">Архив</a>
+          <a class="nav__link" href="admin-digest.html">Админ</a>
         </nav>
-        <div class="header__search"><div class="search-bar"><span class="search-bar__icon">⌕</span><input class="search-bar__input" type="search" placeholder="Поиск…"></div></div>
         <div class="header__gamification">
           <span class="streak-pill"><span class="streak-pill__icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C12 2 7 10 7 14a5 5 0 0 0 10 0c0-4-5-12-5-12z"/></svg></span>12</span>
           <div class="xp-widget"><span class="xp-widget__level">Ур. 7</span><div class="xp-widget__track"><div class="xp-widget__fill"></div></div></div>
@@ -47,29 +49,12 @@
 
       <p class="text-body-sm text-secondary" style="margin-bottom:var(--space-6);">Один голос за цикл. Изменить выбор можно до 16 апреля.</p>
 
-      <div class="bento" style="margin-bottom:var(--space-6);">
-        <div class="topic-card topic-card--selected topic-card--pulse" style="min-height:200px;">
-          <h3 class="text-h2">RAG в корпоративной среде</h3>
-          <span class="text-caption">5 материалов</span>
-          <div class="vote-bar" style="margin-top:auto;"><div class="vote-bar__fill" style="width:62%"></div></div>
-          <span class="text-caption">31 голос · <strong style="color:var(--color-voting);">Ваш выбор</strong></span>
-        </div>
-        <div class="topic-card topic-card--pulse" style="min-height:200px;">
-          <h3 class="text-h2">LLM для аудита</h3>
-          <span class="text-caption">3 материала</span>
-          <div class="vote-bar" style="margin-top:auto;"><div class="vote-bar__fill" style="width:48%"></div></div>
-          <span class="text-caption">24 голоса</span>
-        </div>
-        <div class="topic-card">
-          <h3 class="text-h3">AutoML для рисков</h3>
-          <span class="text-caption">1 материал · 12 голосов</span>
-          <div class="vote-bar"><div class="vote-bar__fill" style="width:24%"></div></div>
-        </div>
-        <div class="topic-card">
-          <h3 class="text-h3">Explainable AI</h3>
-          <span class="text-caption">2 материала · 18 голосов</span>
-          <div class="vote-bar"><div class="vote-bar__fill" style="width:35%"></div></div>
-        </div>
+      <p id="vote-status" class="text-body-sm text-secondary" role="status" style="margin-bottom:var(--space-4);">Ваш голос: не отдан</p>
+      <div class="bento" data-voting style="margin-bottom:var(--space-6);">
+        <button class="topic-card" type="button" data-vote-topic="rag" aria-pressed="false" style="min-height:200px;"><h3 class="text-h2">RAG в корпоративной среде</h3><span class="text-caption">5 материалов</span><div class="vote-bar" style="margin-top:auto;"><div class="vote-bar__fill" style="width:62%"></div></div><span class="text-caption">31 голос</span></button>
+        <button class="topic-card" type="button" data-vote-topic="llm" aria-pressed="false" style="min-height:200px;"><h3 class="text-h2">LLM для аудита</h3><span class="text-caption">3 материала</span><div class="vote-bar" style="margin-top:auto;"><div class="vote-bar__fill" style="width:48%"></div></div><span class="text-caption">24 голоса</span></button>
+        <button class="topic-card" type="button" data-vote-topic="automl"><h3 class="text-h3">AutoML для рисков</h3><span class="text-caption">1 материал · 12 голосов</span><div class="vote-bar"><div class="vote-bar__fill" style="width:24%"></div></div></button>
+        <button class="topic-card" type="button" data-vote-topic="xai"><h3 class="text-h3">Explainable AI</h3><span class="text-caption">2 материала · 18 голосов</span><div class="vote-bar"><div class="vote-bar__fill" style="width:35%"></div></div></button>
       </div>
 
       <div class="sidebar-panel" style="border-color:var(--color-accent);">

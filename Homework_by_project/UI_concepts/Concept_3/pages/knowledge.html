@@ -6,18 +6,13 @@
   <title>База знаний — Digest CDS</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600&family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../styles/tokens.css">
   <link rel="stylesheet" href="../styles/typography.css">
   <link rel="stylesheet" href="../styles/layout.css">
   <link rel="stylesheet" href="../styles/components.css">
 </head>
 <body>
-  <div class="concept-nav">
-    <a href="../index.html">← Concept 3</a>
-    <strong>База знаний</strong>
-  </div>
-
   <div class="app-shell">
     <header class="header">
       <div class="header__inner">
@@ -25,7 +20,7 @@
           <span class="logo__title">Digest CDS</span>
           <span class="logo__subtitle">СВА · издание</span>
         </a>
-        <nav class="nav">
+        <nav class="nav" id="primary-nav">
           <a class="nav__link" href="issue.html">Выпуск</a>
           <a class="nav__link" href="archive.html">Архив</a>
           <a class="nav__link nav__link--active" href="knowledge.html">База</a>
@@ -33,6 +28,7 @@
           <a class="nav__link" href="razbory.html">Разборы</a>
           <a class="nav__link" href="admin-digest.html">Админ</a>
         </nav>
+        <button class="nav-toggle" type="button" aria-controls="primary-nav" aria-expanded="false">Меню</button>
         <div class="header__search">
           <div class="search-bar" role="search">
             <span class="search-bar__icon">⌕</span>
@@ -51,12 +47,7 @@
 
       <div class="search-bar search-bar--lg" role="search" style="margin-bottom: var(--space-4);">
         <span class="search-bar__icon">⌕</span>
-        <input class="search-bar__input" type="search" id="kb-search" placeholder="Спросите своими словами: SQL, дашборды, RAG…">
-      </div>
-
-      <div class="hint-chips" aria-label="Подсказки по роли">
-        <button type="button" class="hint-chip" data-hint="SQL дашборды аналитика отчётность">для аналитика</button>
-        <button type="button" class="hint-chip" data-hint="RAG корпоративные документы">для Data Scientist</button>
+        <input class="search-bar__input" type="search" id="kb-search" aria-label="Поиск по базе знаний" placeholder="Спросите своими словами: SQL, дашборды, RAG…">
       </div>
 
       <div class="filters">
@@ -80,7 +71,6 @@
         <select class="filter-select" id="filter-format" aria-label="Формат">
           <option value="">Формат: все</option>
           <option value="Статья">Статья</option>
-          <option value="Презентация">Презентация</option>
         </select>
         <select class="filter-select" id="filter-topic" aria-label="Тема">
           <option value="">Тема: все</option>
@@ -92,7 +82,7 @@
         <button class="btn btn--ghost" type="button" id="kb-reset">Сбросить</button>
       </div>
 
-      <p class="text-caption" id="kb-count" style="margin-bottom: var(--space-4);">Показано 3 из 6</p>
+      <p class="text-caption" id="kb-count" aria-live="polite" style="margin-bottom: var(--space-4);">Показано 3 из 6</p>
 
       <div id="kb-empty" class="empty-state" hidden>
         <h2 class="text-h2">Ничего не нашли</h2>
@@ -145,7 +135,7 @@
         </a>
 
         <a class="material-list-row is-extra" href="material.html" hidden
-           data-role="analyst sva" data-tags="DQ SQL аудит" data-format="Презентация" data-topic="data-quality"
+           data-role="analyst sva" data-tags="DQ SQL аудит" data-format="Статья" data-topic="data-quality"
            data-keywords="dq data quality качество данных sql контроль">
           <img class="material-list-row__thumb" src="../assets/covers/prompt-engineering.png" alt="">
           <div>
@@ -173,7 +163,7 @@
         </a>
 
         <a class="material-list-row is-extra" href="material.html" hidden
-           data-role="analyst sva" data-tags="BI аудит" data-format="Презентация" data-topic="reporting"
+           data-role="analyst sva" data-tags="BI аудит" data-format="Статья" data-topic="reporting"
            data-keywords="bi дашборд отчётность аналитик kpi">
           <img class="material-list-row__thumb" src="../assets/covers/anomaly-detection.png" alt="">
           <div>
@@ -194,6 +184,10 @@
 
       <button class="btn btn--secondary" type="button" id="kb-load-more" style="margin-top: var(--space-8);">Загрузить ещё</button>
     </main>
+    <footer class="site-footer">
+      <p class="site-footer__statement">Знание полезно тогда, когда его легко найти и применить.</p>
+      <div class="site-footer__meta"><span>Digest CDS · база знаний</span><a href="issue.html">Выпуск</a><a href="razbory.html">Разборы</a></div>
+    </footer>
   </div>
   <script src="../scripts/app.js"></script>
 </body>

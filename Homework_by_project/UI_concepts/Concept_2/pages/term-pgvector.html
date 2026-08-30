@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>pgvector — пояснение — Digest CDS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/tokens.css">
+  <link rel="stylesheet" href="../styles/typography.css">
+  <link rel="stylesheet" href="../styles/layout.css">
+  <link rel="stylesheet" href="../styles/components.css">
+</head>
+<body>
+  <div class="concept-nav"><a href="knowledge.html">← База знаний</a> <strong>Термин</strong></div>
+  <div class="app-shell">
+    <header class="header"><div class="header__inner">
+      <a class="logo" href="home.html"><span class="logo__title">Digest CDS</span></a>
+      <nav class="nav"><a class="nav__link" href="home.html">Главная</a><a class="nav__link" href="knowledge.html">База знаний</a><a class="nav__link" href="voting.html">Голосование</a><a class="nav__link" href="archive.html">Архив</a><a class="nav__link" href="admin-digest.html">Админ</a></nav>
+      <div class="header__user"><button class="theme-toggle" type="button" data-theme-toggle aria-label="Светлая тема">☀</button><a href="profile.html" class="avatar" aria-label="Профиль">ИП</a></div>
+    </div></header>
+    <main class="main"><article class="term-article prose">
+      <span class="text-overline">Поясняющая статья</span>
+      <h1 class="text-display" style="margin-top:var(--space-2);">pgvector</h1>
+      <p class="text-body-sm text-secondary">Расширение PostgreSQL для хранения векторов и поиска похожих представлений документов.</p>
+      <h2 class="text-h2">Зачем это СВА</h2>
+      <p>pgvector позволяет хранить поисковые представления документов рядом с обычными данными в PostgreSQL. Это удобно для закрытого контура, где важно контролировать инфраструктуру и права доступа.</p>
+      <h2 class="text-h2">Связь с материалом</h2>
+      <p>В RAG-системе pgvector используется на этапе поиска контекста. В сочетании с полнотекстовым индексом он поддерживает <a href="term-hybrid-retrieval.html">гибридный retrieval</a>.</p>
+      <a class="btn btn--ghost" href="material.html">Вернуться к материалу →</a>
+    </article></main>
+  </div>
+  <script src="../scripts/app.js"></script>
+</body>
+</html>

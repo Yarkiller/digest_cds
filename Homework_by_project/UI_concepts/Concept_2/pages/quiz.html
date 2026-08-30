@@ -18,7 +18,11 @@
     <header class="header">
       <div class="header__inner">
         <a class="logo" href="home.html"><span class="logo__title">Digest CDS</span></a>
-        <nav class="nav"><a class="nav__link" href="material.html">← Материал</a></nav>
+        <nav class="nav">
+          <a class="nav__link" href="material.html">← Материал</a>
+          <a class="nav__link" href="archive.html">Архив</a>
+          <a class="nav__link" href="admin-digest.html">Админ</a>
+        </nav>
         <div class="header__gamification" style="margin-left:auto;">
           <div class="xp-widget"><span class="xp-widget__level">Ур. 7</span><div class="xp-widget__track"><div class="xp-widget__fill"></div></div></div>
         </div>
@@ -28,7 +32,7 @@
 
     <main class="main">
       <!-- Question state -->
-      <div id="quiz-question" class="sidebar-panel" style="max-width:560px;margin:0 auto;">
+      <div id="quiz-question" class="sidebar-panel quiz-question">
         <span class="text-overline">Карточка с вопросами · 3 / 5</span>
         <div class="progress-dots" style="justify-content:flex-start;margin:var(--space-4) 0 var(--space-6);">
           <span class="progress-dot progress-dot--done"></span>
@@ -44,14 +48,13 @@
       </div>
 
       <!-- Result state (visible below for demo; in app toggled via JS) -->
-      <div class="sidebar-panel quiz-result" style="max-width:400px;margin:var(--space-12) auto 0;">
-        <span class="text-overline">Результат</span>
+      <div class="sidebar-panel quiz-result">
         <svg class="score-ring" width="120" height="120" viewBox="0 0 120 120">
           <circle cx="60" cy="60" r="52" fill="none" stroke="var(--color-bg-muted)" stroke-width="8"/>
           <circle cx="60" cy="60" r="52" fill="none" stroke="var(--color-xp)" stroke-width="8"
             stroke-dasharray="327" stroke-dashoffset="65" stroke-linecap="round"
             transform="rotate(-90 60 60)"/>
-          <text x="60" y="58" text-anchor="middle" fill="var(--color-text-primary)" font-size="28" font-weight="700" font-family="JetBrains Mono, monospace">80%</text>
+          <text x="60" y="58" text-anchor="middle" fill="var(--color-text-primary)" font-size="28" font-weight="700" font-family="var(--font-mono)">80%</text>
           <text x="60" y="78" text-anchor="middle" fill="var(--color-text-secondary)" font-size="11">4 / 5</text>
         </svg>
         <h2 class="text-h2">Отличный результат</h2>

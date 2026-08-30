@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Гибридный retrieval — Digest CDS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/tokens.css">
+  <link rel="stylesheet" href="../styles/typography.css">
+  <link rel="stylesheet" href="../styles/layout.css">
+  <link rel="stylesheet" href="../styles/components.css">
+</head>
+<body>
+  <div class="concept-nav"><a href="knowledge.html">← База знаний</a> <strong>Термин</strong></div>
+  <div class="app-shell">
+    <header class="header"><div class="header__inner">
+      <a class="logo" href="home.html"><span class="logo__title">Digest CDS</span></a>
+      <nav class="nav"><a class="nav__link" href="home.html">Главная</a><a class="nav__link" href="knowledge.html">База знаний</a><a class="nav__link" href="voting.html">Голосование</a><a class="nav__link" href="archive.html">Архив</a><a class="nav__link" href="admin-digest.html">Админ</a></nav>
+      <div class="header__user"><button class="theme-toggle" type="button" data-theme-toggle aria-label="Светлая тема">☀</button><a href="profile.html" class="avatar" aria-label="Профиль">ИП</a></div>
+    </div></header>
+    <main class="main"><article class="term-article prose">
+      <span class="text-overline">Поясняющая статья</span>
+      <h1 class="text-display" style="margin-top:var(--space-2);">Гибридный retrieval</h1>
+      <p class="text-body-sm text-secondary">Комбинация полнотекстового и векторного поиска для подбора документов по словам и смыслу.</p>
+      <h2 class="text-h2">Как работает</h2>
+      <p>Полнотекстовый поиск хорошо находит точные названия и номера пунктов, а векторный — похожие по смыслу формулировки. Гибридный подход объединяет результаты, чтобы не терять ни точные совпадения, ни полезный контекст.</p>
+      <h2 class="text-h2">В контуре СВА</h2>
+      <p>Такой поиск помогает находить нужный пункт методологии даже при отличии терминов в запросе и исходном документе. В production-системах его можно реализовать с помощью <a href="term-pgvector.html">pgvector</a> и полнотекстового индекса.</p>
+      <a class="btn btn--ghost" href="material.html">Вернуться к материалу →</a>
+    </article></main>
+  </div>
+  <script src="../scripts/app.js"></script>
+</body>
+</html>

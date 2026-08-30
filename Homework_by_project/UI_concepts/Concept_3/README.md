@@ -2,6 +2,8 @@
 
 Визуальный прототип **Concept 3** («Digest CDS: издание») на основе [UI-SPEC_3.md](./UI-SPEC_3.md).
 
+**Контентный контракт:** материал — только подготовленная агентом статья. Она создаётся из транскрипции или импортированного текста, дополняется уточняющим поиском и анализом; видео/аудио и необработанный транскрипт не являются материалом и не показываются в интерфейсе. Сложные термины связываются внутренними ссылками с отдельными поясняющими статьями; исходная ссылка хранится отдельно как provenance.
+
 **Backlog C3 (2026-08-23):** пункты C3-01…C3-18 закрыты в прототипе (см. [backlog_UI.md](../backlog_UI.md)).
 
 ## Как открыть
@@ -22,10 +24,10 @@ Homework_by_project/UI_concepts/Concept_3/index.html
 | `pages/issue.html` | Текущий выпуск + audit dek | — |
 | `pages/archive.html` | Архив выпусков | — |
 | `pages/knowledge.html` | База: Role/Tag/Format/Topic, analyst corpus | фильтры, load more, empty |
-| `pages/material.html` | Статья с prose-колонкой и TOC | — |
+| `pages/material.html` | Подготовленная статья с prose-колонкой и TOC | — |
 | `pages/voting.html` | TopicBallot (без pre-select) | выбор + confirm toast |
 | `pages/razbory.html` | Список разборов | — |
-| `pages/razbor.html` | Longread: metrics, RRF, `.ipynb`, refs | — |
+| `pages/razbor.html` | Longread-статья: metrics, RRF, `.ipynb`, refs | — |
 | `pages/login.html` | Авторизация | — |
 | `pages/admin-digest.html` | Shortlist: batch, draft/ready, preview | approve/reject, email modal |
 

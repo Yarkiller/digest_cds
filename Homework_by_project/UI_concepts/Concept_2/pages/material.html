@@ -20,11 +20,12 @@
         <a class="logo" href="home.html"><span class="logo__title">Digest CDS</span></a>
         <nav class="nav">
           <a class="nav__link" href="home.html">Главная</a>
-          <a class="nav__link nav__link--active" href="material.html">База знаний</a>
+          <a class="nav__link nav__link--active" href="knowledge.html">База знаний</a>
           <a class="nav__link" href="voting.html">Голосование</a>
           <a class="nav__link" href="leaderboard.html">Лидерборд</a>
+          <a class="nav__link" href="archive.html">Архив</a>
+          <a class="nav__link" href="admin-digest.html">Админ</a>
         </nav>
-        <div class="header__search"><div class="search-bar"><span class="search-bar__icon">⌕</span><input class="search-bar__input" type="search" placeholder="Поиск…"></div></div>
         <div class="header__gamification">
           <span class="streak-pill"><span class="streak-pill__icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C12 2 7 10 7 14a5 5 0 0 0 10 0c0-4-5-12-5-12z"/></svg></span>12</span>
           <div class="xp-widget"><span class="xp-widget__level">Ур. 7</span><div class="xp-widget__track"><div class="xp-widget__fill"></div></div></div>
@@ -43,12 +44,12 @@
 
         <h1 class="text-display">Building Production RAG Systems</h1>
         <p class="text-caption" style="margin:var(--space-3) 0;">
-          20 марта 2026 · arXiv / Medium
+          20 марта 2026 · provenance: внешний текстовый источник
           <span class="xp-hint">+5 XP</span>
         </p>
 
         <h2 class="text-h2">Резюме</h2>
-        <p>Статья описывает полный цикл построения RAG-системы для корпоративной базы знаний: ingestion, chunking, embedding через FoundryModels, гибридный retrieval и reranking в закрытом контуре.</p>
+        <p>Статья описывает полный цикл построения <a href="term-rag.html">RAG</a>-системы для корпоративной базы знаний: ingestion, chunking, embedding через FoundryModels, <a href="term-hybrid-retrieval.html">гибридный retrieval</a> и <a href="term-reranking.html">reranking</a> в закрытом контуре.</p>
         <p>Для СВА релевантны сценарии поиска по регламентам и методологиям аудита с цитированием источников.</p>
 
         <div style="display:flex;gap:var(--space-2);flex-wrap:wrap;margin:var(--space-6) 0;">
@@ -57,8 +58,13 @@
           <span class="tag-pill">#pgvector</span>
         </div>
 
+        <aside class="sidebar-panel" style="margin-bottom:var(--space-6);">
+          <h2 class="text-h3">Связанные термины</h2>
+          <p class="text-body-sm text-secondary" style="margin:var(--space-2) 0 var(--space-3);">Откройте короткое пояснение, не покидая контекст статьи.</p>
+          <label class="field" for="material-related-terms"><span class="field__label">Быстрый переход</span><select class="filter-select" id="material-related-terms" data-related-terms aria-label="Связанные термины"><option value="">Выберите термин…</option><option value="term-rag.html">RAG</option><option value="term-hybrid-retrieval.html">Гибридный retrieval</option><option value="term-pgvector.html">pgvector</option><option value="term-reranking.html">Reranking</option></select></label>
+        </aside>
+
         <section class="quiz-prompt">
-          <span class="text-overline">Карточка с вопросами</span>
           <h2 class="text-h2 quiz-prompt__title" style="margin-top:var(--space-2);">Проверь понимание</h2>
           <p class="text-body-sm text-secondary" style="margin:var(--space-2) 0 var(--space-5);">5 вопросов · ~3 мин · до <strong class="text-xp">+40 XP</strong> при результате ≥80%</p>
           <a class="btn btn--primary" href="quiz.html">Начать →</a>

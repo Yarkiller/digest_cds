@@ -6,7 +6,9 @@
 **Domain glossary:** [CONTEXT.md](../../../CONTEXT.md)  
 **Language UI:** русский
 
-Альтернативный design contract: **внутреннее tech-издание** для СВА. Digest CDS представлен как editorial product — еженедельный выпуск, материалы как статьи, архив как каталог номеров. Фокус — **комфортное чтение** для рядового сотрудника и DS-эксперта. Без геймификации. Ориентиры: Medium (reading), Substack (issue model), GOV.UK (serious typography), Stripe Press (editorial polish).
+Альтернативный design contract: **внутреннее tech-издание** для СВА. Digest CDS представлен как editorial product — еженедельный выпуск, подготовленные агентом статьи как материалы, архив как каталог номеров. Фокус — **комфортное чтение** для рядового сотрудника и DS-эксперта. Без геймификации. Ориентиры: Medium (reading), Substack (issue model), GOV.UK (serious typography), Stripe Press (editorial polish).
+
+**Контентный контракт:** статья создаётся из транскрипции внешнего видео или импортированного текста, дополняется уточняющим поиском и анализом и проходит редакторскую подготовку. Она может быть гайдом по установке/использованию технологии или описанием нового подхода. Видео/аудио и необработанный транскрипт не являются материалом, не встраиваются и не сохраняются как материал; внешняя ссылка показывается только в provenance-блоке. Сложные термины и подходы связываются с существующими статьями внутренними ссылками при первом уместном упоминании, а связанные статьи — обратными ссылками или related-блоком.
 
 ---
 
@@ -23,7 +25,7 @@
 | Карточки | Flat shadow grid | Glass / border glow | **Numbered TOC rows, rule lines** |
 | Геймификация | Post-v1, скрыта | Встроена | **Нет** |
 | Голосование | TopicCard grid | Bento + XP hints | **TopicBallot (radio list)** |
-| Материалы | Статьи / презентации | + карточки с вопросами | Статьи / презентации (reading-first) |
+| Материалы | Подготовленные статьи | + карточки с вопросами | Подготовленные статьи (reading-first) |
 
 ---
 
@@ -44,7 +46,7 @@
 - Dark theme, glass/blur, glow effects
 - XP, streak, лидерборд, квизы
 - Gradient mesh heroes, emoji, mascots
-- Play-button overlays (контент — статьи и презентации, не видео)
+- Play-button overlays (контент — подготовленные статьи, не видео)
 
 ---
 
@@ -394,7 +396,7 @@ Search highlight: `<mark>` with `--color-bg-highlight`.
 │                                │ · Полный текст                         │
 │ overline: СТАТЬЯ · RAG         │ · Связанные                            │
 │ h1 display serif               │                                        │
-│ byline: date · source · N мин  │                                        │
+│ byline: date · provenance · N мин │                                      │
 │ ─── rule ───                   │                                        │
 │ [hero image 16:9]              │                                        │
 │ h2 Резюме                      │                                        │
@@ -403,10 +405,11 @@ Search highlight: `<mark>` with `--color-bg-highlight`.
 │ h2 Полный текст                │                                        │
 │ body prose…                    │                                        │
 │ [EditorialBox: в выпуске №14]  │                                        │
+│ [Связанные статьи]             │                                        │
 └────────────────────────────────┴────────────────────────────────────────┘
 ```
 
-Format badge: overline «СТАТЬЯ» / «ПРЕЗЕНТАЦИЯ» above h1, not play button.
+Format badge: overline «СТАТЬЯ» above h1, not play button. Внешний первоисточник и его ссылка не подменяют статью и отображаются отдельно от prose.
 
 Mobile: TOC → accordion «Содержание ▼» above prose.
 

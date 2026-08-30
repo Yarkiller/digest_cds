@@ -6,18 +6,13 @@
   <title>Выпуск №14 — Digest CDS</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600&family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../styles/tokens.css">
   <link rel="stylesheet" href="../styles/typography.css">
   <link rel="stylesheet" href="../styles/layout.css">
   <link rel="stylesheet" href="../styles/components.css">
 </head>
 <body>
-  <div class="concept-nav">
-    <a href="../index.html">← Concept 3</a>
-    <strong>Текущий выпуск</strong>
-  </div>
-
   <div class="app-shell">
     <header class="header">
       <div class="header__inner">
@@ -25,7 +20,7 @@
           <span class="logo__title">Digest CDS</span>
           <span class="logo__subtitle">СВА · издание</span>
         </a>
-        <nav class="nav">
+        <nav class="nav" id="primary-nav">
           <a class="nav__link nav__link--active" href="issue.html">Выпуск</a>
           <a class="nav__link" href="archive.html">Архив</a>
           <a class="nav__link" href="knowledge.html">База</a>
@@ -33,6 +28,7 @@
           <a class="nav__link" href="razbory.html">Разборы</a>
           <a class="nav__link" href="admin-digest.html">Админ</a>
         </nav>
+        <button class="nav-toggle" type="button" aria-controls="primary-nav" aria-expanded="false">Меню</button>
         <div class="header__search">
           <div class="search-bar" role="search">
             <span class="search-bar__icon">⌕</span>
@@ -78,7 +74,7 @@
           <a class="issue-toc__row" href="material.html">
             <span class="issue-toc__num">02</span>
             <span class="issue-toc__title">Anomaly Detection in Audit Pipelines</span>
-            <span class="issue-toc__meta">Презентация · 5 мин</span>
+            <span class="issue-toc__meta">Статья · 5 мин</span>
             <span class="issue-toc__arrow">→</span>
           </a>
           <p class="issue-toc__dek">Как вовремя замечать аномалии в аудиторских выборках и сокращать ручную проверку.</p>
@@ -105,7 +101,7 @@
           <a class="issue-toc__row" href="material.html">
             <span class="issue-toc__num">05</span>
             <span class="issue-toc__title">Prompt Engineering Patterns 2026</span>
-            <span class="issue-toc__meta">Презентация · 7 мин</span>
+            <span class="issue-toc__meta">Статья · 7 мин</span>
             <span class="issue-toc__arrow">→</span>
           </a>
           <p class="issue-toc__dek">Как формулировать запросы к LLM, чтобы ответы были пригодны для аудиторских заключений.</p>
@@ -114,6 +110,11 @@
 
       <a class="prev-issue-link" href="archive.html">← Предыдущий выпуск №13</a>
     </main>
+    <footer class="site-footer">
+      <p class="site-footer__statement">Читайте выпуск в своём темпе. Возвращайтесь к материалам, когда нужно.</p>
+      <div class="site-footer__meta"><span>Digest CDS · выпуск №14</span><a href="archive.html">Архив</a><a href="voting.html">Голосование</a></div>
+    </footer>
   </div>
+  <script src="../scripts/app.js"></script>
 </body>
 </html>
