@@ -1,7 +1,7 @@
 # Обработка ошибок и Edge Cases — Digest CDS (Concept 3)
 
-**UI-концепция:** Concept 3 — Editorial UI  
-**Прототип:** [Concept_3/](Concept_3/)  
+**UI-концепция:** Editorial UI
+**Frontend-прототип:** [design-frontend/](../../design-frontend/)
 **User stories:** [user_stories.md](user_stories.md)  
 **Домен:** [CONTEXT.md](../../CONTEXT.md)  
 **UI-gaps прототипа (контекст):** [backlog_UI.md](backlog_UI.md)

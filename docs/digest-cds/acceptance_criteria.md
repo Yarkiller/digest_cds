@@ -1,7 +1,7 @@
 # Критерии приёмки (Acceptance Criteria) — Digest CDS Concept 3
 
 **Источник историй:** [user_stories.md](user_stories.md)  
-**UI:** [Concept_3/](Concept_3/)  
+**Frontend:** [design-frontend/](../../design-frontend/)
 **Ошибки / edge cases:** [error_handling.md](error_handling.md)  
 **Домен:** [CONTEXT.md](../../CONTEXT.md)
 
