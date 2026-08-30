@@ -1,31 +1,35 @@
-# Digest CDS — UI-SPEC v3 (Concept 3)
+# Digest CDS — UI-SPEC (Editorial UI)
 
 **Status:** concept draft (2026-08-23)  
-**Папка:** `Homework_by_project/UI_concepts/Concept_3/`  
-**Базовый spec:** [UI-SPEC v1](../Concept_1/UI-SPEC.md)  
-**Domain glossary:** [CONTEXT.md](../../../CONTEXT.md)  
+**Папка:** `design-frontend/`
+**Источник визуальной системы:** [design.md](design.md) и [styles/tokens.css](styles/tokens.css)
+**Domain glossary:** [CONTEXT.md](../CONTEXT.md)
 **Language UI:** русский
 
-Альтернативный design contract: **внутреннее tech-издание** для СВА. Digest CDS представлен как editorial product — еженедельный выпуск, подготовленные агентом статьи как материалы, архив как каталог номеров. Фокус — **комфортное чтение** для рядового сотрудника и DS-эксперта. Без геймификации. Ориентиры: Medium (reading), Substack (issue model), GOV.UK (serious typography), Stripe Press (editorial polish).
+Самостоятельный design contract для **внутреннего tech-издания** СВА. Digest CDS представлен как editorial product — еженедельный выпуск, подготовленные агентом статьи как материалы, архив как каталог номеров. Фокус — **комфортное чтение** для рядового сотрудника, Data Analyst и Data Scientist. Без геймификации. Визуальная реализация следует warm-paper bubble system из `design.md`, а не отдельной базовой концепции.
 
 **Контентный контракт:** статья создаётся из транскрипции внешнего видео или импортированного текста, дополняется уточняющим поиском и анализом и проходит редакторскую подготовку. Она может быть гайдом по установке/использованию технологии или описанием нового подхода. Видео/аудио и необработанный транскрипт не являются материалом, не встраиваются и не сохраняются как материал; внешняя ссылка показывается только в provenance-блоке. Сложные термины и подходы связываются с существующими статьями внутренними ссылками при первом уместном упоминании, а связанные статьи — обратными ссылками или related-блоком.
 
 ---
 
-## 0. Отличия от Concept 1 и Concept 2
+## 0. Scope and source of truth
 
-| Аспект | Concept 1 | Concept 2 | **Concept 3** |
-|--------|-----------|-----------|---------------|
-| Метафора | Корпоративный инструмент | Tech-community hub | **Tech-журнал / newsletter** |
-| Главный экран | Dashboard + ленты | Bento + XP-виджеты | **Текущий выпуск (обложка + TOC)** |
-| Навигация | App nav | App nav + лидерборд | **Issue → оглавление → статья** |
-| Тема | Light-only | Dark-first + toggle | **Light-only (reading comfort)** |
-| Типографика | Inter (UI) | Manrope | **Source Serif 4 + IBM Plex Sans** |
-| Акценты | Синий + teal, flat | Violet + cyan + lime | **Ink blue + warm paper tones** |
-| Карточки | Flat shadow grid | Glass / border glow | **Numbered TOC rows, rule lines** |
-| Геймификация | Post-v1, скрыта | Встроена | **Нет** |
-| Голосование | TopicCard grid | Bento + XP hints | **TopicBallot (radio list)** |
-| Материалы | Подготовленные статьи | + карточки с вопросами | Подготовленные статьи (reading-first) |
+Concept 3 — единственный выбранный дизайн и статический frontend-прототип
+Digest CDS. Этот документ описывает его standalone-контракт; сравнительные
+концепты и унаследованные спецификации не являются частью проекта.
+
+Канонические источники:
+
+- `design.md` — жанр, макроструктуры, тема, типографика и правила
+  взаимодействия;
+- `styles/tokens.css` — фактические semantic tokens;
+- HTML в `pages/`, `scripts/app.js` и `styles/` — рабочая static prototype
+  реализация.
+
+Прототип не является production React/FastAPI приложением. Он фиксирует
+информационную архитектуру, визуальный язык, состояния интерфейса и
+интерактивные stubs, которые должны быть перенесены в целевую frontend/backend
+реализацию.
 
 ---
 
@@ -52,58 +56,51 @@
 
 ## 2. Design tokens
 
-### 2.1 Color — light only (reading comfort)
+### 2.1 Color — warm paper, light only
 
-| Token | Hex | Usage |
-|-------|-----|-------|
-| `--color-bg-app` | `#F5F3EF` | Фон приложения (warm off-white) |
-| `--color-bg-surface` | `#FDFCFA` | Header, panels, modals |
-| `--color-bg-prose` | `#FFFFFF` | Колонка статьи |
-| `--color-bg-muted` | `#EDEAE4` | Pull quotes, code blocks, TOC sidebar |
-| `--color-bg-callout` | `#F0EDE6` | Editorial callouts |
-| `--color-bg-highlight` | `#E8F4F0` | Search highlight `<mark>` |
-| `--color-text-primary` | `#1C1917` | Основной текст (warm black) |
-| `--color-text-secondary` | `#57534E` | Meta, captions, bylines |
-| `--color-text-muted` | `#A8A29E` | Placeholders, divider labels |
-| `--color-border` | `#D6D3CD` | Rule lines, dividers |
-| `--color-border-strong` | `#A8A29E` | Input focus, active TOC |
-| `--color-primary` | `#1E3A5F` | Links, nav active, primary buttons |
-| `--color-primary-hover` | `#152A45` | Hover links |
-| `--color-accent` | `#0D6E6E` | Теги, DS-метки, format badges |
-| `--color-accent-hover` | `#0A5858` | Hover accent |
-| `--color-voting` | `#B45309` | Callout голосования, timer accent |
-| `--color-voting-muted` | `#FEF3C7` | Progress track голосования |
-| `--color-success` | `#047857` | «Отправить дайджест» |
-| `--color-danger` | `#B91C1C` | Ошибки |
-| `--color-info` | `#0369A1` | Info banners (.ipynb read-only) |
+The implementation uses semantic OKLCH tokens from `styles/tokens.css`:
 
-**Contrast:** body on `--color-bg-prose` ≥ 4.5:1; secondary ≥ 3:1.
+| Token group | Usage |
+|-------------|-------|
+| `--color-paper*`, `--color-bg-*` | Warm paper surfaces, prose, callouts and highlights |
+| `--color-ink*`, `--color-text-*` | Primary copy, metadata and muted labels |
+| `--color-rule`, `--color-border*` | Rules, dividers and focused controls |
+| `--color-accent*` | Links, active states, tags and primary controls |
+| `--color-voting*` | Voting callouts and cycle status |
+| `--color-success`, `--color-danger`, `--color-info` | Semantic feedback |
+
+No gradients, glass surfaces or decorative glow. Body text on prose surfaces
+must maintain a contrast ratio of at least 4.5:1; secondary text at least 3:1.
 
 ### 2.2 Typography
 
 **Font stacks**
 
 ```css
---font-serif: "Source Serif 4", "Georgia", serif;
---font-sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
---font-mono: "IBM Plex Mono", "Consolas", monospace;
+--font-display: "Bricolage Grotesque", "Trebuchet MS", sans-serif;
+--font-body: "IBM Plex Sans", "Segoe UI", sans-serif;
+--font-outlier: "IBM Plex Mono", "Consolas", monospace;
+--font-serif: var(--font-display);
+--font-sans: var(--font-body);
+--font-mono: var(--font-outlier);
 ```
 
-Source Serif 4 — weights 400, 600. IBM Plex Sans — 400, 500, 600. IBM Plex Mono — 400.
+Bricolage Grotesque is used for display/editorial headings; IBM Plex Sans for
+body and UI; IBM Plex Mono for technical outliers and metadata.
 
 **Scale**
 
 | Token | Font | Size | Line height | Weight | Usage |
 |-------|------|------|-------------|--------|-------|
-| `--text-display` | serif | 40px | 48px (1.2) | 600 | H1 материала, обложка выпуска |
-| `--text-h1` | serif | 32px | 40px (1.25) | 600 | Заголовок выпуска |
-| `--text-h2` | serif | 24px | 32px (1.33) | 600 | Секции, rubric headers |
-| `--text-h3` | sans | 18px | 26px (1.44) | 600 | Подзаголовки, TOC items |
-| `--text-body` | sans | 17px | 29px (1.71) | 400 | Резюме, полный текст |
-| `--text-body-sm` | sans | 15px | 24px (1.6) | 400 | UI labels, nav |
-| `--text-caption` | sans | 13px | 18px (1.38) | 400 | Даты, bylines |
-| `--text-overline` | sans | 11px | 16px (1.45) | 600 | RUBRIC, ISSUE № (uppercase, ls 0.08em) |
-| `--text-pullquote` | serif | 22px | 34px (1.55) | 400 italic | Цитаты в статьях |
+| `--text-display` | display | fluid | 1.05 | 600 | H1 материала, обложка выпуска |
+| `--text-h1` | display | fluid | 1.1 | 600 | Заголовок выпуска |
+| `--text-h2` | display | fluid | 1.2 | 600 | Секции, rubric headers |
+| `--text-h3` | sans | 18px | 1.4 | 600 | Подзаголовки, TOC items |
+| `--text-body` | sans | 17px | 1.65 | 400 | Резюме, полный текст |
+| `--text-body-sm` | sans | 15px | 1.5 | 400 | UI labels, nav |
+| `--text-caption` | sans | 13px | 1.4 | 400 | Даты, bylines |
+| `--text-overline` | sans | 12px | 1.4 | 600 | Rubric, issue metadata |
+| `--text-pullquote` | display | 22px | 1.55 | 400 | Цитаты в статьях |
 
 **Reading width:** prose — `max-width: 680px`; issue page — `max-width: 960px`.
 
@@ -194,7 +191,7 @@ Respect `prefers-reduced-motion`: отключать transitions.
 | Label | Route | Roles |
 |-------|-------|-------|
 | Выпуск | `/` | all |
-| Архив | `/digest` | all |
+| Архив | `/archive` | all |
 | База | `/knowledge` | all |
 | Голосование | `/voting` | all |
 | Разборы | `/razbory` | all |
@@ -289,11 +286,13 @@ Confirm → toast «Голос сохранён (прототип)»; стату
 
 ### 4.7 TagPill
 
-As Concept 1, but `--color-accent` text on `--color-bg-muted` bg, radius `--radius-sm`, no heavy saturation.
+`--color-accent` text on `--color-bg-muted` background, radius
+`--radius-sm`, without heavy saturation.
 
 ### 4.8 RoleBadge, SearchBar, VotingTimer, NotebookViewer, AdminShortlistRow
 
-Наследуют поведение из UI-SPEC v1 с editorial tokens (serif только где указано; admin — sans-only).
+Используют общие editorial tokens: serif только там, где это указано;
+admin-интерфейс остаётся sans-led.
 
 **AdminShortlistRow (C3):** checkbox · rank · title · `draft`/`ready` badge · score + rationale caption · exclusion copy · preview button (modal, не переход на reader). Toolbar: Select all / Approve / Reject. Email preview modal (serif headlines) обязателен перед Send; Send disabled при draft в selection.
 
@@ -327,8 +326,8 @@ Same as v1 (no gamification routes):
 
 ```
 /                         IssuePage (current digest)
-/digest                   DigestArchivePage
-/digest/:issueId          IssuePage (specific issue)
+/archive                  DigestArchivePage
+/archive/:issueId         IssuePage (specific issue)
 /knowledge                KnowledgeSearchPage
 /knowledge/:materialId    MaterialPage
 /voting                   VotingPage
@@ -364,7 +363,7 @@ Same as v1 (no gamification routes):
 
 Mobile: same stack, TOC full width.
 
-### 6.2 `/digest` — Archive
+### 6.2 `/archive` — Archive
 
 ```
 h1 (serif): Архив выпусков
@@ -428,7 +427,7 @@ body-sm: Один голос за цикл…
 
 ```
 h1 (serif): Разборы
-caption: Встречи раз в две недели · материалы от DS-экспертов
+caption: Встречи раз в две недели · материалы от Data Scientist
 
 ┌ chronology list ───────────────────────────────────────────────────────┐
 │ [date overline]                                                         │
@@ -474,11 +473,15 @@ Sans-only table layout (as C1). Email preview modal renders with **editorial typ
 - Reading progress bar optional; disable if reduced motion
 - TOC: keyboard navigable, `aria-current` on active section
 - Contrast on `--color-bg-prose`: primary text ≥ 4.5:1
-- Terminology from CONTEXT.md: **дайджест**, **материал**, **цикл голосования**, **разбор**, **DS-эксперт**
+- Terminology from CONTEXT.md: **дайджест**, **материал**, **цикл голосования**,
+  **разбор**, **Data Analyst**, **Data Scientist**
 
 ---
 
-## 9. React structure delta
+## 9. Planned production frontend structure
+
+`frontend/src/` ниже описывает целевую архитектуру, а не существующую
+реализацию. Текущий runnable prototype остаётся в `design-frontend/`.
 
 ```
 frontend/src/
@@ -492,7 +495,7 @@ frontend/src/
 │   │   ├── MaterialListRow.tsx
 │   │   ├── PullQuote.tsx
 │   │   └── ReadingProgress.tsx
-│   └── … (shared from v1: TagPill, RoleBadge, NotebookViewer, …)
+│   └── shared/
 ├── pages/
 │   ├── IssuePage.tsx          # replaces HomePage as default /
 │   └── …
@@ -502,11 +505,25 @@ frontend/src/
     └── prose.css              # longform article styles
 ```
 
-**Libraries:** same as v1 (Vite, React, TanStack Query). No framer-motion. Optional: `reading-time` util for estimates.
+**Libraries:** Vite, React и TanStack Query. No framer-motion. Optional:
+`reading-time` util for estimates.
+
+### Static prototype to route map
+
+| Static file | Target route |
+|-------------|--------------|
+| `pages/issue.html` | `/` |
+| `pages/archive.html` | `/archive` |
+| `pages/knowledge.html` | `/knowledge` |
+| `pages/material.html` | `/materials/:id` |
+| `pages/voting.html` | `/voting` |
+| `pages/razbory.html` | `/razbory` |
+| `pages/razbor.html` | `/razbory/:id` |
+| `pages/admin-digest.html` | `/admin/digest` |
 
 ---
 
-## 10. Static prototype scope (Concept_3 folder)
+## 10. Static prototype scope (`design-frontend/`)
 
 Pages for HTML/CSS mockup:
 
@@ -523,13 +540,14 @@ Pages for HTML/CSS mockup:
 | `pages/login.html` | Auth |
 | `pages/admin-digest.html` | Admin shortlist |
 
-Reuse cover SVGs from each concept's `assets/covers/` folder.
+The prototype uses only the local assets in `assets/covers/` and
+`assets/notebooks/`.
 
 ---
 
 ## 11. References
 
-- [UI-SPEC v1](../Concept_1/UI-SPEC.md)
-- [UI-SPEC v2](../Concept_2/UI-SPEC_2.md)
-- [CONTEXT.md](../../../CONTEXT.md)
-- [spec v1](../../../.scratch/digest-cds/spec.md)
+- [design.md](design.md)
+- [styles/tokens.css](styles/tokens.css)
+- [CONTEXT.md](../CONTEXT.md)
+- [spec v1](../.scratch/digest-cds/spec.md)

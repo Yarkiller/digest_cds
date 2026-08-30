@@ -3,7 +3,7 @@
 **Продукт:** Digest CDS  
 **Заказчик:** CDS (Chief Data Science) — руководитель DS-направления в Службе внутреннего аудита (СВА) Сбербанка  
 **UI-концепция v1:** Concept 3 — Editorial UI («Digest CDS: издание»)  
-**Доменный словарь:** [CONTEXT.md](../CONTEXT.md)
+**Доменный словарь:** [CONTEXT.md](../../CONTEXT.md)
 
 ---
 
@@ -125,10 +125,10 @@ Shortlist **кандидатов дайджеста** (до 5 после авт�
 
 | Документ | Содержание |
 |----------|------------|
-| [UI_concepts/choice_concept.md](UI_concepts/choice_concept.md) | Сравнение 3 UI-концепций, обоснование выбора Concept 3 |
-| [UI_concepts/Concept_3/](UI_concepts/Concept_3/) | HTML-прототип Editorial UI |
-| [UI_concepts/user_stories.md](UI_concepts/user_stories.md) | User Story Mapping (31 история, приоритеты, карта) |
-| [UI_concepts/acceptance_criteria.md](UI_concepts/acceptance_criteria.md) | Критерии приёмки Given/When/Then |
-| [UI_concepts/error_handling.md](UI_concepts/error_handling.md) | Счастливые и негативные сценарии, UX-решения |
+| [../../design-frontend/](../../design-frontend/) | Канонический статический frontend-прототип Editorial UI |
+| [../../design-frontend/README.md](../../design-frontend/README.md) | Карта экранов, запуск и правила работы с прототипом |
+| [user_stories.md](user_stories.md) | User Story Mapping (31 история, приоритеты, карта) |
+| [acceptance_criteria.md](acceptance_criteria.md) | Критерии приёмки Given/When/Then |
+| [error_handling.md](error_handling.md) | Счастливые и негативные сценарии, UX-решения |
 | [technical_specification.md](technical_specification.md) | Техническое задание для AI-инженера (68 FR + 13 NFR) |
-| [CONTEXT.md](../CONTEXT.md) | Доменный словарь и терминология продукта |
+| [CONTEXT.md](../../CONTEXT.md) | Доменный словарь и терминология продукта |

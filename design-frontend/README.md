@@ -1,44 +1,54 @@
-# Concept 3 — Editorial UI
+# Digest CDS — канонический дизайн и фронтенд
 
-Визуальный прототип **Concept 3** («Digest CDS: издание») на основе [UI-SPEC_3.md](./UI-SPEC_3.md).
+`design-frontend/` содержит единственный выбранный UI-прототип Digest CDS —
+Editorial UI («Digest CDS: издание»). Директория является источником истины
+для визуального языка и статического frontend-прототипа.
 
-**Контентный контракт:** материал — только подготовленная агентом статья. Она создаётся из транскрипции или импортированного текста, дополняется уточняющим поиском и анализом; видео/аудио и необработанный транскрипт не являются материалом и не показываются в интерфейсе. Сложные термины связываются внутренними ссылками с отдельными поясняющими статьями; исходная ссылка хранится отдельно как provenance.
+**Контентный контракт:** материал — только подготовленная агентом статья. Она
+создаётся из транскрипции или импортированного текста, дополняется уточняющим
+поиском и анализом; видео/аудио и необработанный транскрипт не являются
+материалом и не показываются в интерфейсе. Сложные термины связываются
+внутренними ссылками с отдельными поясняющими статьями; исходная ссылка
+хранится отдельно как provenance.
 
-**Backlog C3 (2026-08-23):** пункты C3-01…C3-18 закрыты в прототипе (см. [backlog_UI.md](../backlog_UI.md)).
+**Backlog C3 (2026-08-23):** пункты C3-01…C3-18 закрыты в прототипе (см.
+[`backlog_UI.md`](../docs/digest-cds/backlog_UI.md)).
 
 ## Как открыть
 
-Откройте в браузере:
+Из корня репозитория запустите статический сервер:
 
+```bash
+python -m http.server 8765
 ```
-Homework_by_project/UI_concepts/Concept_3/index.html
-```
 
-Или конкретный экран, например `pages/issue.html`.  
-Для stubs (голосование, KB-фильтры, admin modal) нужен HTTP-сервер или `file://` с разрешённым JS.
+Затем откройте
+`http://localhost:8765/design-frontend/index.html`. Конкретные экраны
+находятся в `pages/`; для интерактивных stubs нужен HTTP-сервер.
 
-## Содержимое
+## Карта экранов
 
-| Путь | Экран | Stubs (`scripts/app.js`) |
-|------|-------|--------------------------|
-| `pages/issue.html` | Текущий выпуск + audit dek | — |
+| Путь | Экран | Прототипная логика |
+|------|-------|--------------------|
+| `pages/issue.html` | Текущий выпуск | — |
 | `pages/archive.html` | Архив выпусков | — |
-| `pages/knowledge.html` | База: Role/Tag/Format/Topic, analyst corpus | фильтры, load more, empty |
-| `pages/material.html` | Подготовленная статья с prose-колонкой и TOC | — |
-| `pages/voting.html` | TopicBallot (без pre-select) | выбор + confirm toast |
+| `pages/knowledge.html` | База знаний | фильтры, load more, empty state |
+| `pages/material.html` | Подготовленная статья | — |
+| `pages/voting.html` | Цикл голосования | выбор и подтверждение |
 | `pages/razbory.html` | Список разборов | — |
-| `pages/razbor.html` | Longread-статья: metrics, RRF, `.ipynb`, refs | — |
+| `pages/razbor.html` | Разбор longread | — |
 | `pages/login.html` | Авторизация | — |
-| `pages/admin-digest.html` | Shortlist: batch, draft/ready, preview | approve/reject, email modal |
+| `pages/admin-digest.html` | Shortlist дайджеста | approve/reject, email preview |
 
 ## Структура
 
-```
-Concept_3/
-├── UI-SPEC_3.md
+```text
+design-frontend/
 ├── index.html
 ├── README.md
-├── scripts/app.js      # прототипные stubs
+├── UI-SPEC_3.md
+├── design.md
+├── scripts/app.js
 ├── styles/
 ├── assets/
 │   ├── covers/
@@ -46,8 +56,11 @@ Concept_3/
 └── pages/
 ```
 
-## Отличия от Concept 1 и 2
+## Источники истины
 
-- **C1** — корпоративный dashboard, Inter, card grid
-- **C2** — dark gamification, Manrope, XP/streak
-- **C3** — editorial longread, serif headlines, issue-based home
+- [`design.md`](design.md) — визуальная система, композиция и правила
+  взаимодействия.
+- [`styles/tokens.css`](styles/tokens.css) — фактические токены цветов,
+  типографики, отступов, радиусов и z-index.
+- [`UI-SPEC_3.md`](UI-SPEC_3.md) — самостоятельный контракт дизайна и
+  frontend-архитектуры.

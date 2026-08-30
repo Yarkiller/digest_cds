@@ -2,8 +2,8 @@
 title: "Техническая спецификация — Digest CDS (Concept 3)"
 product: Digest CDS
 ui_concept: "Concept 3 — Editorial UI"
-source_stories: Homework_by_project/UI_concepts/user_stories.md
-source_acceptance: Homework_by_project/UI_concepts/acceptance_criteria.md
+source_stories: docs/digest-cds/user_stories.md
+source_acceptance: docs/digest-cds/acceptance_criteria.md
 version: "1.1"
 date: "2026-08-29"
 total_functional_requirements: 68
@@ -15,6 +15,25 @@ optimization_applied: "Объединены US-02 AC2 и US-06 AC2 (redirect ч�
 # Техническая спецификация — Digest CDS
 
 Функциональные и нефункциональные требования для реализации Digest CDS (Concept 3 — Editorial UI), извлечённые из 31 user story и 68 критериев приёмки (Given/When/Then). Каждое функциональное требование описывает одну проверяемую функцию и имеет однозначный pass/fail тест.
+
+## 0. Процесс разработки и тестирования
+
+Разработка Digest CDS ведётся по обязательному циклу **Red–Green–Refactor**.
+
+Для новых функций, исправлений, рефакторинга и изменений поведения необходимо:
+
+1. Сначала написать минимальный автоматизированный тест.
+2. Запустить его и убедиться, что он падает по ожидаемой причине.
+3. Реализовать минимальный production-код для прохождения теста.
+4. Запустить новый тест и весь существующий набор тестов.
+5. Выполнить рефакторинг только при полностью успешных тестах.
+6. Повторить цикл для следующего поведения.
+
+Действует правило:
+
+> NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
+
+Тесты должны проверять поведение системы, а не наличие mock-объектов. Моки применяются только при необходимости и после понимания реальных зависимостей. Исключения допускаются для конфигурационных, сгенерированных и одноразовых прототипных файлов либо с явным согласованием.
 
 ### Сквозной контентный контракт
 
