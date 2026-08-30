@@ -29,6 +29,123 @@
     });
   }
 
+  function initSearch() {
+    var trigger = document.querySelector("[data-search-trigger]");
+    var dialog = document.getElementById("search-dialog");
+    if (!trigger || !dialog) return;
+
+    var input = dialog.querySelector(".search-dialog__input");
+    var results = Array.prototype.slice.call(
+      dialog.querySelectorAll("[data-search-result]")
+    );
+    var activeIndex = -1;
+
+    function visibleResults() {
+      return results.filter(function (result) {
+        return !result.closest("li").hidden;
+      });
+    }
+
+    function setActive(index) {
+      var visible = visibleResults();
+      activeIndex = visible.length ? (index + visible.length) % visible.length : -1;
+      results.forEach(function (result) {
+        result.setAttribute("aria-selected", "false");
+      });
+      if (activeIndex >= 0) {
+        visible[activeIndex].setAttribute("aria-selected", "true");
+      }
+    }
+
+    function filterResults() {
+      var query = (input ? input.value : "").trim().toLowerCase();
+      results.forEach(function (result) {
+        var matches = !query || result.textContent.toLowerCase().indexOf(query) !== -1;
+        result.closest("li").hidden = !matches;
+      });
+      setActive(0);
+    }
+
+    function openSearch() {
+      if (typeof dialog.showModal === "function") {
+        dialog.showModal();
+      } else {
+        dialog.setAttribute("open", "");
+      }
+      trigger.setAttribute("aria-expanded", "true");
+      filterResults();
+      window.requestAnimationFrame(function () {
+        if (input) input.focus();
+      });
+    }
+
+    function closeSearch() {
+      if (typeof dialog.close === "function" && dialog.open) {
+        dialog.close();
+      } else {
+        dialog.removeAttribute("open");
+      }
+      trigger.setAttribute("aria-expanded", "false");
+      trigger.focus();
+    }
+
+    trigger.addEventListener("click", openSearch);
+    dialog.querySelectorAll("[data-close-search]").forEach(function (closeButton) {
+      closeButton.addEventListener("click", closeSearch);
+    });
+    dialog.addEventListener("click", function (event) {
+      if (event.target === dialog) closeSearch();
+    });
+    dialog.addEventListener("close", function () {
+      trigger.setAttribute("aria-expanded", "false");
+    });
+    if (input) input.addEventListener("input", filterResults);
+    if (input) {
+      input.addEventListener("keydown", function (event) {
+        var visible = visibleResults();
+        if (event.key === "ArrowDown") {
+          event.preventDefault();
+          setActive(activeIndex + 1);
+        } else if (event.key === "ArrowUp") {
+          event.preventDefault();
+          setActive(activeIndex - 1);
+        } else if (event.key === "Enter" && activeIndex >= 0 && visible.length) {
+          event.preventDefault();
+          visible[activeIndex].click();
+        }
+      });
+    }
+    document.addEventListener("keydown", function (event) {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        if (dialog.open) {
+          closeSearch();
+        } else {
+          openSearch();
+        }
+      }
+      if (event.key === "Escape" && dialog.open) {
+        event.preventDefault();
+        closeSearch();
+      }
+    });
+  }
+
+  function initReadingProgress() {
+    var progress = document.querySelector(".reading-progress");
+    if (!progress) return;
+
+    function updateProgress() {
+      var maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+      var ratio = maxScroll > 0 ? window.scrollY / maxScroll : 1;
+      progress.style.transform = "scaleX(" + Math.max(0, Math.min(1, ratio)) + ")";
+    }
+
+    window.addEventListener("scroll", updateProgress, { passive: true });
+    window.addEventListener("resize", updateProgress);
+    updateProgress();
+  }
+
   function initMaterial() {
     document.querySelectorAll(".collapsible__toggle").forEach(function (toggle) {
       var targetId = toggle.getAttribute("aria-controls");
@@ -592,6 +709,8 @@
   }
 
   initShell();
+  initSearch();
+  initReadingProgress();
   initMaterial();
   initLogin();
   initVoting();
