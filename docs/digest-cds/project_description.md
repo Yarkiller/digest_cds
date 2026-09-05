@@ -130,5 +130,5 @@ Shortlist **кандидатов дайджеста** (до 5 после авт�
 | [user_stories.md](user_stories.md) | User Story Mapping (31 история, приоритеты, карта) |
 | [acceptance_criteria.md](acceptance_criteria.md) | Критерии приёмки Given/When/Then |
 | [error_handling.md](error_handling.md) | Счастливые и негативные сценарии, UX-решения |
-| [technical_specification.md](technical_specification.md) | Техническое задание для AI-инженера (68 FR + 13 NFR) |
+| [technical_specification.md](technical_specification.md) | Техническое задание для AI-инженера (68 FR + классические NFR: perf/SLO/security/audit; стек и окружение) |
 | [CONTEXT.md](../../CONTEXT.md) | Доменный словарь и терминология продукта |
