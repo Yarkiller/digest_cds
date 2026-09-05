@@ -25,11 +25,15 @@ npm run dev
 
 ```text
 src/
-├── components/AppShell.jsx   # оболочка + навигация
-├── pages/                    # issue / voting / knowledge (заглушки)
-├── App.jsx                   # роутинг
+├── components/     # AppShell, SearchPill, IssueToc, TopicBallot, …
+├── data/mock.js    # mock-данные выпуска, KB, голосования
+├── pages/          # issue / voting / knowledge / material
+├── utils/filters.js
+├── App.jsx         # роутинг
 ├── main.jsx
-└── index.css                 # Tailwind + design tokens
+└── index.css       # Tailwind + design tokens
 ```
+
+Маршруты: `/`, `/voting`, `/knowledge`, `/materials/:id`.
 
 Эталон макетов остаётся в `../design-frontend/`.
