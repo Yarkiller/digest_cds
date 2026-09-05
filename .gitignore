@@ -1,6 +1,8 @@
 .env
 .env.*
-.cursor/
+.cursor/*
+!.cursor/rules/
+!.cursor/rules/**
 .venv/
 venv/
 __pycache__/
