@@ -1,0 +1,32 @@
+@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600&family=IBM+Plex+Sans:wght@400;500;600&display=swap");
+@import "tailwindcss";
+
+/* Tokens mirrored from design-frontend/styles/tokens.css */
+@theme {
+  --color-paper: oklch(97% 0.012 95);
+  --color-paper-2: oklch(93.5% 0.018 95);
+  --color-ink: oklch(20% 0.015 270);
+  --color-ink-2: oklch(43% 0.02 270);
+  --color-muted: oklch(48% 0.018 270);
+  --color-rule: oklch(84% 0.018 95);
+  --color-accent: oklch(52% 0.13 278);
+  --color-accent-ink: oklch(98% 0.005 95);
+  --color-voting: oklch(62% 0.14 38);
+  --font-display: "Bricolage Grotesque", "Trebuchet MS", sans-serif;
+  --font-sans: "IBM Plex Sans", "Segoe UI", sans-serif;
+}
+
+:root {
+  color: var(--color-ink);
+  background: var(--color-paper);
+  font-family: var(--font-sans);
+}
+
+body {
+  margin: 0;
+  min-height: 100svh;
+}
+
+#root {
+  min-height: 100svh;
+}
