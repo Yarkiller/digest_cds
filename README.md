@@ -9,7 +9,7 @@ Digest CDS — корпоративный сервис сбора, структ�
 | Что | Куда |
 |-----|------|
 | GitHub | [https://github.com/Yarkiller/digest_cds](https://github.com/Yarkiller/digest_cds) |
-| Отчёт о разработке | [`docs/digest-cds/development_report.md`](docs/digest-cds/development_report.md) |
+| Отчёт о разработке | [`development_report.md`](development_report.md) |
 | ТЗ | [`docs/digest-cds/technical_specification.md`](docs/digest-cds/technical_specification.md) |
 | Скриншоты адаптива | [`docs/digest-cds/responsive-evidence/`](docs/digest-cds/responsive-evidence/) |
 

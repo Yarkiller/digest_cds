@@ -1,6 +1,6 @@
 # AI session notes (homework Steps 5–6)
 
-Working notes absorbed into [`development_report.md`](./development_report.md). Keep this file as a short appendix.
+Working notes absorbed into [`../../development_report.md`](../../development_report.md). Keep this file as a short appendix.
 
 ## Tools used
 

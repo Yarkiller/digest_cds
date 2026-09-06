@@ -39,4 +39,4 @@ src/
 Маршруты: `/`, `/voting`, `/knowledge`, `/materials/:id`.
 
 Эталон макетов остаётся в `../design-frontend/`.
-Отчёт ДЗ: [`../docs/digest-cds/development_report.md`](../docs/digest-cds/development_report.md).
+Отчёт ДЗ: [`../development_report.md`](../development_report.md).

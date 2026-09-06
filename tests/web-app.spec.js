@@ -112,6 +112,24 @@ test.describe("web app edge and error cases", () => {
     await expect(confirm).toBeDisabled();
     await expect(page.getByRole("status")).toContainText(/не отдан/i);
   });
+
+  test("shows vote error state and recovers on retry", async ({ page }) => {
+    await page.goto("/voting?simulateError=1");
+
+    await page.getByRole("radio", { name: /RAG в корпоративной среде/i }).click();
+    const confirm = page.getByTestId("confirm-vote");
+    await confirm.click();
+
+    await expect(confirm).toHaveAttribute("data-state", "loading");
+    await expect(confirm).toHaveAttribute("data-state", "error");
+    await expect(confirm).toHaveText(/повторить/i);
+    await expect(page.getByRole("alert")).toContainText(/не удалось сохранить голос/i);
+
+    await confirm.click();
+    await expect(confirm).toHaveAttribute("data-state", "success");
+    await expect(confirm).toHaveText(/голос принят/i);
+    await expect(page.getByRole("status")).toContainText(/ваш голос:/i);
+  });
 });
 
 test.describe("web app responsive", () => {

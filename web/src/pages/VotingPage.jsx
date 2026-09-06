@@ -1,14 +1,20 @@
 import { useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { votingCycle, votingTopics } from '../data/mock.js'
 import TopicBallot from '../components/TopicBallot.jsx'
 import ActionButton from '../components/ActionButton.jsx'
 import { delay } from '../utils/delay.js'
 
 export default function VotingPage() {
+  const [searchParams] = useSearchParams()
   const [selectedId, setSelectedId] = useState(null)
   const [confirmedId, setConfirmedId] = useState(null)
   const [buttonState, setButtonState] = useState('idle')
   const [toast, setToast] = useState('')
+  const [alert, setAlert] = useState('')
+  const [pendingSimulatedError, setPendingSimulatedError] = useState(
+    () => searchParams.get('simulateError') === '1',
+  )
 
   const status = useMemo(() => {
     if (confirmedId) {
@@ -26,7 +32,16 @@ export default function VotingPage() {
     if (!selectedId || buttonState === 'loading') return
     setButtonState('loading')
     setToast('')
+    setAlert('')
     await delay()
+
+    if (pendingSimulatedError) {
+      setPendingSimulatedError(false)
+      setButtonState('error')
+      setAlert('Не удалось сохранить голос. Проверьте соединение и попробуйте ещё раз.')
+      return
+    }
+
     setConfirmedId(selectedId)
     setButtonState('success')
     setToast('Голос сохранён')
@@ -37,7 +52,9 @@ export default function VotingPage() {
       ? 'Сохраняем…'
       : buttonState === 'success'
         ? 'Голос принят'
-        : 'Подтвердить голос'
+        : buttonState === 'error'
+          ? 'Повторить'
+          : 'Подтвердить голос'
 
   return (
     <section className="max-w-3xl">
@@ -68,11 +85,17 @@ export default function VotingPage() {
         selectedId={selectedId}
         onSelect={(id) => {
           setSelectedId(id)
-          if (buttonState === 'success') setButtonState('idle')
+          if (buttonState === 'success' || buttonState === 'error') setButtonState('idle')
+          if (buttonState === 'error') setAlert('')
         }}
       />
 
-      <div className="sticky bottom-0 mt-8 flex items-center justify-end gap-3 border-t border-rule bg-paper/95 py-3 backdrop-blur">
+      <div className="sticky bottom-0 mt-8 flex flex-wrap items-center justify-end gap-3 border-t border-rule bg-paper/95 py-3 backdrop-blur">
+        {alert ? (
+          <p className="mr-auto max-w-md text-sm text-[oklch(42%_0.16_25)]" role="alert">
+            {alert}
+          </p>
+        ) : null}
         {toast ? (
           <p className="text-sm text-[oklch(45%_0.13_155)]" aria-live="polite">
             {toast}
