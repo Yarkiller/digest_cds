@@ -25,10 +25,12 @@ npm run dev
 
 ```text
 src/
-├── components/     # AppShell, SearchPill, IssueToc, TopicBallot, …
+├── components/     # AppShell, SearchPill, IssueToc, TopicBallot, ActionButton, …
 ├── data/mock.js    # mock-данные выпуска, KB, голосования
 ├── pages/          # issue / voting / knowledge / material
-├── utils/filters.js
+├── utils/
+│   ├── filters.js  # фильтрация базы знаний
+│   └── delay.js    # общая симуляция loading-latency
 ├── App.jsx         # роутинг
 ├── main.jsx
 └── index.css       # Tailwind + design tokens
@@ -37,3 +39,4 @@ src/
 Маршруты: `/`, `/voting`, `/knowledge`, `/materials/:id`.
 
 Эталон макетов остаётся в `../design-frontend/`.
+Отчёт ДЗ: [`../docs/digest-cds/development_report.md`](../docs/digest-cds/development_report.md).
