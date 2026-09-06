@@ -10,7 +10,9 @@ export default function IssuePage() {
       <p className="text-xs uppercase tracking-wide text-muted">
         Выпуск №{currentIssue.number} · {currentIssue.period}
       </p>
-      <h1 className="mt-3 font-display text-4xl font-semibold sm:text-5xl">{currentIssue.title}</h1>
+      <h1 className="mt-3 max-w-4xl font-display text-4xl font-semibold leading-tight sm:text-5xl">
+        {currentIssue.title}
+      </h1>
       <p className="mt-3 text-sm text-ink-2">
         {currentIssue.editor} · {items.length} материалов
       </p>

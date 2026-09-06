@@ -16,7 +16,10 @@ export default function AppShell() {
             <p className="font-display text-sm font-semibold text-accent">Digest CDS</p>
             <p className="text-xs text-muted">СВА · издание</p>
           </div>
-          <nav className="order-last flex w-full flex-wrap gap-1 sm:order-none sm:w-auto" aria-label="Основная навигация">
+          <nav
+            className="order-last flex w-full flex-wrap gap-1 sm:order-none sm:w-auto"
+            aria-label="Основная навигация"
+          >
             <NavLink to="/" end className={linkClass}>
               Выпуск
             </NavLink>
@@ -28,7 +31,7 @@ export default function AppShell() {
             </NavLink>
           </nav>
           <SearchPill />
-          <div className="hidden text-sm text-ink-2 md:block">Мария Сидорова</div>
+          <div className="hidden shrink-0 text-sm text-ink-2 md:block">Мария Сидорова</div>
         </div>
       </header>
       <main className="mx-auto max-w-6xl px-4 py-10">

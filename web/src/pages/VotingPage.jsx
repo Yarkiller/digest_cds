@@ -1,10 +1,14 @@
 import { useMemo, useState } from 'react'
 import { votingCycle, votingTopics } from '../data/mock.js'
 import TopicBallot from '../components/TopicBallot.jsx'
+import ActionButton from '../components/ActionButton.jsx'
+import { delay } from '../utils/delay.js'
 
 export default function VotingPage() {
   const [selectedId, setSelectedId] = useState(null)
   const [confirmedId, setConfirmedId] = useState(null)
+  const [buttonState, setButtonState] = useState('idle')
+  const [toast, setToast] = useState('')
 
   const status = useMemo(() => {
     if (confirmedId) {
@@ -18,11 +22,28 @@ export default function VotingPage() {
     return 'Ваш голос: не отдан'
   }, [confirmedId, selectedId])
 
+  async function confirmVote() {
+    if (!selectedId || buttonState === 'loading') return
+    setButtonState('loading')
+    setToast('')
+    await delay()
+    setConfirmedId(selectedId)
+    setButtonState('success')
+    setToast('Голос сохранён')
+  }
+
+  const label =
+    buttonState === 'loading'
+      ? 'Сохраняем…'
+      : buttonState === 'success'
+        ? 'Голос принят'
+        : 'Подтвердить голос'
+
   return (
     <section className="max-w-3xl">
       <h1 className="mb-6 font-display text-3xl font-semibold">Голосование за тему разбора</h1>
 
-      <div className="mb-8">
+      <div className="mb-8 rounded-2xl border border-rule bg-[oklch(98.5%_0.009_95)] p-5">
         <div className="mb-3 flex items-baseline justify-between gap-3">
           <span className="text-xs uppercase tracking-wide text-muted">{votingCycle.label}</span>
           <span className="text-xs text-ink-2">{votingCycle.period}</span>
@@ -33,7 +54,7 @@ export default function VotingPage() {
             style={{ width: `${Math.round(votingCycle.progressRatio * 100)}%` }}
           />
         </div>
-        <p className="mt-3 text-sm text-ink-2" aria-live="polite">
+        <p className="mt-3 text-sm text-ink-2" role="status" aria-live="polite">
           {status}
         </p>
       </div>
@@ -42,17 +63,30 @@ export default function VotingPage() {
         Один голос за цикл. Вы можете изменить выбор до {votingCycle.closesOn}.
       </p>
 
-      <TopicBallot topics={votingTopics} selectedId={selectedId} onSelect={setSelectedId} />
+      <TopicBallot
+        topics={votingTopics}
+        selectedId={selectedId}
+        onSelect={(id) => {
+          setSelectedId(id)
+          if (buttonState === 'success') setButtonState('idle')
+        }}
+      />
 
-      <div className="sticky bottom-0 mt-8 flex justify-end border-t border-rule bg-paper py-3">
-        <button
-          type="button"
-          className="inline-flex min-h-11 items-center rounded-full bg-voting px-4 text-sm font-medium text-[oklch(24%_0.02_38)] disabled:opacity-55"
-          disabled={!selectedId}
-          onClick={() => setConfirmedId(selectedId)}
+      <div className="sticky bottom-0 mt-8 flex items-center justify-end gap-3 border-t border-rule bg-paper/95 py-3 backdrop-blur">
+        {toast ? (
+          <p className="text-sm text-[oklch(45%_0.13_155)]" aria-live="polite">
+            {toast}
+          </p>
+        ) : null}
+        <ActionButton
+          data-testid="confirm-vote"
+          variant="voting"
+          state={buttonState}
+          disabled={!selectedId && buttonState === 'idle'}
+          onClick={confirmVote}
         >
-          Подтвердить голос
-        </button>
+          {label}
+        </ActionButton>
       </div>
     </section>
   )

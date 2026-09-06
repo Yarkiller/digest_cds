@@ -162,12 +162,6 @@ export const votingTopics = [
   },
 ]
 
-export const searchDestinations = [
-  { id: 'knowledge', title: 'База знаний', description: 'Найти материалы по смыслу, роли или тегу', to: '/knowledge' },
-  { id: 'issue', title: 'Текущий выпуск', description: 'Открыть подборку материалов недели', to: '/' },
-  { id: 'voting', title: 'Голосование', description: 'Выбрать тему следующего разбора', to: '/voting' },
-]
-
 export function getMaterialById(id) {
   return materials.find((item) => item.id === id) ?? null
 }
