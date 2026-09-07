@@ -3,7 +3,13 @@ import { useSearchParams } from 'react-router-dom'
 import { votingCycle, votingTopics } from '../data/mock.js'
 import TopicBallot from '../components/TopicBallot.jsx'
 import ActionButton from '../components/ActionButton.jsx'
-import { delay } from '../utils/delay.js'
+import ErrorPanel from '../components/ErrorPanel.jsx'
+import {
+  VoteSubmitError,
+  armFailNextVoteSubmit,
+  submitVote,
+} from '../services/votingApi.js'
+import { voteButtonLabel, voteStatusText } from '../utils/voting.js'
 
 export default function VotingPage() {
   const [searchParams] = useSearchParams()
@@ -11,50 +17,58 @@ export default function VotingPage() {
   const [confirmedId, setConfirmedId] = useState(null)
   const [buttonState, setButtonState] = useState('idle')
   const [toast, setToast] = useState('')
-  const [alert, setAlert] = useState('')
-  const [pendingSimulatedError, setPendingSimulatedError] = useState(
-    () => searchParams.get('simulateError') === '1',
-  )
+  const [error, setError] = useState(null)
+  const [attemptCount, setAttemptCount] = useState(0)
+  const [armedFailOnce] = useState(() => {
+    const shouldFail = searchParams.get('simulateError') === '1'
+    if (shouldFail) armFailNextVoteSubmit()
+    return shouldFail
+  })
 
-  const status = useMemo(() => {
-    if (confirmedId) {
-      const topic = votingTopics.find((item) => item.id === confirmedId)
-      return `Ваш голос: ${topic?.title ?? confirmedId}`
-    }
-    if (selectedId) {
-      const topic = votingTopics.find((item) => item.id === selectedId)
-      return `Выбор: «${topic?.title ?? selectedId}» (нажмите «Подтвердить голос»)`
-    }
-    return 'Ваш голос: не отдан'
-  }, [confirmedId, selectedId])
+  const status = useMemo(
+    () =>
+      voteStatusText({
+        confirmedId,
+        selectedId,
+        topics: votingTopics,
+      }),
+    [confirmedId, selectedId],
+  )
 
   async function confirmVote() {
     if (!selectedId || buttonState === 'loading') return
+
     setButtonState('loading')
     setToast('')
-    setAlert('')
-    await delay()
+    setError(null)
+    setAttemptCount((count) => count + 1)
 
-    if (pendingSimulatedError) {
-      setPendingSimulatedError(false)
-      setButtonState('error')
-      setAlert('Не удалось сохранить голос. Проверьте соединение и попробуйте ещё раз.')
-      return
+    try {
+      await submitVote(selectedId)
+      setConfirmedId(selectedId)
+      setButtonState('success')
+      setToast('Голос сохранён')
+      setAttemptCount(0)
+    } catch (err) {
+      const voteError =
+        err instanceof VoteSubmitError
+          ? err
+          : new VoteSubmitError('Не удалось сохранить голос.', { code: 'UNKNOWN' })
+
+      setButtonState(voteError.retryable ? 'error' : 'idle')
+      setError({
+        title: 'Ошибка сохранения',
+        message: voteError.message,
+        code: voteError.code,
+        retryable: voteError.retryable,
+      })
     }
-
-    setConfirmedId(selectedId)
-    setButtonState('success')
-    setToast('Голос сохранён')
   }
 
-  const label =
-    buttonState === 'loading'
-      ? 'Сохраняем…'
-      : buttonState === 'success'
-        ? 'Голос принят'
-        : buttonState === 'error'
-          ? 'Повторить'
-          : 'Подтвердить голос'
+  function clearError() {
+    setError(null)
+    if (buttonState === 'error') setButtonState('idle')
+  }
 
   return (
     <section className="max-w-3xl">
@@ -74,6 +88,11 @@ export default function VotingPage() {
         <p className="mt-3 text-sm text-ink-2" role="status" aria-live="polite">
           {status}
         </p>
+        {armedFailOnce ? (
+          <p className="mt-2 text-xs text-muted">
+            Демо режима сбоя: первая отправка будет отклонена сервером (повторите).
+          </p>
+        ) : null}
       </div>
 
       <p className="mb-8 text-sm text-ink-2">
@@ -86,15 +105,22 @@ export default function VotingPage() {
         onSelect={(id) => {
           setSelectedId(id)
           if (buttonState === 'success' || buttonState === 'error') setButtonState('idle')
-          if (buttonState === 'error') setAlert('')
+          if (error) setError(null)
         }}
       />
 
       <div className="sticky bottom-0 mt-8 flex flex-wrap items-center justify-end gap-3 border-t border-rule bg-paper/95 py-3 backdrop-blur">
-        {alert ? (
-          <p className="mr-auto max-w-md text-sm text-[oklch(42%_0.16_25)]" role="alert">
-            {alert}
-          </p>
+        {error ? (
+          <ErrorPanel
+            title={error.title}
+            message={error.message}
+            meta={
+              error.retryable
+                ? `Попытка ${attemptCount}. Код: ${error.code}. Можно повторить.`
+                : `Код: ${error.code}`
+            }
+            onDismiss={clearError}
+          />
         ) : null}
         {toast ? (
           <p className="text-sm text-[oklch(45%_0.13_155)]" aria-live="polite">
@@ -108,7 +134,7 @@ export default function VotingPage() {
           disabled={!selectedId && buttonState === 'idle'}
           onClick={confirmVote}
         >
-          {label}
+          {voteButtonLabel(buttonState)}
         </ActionButton>
       </div>
     </section>

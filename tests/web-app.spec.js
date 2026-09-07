@@ -123,12 +123,18 @@ test.describe("web app edge and error cases", () => {
     await expect(confirm).toHaveAttribute("data-state", "loading");
     await expect(confirm).toHaveAttribute("data-state", "error");
     await expect(confirm).toHaveText(/повторить/i);
-    await expect(page.getByRole("alert")).toContainText(/не удалось сохранить голос/i);
+
+    const alert = page.getByRole("alert");
+    await expect(alert).toBeVisible();
+    await expect(alert.getByRole("heading", { name: /ошибка сохранения/i })).toBeVisible();
+    await expect(alert).toContainText(/временно недоступен|соединен/i);
+    await expect(alert).toContainText(/попытка 1/i);
 
     await confirm.click();
     await expect(confirm).toHaveAttribute("data-state", "success");
     await expect(confirm).toHaveText(/голос принят/i);
     await expect(page.getByRole("status")).toContainText(/ваш голос:/i);
+    await expect(page.getByRole("alert")).toHaveCount(0);
   });
 });
 

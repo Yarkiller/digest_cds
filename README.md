@@ -56,13 +56,15 @@ Production-сборка: `npm run build` (из корня или `web/`), пре
 ## Тесты
 
 ```bash
-npx playwright test
+npm install
+npx playwright install chromium   # один раз на машину
+npm test                          # оба проекта
+npm run test:web                  # только React-приложение (не поднимает статический сервер макетов)
+npm run test:design               # только design-frontend
 ```
 
-- `design-frontend` — эталон макетов на `http://127.0.0.1:8765`
-- `web` — React-приложение на `http://127.0.0.1:5174` (поднимает Vite автоматически)
-
-Только web: `npx playwright test --project=web`
+- `design-frontend` — эталон макетов на `http://127.0.0.1:8765` (Node `serve`, без Python)
+- `web` — React-приложение на `http://127.0.0.1:5174` (Vite)
 
 ## Каноническая структура
 
@@ -82,10 +84,14 @@ npx playwright test
 
 ## Эталон макетов
 
+Кроссплатформенно (macOS / Linux / Windows), из корня репозитория:
+
 ```bash
-python -m http.server 8765
+npm run serve:design
 ```
 
-[http://localhost:8765/design-frontend/index.html](http://localhost:8765/design-frontend/index.html)
+Эквивалент: `npx --yes serve@14.2.4 . -l 8765 --no-port-switching`
+
+Открыть: [http://127.0.0.1:8765/design-frontend/index.html](http://127.0.0.1:8765/design-frontend/index.html)
 
 Карта экранов: [`design-frontend/README.md`](design-frontend/README.md).

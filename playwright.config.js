@@ -1,5 +1,51 @@
 const { defineConfig } = require("@playwright/test");
 
+/**
+ * Playwright starts every webServer entry even with --project.
+ * Filter servers so `npx playwright test --project=web` does not boot design-frontend.
+ */
+function selectedProjects() {
+  const names = [];
+  const args = process.argv;
+  for (let i = 0; i < args.length; i += 1) {
+    const arg = args[i];
+    if (arg === "--project" || arg === "-p") {
+      if (args[i + 1]) names.push(args[i + 1]);
+      continue;
+    }
+    if (arg.startsWith("--project=")) names.push(arg.slice("--project=".length));
+  }
+  return names;
+}
+
+function wantsProject(name) {
+  const selected = selectedProjects();
+  return selected.length === 0 || selected.includes(name);
+}
+
+const webServers = [];
+
+if (wantsProject("design-frontend")) {
+  webServers.push({
+    name: "design-frontend",
+    // Node-based static server: works on macOS/Linux/Windows without `python`/`python3`.
+    command: "npx --yes serve@14.2.4 . -l 8765 --no-port-switching",
+    url: "http://127.0.0.1:8765/design-frontend/index.html",
+    reuseExistingServer: !process.env.CI,
+    timeout: 120000,
+  });
+}
+
+if (wantsProject("web")) {
+  webServers.push({
+    name: "web",
+    command: "npm run dev --prefix web -- --host 127.0.0.1 --port 5174",
+    url: "http://127.0.0.1:5174",
+    reuseExistingServer: !process.env.CI,
+    timeout: 120000,
+  });
+}
+
 module.exports = defineConfig({
   testDir: "./tests",
   use: {
@@ -17,18 +63,5 @@ module.exports = defineConfig({
       use: { baseURL: "http://127.0.0.1:5174" },
     },
   ],
-  webServer: [
-    {
-      command: "python -m http.server 8765",
-      url: "http://127.0.0.1:8765/design-frontend/index.html",
-      reuseExistingServer: true,
-      timeout: 120000,
-    },
-    {
-      command: "npm run dev --prefix web -- --host 127.0.0.1 --port 5174",
-      url: "http://127.0.0.1:5174",
-      reuseExistingServer: true,
-      timeout: 120000,
-    },
-  ],
+  webServer: webServers,
 });
