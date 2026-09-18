@@ -1,0 +1,36 @@
+"""Composition root wires in-memory adapters for local/unit use."""
+
+from backend.composition import build_in_memory_container
+from backend.domain.material import Material, MaterialStatus
+from datetime import datetime, timezone
+
+
+def test_in_memory_container_publish_and_index() -> None:
+    material = Material(
+        id=42,
+        slug="demo",
+        title="Demo",
+        dek="Dek",
+        body_markdown="## A\n\nAlpha.\n\n## B\n\nBeta.",
+        format="статья",
+        status=MaterialStatus.DRAFT,
+        reading_minutes=3,
+        provenance_label="test",
+        source_id=None,
+        roles=("sva",),
+        tags=(),
+        related_material_ids=(),
+        published_at=None,
+        created_at=datetime(2026, 1, 1, tzinfo=timezone.utc),
+        updated_at=datetime(2026, 1, 1, tzinfo=timezone.utc),
+    )
+    app = build_in_memory_container([material])
+    published = app.publish(42)
+    assert published.status == MaterialStatus.READY
+
+    chunks = app.index(42, embedding_model_id="foundry-embed-v1", embed=lambda _t: [0.0] * 1024)
+    assert len(chunks) >= 2
+
+    hits = app.search(query_embedding=[0.0] * 1024, query_text="Alpha")
+    assert hits
+    assert hits[0].material_id == 42

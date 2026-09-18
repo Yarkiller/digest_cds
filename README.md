@@ -21,7 +21,11 @@ Digest CDS — корпоративный сервис сбора, структ�
 | UI-фреймворк | React |
 | Роутинг | React Router |
 | Стилизация | Tailwind CSS (токены из `design-frontend/styles/tokens.css`) |
-| Автотесты | Playwright |
+| Автотесты UI | Playwright |
+| Backend (domain/ports) | Python / `uv` — [`backend/`](backend/) |
+| API DTOs | [`data-collection/`](data-collection/) |
+| БД / миграции | [`supabase-integration/migrations/`](supabase-integration/migrations/) (Supabase + pgvector) |
+| Unit-тесты Python | `uv run pytest` / `npm run test:unit` |
 
 Зависимости приложения: [`web/package.json`](web/package.json).  
 Зависимости тестов (корень): [`package.json`](package.json).

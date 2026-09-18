@@ -10,7 +10,8 @@
     "postinstall": "node scripts/ensure-playwright-browsers.cjs",
     "test": "playwright test",
     "test:web": "playwright test --project=web",
-    "test:design": "playwright test --project=design-frontend"
+    "test:design": "playwright test --project=design-frontend",
+    "test:unit": "uv run pytest"
   },
   "devDependencies": {
     "@playwright/test": "^1.62.1"
