@@ -56,12 +56,15 @@ Production-сборка: `npm run build` (из корня или `web/`), пре
 ## Тесты
 
 ```bash
-npm install
-npx playwright install chromium   # один раз на машину
-npm test                          # оба проекта
-npm run test:web                  # только React-приложение (не поднимает статический сервер макетов)
-npm run test:design               # только design-frontend
+npm install                   # подтянет зависимости и при необходимости Chromium в .playwright-browsers/
+npm run playwright:install    # явно доустановить браузеры (идемпотентно)
+npm test                      # оба проекта
+npm run test:web              # только React-приложение (не поднимает статический сервер макетов)
+npm run test:design           # только design-frontend
 ```
+
+Браузеры Playwright хранятся в **`.playwright-browsers/`** (в корне репо, в git не коммитится).
+Так они не теряются при смене временного кэша Cursor sandbox.
 
 - `design-frontend` — эталон макетов на `http://127.0.0.1:8765` (Node `serve`, без Python)
 - `web` — React-приложение на `http://127.0.0.1:5174` (Vite)

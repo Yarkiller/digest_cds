@@ -14,4 +14,6 @@ node_modules/
 dist/
 *.egg-info/
 
+.playwright-browsers/
 test-results/
+.cursor/mcp.json

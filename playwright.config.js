@@ -1,4 +1,8 @@
+const path = require("path");
 const { defineConfig } = require("@playwright/test");
+
+// Stable project-local browser cache (avoids Cursor sandbox temp re-downloads).
+process.env.PLAYWRIGHT_BROWSERS_PATH = path.join(__dirname, ".playwright-browsers");
 
 /**
  * Playwright starts every webServer entry even with --project.
