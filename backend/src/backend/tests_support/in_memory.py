@@ -1,8 +1,50 @@
 from __future__ import annotations
 
+from dataclasses import dataclass, field
+
 from backend.domain.current_user import CurrentUser
 from backend.domain.knowledge import KnowledgeChunk
 from backend.domain.material import Material
+
+
+@dataclass(frozen=True)
+class InMemoryPingEntry:
+    id: str
+    user_id: str | None
+    kind: str
+    payload: dict = field(default_factory=dict)
+
+
+class InMemoryPingRecorder:
+    def __init__(self) -> None:
+        self._entries: list[InMemoryPingEntry] = []
+        self._next_id = 1
+
+    def record(
+        self,
+        *,
+        user_id: str | None,
+        kind: str,
+        payload: dict,
+    ) -> str:
+        entry_id = str(self._next_id)
+        self._next_id += 1
+        self._entries.append(
+            InMemoryPingEntry(
+                id=entry_id,
+                user_id=user_id,
+                kind=kind,
+                payload=dict(payload),
+            )
+        )
+        return entry_id
+
+    def entries_for(self, user_id: str | None) -> list[InMemoryPingEntry]:
+        return [e for e in self._entries if e.user_id == user_id]
+
+    @property
+    def entries(self) -> list[InMemoryPingEntry]:
+        return list(self._entries)
 
 
 class InMemoryProfileRepository:
