@@ -114,4 +114,53 @@ test.describe("SPA auth contracts", () => {
     await expect(page.getByTestId("shell-identity")).toHaveText("Иван Петров");
     await expect(page.getByText("Мария Сидорова")).toHaveCount(0);
   });
+
+  test("rejects disallowed email domain on register without signUp", async ({
+    page,
+  }) => {
+    await page.goto("/register");
+
+    await page.getByLabel(/^логин$/i).fill("Ник");
+    await page.getByLabel(/^email$/i).fill("user@gmail.com");
+    await page.getByLabel(/^пароль$/i).fill("any-password");
+    await page.getByRole("button", { name: /зарегистрироваться/i }).click();
+
+    await expect(
+      page.getByText(/вход только с корпоративного домена сва/i),
+    ).toBeVisible();
+    await expect(page).toHaveURL(/\/register/);
+    await expect(page.getByTestId("auth-sign-up-calls")).toHaveAttribute(
+      "data-count",
+      "0",
+    );
+  });
+
+  test("blocks empty Логин on register without signUp", async ({ page }) => {
+    await page.goto("/register");
+
+    await page.getByLabel(/^email$/i).fill("analyst@sberbank.ru");
+    await page.getByLabel(/^пароль$/i).fill("correct-horse");
+    await page.getByRole("button", { name: /зарегистрироваться/i }).click();
+
+    await expect(page.getByRole("alert")).toContainText(/заполните поле/i);
+    await expect(page).toHaveURL(/\/register/);
+    await expect(page.getByTestId("auth-sign-up-calls")).toHaveAttribute(
+      "data-count",
+      "0",
+    );
+  });
+
+  test("returns to returnUrl path after successful register", async ({
+    page,
+  }) => {
+    await page.goto("/register?returnUrl=/voting");
+
+    await page.getByLabel(/^логин$/i).fill("Голосник");
+    await page.getByLabel(/^email$/i).fill("analyst@sberbank.ru");
+    await page.getByLabel(/^пароль$/i).fill("correct-horse");
+    await page.getByRole("button", { name: /зарегистрироваться/i }).click();
+
+    await expect(page).toHaveURL(/\/voting$/);
+    await expect(page.getByTestId("confirm-vote")).toBeVisible();
+  });
 });
