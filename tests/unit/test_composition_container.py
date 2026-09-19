@@ -26,6 +26,14 @@ def test_in_memory_container_publish_and_index() -> None:
     )
     app = build_in_memory_container([material])
     assert app.profiles is not None
+    assert app.pings is not None
+    recorded_id = app.pings.record(
+        user_id="user-uuid-1",
+        kind="platform_ping",
+        payload={},
+    )
+    assert recorded_id is not None
+    assert len(app.pings.entries_for("user-uuid-1")) == 1
     published = app.publish(42)
     assert published.status == MaterialStatus.READY
 
