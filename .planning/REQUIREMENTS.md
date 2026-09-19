@@ -11,7 +11,7 @@ Requirements for initial release. Each maps to exactly one roadmap phase. Tracea
 
 - [ ] **PLAT-01**: Self-hosted Supabase (Postgres + pgvector) is deployed and working with initial schema/RLS applied
 - [x] **PLAT-02**: FastAPI (or equivalent HTTP) exposes correct application endpoints with no critical runtime errors
-- [ ] **PLAT-03**: Frontend connects to Backend; authenticated reads load from the server (not mocks alone)
+- [x] **PLAT-03**: Frontend connects to Backend; authenticated reads load from the server (not mocks alone)
 - [ ] **PLAT-04**: Frontend mutations post to the server and persist end-to-end
 - [x] **PLAT-05**: Secrets live only in env/Cloud.ru configuration — never committed in source
 - [x] **PLAT-06**: CORS is configured correctly for the app and API origins
@@ -20,9 +20,9 @@ Requirements for initial release. Each maps to exactly one roadmap phase. Tracea
 
 ### Authentication
 
-- [ ] **AUTH-01**: User with `@sberbank.ru` / `@omega.sbrf.ru` credentials can sign in and get a session; non-allowed domains are rejected with inline domain message and no session (REQ-US-01)
+- [x] **AUTH-01**: User with `@sberbank.ru` / `@omega.sbrf.ru` credentials can sign in and get a session; non-allowed domains are rejected with inline domain message and no session (REQ-US-01)
 - [ ] **AUTH-02**: After login without returnUrl, user lands on current issue; with returnUrl/deep-link, user returns to original URL (REQ-US-02)
-- [ ] **AUTH-03**: Access policies enforce auth (RLS and/or middleware); unauthenticated protected routes redirect to login; non-admin admin APIs return 403
+- [x] **AUTH-03**: Access policies enforce auth (RLS and/or middleware); unauthenticated protected routes redirect to login; non-admin admin APIs return 403
 
 ### Issue & Archive
 
@@ -96,15 +96,15 @@ Deferred past v1. Tracked but not in current roadmap phases.
 |-------------|-------|--------|
 | PLAT-01 | Phase 1 | Pending |
 | PLAT-02 | Phase 1 | Complete |
-| PLAT-03 | Phase 1 | Pending |
+| PLAT-03 | Phase 1 | Complete |
 | PLAT-04 | Phase 1 | Pending |
 | PLAT-05 | Phase 1 | Complete |
 | PLAT-06 | Phase 1 | Complete |
 | PLAT-07 | Phase 1 | Complete |
 | PLAT-08 | Phase 1 | Pending |
-| AUTH-01 | Phase 1 | Pending |
+| AUTH-01 | Phase 1 | Complete |
 | AUTH-02 | Phase 1 | Pending |
-| AUTH-03 | Phase 1 | Pending |
+| AUTH-03 | Phase 1 | Complete |
 | ISSUE-01 | Phase 2 | Pending |
 | ISSUE-02 | Phase 2 | Pending |
 | ISSUE-03 | Phase 2 | Pending |

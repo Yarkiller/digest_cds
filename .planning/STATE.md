@@ -3,17 +3,17 @@ gsd_state_version: 1.0
 current_phase: 1
 current_phase_name: Platform Foundation & Auth
 status: executing
-stopped_at: Completed 01-01-PLAN.md
-last_updated: "2026-09-19T15:10:56.789Z"
+stopped_at: Completed 01-02-PLAN.md
+last_updated: "2026-09-19T15:16:08.802Z"
 last_activity: 2026-09-19
 last_activity_desc: Completed 01-01 HTTP tracer and .env.example
-state_head: 83098ee4d42068e675c7e605f4fff0f114fdbb43
+state_head: 909438c9a70dacbf46283e9e0a234a4617b0747a
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 7
-  completed_plans: 1
-  percent: 14
+  completed_plans: 2
+  percent: 0
 ---
 
 # Project State
@@ -28,11 +28,11 @@ See: .planning/PROJECT.md (updated 2026-09-19)
 ## Current Position
 
 Phase: 1 of 5 (Platform Foundation & Auth)
-Plan: 2 of 7 in current phase
+Plan: 3 of 7 in current phase
 Status: Ready to execute
 Last activity: 2026-09-19 — Completed 01-01-PLAN.md (HTTP tracer + .env.example)
 
-Progress: [█░░░░░░░░░] 14%
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
@@ -59,6 +59,7 @@ Progress: [█░░░░░░░░░] 14%
 | Plan | Duration | Tasks | Files |
 |------|----------|-------|-------|
 | Phase 01 P01 | 4min | 3 tasks | 16 files |
+| Phase 01 P02 | 12min | 2 tasks | 16 files |
 
 ## Accumulated Context
 
@@ -71,6 +72,8 @@ Decisions are logged in PROJECT.md Key Decisions and `<decisions>` blocks.
 - Brownfield `.planning/codebase/` preserved
 - [Phase 1]: Pin RESEARCH FastAPI stack versions after human package approval
 - [Phase 1]: create_app(settings) injectable; HTTP edge only under interface/http
+- [Phase 1]: Exact corporate email domain match after @ (not endswith) to avoid subdomain spoofing
+- [Phase 1]: AccessTokenClaims in domain; JWT verify only in infrastructure; injectable signing_key_resolver for offline tests
 
 ### Pending Todos
 
@@ -90,6 +93,6 @@ None yet. Ingest reported 0 blockers / 0 competing variants.
 
 ## Session Continuity
 
-Last session: 2026-09-19T15:10:56.773Z
-Stopped at: Completed 01-01-PLAN.md
+Last session: 2026-09-19T15:16:08.779Z
+Stopped at: Completed 01-02-PLAN.md
 Resume file: None
