@@ -21,7 +21,7 @@ Requirements for initial release. Each maps to exactly one roadmap phase. Tracea
 ### Authentication
 
 - [x] **AUTH-01**: User with `@sberbank.ru` / `@omega.sbrf.ru` credentials can sign in and get a session; non-allowed domains are rejected with inline domain message and no session (REQ-US-01)
-- [ ] **AUTH-02**: After login without returnUrl, user lands on current issue; with returnUrl/deep-link, user returns to original URL (REQ-US-02)
+- [x] **AUTH-02**: After login without returnUrl, user lands on current issue; with returnUrl/deep-link, user returns to original URL (REQ-US-02)
 - [x] **AUTH-03**: Access policies enforce auth (RLS and/or middleware); unauthenticated protected routes redirect to login; non-admin admin APIs return 403
 
 ### Issue & Archive
@@ -103,7 +103,7 @@ Deferred past v1. Tracked but not in current roadmap phases.
 | PLAT-07 | Phase 1 | Complete |
 | PLAT-08 | Phase 1 | Pending |
 | AUTH-01 | Phase 1 | Complete |
-| AUTH-02 | Phase 1 | Pending |
+| AUTH-02 | Phase 1 | Complete |
 | AUTH-03 | Phase 1 | Complete |
 | ISSUE-01 | Phase 2 | Pending |
 | ISSUE-02 | Phase 2 | Pending |
