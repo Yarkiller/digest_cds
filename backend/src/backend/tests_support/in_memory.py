@@ -1,7 +1,21 @@
 from __future__ import annotations
 
+from backend.domain.current_user import CurrentUser
 from backend.domain.knowledge import KnowledgeChunk
 from backend.domain.material import Material
+
+
+class InMemoryProfileRepository:
+    def __init__(self) -> None:
+        self._by_id: dict[str, CurrentUser] = {}
+
+    def get_or_upsert(self, user_id: str, email: str) -> CurrentUser:
+        existing = self._by_id.get(user_id)
+        if existing is not None and existing.email == email:
+            return existing
+        user = CurrentUser(id=user_id, email=email, role="authenticated")
+        self._by_id[user_id] = user
+        return user
 
 
 class InMemoryMaterialRepository:

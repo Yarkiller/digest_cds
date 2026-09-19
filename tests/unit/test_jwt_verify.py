@@ -63,6 +63,7 @@ def test_verify_access_token_accepts_valid_es256_jwt() -> None:
 
 
 def test_verify_access_token_rejects_hs256() -> None:
+    _private_key, public_jwk = _es256_keypair()
     token = jwt.encode(
         {
             "sub": "u1",
@@ -72,14 +73,14 @@ def test_verify_access_token_rejects_hs256() -> None:
             "iss": "https://auth.example/auth/v1",
             "exp": int(time.time()) + 60,
         },
-        "shared-secret",
+        "shared-secret-at-least-32-bytes-long!!",
         algorithm="HS256",
     )
     try:
         verify_access_token(
             token,
             issuer="https://auth.example/auth/v1",
-            signing_key_resolver=lambda _t: {"kty": "oct"},
+            signing_key_resolver=lambda _t: public_jwk,
         )
         raise AssertionError("expected TokenVerificationError")
     except TokenVerificationError:
