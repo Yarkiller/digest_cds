@@ -1,60 +1,73 @@
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import ErrorPanel from '../components/ErrorPanel.jsx'
-import {
-  AuthApiError,
-  getSignInInvocationCount,
-  signIn,
-} from '../services/authApi.js'
+import { AuthApiError, signUp, updateAuthDisplayName } from '../services/authApi.js'
 import { sanitizeReturnUrl } from '../services/authEnv.js'
 import { isAllowedCorporateEmail } from '../services/emailDomain.js'
+import { MeApiError, updateDisplayName } from '../services/meApi.js'
 
 const DOMAIN_MESSAGE = 'Вход только с корпоративного домена СВА'
+const CONFIRM_MESSAGE =
+  'Регистрация принята. Подтвердите email по ссылке из письма, затем войдите.'
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  const [loginNickname, setLoginNickname] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [domainError, setDomainError] = useState('')
-  const [fieldErrors, setFieldErrors] = useState({ email: '', password: '' })
+  const [fieldErrors, setFieldErrors] = useState({
+    loginNickname: '',
+    email: '',
+    password: '',
+  })
   const [networkError, setNetworkError] = useState(null)
   const [submitting, setSubmitting] = useState(false)
-  const [signInCalls, setSignInCalls] = useState(getSignInInvocationCount())
 
   async function handleSubmit(event) {
     event.preventDefault()
     setNetworkError(null)
 
     const nextFieldErrors = {
+      loginNickname: loginNickname.trim() ? '' : 'Заполните поле',
       email: email.trim() ? '' : 'Заполните поле',
       password: password ? '' : 'Заполните поле',
     }
     setFieldErrors(nextFieldErrors)
-    if (nextFieldErrors.email || nextFieldErrors.password) {
+    if (nextFieldErrors.loginNickname || nextFieldErrors.email || nextFieldErrors.password) {
       return
     }
 
     if (!isAllowedCorporateEmail(email.trim())) {
       setDomainError(DOMAIN_MESSAGE)
-      setSignInCalls(getSignInInvocationCount())
       return
     }
     setDomainError('')
 
     setSubmitting(true)
     try {
-      await signIn({ email: email.trim(), password })
-      setSignInCalls(getSignInInvocationCount())
+      const nickname = loginNickname.trim()
+      const session = await signUp({
+        email: email.trim(),
+        password,
+        displayName: nickname,
+      })
+      if (!session) {
+        setNetworkError({ message: CONFIRM_MESSAGE, retryable: false })
+        return
+      }
+      await updateDisplayName(nickname)
+      await updateAuthDisplayName(nickname)
       const dest = sanitizeReturnUrl(searchParams.get('returnUrl'))
       navigate(dest, { replace: true })
     } catch (err) {
-      setSignInCalls(getSignInInvocationCount())
       const message =
-        err instanceof AuthApiError
+        err instanceof AuthApiError || err instanceof MeApiError
           ? err.message
           : 'Сервис входа временно недоступен. Проверьте соединение и повторите попытку.'
-      const retryable = err instanceof AuthApiError ? err.retryable : true
+      const retryable =
+        err instanceof AuthApiError || err instanceof MeApiError ? err.retryable : true
       setNetworkError({ message, retryable })
     } finally {
       setSubmitting(false)
@@ -73,7 +86,11 @@ export default function LoginPage() {
           {networkError ? (
             <div className="flex flex-col gap-2">
               <ErrorPanel
-                title="Сервис входа временно недоступен"
+                title={
+                  networkError.retryable
+                    ? 'Сервис входа временно недоступен'
+                    : 'Регистрация'
+                }
                 message={networkError.message}
                 onDismiss={() => setNetworkError(null)}
               />
@@ -90,16 +107,47 @@ export default function LoginPage() {
           ) : null}
 
           <div>
-            <label className="mb-1 block text-sm font-medium" htmlFor="email">
+            <label className="mb-1 block text-sm font-medium" htmlFor="login-nickname">
+              Логин
+            </label>
+            <input
+              id="login-nickname"
+              name="login-nickname"
+              type="text"
+              autoComplete="nickname"
+              placeholder="Как вас показывать в шапке"
+              aria-invalid={Boolean(fieldErrors.loginNickname) || undefined}
+              className="min-h-11 w-full rounded-xl border border-rule bg-paper px-3 text-sm"
+              value={loginNickname}
+              onChange={(e) => {
+                setLoginNickname(e.target.value)
+                if (fieldErrors.loginNickname) {
+                  setFieldErrors((f) => ({ ...f, loginNickname: '' }))
+                }
+              }}
+              required
+            />
+            <p className="mt-1 text-xs text-muted">
+              Отображаемый ник для голосования — любое ненастоящее имя, не ФИО
+            </p>
+            {fieldErrors.loginNickname ? (
+              <p className="mt-1 text-sm text-[oklch(45%_0.14_25)]" role="alert">
+                {fieldErrors.loginNickname}
+              </p>
+            ) : null}
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-medium" htmlFor="register-email">
               Email
             </label>
             <input
-              id="email"
+              id="register-email"
               name="email"
               type="email"
               autoComplete="email"
               placeholder="name@sberbank.ru"
-              aria-describedby="email-help"
+              aria-describedby="register-email-help"
               aria-invalid={Boolean(domainError || fieldErrors.email) || undefined}
               className="min-h-11 w-full rounded-xl border border-rule bg-paper px-3 text-sm"
               value={email}
@@ -110,7 +158,7 @@ export default function LoginPage() {
               }}
               required
             />
-            <p id="email-help" className="mt-1 text-xs text-muted">
+            <p id="register-email-help" className="mt-1 text-xs text-muted">
               Только @sberbank.ru или @omega.sbrf.ru
             </p>
             {fieldErrors.email ? (
@@ -126,14 +174,14 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium" htmlFor="password">
+            <label className="mb-1 block text-sm font-medium" htmlFor="register-password">
               Пароль
             </label>
             <input
-              id="password"
+              id="register-password"
               name="password"
               type="password"
-              autoComplete="current-password"
+              autoComplete="new-password"
               aria-invalid={Boolean(fieldErrors.password) || undefined}
               className="min-h-11 w-full rounded-xl border border-rule bg-paper px-3 text-sm"
               value={password}
@@ -155,26 +203,19 @@ export default function LoginPage() {
             className="min-h-11 w-full rounded-full bg-accent px-4 text-sm font-medium text-accent-ink disabled:opacity-60"
             disabled={submitting}
           >
-            {submitting ? 'Вход…' : 'Войти'}
+            {submitting ? 'Регистрация…' : 'Зарегистрироваться'}
           </button>
         </form>
 
         <p className="mt-6 text-center text-sm text-ink-2">
-          Нет аккаунта?{' '}
-          <Link to="/register" className="underline">
-            Регистрация
+          Уже есть аккаунт?{' '}
+          <Link to="/login" className="underline">
+            Войти
           </Link>
         </p>
         <p className="mt-3 text-center text-xs text-muted">
           Доступ: @sberbank.ru, @omega.sbrf.ru
         </p>
-
-        <span
-          data-testid="auth-sign-in-calls"
-          data-count={String(signInCalls)}
-          className="hidden"
-          aria-hidden="true"
-        />
       </div>
     </div>
   )

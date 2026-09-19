@@ -5,6 +5,7 @@ import IssuePage from './pages/IssuePage.jsx'
 import KnowledgePage from './pages/KnowledgePage.jsx'
 import LoginPage from './pages/LoginPage.jsx'
 import MaterialPage from './pages/MaterialPage.jsx'
+import RegisterPage from './pages/RegisterPage.jsx'
 import VotingPage from './pages/VotingPage.jsx'
 
 export default function App() {
@@ -12,6 +13,7 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
         <Route
           element={
             <RequireAuth>
