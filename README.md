@@ -57,6 +57,31 @@ npm run dev
 
 Production-сборка: `npm run build` (из корня или `web/`), превью: `npm run preview --prefix web`.
 
+## Local platform (API + remote Supabase)
+
+Phase 1 uses the **existing remote** Supabase VM (`knowledge-db.ru`). Schema/RLS from
+[`supabase-integration/migrations/001_initial_schema.sql`](supabase-integration/migrations/001_initial_schema.sql)
+is already applied — **do not** re-run destructive migrations against the shared VM.
+
+1. Copy [`.env.example`](.env.example) → `.env` and fill `SUPABASE_*`, JWKS URL/issuer, CORS.
+   Never put `SUPABASE_SECRET_KEY` behind a `VITE_` prefix.
+2. Unit tests stay offline (`APP_CONTAINER=memory`, default). For live ping persistence:
+   set `APP_CONTAINER=live` and run:
+
+   ```bash
+   uv run uvicorn backend.interface.http.app:create_default_app --factory --host 127.0.0.1 --port 8000
+   ```
+
+   Live composition builds the **service_role** client only inside
+   `backend/composition/live.py` (adapters write `profiles` + `activity_events`).
+3. **Manual Auth user seed (D-08):** in the Supabase Auth dashboard, create 1–2 users
+   with corporate emails only (`@sberbank.ru` or `@omega.sbrf.ru`). No automated seed
+   script is checked in against the shared VM.
+4. **Email-domain allowlist:** if this self-host Auth build exposes a domain hook/allowlist,
+   enable the two corporate domains. If not available, enforcement is UI + API gates (D-04).
+5. Optional MCP/SQL check for an `auth.users` → `profiles` trigger was not available without
+   `POSTGRES_URL`; `ProfileRepository.get_or_upsert` remains the idempotent safety net either way.
+
 ## Тесты
 
 ```bash

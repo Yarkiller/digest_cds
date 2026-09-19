@@ -19,6 +19,8 @@ class Settings:
     supabase_secret_key: str = ""
     supabase_jwks_url: str = ""
     supabase_jwt_issuer: str = ""
+    # memory (default, unit tests) | live (Supabase adapters via composition/live.py)
+    app_container: str = "memory"
 
     @property
     def cors_origins(self) -> tuple[str, ...]:
@@ -31,6 +33,9 @@ class Settings:
     @classmethod
     def from_env(cls, environ: dict[str, str] | None = None) -> Settings:
         env = environ if environ is not None else os.environ
+        mode = (env.get("APP_CONTAINER") or "memory").strip().lower() or "memory"
+        if mode not in ("memory", "live"):
+            mode = "memory"
         return cls(
             api_cors_origins=env.get("API_CORS_ORIGINS", ""),
             allowed_email_domains=env.get("ALLOWED_EMAIL_DOMAINS", ""),
@@ -39,4 +44,5 @@ class Settings:
             supabase_secret_key=env.get("SUPABASE_SECRET_KEY", ""),
             supabase_jwks_url=env.get("SUPABASE_JWKS_URL", ""),
             supabase_jwt_issuer=env.get("SUPABASE_JWT_ISSUER", ""),
+            app_container=mode,
         )

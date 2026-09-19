@@ -1,0 +1,44 @@
+"""Live composition: construct Supabase clients only here (never in use-cases)."""
+
+from __future__ import annotations
+
+from backend.composition.container import AppContainer
+from backend.composition.settings import Settings
+from backend.tests_support.in_memory import (
+    InMemoryKnowledgeChunkRepository,
+    InMemoryMaterialRepository,
+)
+from supabase_integration import (
+    SupabasePingRecorder,
+    SupabaseProfileRepository,
+    create_publishable_client,
+    create_service_role_client,
+)
+
+
+def build_live_container(settings: Settings) -> AppContainer:
+    """Wire service_role adapters for profiles + activity_events; materials stay in-memory."""
+    if not settings.supabase_url or not settings.supabase_secret_key:
+        raise ValueError(
+            "live container requires SUPABASE_URL and SUPABASE_SECRET_KEY "
+            "(construct clients only in composition/live.py — never expose via VITE_)"
+        )
+
+    # service_role: RLS bypass for activity_events insert + profiles upsert (T-01-06)
+    admin_client = create_service_role_client(
+        settings.supabase_url,
+        settings.supabase_secret_key,
+    )
+    # optional publishable client kept for future user-scoped reads; constructed in composition only
+    if settings.supabase_publishable_key:
+        create_publishable_client(
+            settings.supabase_url,
+            settings.supabase_publishable_key,
+        )
+
+    return AppContainer(
+        materials=InMemoryMaterialRepository(),
+        chunks=InMemoryKnowledgeChunkRepository(),
+        profiles=SupabaseProfileRepository(admin_client),
+        pings=SupabasePingRecorder(admin_client),
+    )

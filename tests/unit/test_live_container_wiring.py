@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import pytest
@@ -75,7 +74,7 @@ def test_resolve_container_defaults_to_in_memory() -> None:
 def test_resolve_container_live_uses_builder(monkeypatch: pytest.MonkeyPatch) -> None:
     sentinel = build_in_memory_container()
     monkeypatch.setattr(
-        "backend.interface.http.app.build_live_container",
+        "backend.composition.live.build_live_container",
         lambda _settings: sentinel,
     )
     settings = Settings(app_container="live")
