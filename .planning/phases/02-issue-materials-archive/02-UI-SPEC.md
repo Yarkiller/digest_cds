@@ -1,10 +1,11 @@
 ---
 phase: 2
 slug: issue-materials-archive
-status: draft
+status: approved
 shadcn_initialized: false
 preset: none
 created: 2026-09-19
+reviewed_at: 2026-09-19
 ---
 
 # Phase 2 — UI Design Contract
@@ -176,20 +177,66 @@ All copy is **Russian**, calm editorial tone (warm paper, no glow/gamification).
 
 ## UI Considerations
 
-State coverage for the phase's shape-rooted UI states. Empty/error **copy** lives in `## Copywriting Contract`; rows below reference those rows.
+State coverage for the phase's shape-rooted UI states, computed by the GSD ui-consideration-probe (8 surfaces → 50 applicable considerations) and resolved against the locked decisions in `02-CONTEXT.md`. Empty/error **copy** lives in `## Copywriting Contract`; rows below reference those rows rather than restating copy.
 
-Applicable state considerations resolved: 7 covered, 1 backstop, 0 unresolved.
+**Coverage:** 50 applicable · **24 resolved (explicit)** · **10 backstop** (visual/held-out check required at verify) · **16 dismissed (reason recorded)** · **0 unresolved**.
 
-| Category | Element(s) | Status | Resolution / Reason |
-|----------|------------|--------|---------------------|
-| empty | issue materials (list-collection) | ✅ covered | 0 published materials renders the "Выпуск готовится" empty-state (heading + one sentence + CTA «В архив →»), not a blank page |
-| empty | archive (list-collection) | ✅ covered | 0 past issues renders "Архив пуст" empty-state with CTA «К текущему выпуску →» |
-| loading | issue / material / archive fetch | ✅ covered | Short row/prose skeleton placeholder distinct from empty state (error_handling §1.2) |
-| error | issue / material / archive page load (network/5xx) | ✅ covered | `bad_gateway.png` splash + friendly copy + «Повторить»; never HTTP codes; never silent mock fallback (D-21..23) |
-| error | material unknown/unpublished/draft id | ✅ covered | Soft editorial 404 «Материал не найден» + back-nav; NO splash art (D-39) |
-| partial | material optional blocks (dek, tags, provenance, related) | ✅ covered | Each block renders only when API provides it; empty blocks omitted; related links never fabricated (D-36/D-37) |
-| zero-one-many | voting callout open vs closed | ✅ covered | Open → violet-tinted fill + «Выбрать тему →»; closed → muted fill, no CTA; callout only on `/` (D-33/D-34/D-35) |
-| long-text | article title / prose headings (static-content) | 🧪 backstop | Display/H2 tokens use `overflow-wrap: anywhere`; very long titles + deep heading TOC need a visual/held-out check (no numeric truncation rule locked) |
+Surfaces (probe kinds): **E1** IssueToc materials (list-collection) · **E2** Archive grid (list-collection) · **E3** Material prose + section TOC (static-content/nav) · **E4** EditorialCallout (interactive-control) · **E5** ErrorPanel splash + Retry (interactive-control) · **E6** Soft editorial 404 (static-content) · **E7** Issue typography hero (static-content) · **E8** AppShell nav (nav).
+
+| # | Surface | Category | Status | Resolution / Reason |
+|---|---------|----------|--------|---------------------|
+| E1 | IssueToc | empty | ✅ explicit | 0 published materials → «Выпуск готовится» empty-state (H2 + one sentence + CTA «В архив →»), never a blank page (US-03.2) |
+| E1 | IssueToc | loading | ✅ explicit | Row skeleton placeholder, visually distinct from empty (error_handling §1.2) |
+| E1 | IssueToc | error | ✅ explicit | Page-level ErrorPanel splash + «Повторить» (see E5); never silent mock fallback (D-21) |
+| E1 | IssueToc | populated | ✅ explicit | Ordered rows: mono position number, display title, meta `{формат} · {мин}`, `→`, dek line |
+| E1 | IssueToc | partial | ✅ explicit | Per-row dek hidden when empty; only meta the API returns is rendered (D-36/D-37) |
+| E1 | IssueToc | overflow | 🧪 backstop | { statement: "Long material list scrolls in normal page flow without clipping row hit-targets", verification: backstop } |
+| E1 | IssueToc | zero-one-many | 🧪 backstop | { statement: "Count caption uses correct Russian plural form (материал/материала/материалов) at 1/2/5+", verification: backstop } |
+| E1 | IssueToc | long-text | 🧪 backstop | { statement: "Long material titles wrap via overflow-wrap:anywhere without breaking the row grid", verification: backstop } |
+| E2 | Archive | empty | ✅ explicit | 0 past issues → «Архив пуст» empty-state + CTA «К текущему выпуску →» (D-30, US-28.2) |
+| E2 | Archive | loading | ✅ explicit | Card skeleton grid, distinct from empty (§1.2) |
+| E2 | Archive | error | ✅ explicit | Page-level ErrorPanel splash + «Повторить» (see E5) |
+| E2 | Archive | populated | ✅ explicit | Grid of `issue-cover` cards (overline №, H2 period, caption count) → `/issues/:id` |
+| E2 | Archive | partial | ⛔ dismissed | Reason: archive cards use always-present issue fields (number, period, material count); no partial-field state exists |
+| E2 | Archive | overflow | 🧪 backstop | { statement: "Archive grid wraps/reflows at many issues; cards keep 44px targets on mobile", verification: backstop } |
+| E2 | Archive | zero-one-many | ✅ explicit | 0 → empty-state; 1 → single card in grid; many → responsive grid |
+| E3 | Material | empty | ⛔ dismissed | Reason: a published material always has `body_markdown` (MAT-01); unknown/draft/empty is not a valid published state — handled by soft-404 (E6) |
+| E3 | Material | loading | ✅ explicit | Prose skeleton placeholder (§1.2) |
+| E3 | Material | error | ✅ explicit | Page-level ErrorPanel splash + «Повторить» (network/5xx) — distinct from soft-404 (D-39) |
+| E3 | Material | populated | ✅ explicit | Prose column (`--container-reading`) + section TOC generated from `body_markdown` headings (D-38) |
+| E3 | Material | partial | ✅ explicit | Optional blocks (dek, tags, provenance, related) render only when present; never fabricated (D-36/D-37) |
+| E3 | Material | overflow | 🧪 backstop | { statement: "Long prose scrolls; sticky side TOC / mobile <details> stays usable; no horizontal overflow", verification: backstop } |
+| E3 | Material | zero-one-many | ✅ explicit | 0 headings → section TOC omitted; 1..N headings → TOC entries with anchor scroll (US-07.2) |
+| E3 | Material | long-text | 🧪 backstop | { statement: "Very long article title + deep heading tree wrap without truncation rule; visual check", verification: backstop } |
+| E4 | EditorialCallout | loading | ✅ explicit | Cycle status arrives with the issue DTO; no independent spinner — callout renders once issue loads |
+| E4 | EditorialCallout | error | ✅ explicit | If cycle DTO absent/failed, callout is hidden (honest stub, no in-callout error UI); page-level error covers fetch failure (D-32) |
+| E4 | EditorialCallout | long-text | 🧪 backstop | { statement: "Long topic label / end-date string wraps inside callout without overflowing border", verification: backstop } |
+| E5 | ErrorPanel | empty | ⛔ dismissed | Reason: the panel is itself the fallback surface; it has no data-empty sub-state |
+| E5 | ErrorPanel | loading | ✅ explicit | «Повторить» shows disabled + spinner during idempotent in-flight retry (§1.3) |
+| E5 | ErrorPanel | error | ✅ explicit | This IS the error surface; repeated failure keeps splash + «Повторить» (no HTTP codes, D-23) |
+| E5 | ErrorPanel | populated | ⛔ dismissed | Reason: successful load replaces the panel with content; no populated state for the panel itself |
+| E5 | ErrorPanel | overflow | ⛔ dismissed | Reason: fixed short friendly copy + capped splash image (360–420px); no overflowing content |
+| E5 | ErrorPanel | long-text | ⛔ dismissed | Reason: copy is fixed Russian strings, no dynamic/user text |
+| E6 | Soft 404 | loading | ⛔ dismissed | Reason: soft-404 is a terminal not-found state after fetch resolves; the loading state belongs to the material page (E3) |
+| E6 | Soft 404 | error | ✅ explicit | Soft-404 is the not-found handling itself; calm «Материал не найден» + back-nav; distinct from network/5xx splash (D-39) |
+| E6 | Soft 404 | overflow | ⛔ dismissed | Reason: fixed short copy + back-nav links; no overflowing content |
+| E6 | Soft 404 | long-text | ⛔ dismissed | Reason: fixed copy, no dynamic long text |
+| E7 | Hero | empty | ⛔ dismissed | Reason: hero fields (number, period, title) always present for a loaded issue; the no-issue case is the empty-issue state on E1 |
+| E7 | Hero | loading | ✅ explicit | Covered by the issue skeleton (§1.2) |
+| E7 | Hero | error | ✅ explicit | Page-level ErrorPanel splash + «Повторить» (see E5) |
+| E7 | Hero | populated | ✅ explicit | Overline `Выпуск №{n} · {период}` → Display title → caption `{редакция} · {N} материалов` (D-26) |
+| E7 | Hero | overflow | 🧪 backstop | { statement: "Long issue title reflows within container; no clip/scrollbar on hero", verification: backstop } |
+| E7 | Hero | long-text | 🧪 backstop | { statement: "Display title with unusually long text wraps via overflow-wrap:anywhere, preserving hero rhythm", verification: backstop } |
+| E8 | AppShell nav | empty | ⛔ dismissed | Reason: nav items are a fixed static set (Выпуск, Архив, База…); never empty |
+| E8 | AppShell nav | loading | ⛔ dismissed | Reason: nav is static chrome, always present, no async load |
+| E8 | AppShell nav | error | ⛔ dismissed | Reason: static nav has no fetch; unaffected by page-level errors |
+| E8 | AppShell nav | populated | ✅ explicit | Fixed nav items incl. new «Архив» (between «Выпуск» and «База») + «← К текущему выпуску» backlink (D-28) |
+| E8 | AppShell nav | partial | ⛔ dismissed | Reason: fixed item set; no partial-field state |
+| E8 | AppShell nav | overflow | 🧪 backstop | { statement: "Nav collapses/reflows responsively at mobile widths without overlapping the wordmark", verification: backstop } |
+| E8 | AppShell nav | zero-one-many | ⛔ dismissed | Reason: fixed item count |
+| E8 | AppShell nav | long-text | ⛔ dismissed | Reason: fixed short nav labels, no dynamic text |
+
+> **Planner note:** the 10 `backstop` rows lift into `must_haves.truths` — at verify time each must be confirmed by an explicit visual/held-out check (responsive/overflow snapshot or property test) or it routes to `insufficient_spec → human_needed`; never a silent pass.
 
 ---
 
@@ -205,11 +252,11 @@ No shadcn initialization and no third-party registries declared for this phase. 
 
 ## Checker Sign-Off
 
-- [ ] Dimension 1 Copywriting: PASS
-- [ ] Dimension 2 Visuals: PASS
-- [ ] Dimension 3 Color: PASS
-- [ ] Dimension 4 Typography: PASS
-- [ ] Dimension 5 Spacing: PASS
-- [ ] Dimension 6 Registry Safety: PASS
+- [x] Dimension 1 Copywriting: PASS
+- [x] Dimension 2 Visuals: PASS
+- [x] Dimension 3 Color: PASS
+- [x] Dimension 4 Typography: PASS
+- [x] Dimension 5 Spacing: PASS
+- [x] Dimension 6 Registry Safety: PASS
 
-**Approval:** pending
+**Approval:** approved (gsd-ui-checker, 2026-09-19) — 6/6 dimensions PASS; 2 non-blocking observations (locked type-scale size count, non-canonical spacing substeps) accepted as they derive from the pre-existing locked token system.
