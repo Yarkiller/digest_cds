@@ -1,19 +1,19 @@
 ---
 gsd_state_version: 1.0
-current_phase: 1
-current_phase_name: Platform Foundation & Auth
-status: executing
-stopped_at: CHECKPOINT 01-06 live FE↔BE proof awaiting human approval
-last_updated: "2026-09-19T15:36:20.657Z"
+current_phase: 2
+current_phase_name: Issue, Materials & Archive
+status: context_ready
+stopped_at: Phase 2 discuss complete — 02-CONTEXT.md ready for plan-phase
+last_updated: "2026-09-19T17:55:00Z"
 last_activity: 2026-09-19
-last_activity_desc: Completed 01-01 HTTP tracer and .env.example
+last_activity_desc: Phase 2 discuss-phase — CONTEXT.md gathered
 state_head: f7c1ca9f9d75f13684e4e140a60398beb77896b0
 progress:
   total_phases: 5
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 7
   completed_plans: 6
-  percent: 0
+  percent: 20
 ---
 
 # Project State
@@ -23,37 +23,31 @@ progress:
 See: .planning/PROJECT.md (updated 2026-09-19)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Phase 1 — Platform Foundation & Auth
+**Current focus:** Phase 2 — Issue, Materials & Archive (context ready)
 
 ## Current Position
 
-Phase: 1 of 5 (Platform Foundation & Auth)
-Plan: 6 of 7 in current phase
-Status: Ready to execute
-Last activity: 2026-09-19 — Completed 01-01-PLAN.md (HTTP tracer + .env.example)
+Phase: 2 of 5 (Issue, Materials & Archive)
+Plan: discuss complete — ready for `/gsd-plan-phase 2`
+Status: **context_ready** (`02-CONTEXT.md`)
+Last activity: 2026-09-19 — Phase 2 discuss (live cutover, seed, archive, voting stub, material honesty)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [██░░░░░░░░] 20%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 1
-- Average duration: 4min
-- Total execution time: 4min
+- Total plans completed: 6
+- Average duration: ~7min (plans 01–05 timed)
+- Total execution time: ~35min + 01-06 docs/human follow-up
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| - | - | - | - |
+| 1. Platform Foundation & Auth | 6 | 6 executed | ~7min |
 
-**Recent Trend:**
-
-- Last 5 plans: —
-- Trend: —
-
-*Updated after each plan completion*
 **Per-Plan Metrics:**
 
 | Plan | Duration | Tasks | Files |
@@ -62,7 +56,8 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01 P02 | 12min | 2 tasks | 16 files |
 | Phase 01 P03 | 3min | 2 tasks | 9 files |
 | Phase 01 P04 | 4min | 3 tasks | 15 files |
-| Phase 01-platform-foundation-auth P05 | 12min | 3 tasks | 16 files |
+| Phase 01 P05 | 12min | 3 tasks | 16 files |
+| Phase 01 P06 | follow-up | 3 tasks | docs + human proof |
 
 ## Accumulated Context
 
@@ -84,17 +79,16 @@ Decisions are logged in PROJECT.md Key Decisions and `<decisions>` blocks.
 - [Phase 1]: Mock authApi/meApi when VITE_USE_MOCKS!==false; live only when false
 - [Phase 1]: RequireAuth skips gate when mocks on; force-gate via window.__DIGEST_FORCE_AUTH_GATE__
 - [Phase 1]: sanitizeReturnUrl same-origin relative paths only
-- [Phase 1]: [Phase 1]: PLAT-08 local runbook + Cloud.ru path-only docs; live FE↔BE proof awaits human approval
+- [Phase 1]: PLAT-08 local runbook + Cloud.ru path-only docs; live FE↔BE proof human-approved 2026-09-19
+- [Phase 1]: Verification PASS_WITH_GAPS — admin 403 → Phase 5; Cloud.ru deploy docs-only; logout UI non-blocking
 
 ### Pending Todos
 
-None yet.
+None — ready to plan/execute Phase 2.
 
 ### Blockers/Concerns
 
-yet. Ingest reported 0 blockers / 0 competing variants.
-
-- 01-06 live FE↔BE platform proof awaiting human approval (type approved)
+None. Live FE↔BE proof approved 2026-09-19.
 
 ## Deferred Items
 
@@ -103,9 +97,13 @@ yet. Ingest reported 0 blockers / 0 competing variants.
 | Post-v1 | Public leaderboard (ADR-0001) | Deferred | 2026-09-19 | v1 |
 | Post-v1 | Quiz cards (REQ-US-29) | Deferred | 2026-09-19 | v1 |
 | Post-v1 | Admin YAML pipeline UI (REQ-US-30) | Deferred | 2026-09-19 | v1 |
+| Phase 5 | AUTH-03 admin-API 403 | Deferred | 2026-09-19 | Phase 1 verify |
+| Ops | Cloud.ru app VM deploy (D-07) | Docs only | 2026-09-19 | Phase 1 |
+| UX | Logout button in shell | Non-blocking | 2026-09-19 | Phase 1 |
 
 ## Session Continuity
 
-Last session: 2026-09-19T15:36:03.663Z
-Stopped at: CHECKPOINT 01-06 live FE↔BE proof awaiting human approval
-Resume file: .planning/phases/01-platform-foundation-auth/01-06-PLAN.md
+Last session: 2026-09-19T20:05:07Z
+Stopped at: Phase 1 verification complete (PASS_WITH_GAPS)
+Resume file: — start Phase 2 (`/gsd-plan-phase 2` or discuss-phase)
+Verification: `.planning/phases/01-platform-foundation-auth/01-VERIFICATION.md`
