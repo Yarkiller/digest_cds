@@ -13,7 +13,7 @@
 | signOut | INTEGRATE | API present; UI logout control deferred (non-blocking) |
 | updateUser (user_metadata) | INTEGRATE | Display-name sync (`full_name` / `display_name`) |
 | onAuthStateChange | OPT-OUT | not needed yet — getSession on route load is enough for Phase 1 |
-| signUp | OPT-OUT | explicitly out of scope — users seeded in Auth dashboard (D-08) |
+| signUp | INTEGRATE | amend D-08 / G-01-3 — self-service register via publishable client; Логин on /register |
 | signInWithOAuth / SSO | OPT-OUT | D-03 — no corporate SSO in Phase 1 |
 | MFA / TOTP / phone | OPT-OUT | D-03 — email+password only |
 | resetPasswordForEmail / exchangeCodeForSession | OPT-OUT | not needed yet — ops reset via dashboard |
