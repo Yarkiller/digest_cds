@@ -98,7 +98,7 @@ Each task was committed atomically:
 1. **Task 1: Amend COVERAGE signUp + CONTEXT D-08** - `149719b` (docs)
 2. **Task 2: Update local platform runbook for register UX** - `d5fe1ab` (docs)
 
-**Plan metadata:** _(pending final docs commit)_
+**Plan metadata:** `517805c` (docs: complete plan)
 
 ## Files Created/Modified
 
