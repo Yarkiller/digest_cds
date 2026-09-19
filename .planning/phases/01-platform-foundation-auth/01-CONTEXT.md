@@ -18,12 +18,12 @@ Deliver a working secured foundation: local Vite + local FastAPI against the exi
 - **D-02:** Client session via Supabase JS default storage (localStorage/sessionStorage). — **Reversibility:** costly — moving to httpOnly cookies needs cookie bridge and CSP/CORS revisits.
 - **D-03:** Phase 1 auth is email+password only; no MFA and no corporate SSO.
 - **D-04:** Allowed domains `@sberbank.ru` / `@omega.sbrf.ru` enforced defense-in-depth: Supabase Auth config/hooks + UI inline message + FastAPI email claim check. — **Reversibility:** reversible for UI layer; Auth hook is more sticky.
+- **D-08 (amended G-01-3):** Primary path is self-service registration on `/register` via publishable-client `signUp` (email + password + display nickname «Логин»). Login on `/login` stays email+password only — nickname is collected at registration, not on every sign-in. Optional manual Auth dashboard seed remains an ops fallback for shared-VM test users; do **not** add automated seed scripts against the shared VM (that idea stays deferred).
 
 ### Runtime target first
 - **D-05:** Day-1 runtime = local Vite + local FastAPI pointed at the **existing remote VM Supabase** (schema already applied; MCP available). Do not require a second local Docker Supabase for Phase 1 success.
 - **D-06:** Secrets via gitignored `.env` + committed `.env.example` (SUPABASE_URL, keys, CORS, API URL). Never commit secrets.
 - **D-07:** Do **not** deploy FastAPI to Cloud.ru app VM in Phase 1; document the deploy path only (PLAT-08).
-- **D-08:** Seed 1–2 corporate test users manually in Supabase Auth dashboard; document in README (shared VM — avoid reckless automated seed).
 
 ### FE↔BE cutover
 - **D-09:** Keep mocks behind `VITE_USE_MOCKS` (default true for offline Playwright; false for live platform proof).

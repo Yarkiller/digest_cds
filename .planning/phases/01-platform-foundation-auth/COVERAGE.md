@@ -47,4 +47,4 @@
 ## Notes
 
 - Secrets: publishable key in SPA; `SUPABASE_SECRET_KEY` / service_role only in server `composition/live.py` (T-01-06).
-- Auth user seed remains manual dashboard steps (D-08), documented in `docs/agents/local-platform-runbook.md`.
+- Self-service `/register` (signUp + «Логин») is the primary Auth path (amended D-08 / G-01-3). Manual Auth dashboard seed remains an optional ops fallback on the shared VM — documented in `docs/agents/local-platform-runbook.md`; no automated seed scripts.
