@@ -84,4 +84,34 @@ test.describe("SPA auth contracts", () => {
     await page.getByRole("button", { name: /проверить ping/i }).click();
     await expect(page.getByTestId("platform-ping")).toContainText(/ok/i);
   });
+
+  test("Регистрация on login navigates to /register", async ({ page }) => {
+    await page.goto("/login");
+    await page.getByRole("link", { name: /регистрация/i }).click();
+    await expect(page).toHaveURL(/\/register$/);
+  });
+
+  test("login form is email and password only", async ({ page }) => {
+    await page.goto("/login");
+    await expect(page.getByLabel(/^email$/i)).toBeVisible();
+    await expect(page.getByLabel(/^пароль$/i)).toBeVisible();
+    await expect(page.getByLabel(/^имя$/i)).toHaveCount(0);
+    await expect(page.getByLabel(/^логин$/i)).toHaveCount(0);
+  });
+
+  test("shows Логин as shell identity after register", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/login");
+    await page.getByRole("link", { name: /регистрация/i }).click();
+    await expect(page).toHaveURL(/\/register$/);
+
+    await page.getByLabel(/^логин$/i).fill("Иван Петров");
+    await page.getByLabel(/^email$/i).fill("analyst@sberbank.ru");
+    await page.getByLabel(/^пароль$/i).fill("correct-horse");
+    await page.getByRole("button", { name: /зарегистрироваться/i }).click();
+
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.getByTestId("shell-identity")).toHaveText("Иван Петров");
+    await expect(page.getByText("Мария Сидорова")).toHaveCount(0);
+  });
 });
