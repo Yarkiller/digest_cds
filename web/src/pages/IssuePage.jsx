@@ -1,12 +1,14 @@
 import { currentIssue, getIssueMaterials } from '../data/mock.js'
 import EditorialCallout from '../components/EditorialCallout.jsx'
 import IssueToc from '../components/IssueToc.jsx'
+import PlatformProofBanner from '../components/PlatformProofBanner.jsx'
 
 export default function IssuePage() {
   const items = getIssueMaterials()
 
   return (
     <section>
+      <PlatformProofBanner />
       <p className="text-xs uppercase tracking-wide text-muted">
         Выпуск №{currentIssue.number} · {currentIssue.period}
       </p>
