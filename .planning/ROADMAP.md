@@ -27,8 +27,9 @@ Brownfield path from mock UI + in-memory ports to a production-shaped Digest CDS
   4. Frontend loads at least one protected resource from the server and can POST a mutation that persists
   5. Network/validation errors are handled per global error UX; README/deploy docs successfully bring up local + documented Cloud.ru path
 
-**Plans**: 6/7 plans executed (verified PASS_WITH_GAPS 2026-09-19)
+**Plans**: 6/8 plans executed; 2 gap-closure plans pending (G-01-3)
 **Verification:** `.planning/phases/01-platform-foundation-auth/01-VERIFICATION.md`
+**UAT:** `.planning/phases/01-platform-foundation-auth/01-UAT.md` (gap G-01-3 diagnosed)
 
 Plans:
 
@@ -39,6 +40,8 @@ Plans:
 - [x] 01-04-PLAN.md — Live Supabase adapters, composition, manual Auth seed
 - [x] 01-05-PLAN.md — SPA Auth, RequireAuth, meApi, Playwright auth flows
 - [x] 01-06-PLAN.md — Local/Cloud.ru docs + live FE↔BE proof checkpoint
+- [ ] 01-07-PLAN.md — Gap G-01-3: self-service /register + slim login (email+password)
+- [ ] 01-08-PLAN.md — Gap G-01-3: COVERAGE/CONTEXT/runbook amend (signUp INTEGRATE)
 
 ### Phase 2: Issue, Materials & Archive
 
