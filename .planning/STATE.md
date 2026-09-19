@@ -3,16 +3,16 @@ gsd_state_version: 1.0
 current_phase: 1
 current_phase_name: Platform Foundation & Auth
 status: executing
-stopped_at: Completed 01-03-PLAN.md
-last_updated: "2026-09-19T15:21:04.203Z"
+stopped_at: Completed 01-04-PLAN.md
+last_updated: "2026-09-19T15:26:45.631Z"
 last_activity: 2026-09-19
 last_activity_desc: Completed 01-01 HTTP tracer and .env.example
-state_head: ad87f5e72d76cc1c80c49b9f3d51e68b8d53770a
+state_head: 6c46f03ef667b048cc1f174991b0ec197f2c7620
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 7
-  completed_plans: 3
+  completed_plans: 4
   percent: 0
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-09-19)
 ## Current Position
 
 Phase: 1 of 5 (Platform Foundation & Auth)
-Plan: 4 of 7 in current phase
+Plan: 5 of 7 in current phase
 Status: Ready to execute
 Last activity: 2026-09-19 — Completed 01-01-PLAN.md (HTTP tracer + .env.example)
 
@@ -61,6 +61,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01 P01 | 4min | 3 tasks | 16 files |
 | Phase 01 P02 | 12min | 2 tasks | 16 files |
 | Phase 01 P03 | 3min | 2 tasks | 9 files |
+| Phase 01 P04 | 4min | 3 tasks | 15 files |
 
 ## Accumulated Context
 
@@ -77,6 +78,8 @@ Decisions are logged in PROJECT.md Key Decisions and `<decisions>` blocks.
 - [Phase 1]: AccessTokenClaims in domain; JWT verify only in infrastructure; injectable signing_key_resolver for offline tests
 - [Phase 1]: PingRecorder returns recorded id; POST /me/ping body {ok,id}; empty payload until Plan 04
 - [Phase 1]: AUTH-03 admin-API 403 remains deferred to Phase 5; /me/ping uses JWT+domain gate only
+- [Phase 1]: APP_CONTAINER=memory|live selects builder; service_role only in composition/live.py
+- [Phase 1]: Auth dashboard user seed deferred to Plan 01-06 live proof (D-08)
 
 ### Pending Todos
 
@@ -96,6 +99,6 @@ None yet. Ingest reported 0 blockers / 0 competing variants.
 
 ## Session Continuity
 
-Last session: 2026-09-19T15:21:04.183Z
-Stopped at: Completed 01-03-PLAN.md
+Last session: 2026-09-19T15:26:45.612Z
+Stopped at: Completed 01-04-PLAN.md
 Resume file: None

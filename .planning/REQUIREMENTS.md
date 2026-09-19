@@ -9,7 +9,7 @@ Requirements for initial release. Each maps to exactly one roadmap phase. Tracea
 
 ### Platform & Operability
 
-- [ ] **PLAT-01**: Self-hosted Supabase (Postgres + pgvector) is deployed and working with initial schema/RLS applied
+- [x] **PLAT-01**: Self-hosted Supabase (Postgres + pgvector) is deployed and working with initial schema/RLS applied
 - [x] **PLAT-02**: FastAPI (or equivalent HTTP) exposes correct application endpoints with no critical runtime errors
 - [x] **PLAT-03**: Frontend connects to Backend; authenticated reads load from the server (not mocks alone)
 - [x] **PLAT-04**: Frontend mutations post to the server and persist end-to-end
@@ -94,7 +94,7 @@ Deferred past v1. Tracked but not in current roadmap phases.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PLAT-01 | Phase 1 | Pending |
+| PLAT-01 | Phase 1 | Complete |
 | PLAT-02 | Phase 1 | Complete |
 | PLAT-03 | Phase 1 | Complete |
 | PLAT-04 | Phase 1 | Complete |
