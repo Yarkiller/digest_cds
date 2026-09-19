@@ -75,6 +75,21 @@ Restart `npm run dev` after creating/editing it — Vite only reads env files at
 
 **Primary path — self-service registration:** new operators use SPA `/register` with corporate email, password, and display nickname **«Логин»** (publishable-client `signUp` only — never `service_role` in the browser).
 
+### 4.1 Auth mailer / autoconfirm (G-01-3b — required for `/register`)
+
+On `knowledge-db.ru`, GoTrue had `mailer_autoconfirm=false` and a broken SMTP path. Signup then returned **500** `Error sending confirmation email` and **no Auth user was created**.
+
+**Phase 1 unblock (do this now):** enable autoconfirm so signup does not depend on email:
+
+1. Open Supabase Studio → **Authentication** → **Providers** → **Email**.
+2. Turn **Confirm email** **OFF** (equivalent env: `GOTRUE_MAILER_AUTOCONFIRM=true` + restart Auth/GoTrue on the VM).
+3. Verify: `GET https://knowledge-db.ru/auth/v1/settings` shows `"mailer_autoconfirm":true`.
+4. Smoke: `POST /auth/v1/signup` with a new `@sberbank.ru` / `@omega.sbrf.ru` address returns **2xx** and the user appears under Authentication → Users.
+
+**SMTP (ops ticket — not Phase 1):** keep a ticket to configure a working mailer. Until SMTP is healthy, **do not ship product features that depend on outbound email** (password-reset links, invite-by-email, confirmation flows). Self-service `/register` is allowed only because autoconfirm removes the email dependency. Revisit SMTP after Phase 1.
+
+**SPA follow-up (deferred):** map mailer/confirmation failures to honest Russian copy — never the generic «Сервис входа временно недоступен» NETWORK banner (see `.planning/debug/g-01-3b-signup-mailer.md`).
+
 **Ops fallback — shared VM dashboard seed:** if you need a pre-created test account without going through `/register`:
 
 1. Open the Supabase Auth dashboard for the knowledge-db.ru project.

@@ -19,6 +19,7 @@ Deliver a working secured foundation: local Vite + local FastAPI against the exi
 - **D-03:** Phase 1 auth is email+password only; no MFA and no corporate SSO.
 - **D-04:** Allowed domains `@sberbank.ru` / `@omega.sbrf.ru` enforced defense-in-depth: Supabase Auth config/hooks + UI inline message + FastAPI email claim check. — **Reversibility:** reversible for UI layer; Auth hook is more sticky.
 - **D-08 (amended G-01-3):** Primary path is self-service registration on `/register` via publishable-client `signUp` (email + password + display nickname «Логин»). Login on `/login` stays email+password only — nickname is collected at registration, not on every sign-in. Optional manual Auth dashboard seed remains an ops fallback for shared-VM test users; do **not** add automated seed scripts against the shared VM (that idea stays deferred).
+- **D-17 (G-01-3b):** Shared VM Auth uses **mailer autoconfirm** for Phase 1 so `/register` does not depend on SMTP. SMTP remains an **ops ticket outside Phase 1**; until mailer works, do not expose email-dependent product features (reset/invite/confirm). SPA must later map mailer failures to honest copy (deferred follow-up — not generic NETWORK).
 
 ### Runtime target first
 - **D-05:** Day-1 runtime = local Vite + local FastAPI pointed at the **existing remote VM Supabase** (schema already applied; MCP available). Do not require a second local Docker Supabase for Phase 1 success.

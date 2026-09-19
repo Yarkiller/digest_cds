@@ -228,7 +228,23 @@ blocked: 0
     - web/src/services/authApi.js
     - web/src/pages/RegisterPage.jsx
   missing:
-    - "Working SMTP or GOTRUE_MAILER_AUTOCONFIRM=true on shared VM"
-    - "Clearer SPA error when confirmation mailer fails (optional)"
+    - "GOTRUE_MAILER_AUTOCONFIRM=true / Confirm email OFF on knowledge-db.ru (ops — now)"
   debug_session: g-01-3b-signup-mailer
+  decision: |
+    Option 3 split (2026-09-19): (1) autoconfirm now to unblock UAT;
+    (2) SPA honest mailer error UX = deferred follow-up;
+    (3) SMTP = ops ticket outside Phase 1 — no email-dependent product features until fixed.
+```
+
+## Deferred Follow-Ups
+
+```yaml
+- test: 3
+  idea: "SPA: map GoTrue confirmation-mailer / unexpected_failure signup errors to honest Russian copy (not generic NETWORK «Сервис входа временно недоступен»)"
+  deferred_at: 2026-09-19
+  tracks: G-01-3b-spa-copy
+- test: 3
+  idea: "Ops ticket: configure working SMTP for GoTrue on knowledge-db.ru; until then do not ship password-reset / invite / confirm-email product features"
+  deferred_at: 2026-09-19
+  tracks: G-01-3b-smtp-ops
 ```

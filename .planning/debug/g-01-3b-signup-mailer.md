@@ -25,12 +25,13 @@ Self-service `signUp` reaches GoTrue, but Auth fails while **sending the confirm
 
 This is **not** an SPA routing/UI bug from 01-07; the FE correctly calls `supabase.auth.signUp`. Login with existing dashboard-seeded users can still work (no confirmation mail on password grant).
 
-## Fix options
+## Fix options (operator decision 2026-09-19)
 
-1. **Ops (preferred for corp internal):** set `GOTRUE_MAILER_AUTOCONFIRM=true` (or dashboard «Confirm email» off) on knowledge-db.ru so signup does not depend on SMTP.
-2. **Ops:** configure working SMTP for GoTrue so confirmation emails send.
-3. **App (secondary):** map `error_code` / message containing confirmation email to a clear Russian copy (not generic network); keep Retry for true transport failures.
-4. **Product fallback:** if SMTP cannot be fixed soon, document dashboard seed as temporary path and soft-disable Register CTA until mailer works.
+**Chosen path = option 3, split:**
+
+1. **Autoconfirm now** — unblock UAT Test 3 (`Confirm email` OFF / `GOTRUE_MAILER_AUTOCONFIRM=true`). See runbook §4.1.
+2. **SPA error UX** — **deferred follow-up** (not blocking Phase 1 seal): map confirmation-mailer failures to honest Russian copy; never lie with generic NETWORK «Сервис входа временно недоступен».
+3. **SMTP** — **ops ticket, not Phase 1.** Document and do not ship email-dependent features until mailer is healthy. Revisit later.
 
 ## Evidence artifacts
 
