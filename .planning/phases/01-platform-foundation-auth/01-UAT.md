@@ -202,7 +202,9 @@ blocked: 0
 ```yaml
 - gap_id: G-01-3
   truth: "Corporate login → GET /me → POST /me/ping works; login UX is email+password only; registration is a separate form with a clear name field (ФИО or Имя)"
-  status: failed
+  status: resolved
+  resolved_by: 01-07-PLAN.md, 01-08-PLAN.md
+  resolved_at: 2026-09-19
   reason: "User reported: кнопка Регистрация не активна и не ведёт к регистрации. Форма для входа не должна иметь поля Имя (при каждом входе заполнять нельзя). Форма регистрации должна иметь поле имени с понятной подписью — например ФИО или только Имя."
   severity: major
   test: 3
