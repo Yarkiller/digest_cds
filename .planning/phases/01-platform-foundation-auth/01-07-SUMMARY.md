@@ -140,7 +140,7 @@ Each task was committed atomically:
 2. **Task 2: Register domain gate + returnUrl + empty Логин** — `a3dc9f6` (test) → `ad454a8` (feat)
 3. **Task 3: Register network failure ErrorPanel + Retry** — `9f79235` (test; feat already in Task 1)
 
-**Plan metadata:** (pending docs commit)
+**Plan metadata:** `b87fc16` (docs: complete plan)
 
 _Note: TDD tasks may have multiple commits (test → feat → refactor)_
 
