@@ -35,8 +35,9 @@ Threat note (T-01-13): keep secrets in `.env` only — do not paste keys into ma
 # from repo root
 uv sync
 # live adapters → profiles + activity_events (service_role only in composition/live.py)
-# ensure APP_CONTAINER=live in .env
-uv run uvicorn backend.interface.http.app:create_default_app --factory --host 127.0.0.1 --port 8000
+# --env-file .env is REQUIRED: settings read os.environ and nothing auto-loads .env.
+# Without it APP_CONTAINER defaults to `memory` and JWKS/CORS are empty (ping won't persist).
+uv run --env-file .env uvicorn backend.interface.http.app:create_default_app --factory --host 127.0.0.1 --port 8000
 ```
 
 Smoke: `GET http://127.0.0.1:8000/health` should return OK. Structured JSON logs on stdout include `request_id` on each request (PLAT-06).
@@ -54,25 +55,34 @@ npm run platform:runbook
 ```bash
 npm install
 npm install --prefix web
-# for live proof: VITE_USE_MOCKS=false in .env (Vite loads from root / web as configured)
 npm run dev
 ```
 
-Open [http://127.0.0.1:5173](http://127.0.0.1:5173). Playwright web project uses port **5174** under mocks — keep CORS allowlist covering both.
+Vite loads env from the **`web/`** dir (its config root), **not** the repo-root `.env`. For the live proof create **`web/.env.local`** (gitignored) with the publishable-only vars:
+
+```dotenv
+VITE_SUPABASE_URL=https://knowledge-db.ru
+VITE_SUPABASE_PUBLISHABLE_KEY=<publishable key>
+VITE_API_BASE_URL=http://127.0.0.1:8000
+VITE_USE_MOCKS=false
+```
+
+Restart `npm run dev` after creating/editing it — Vite only reads env files at startup. With `VITE_USE_MOCKS` unset or `true`, `RequireAuth` renders through and `/login` is never shown (mock data). Open [http://127.0.0.1:5173](http://127.0.0.1:5173). Playwright web project uses port **5174** under mocks — keep CORS allowlist covering both.
 
 ---
 
-## 4. Manual Auth seed (D-08) — deferred from Plan 01-04
+## 4. Auth users (amended D-08 / G-01-3)
 
-Shared VM: **no automated seed script** against `knowledge-db.ru`.
+**Primary path — self-service registration:** new operators use SPA `/register` with corporate email, password, and display nickname **«Логин»** (publishable-client `signUp` only — never `service_role` in the browser).
+
+**Ops fallback — shared VM dashboard seed:** if you need a pre-created test account without going through `/register`:
 
 1. Open the Supabase Auth dashboard for the knowledge-db.ru project.
-2. Create **1–2** users with corporate emails only:
-   - `@sberbank.ru` **or**
-   - `@omega.sbrf.ru`
+2. Create **1–2** users with corporate emails only (`@sberbank.ru` or `@omega.sbrf.ru`).
 3. Set passwords you control locally; do not commit credentials.
 4. Optional: if this self-host Auth build exposes a domain allowlist/hook, enable the two corporate domains. Otherwise defense-in-depth is UI + FastAPI claim checks (D-04 / AUTH-01).
-5. First successful `GET /me` will upsert `profiles` via `ProfileRepository.get_or_upsert` (idempotent safety net if no Auth→profiles trigger is present).
+
+Shared VM: **no automated seed script** against `knowledge-db.ru`. First successful `GET /me` upserts `profiles` via `ProfileRepository.get_or_upsert` (idempotent safety net if no Auth→profiles trigger is present).
 
 Do **not** run DROP/TRUNCATE/reset SQL on the shared VM during proof (T-01-14). Ping is insert-only (`activity_events`, `kind=platform_ping`).
 
@@ -82,11 +92,12 @@ Do **not** run DROP/TRUNCATE/reset SQL on the shared VM during proof (T-01-14). 
 
 With API on `:8000`, Vite on `:5173`, `APP_CONTAINER=live`, and `VITE_USE_MOCKS=false`:
 
-1. Log in with a seeded `@sberbank.ru` or `@omega.sbrf.ru` user → land on current issue `/` (or honor `returnUrl`).
-2. Confirm **GET /me** succeeds — PlatformProofBanner shows email/role, or Network tab shows HTTP 200.
-3. Click **«Проверить ping»** (POST `/me/ping`) → banner shows `ok · id …`.
-4. Confirm a new `activity_events` row with `kind = platform_ping` (Studio SQL / MCP `query` — **select/insert only**, no destructive DDL).
-5. Attempt a **disallowed** domain on `/login` — inline rejection; no usable session (AUTH-01).
-6. In API stdout, confirm structured logs include `request_id` for the `/me` and `/me/ping` calls.
+1. **Existing user:** open `/login` and sign in with corporate **email + password only** (no name/«Логин» field on login) → land on current issue `/` (or honor `returnUrl`). Header shows the stored display name (or email fallback), not the mock «Мария Сидорова».
+2. **New user:** open `/register`, fill email, password, and **«Логин»** (display nickname) → after successful signUp, land on issue (or `returnUrl`). «Логин» is saved to `profiles.display_name` / Auth metadata at registration only.
+3. Confirm **GET /me** succeeds — PlatformProofBanner shows name/email/role, or Network tab shows HTTP 200 with `display_name`.
+4. Click **«Проверить ping»** (POST `/me/ping`) → banner shows `ok · id …`.
+5. Confirm a new `activity_events` row with `kind = platform_ping` (Studio SQL / MCP `query` — **select/insert only**, no destructive DDL).
+6. Attempt a **disallowed** domain on `/login` or `/register` — inline rejection; no usable session (AUTH-01).
+7. In API stdout, confirm structured logs include `request_id` for the `/me` and `/me/ping` calls.
 
 Phase 1 platform proof is this checklist. Issue/vote content may still be mock until later phases (D-12).
