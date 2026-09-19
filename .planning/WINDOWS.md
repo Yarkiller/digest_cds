@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 1
+open_count: 2
 waived_count: 0
 fixed_count: 0
-total_count: 1
-last_updated: 2026-09-19T15:26:47.454Z
+total_count: 2
+last_updated: 2026-09-19T15:32:14.897Z
 ---
 
 # Broken Windows Ledger
@@ -16,6 +16,7 @@ last_updated: 2026-09-19T15:26:47.454Z
 | id | phase | kind | file | line | description | status | reason | recorded_at | resolved_at |
 |----|-------|------|------|------|-------------|--------|--------|-------------|-------------|
 | 1 | 01 | deviation | README.md |  | Auth dashboard corporate test-user seed deferred to Plan 01-06 (D-08) | open |  | 2026-09-19T15:26:47.454Z |  |
+| 2 | 01 | deviation | playwright.config.js |  | Expanded web testMatch to include auth.spec.js so Plan 01-05 verify can run | open |  | 2026-09-19T15:32:14.897Z |  |
 
 ````json
 [
@@ -29,6 +30,18 @@ last_updated: 2026-09-19T15:26:47.454Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-09-19T15:26:47.454Z",
+    "resolved_at": null
+  },
+  {
+    "id": 2,
+    "kind": "deviation",
+    "phase": "01",
+    "file": "playwright.config.js",
+    "line": null,
+    "description": "Expanded web testMatch to include auth.spec.js so Plan 01-05 verify can run",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-19T15:32:14.897Z",
     "resolved_at": null
   }
 ]

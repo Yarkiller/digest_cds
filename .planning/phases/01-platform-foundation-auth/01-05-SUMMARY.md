@@ -153,7 +153,7 @@ status: complete
 5. **Task 3 RED:** `1b6c951` — `test(01-05): add failing tests for meApi, returnUrl, and login network UX`
 6. **Task 3 GREEN:** `191b849` — `feat(01-05): add meApi client and platform proof banner`
 
-**Plan metadata:** (docs commit after state update)
+**Plan metadata:** `bb39a5a` — `docs(01-05): complete SPA auth and meApi plan`
 
 ## Files Created/Modified
 
