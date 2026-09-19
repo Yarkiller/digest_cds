@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import ErrorPanel from '../components/ErrorPanel.jsx'
-import { AuthApiError, signUp, updateAuthDisplayName } from '../services/authApi.js'
+import { AuthApiError, getSignUpInvocationCount, signUp, updateAuthDisplayName } from '../services/authApi.js'
 import { sanitizeReturnUrl } from '../services/authEnv.js'
 import { isAllowedCorporateEmail } from '../services/emailDomain.js'
 import { MeApiError, updateDisplayName } from '../services/meApi.js'
@@ -24,6 +24,7 @@ export default function RegisterPage() {
   })
   const [networkError, setNetworkError] = useState(null)
   const [submitting, setSubmitting] = useState(false)
+  const [signUpCalls, setSignUpCalls] = useState(getSignUpInvocationCount())
 
   async function handleSubmit(event) {
     event.preventDefault()
@@ -41,6 +42,7 @@ export default function RegisterPage() {
 
     if (!isAllowedCorporateEmail(email.trim())) {
       setDomainError(DOMAIN_MESSAGE)
+      setSignUpCalls(getSignUpInvocationCount())
       return
     }
     setDomainError('')
@@ -53,6 +55,7 @@ export default function RegisterPage() {
         password,
         displayName: nickname,
       })
+      setSignUpCalls(getSignUpInvocationCount())
       if (!session) {
         setNetworkError({ message: CONFIRM_MESSAGE, retryable: false })
         return
@@ -62,6 +65,7 @@ export default function RegisterPage() {
       const dest = sanitizeReturnUrl(searchParams.get('returnUrl'))
       navigate(dest, { replace: true })
     } catch (err) {
+      setSignUpCalls(getSignUpInvocationCount())
       const message =
         err instanceof AuthApiError || err instanceof MeApiError
           ? err.message
@@ -216,6 +220,13 @@ export default function RegisterPage() {
         <p className="mt-3 text-center text-xs text-muted">
           Доступ: @sberbank.ru, @omega.sbrf.ru
         </p>
+
+        <span
+          data-testid="auth-sign-up-calls"
+          data-count={String(signUpCalls)}
+          className="hidden"
+          aria-hidden="true"
+        />
       </div>
     </div>
   )
