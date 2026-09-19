@@ -206,8 +206,23 @@ blocked: 0
   reason: "User reported: кнопка Регистрация не активна и не ведёт к регистрации. Форма для входа не должна иметь поля Имя (при каждом входе заполнять нельзя). Форма регистрации должна иметь поле имени с понятной подписью — например ФИО или только Имя."
   severity: major
   test: 3
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "Phase 1 never shipped self-service registration (COVERAGE signUp OPT-OUT + D-08 manual Auth seed), but LoginPage shows «Регистрация» as Link to=/login (same route) and puts display-name on the login form after signIn. UI promises a register flow that was never built."
+  artifacts:
+    - web/src/pages/LoginPage.jsx
+    - web/src/App.jsx
+    - web/src/services/authApi.js
+    - tests/auth.spec.js
+    - .planning/phases/01-platform-foundation-auth/COVERAGE.md
+    - .planning/debug/g-01-3-registration-ux.md
+  missing:
+    - "/register route + registration form (or removal of dead Регистрация CTA)"
+    - "authApi.signUp if self-service is in scope"
+    - "Name field only on registration with clear label"
+    - "Login form email+password only"
+  debug_session: g-01-3-registration-ux
+  decision: |
+    Close via self-service registration (amend D-08 / COVERAGE signUp → INTEGRATE).
+    Login: email + password only (no name field).
+    Registration: email + password + «Логин» (display nickname — любое ненастоящее имя for voting interest; not ФИО).
+    «Регистрация» navigates to /register.
 ```
