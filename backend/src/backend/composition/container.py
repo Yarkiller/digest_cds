@@ -6,6 +6,7 @@ from dataclasses import dataclass
 
 from backend.application.ports.knowledge_chunk_repository import KnowledgeChunkRepository
 from backend.application.ports.material_repository import MaterialRepository
+from backend.application.ports.ping_recorder import PingRecorder
 from backend.application.ports.profile_repository import ProfileRepository
 from backend.application.use_cases.index_material_chunks import index_material_chunks
 from backend.application.use_cases.publish_material import publish_material
@@ -15,6 +16,7 @@ from backend.domain.material import Material
 from backend.tests_support.in_memory import (
     InMemoryKnowledgeChunkRepository,
     InMemoryMaterialRepository,
+    InMemoryPingRecorder,
     InMemoryProfileRepository,
 )
 
@@ -24,6 +26,7 @@ class AppContainer:
     materials: MaterialRepository
     chunks: KnowledgeChunkRepository
     profiles: ProfileRepository
+    pings: PingRecorder
 
     def publish(self, material_id: int) -> Material:
         return publish_material(self.materials, material_id)
@@ -61,4 +64,5 @@ def build_in_memory_container(materials: list[Material] | None = None) -> AppCon
         materials=InMemoryMaterialRepository(materials),
         chunks=InMemoryKnowledgeChunkRepository(),
         profiles=InMemoryProfileRepository(),
+        pings=InMemoryPingRecorder(),
     )

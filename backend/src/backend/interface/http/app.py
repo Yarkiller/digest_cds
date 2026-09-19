@@ -19,7 +19,7 @@ def create_app(
     *,
     signing_key_resolver: Callable[[str], Mapping[str, Any] | Any] | None = None,
 ) -> FastAPI:
-    """Build the public API app with health + authenticated GET /me."""
+    """Build the public API app with health + authenticated /me and /me/ping."""
     configure_structlog()
     app = FastAPI(title="Digest CDS API", version="0.1.0")
     app.state.container = container
