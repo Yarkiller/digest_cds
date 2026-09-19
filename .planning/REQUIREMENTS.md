@@ -10,12 +10,12 @@ Requirements for initial release. Each maps to exactly one roadmap phase. Tracea
 ### Platform & Operability
 
 - [ ] **PLAT-01**: Self-hosted Supabase (Postgres + pgvector) is deployed and working with initial schema/RLS applied
-- [ ] **PLAT-02**: FastAPI (or equivalent HTTP) exposes correct application endpoints with no critical runtime errors
+- [x] **PLAT-02**: FastAPI (or equivalent HTTP) exposes correct application endpoints with no critical runtime errors
 - [ ] **PLAT-03**: Frontend connects to Backend; authenticated reads load from the server (not mocks alone)
 - [ ] **PLAT-04**: Frontend mutations post to the server and persist end-to-end
-- [ ] **PLAT-05**: Secrets live only in env/Cloud.ru configuration — never committed in source
-- [ ] **PLAT-06**: CORS is configured correctly for the app and API origins
-- [ ] **PLAT-07**: Network failures show recoverable UX (banner/toast + Retry); validation errors are inline; errors are logged with request correlation
+- [x] **PLAT-05**: Secrets live only in env/Cloud.ru configuration — never committed in source
+- [x] **PLAT-06**: CORS is configured correctly for the app and API origins
+- [x] **PLAT-07**: Network failures show recoverable UX (banner/toast + Retry); validation errors are inline; errors are logged with request correlation
 - [ ] **PLAT-08**: Documentation covers architecture, runbooks, and deployment instructions that work for local and Cloud.ru
 
 ### Authentication
@@ -95,12 +95,12 @@ Deferred past v1. Tracked but not in current roadmap phases.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | PLAT-01 | Phase 1 | Pending |
-| PLAT-02 | Phase 1 | Pending |
+| PLAT-02 | Phase 1 | Complete |
 | PLAT-03 | Phase 1 | Pending |
 | PLAT-04 | Phase 1 | Pending |
-| PLAT-05 | Phase 1 | Pending |
-| PLAT-06 | Phase 1 | Pending |
-| PLAT-07 | Phase 1 | Pending |
+| PLAT-05 | Phase 1 | Complete |
+| PLAT-06 | Phase 1 | Complete |
+| PLAT-07 | Phase 1 | Complete |
 | PLAT-08 | Phase 1 | Pending |
 | AUTH-01 | Phase 1 | Pending |
 | AUTH-02 | Phase 1 | Pending |
@@ -134,6 +134,7 @@ Deferred past v1. Tracked but not in current roadmap phases.
 | ADMIN-08 | Phase 5 | Pending |
 
 **Coverage:**
+
 - v1 requirements: 39 total
 - Mapped to phases: 39
 - Unmapped: 0 ✓
