@@ -194,8 +194,8 @@ supabase-integration/
   src/supabase_integration/
     issue_repository.py          # NEW adapter
     material_repository.py       # NEW/extend (live materials)
-  seeds/
-    002_phase2_issue_seed.sql    # NEW idempotent seed
+  migrations/
+    002_phase2_issue_seed.sql    # NEW idempotent seed (with schema migrations)
 web/src/
   services/contentApi.js         # NEW (mock/live like meApi)
   pages/ArchivePage.jsx          # NEW
@@ -365,7 +365,7 @@ Reuse Phase 1 bearer dependency:
 | Editor byline | Constant `"Редакция Digest CDS"` in DTO — **no DB column** | MEDIUM — [ASSUMED] schema has no editor field |
 | Voting cycle selection | Prefer `status = 'open'` ordered by `closes_at DESC`; else latest by `opens_at` for closed messaging | MEDIUM — [ASSUMED] product rule not locked beyond “seed one cycle” |
 | Error UI | Extend `ErrorPanel` or thin `ServiceUnavailable` wrapping splash + Retry + fixed copy | HIGH — either OK per CONTEXT discretion |
-| Seed path | `supabase-integration/seeds/002_phase2_issue_seed.sql` | HIGH |
+| Seed path | `supabase-integration/migrations/002_phase2_issue_seed.sql` | HIGH |
 | Secondary empty CTA | Optional link to `/knowledge` only if zero new scope | HIGH — CONTEXT |
 
 ## Assumptions Log
@@ -379,16 +379,18 @@ Reuse Phase 1 bearer dependency:
 
 **If wrong:** Discuss-phase already locked visual contract in 02-UI-SPEC — prefer UI-SPEC over design-frontend archive thumbs.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Should unpublished past issue numbers 404 or redirect to current?**
+1. **Should unpublished past issue numbers 404 or redirect to current?** — **RESOLVED**
    - What we know: error_handling §2.2 says empty «Выпуск не найден» + CTA to current for bad issue number.
    - What's unclear: not restated in CONTEXT decisions.
    - Recommendation: soft editorial empty (like material 404) + CTA «К текущему выпуску» — no splash art.
+   - **RESOLVED (plan 02-03):** Adopt soft editorial empty / HTTP 404 for missing or unpublished issue numbers + CTA «К текущему выпуску»; no `bad_gateway` splash (matches material soft-404 tone).
 
-2. **MaterialRelations target shape**
+2. **MaterialRelations target shape** — **RESOLVED**
    - What we know: domain `related_material_ids: tuple[str, ...]` [VERIFIED: domain/material.py:29]; DB uses bigint FKs.
    - Recommendation: API returns `{ slug, title }[]` for ready targets only; never invent.
+   - **RESOLVED (plan 02-04):** Reader DTO related field is `{ slug, title }[]` for ready targets only; never invent missing links (D-37 / MAT-03).
 
 ## Environment Availability
 
