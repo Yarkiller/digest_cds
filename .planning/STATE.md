@@ -4,10 +4,10 @@ current_phase: 1
 current_phase_name: Platform Foundation & Auth
 status: executing
 stopped_at: CHECKPOINT 01-06 live FE↔BE proof awaiting human approval
-last_updated: "2026-09-19T15:36:03.685Z"
+last_updated: "2026-09-19T15:36:20.657Z"
 last_activity: 2026-09-19
 last_activity_desc: Completed 01-01 HTTP tracer and .env.example
-state_head: 58180566fbf55e1303a9ab19209969e4e8d6c01a
+state_head: f7c1ca9f9d75f13684e4e140a60398beb77896b0
 progress:
   total_phases: 5
   completed_phases: 0
@@ -84,6 +84,7 @@ Decisions are logged in PROJECT.md Key Decisions and `<decisions>` blocks.
 - [Phase 1]: Mock authApi/meApi when VITE_USE_MOCKS!==false; live only when false
 - [Phase 1]: RequireAuth skips gate when mocks on; force-gate via window.__DIGEST_FORCE_AUTH_GATE__
 - [Phase 1]: sanitizeReturnUrl same-origin relative paths only
+- [Phase 1]: [Phase 1]: PLAT-08 local runbook + Cloud.ru path-only docs; live FE↔BE proof awaits human approval
 
 ### Pending Todos
 
@@ -91,7 +92,9 @@ None yet.
 
 ### Blockers/Concerns
 
-None yet. Ingest reported 0 blockers / 0 competing variants.
+yet. Ingest reported 0 blockers / 0 competing variants.
+
+- 01-06 live FE↔BE platform proof awaiting human approval (type approved)
 
 ## Deferred Items
 
