@@ -25,6 +25,7 @@ def test_in_memory_container_publish_and_index() -> None:
         updated_at=datetime(2026, 1, 1, tzinfo=timezone.utc),
     )
     app = build_in_memory_container([material])
+    assert app.profiles is not None
     published = app.publish(42)
     assert published.status == MaterialStatus.READY
 
@@ -34,3 +35,8 @@ def test_in_memory_container_publish_and_index() -> None:
     hits = app.search(query_embedding=[0.0] * 1024, query_text="Alpha")
     assert hits
     assert hits[0].material_id == 42
+
+    user = app.profiles.get_or_upsert("user-uuid-1", "alice@sberbank.ru")
+    assert user.id == "user-uuid-1"
+    assert user.email == "alice@sberbank.ru"
+    assert user.role == "authenticated"
