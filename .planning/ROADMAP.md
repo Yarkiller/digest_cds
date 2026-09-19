@@ -6,7 +6,7 @@ Brownfield path from mock UI + in-memory ports to a production-shaped Digest CDS
 
 ## Phases
 
-- [ ] **Phase 1: Platform Foundation & Auth** - Live Supabase, FastAPI, security, FE↔BE, corporate login
+- [x] **Phase 1: Platform Foundation & Auth** - Live Supabase, FastAPI, security, FE↔BE, corporate login
 - [ ] **Phase 2: Issue, Materials & Archive** - Current issue, prepared articles, archive
 - [ ] **Phase 3: Voting Cycle** - One honest vote, change while open, audit-language ballot
 - [ ] **Phase 4: Knowledge & Razbory** - Semantic search, role filters, разбор longread/notebook
@@ -27,7 +27,8 @@ Brownfield path from mock UI + in-memory ports to a production-shaped Digest CDS
   4. Frontend loads at least one protected resource from the server and can POST a mutation that persists
   5. Network/validation errors are handled per global error UX; README/deploy docs successfully bring up local + documented Cloud.ru path
 
-**Plans**: 5/7 plans executed
+**Plans**: 6/7 plans executed (verified PASS_WITH_GAPS 2026-09-19)
+**Verification:** `.planning/phases/01-platform-foundation-auth/01-VERIFICATION.md`
 
 Plans:
 
@@ -37,7 +38,7 @@ Plans:
 - [x] 01-03-PLAN.md — POST /me/ping + PingRecorder + composition in-memory
 - [x] 01-04-PLAN.md — Live Supabase adapters, composition, manual Auth seed
 - [x] 01-05-PLAN.md — SPA Auth, RequireAuth, meApi, Playwright auth flows
-- [ ] 01-06-PLAN.md — Local/Cloud.ru docs + live FE↔BE proof checkpoint
+- [x] 01-06-PLAN.md — Local/Cloud.ru docs + live FE↔BE proof checkpoint
 
 ### Phase 2: Issue, Materials & Archive
 
@@ -51,8 +52,16 @@ Plans:
   3. User reads a material as prose + section TOC with «Статья» badge/provenance/tags/related links as available; unknown id shows editorial 404
   4. Audit-dek appears under title when present; archive opens a past issue or empty-archive CTA to current
 
-**Plans**: TBD
+**Plans**: 5 plans
 **UI hint**: yes
+
+Plans:
+
+- [ ] 02-01-PLAN.md — Tracer: current issue API + IssuePage (ISSUE-01)
+- [ ] 02-02-PLAN.md — Idempotent seed + live Supabase adapters + [BLOCKING] db push
+- [ ] 02-03-PLAN.md — Archive list/page + past `/issues/:number` (ISSUE-04)
+- [ ] 02-04-PLAN.md — Material-by-slug + markdown TOC/honesty (MAT-01..03, ISSUE-03)
+- [ ] 02-05-PLAN.md — Voting callout stub + splash/Retry + phase e2e gate (ISSUE-02)
 
 ### Phase 3: Voting Cycle
 
@@ -107,8 +116,8 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Platform Foundation & Auth | 5/7 | In Progress|  |
-| 2. Issue, Materials & Archive | 0/TBD | Not started | - |
+| 1. Platform Foundation & Auth | 6/7 | Verified (PASS_WITH_GAPS) | 2026-09-19 |
+| 2. Issue, Materials & Archive | 0/5 | Planned | - |
 | 3. Voting Cycle | 0/TBD | Not started | - |
 | 4. Knowledge & Razbory | 0/TBD | Not started | - |
 | 5. Admin Digest Publish | 0/TBD | Not started | - |
