@@ -124,6 +124,8 @@ All copy is **Russian**, calm editorial tone (warm paper, no glow/gamification).
 | Material back-nav | **«← К выпуску»** → issue; and/or **«В архив»** → `/archive` (D-39) |
 | Material soft-404 heading | **«Материал не найден»** (calm, not alarming — D-39) |
 | Material soft-404 body | «Возможно, ссылка устарела или материал ещё готовится. Вернитесь к выпуску или в архив.» · back-nav links · **no `bad_gateway.png`**, no error illustration |
+| Issue soft-404 heading (unknown/unpublished number) | **«Выпуск не найден»** (calm; error_handling §2.2 / RESEARCH Q1 RESOLVED) |
+| Issue soft-404 body + CTA | «Проверьте номер выпуска или вернитесь к актуальному.» · primary CTA **«К текущему выпуску →»** → `/` · **no `bad_gateway.png`** |
 | Article format label | **«Статья · {первый тег|период}»** overline; explicit **«Статья»** badge (MAT-03) |
 | Page load-failure heading (issue/material fetch, network/5xx) | **«Ошибочка вышла»** (from splash art; friendly, no code — D-21..23) |
 | Page load-failure body | «Не удалось загрузить. Проверьте соединение и попробуйте ещё раз.» |
