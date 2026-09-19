@@ -17,3 +17,10 @@ class MaterialNotReadyError(DomainError):
     def __init__(self, material_id: int) -> None:
         super().__init__(f"material {material_id} is not ready for indexing")
         self.material_id = material_id
+
+
+class PersistenceError(DomainError):
+    """Raised when an infrastructure adapter cannot complete a persistence operation."""
+
+    def __init__(self, message: str) -> None:
+        super().__init__(message)

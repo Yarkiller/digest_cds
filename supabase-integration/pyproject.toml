@@ -5,6 +5,7 @@ description = "Supabase/Postgres adapter, migrations and schema for Digest CDS"
 requires-python = ">=3.12"
 dependencies = [
     "backend",
+    "supabase>=2.31.0,<3",
 ]
 
 [build-system]
