@@ -45,4 +45,43 @@ test.describe("SPA auth contracts", () => {
     await expect(page).toHaveURL(/\/login\?returnUrl=%2Fvoting/);
     await expect(page.getByRole("heading", { name: /digest cds/i })).toBeVisible();
   });
+
+  test("returns to returnUrl path after successful login", async ({ page }) => {
+    await page.goto("/login?returnUrl=/voting");
+
+    await page.getByLabel(/^email$/i).fill("analyst@sberbank.ru");
+    await page.getByLabel(/^пароль$/i).fill("correct-horse");
+    await page.getByRole("button", { name: /войти/i }).click();
+
+    await expect(page).toHaveURL(/\/voting$/);
+    await expect(page.getByTestId("confirm-vote")).toBeVisible();
+  });
+
+  test("shows retryable network banner when sign-in fails", async ({ page }) => {
+    await page.goto("/login");
+    await page.waitForFunction(() => Boolean(window.__DIGEST_AUTH_HARNESS__));
+    await page.evaluate(() => window.__DIGEST_AUTH_HARNESS__.armFailNextSignIn());
+
+    await page.getByLabel(/^email$/i).fill("analyst@sberbank.ru");
+    await page.getByLabel(/^пароль$/i).fill("correct-horse");
+    await page.getByRole("button", { name: /войти/i }).click();
+
+    await expect(page.getByRole("alert")).toContainText(/сервис входа временно недоступен/i);
+    await expect(page.getByRole("button", { name: /повторить/i })).toBeVisible();
+    await expect(page).toHaveURL(/\/login/);
+  });
+
+  test("shows mock CurrentUser identity and accepts platform ping", async ({ page }) => {
+    await page.goto("/login");
+
+    await page.getByLabel(/^email$/i).fill("analyst@sberbank.ru");
+    await page.getByLabel(/^пароль$/i).fill("correct-horse");
+    await page.getByRole("button", { name: /войти/i }).click();
+
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.getByTestId("platform-me")).toContainText(/analyst@sberbank\.ru/i);
+
+    await page.getByRole("button", { name: /проверить ping/i }).click();
+    await expect(page.getByTestId("platform-ping")).toContainText(/ok/i);
+  });
 });
