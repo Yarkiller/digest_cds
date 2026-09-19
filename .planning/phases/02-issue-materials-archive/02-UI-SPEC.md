@@ -150,7 +150,7 @@ All copy is **Russian**, calm editorial tone (warm paper, no glow/gamification).
 - **IssueToc** (`IssueToc.jsx`): list of materials — mono position number, display title, meta `{format} · {мин}`, `→` glyph, dek line below (hidden if empty). Each row → `/materials/:id`, min 44px target.
 - **Empty issue** (0 published materials): empty-state block (`empty-state` pattern — H2 + one sentence + one primary CTA), copy above. Not a broken blank page (US-03.2).
 - Past issue at `/issues/:id` reuses the **same IssuePage layout** (D-29), minus callout.
-
+- **Unknown/unpublished issue number** (error_handling §2.2 / RESEARCH Q1 RESOLVED): calm soft empty «Выпуск не найден» + CTA «К текущему выпуску →» → `/` — **no `bad_gateway.png`** (distinct from network splash).
 ### Material (article) page (`/materials/:id`) — MAT-01/02/03, US-07/08/09
 - Reading layout: **prose column** (`prose--column`, `--container-reading` max width, `--space-12` padding) + **section TOC generated from `body_markdown` headings** (D-38, MAT-01). Desktop: sticky side TOC (`--toc-width`); mobile: collapsible `<details>` "Содержание" at top.
 - Header: format overline `Статья · {tag}`, Display title, byline caption `{дата} · provenance: {источник} · ~{N} мин`, `hr`.
