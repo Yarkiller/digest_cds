@@ -8,8 +8,10 @@ source:
   - 01-04-SUMMARY.md
   - 01-05-SUMMARY.md
   - 01-06-SUMMARY.md
+  - 01-07-SUMMARY.md
+  - 01-08-SUMMARY.md
 started: 2026-09-19T18:50:00Z
-updated: 2026-09-19T19:15:00Z
+updated: 2026-09-19T19:42:00Z
 ---
 
 ## Current Test
@@ -29,12 +31,13 @@ rationale: D-08 forbids automated seed against shared VM; deferred to Plan 01-06
 reason: human_judgment
 coverage_id: 01-04-D5
 
-### 3. Live FE↔BE proof: corporate login → GET /me → POST /me/ping → activity_events
-expected: With VITE_USE_MOCKS=false and live API, corporate login lands on issue; PlatformProofBanner shows identity from GET /me; Ping succeeds and a platform_ping row appears in activity_events.
+### 3. Live FE↔BE proof + registration UX (G-01-3 retest)
+expected: With VITE_USE_MOCKS=false and live API — (1) /login is email+password only (no «Имя»/«Логин»); «Регистрация» goes to /register; (2) /register has «Логин» (nickname) + email + password and can create a user; (3) after login or register, PlatformProofBanner shows identity from GET /me and Ping writes platform_ping to activity_events.
 result: issue
-reported: "кнопка Регистрация не активна и не ведёт к регистрации. Форма для входа не должна иметь поля Имя (при каждом входе заполнять нельзя). Форма регистрации должна иметь поле имени с понятной подписью — например ФИО или только Имя."
-severity: major
-rationale: Blocking-human checkpoint; operator may re-confirm after stale verification.
+reported: "регистрация не проходит. Новый пользователь в Supabase не появился. UI: ErrorPanel «Сервис входа временно недоступен» + Повторить (Логин Петя, test3@sberbank.ru)."
+severity: blocker
+prior_issue: "Регистрация dead; Имя on login — fixed by 01-07/01-08"
+rationale: Re-test after gap closure; gap G-01-3 status=resolved
 reason: human_judgment
 coverage_id: 01-06-D3
 
@@ -196,6 +199,39 @@ issues: 1
 pending: 0
 skipped: 0
 blocked: 0
+
+## Gaps
+
+```yaml
+- gap_id: G-01-3
+  truth: "Corporate login → GET /me → POST /me/ping works; login UX is email+password only; registration is a separate form with a clear name field (ФИО or Имя)"
+  status: resolved
+  resolved_by: 01-07-PLAN.md, 01-08-PLAN.md
+  resolved_at: 2026-09-19
+  reason: "User reported: кнопка Регистрация не активна и не ведёт к регистрации. Форма для входа не должна иметь поля Имя..."
+  severity: major
+  test: 3
+  root_cause: "SPA had dead Регистрация CTA and name-on-login; fixed by 01-07/01-08."
+  artifacts: []
+  missing: []
+  debug_session: g-01-3-registration-ux
+
+- gap_id: G-01-3b
+  truth: "Self-service /register creates an Auth user (Логин + corporate email) and can proceed to live /me + ping"
+  status: failed
+  reason: "User reported: регистрация не проходит. Новый пользователь в Supabase не появился. UI shows NETWORK ErrorPanel."
+  severity: blocker
+  test: 3
+  root_cause: "GoTrue POST /auth/v1/signup returns 500 unexpected_failure «Error sending confirmation email» — mailer_autoconfirm=false and SMTP/mailer broken on knowledge-db.ru; user not created. SPA correctly calls signUp; maps 500 to retryable network copy."
+  artifacts:
+    - .planning/debug/g-01-3b-signup-mailer.md
+    - web/src/services/authApi.js
+    - web/src/pages/RegisterPage.jsx
+  missing:
+    - "Working SMTP or GOTRUE_MAILER_AUTOCONFIRM=true on shared VM"
+    - "Clearer SPA error when confirmation mailer fails (optional)"
+  debug_session: g-01-3b-signup-mailer
+```
 
 ## Gaps
 
