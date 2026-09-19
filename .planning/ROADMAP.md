@@ -27,14 +27,14 @@ Brownfield path from mock UI + in-memory ports to a production-shaped Digest CDS
   4. Frontend loads at least one protected resource from the server and can POST a mutation that persists
   5. Network/validation errors are handled per global error UX; README/deploy docs successfully bring up local + documented Cloud.ru path
 
-**Plans**: 2/7 plans executed
+**Plans**: 3/7 plans executed
 
 Plans:
 
 - [ ] 01-PLAN-CHECK.md
 - [x] 01-01-PLAN.md — Package gate + public FastAPI (/health, CORS, request_id) + .env.example
 - [x] 01-02-PLAN.md — Corporate email + ES256 JWT + GET /me
-- [ ] 01-03-PLAN.md — POST /me/ping + PingRecorder + composition in-memory
+- [x] 01-03-PLAN.md — POST /me/ping + PingRecorder + composition in-memory
 - [ ] 01-04-PLAN.md — Live Supabase adapters, composition, manual Auth seed
 - [ ] 01-05-PLAN.md — SPA Auth, RequireAuth, meApi, Playwright auth flows
 - [ ] 01-06-PLAN.md — Local/Cloud.ru docs + live FE↔BE proof checkpoint
@@ -107,7 +107,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Platform Foundation & Auth | 2/7 | In Progress|  |
+| 1. Platform Foundation & Auth | 3/7 | In Progress|  |
 | 2. Issue, Materials & Archive | 0/TBD | Not started | - |
 | 3. Voting Cycle | 0/TBD | Not started | - |
 | 4. Knowledge & Razbory | 0/TBD | Not started | - |

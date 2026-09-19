@@ -12,7 +12,7 @@ Requirements for initial release. Each maps to exactly one roadmap phase. Tracea
 - [ ] **PLAT-01**: Self-hosted Supabase (Postgres + pgvector) is deployed and working with initial schema/RLS applied
 - [x] **PLAT-02**: FastAPI (or equivalent HTTP) exposes correct application endpoints with no critical runtime errors
 - [x] **PLAT-03**: Frontend connects to Backend; authenticated reads load from the server (not mocks alone)
-- [ ] **PLAT-04**: Frontend mutations post to the server and persist end-to-end
+- [x] **PLAT-04**: Frontend mutations post to the server and persist end-to-end
 - [x] **PLAT-05**: Secrets live only in env/Cloud.ru configuration — never committed in source
 - [x] **PLAT-06**: CORS is configured correctly for the app and API origins
 - [x] **PLAT-07**: Network failures show recoverable UX (banner/toast + Retry); validation errors are inline; errors are logged with request correlation
@@ -97,7 +97,7 @@ Deferred past v1. Tracked but not in current roadmap phases.
 | PLAT-01 | Phase 1 | Pending |
 | PLAT-02 | Phase 1 | Complete |
 | PLAT-03 | Phase 1 | Complete |
-| PLAT-04 | Phase 1 | Pending |
+| PLAT-04 | Phase 1 | Complete |
 | PLAT-05 | Phase 1 | Complete |
 | PLAT-06 | Phase 1 | Complete |
 | PLAT-07 | Phase 1 | Complete |
