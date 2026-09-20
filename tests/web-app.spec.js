@@ -1,6 +1,19 @@
 const { expect, test } = require("@playwright/test");
 
 test.describe("web app main flows", () => {
+  test("opens material by stable slug /materials/rag-systems", async ({ page }) => {
+    // Prefer slug URLs for MAT-* stability (phase gate)
+    await page.goto("/materials/rag-systems");
+
+    await expect(page).toHaveURL(/\/materials\/rag-systems/);
+    await expect(page.getByRole("heading", { name: /building production rag systems/i })).toBeVisible();
+    await expect(page.getByTestId("material-format-badge")).toHaveText(/статья/i);
+    await expect(page.getByTestId("material-prose")).toBeVisible();
+    const toc = page.getByRole("navigation", { name: /содержание/i });
+    await expect(toc).toBeVisible();
+    await expect(toc.getByRole("link").first()).toBeVisible();
+  });
+
   test("opens a material from the issue table of contents", async ({ page }) => {
     await page.goto("/");
 
@@ -299,7 +312,8 @@ test.describe("web app responsive", () => {
   test("keeps mobile shell usable without horizontal overflow", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
 
-    for (const path of ["/", "/knowledge", "/voting"]) {
+    // Include archive + material reader (ISSUE-04 / MAT-01 overflow sampling)
+    for (const path of ["/", "/archive", "/materials/rag-systems", "/knowledge", "/voting"]) {
       await page.goto(path);
 
       const overflow = await page.evaluate(() => ({
@@ -366,7 +380,9 @@ test.describe("web app responsive", () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/voting");
 
-    await page.getByRole("radio", { name: /RAG в корпоративной среде/i }).click();
+    const topic = page.getByRole("radio", { name: /RAG в корпоративной среде/i });
+    await expect(topic).toBeVisible();
+    await topic.click();
     const confirm = page.getByTestId("confirm-vote");
     await expect(confirm).toBeVisible();
     await expect(confirm).toBeInViewport();
@@ -375,5 +391,21 @@ test.describe("web app responsive", () => {
       path: "docs/digest-cds/responsive-evidence/mobile-390-voting.png",
       fullPage: true,
     });
+  });
+});
+
+/*
+ * UI-SPEC backstops (02-UI-SPEC ## UI Considerations) — held for /gsd-verify-work.
+ * Do NOT silent-pass: visual/held-out confirmation required.
+ * - IssueToc: overflow / Russian plural (1/2/5+) / long title wrap
+ * - Archive: grid overflow / 44px targets on mobile
+ * - Material: prose overflow / sticky TOC / long title + deep headings
+ * - EditorialCallout: long topic/date wrap
+ * - Hero: long issue title reflow
+ * - AppShell nav: mobile reflow without overlapping wordmark
+ */
+test.describe.skip("phase 2 UI-SPEC visual backstops (verify-work)", () => {
+  test("placeholder — run visual checks listed in 02-UI-SPEC UI Considerations", async () => {
+    // Intentionally skipped: human/visual gate at /gsd-verify-work
   });
 });
