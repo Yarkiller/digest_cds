@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 2
+open_count: 3
 waived_count: 0
 fixed_count: 0
-total_count: 2
-last_updated: 2026-09-19T15:32:14.897Z
+total_count: 3
+last_updated: 2026-09-20T11:09:43.276Z
 ---
 
 # Broken Windows Ledger
@@ -17,6 +17,7 @@ last_updated: 2026-09-19T15:32:14.897Z
 |----|-------|------|------|------|-------------|--------|--------|-------------|-------------|
 | 1 | 01 | deviation | README.md |  | Auth dashboard corporate test-user seed deferred to Plan 01-06 (D-08) | open |  | 2026-09-19T15:26:47.454Z |  |
 | 2 | 01 | deviation | playwright.config.js |  | Expanded web testMatch to include auth.spec.js so Plan 01-05 verify can run | open |  | 2026-09-19T15:32:14.897Z |  |
+| 3 | 02 | skipped-test | tests/web-app.spec.js | 406 | UI-SPEC visual backstops describe.skip held for /gsd-verify-work | open |  | 2026-09-20T11:09:43.276Z |  |
 
 ````json
 [
@@ -42,6 +43,18 @@ last_updated: 2026-09-19T15:32:14.897Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-09-19T15:32:14.897Z",
+    "resolved_at": null
+  },
+  {
+    "id": 3,
+    "kind": "skipped-test",
+    "phase": "02",
+    "file": "tests/web-app.spec.js",
+    "line": 406,
+    "description": "UI-SPEC visual backstops describe.skip held for /gsd-verify-work",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-20T11:09:43.276Z",
     "resolved_at": null
   }
 ]
