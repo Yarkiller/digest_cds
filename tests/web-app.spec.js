@@ -232,6 +232,36 @@ test.describe("web app edge and error cases", () => {
     await expect(page).toHaveURL(/\/$/);
   });
 
+  // D-21…D-23: page load failure → ServiceUnavailable splash + Retry (never mock fallback)
+  test("shows ошибочка splash with bad_gateway art and recovers on Повторить", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__DIGEST_FAIL_NEXT_CONTENT__ = true;
+    });
+    await page.goto("/");
+
+    const splash = page.getByTestId("service-unavailable");
+    await expect(splash).toBeVisible();
+    await expect(splash.getByRole("heading", { name: /ошибочка вышла/i })).toBeVisible();
+    await expect(splash.getByText(/не удалось загрузить/i)).toBeVisible();
+    const art = splash.locator('img[src="/bad_gateway.png"]');
+    await expect(art).toBeVisible();
+    await expect(art).toHaveAttribute("alt", /котёнок.*ошибочка/i);
+    // D-23: no HTTP status codes or stacktraces on screen
+    await expect(splash).not.toContainText(/\b(502|503|500|404)\b/);
+    await expect(splash).not.toContainText(/stack|traceback|Error:/i);
+    // D-21: must not silently show mock issue content
+    await expect(page.getByTestId("issue-ready")).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: /новости ds для сва/i })).toHaveCount(0);
+
+    const retry = splash.getByRole("button", { name: /^Повторить$/ });
+    await expect(retry).toBeVisible();
+    await retry.click();
+
+    await expect(page.getByTestId("service-unavailable")).toHaveCount(0);
+    await expect(page.getByTestId("issue-ready")).toBeVisible();
+    await expect(page.getByRole("heading", { name: /новости ds для сва/i })).toBeVisible();
+  });
+
   test("keeps confirm vote disabled when no topic is selected", async ({ page }) => {
     await page.goto("/voting");
 
