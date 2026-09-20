@@ -119,7 +119,7 @@ Each task was committed atomically:
 3. **Task 2 RED:** `3f36694` — test(03-06): add failing tests for closed and empty voting states
 4. **Task 2 GREEN:** `a06a453` — feat(03-06): implement closed and empty voting states
 
-**Plan metadata:** (docs commit after this SUMMARY)
+**Plan metadata:** `14b221a` (docs: complete ballot UI polish plan)
 
 ## Files Created/Modified
 
