@@ -138,7 +138,7 @@ Each task was committed atomically:
 5. **Task 2 GREEN:** `7c4b05e` — feat(02-01): empty-issue harness + green Playwright (D-30)
 6. **Task 3:** `1a7cdd8` — test(02-01): Wave 0 importorskip scaffolds
 
-**Plan metadata:** (docs commit after this SUMMARY)
+**Plan metadata:** `c128afd` (docs: complete plan)
 
 ## Files Created/Modified
 
