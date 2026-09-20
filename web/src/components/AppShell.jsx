@@ -23,6 +23,9 @@ export default function AppShell() {
             <NavLink to="/" end className={linkClass}>
               Выпуск
             </NavLink>
+            <NavLink to="/archive" className={linkClass}>
+              Архив
+            </NavLink>
             <NavLink to="/knowledge" className={linkClass}>
               База
             </NavLink>

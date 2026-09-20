@@ -1,9 +1,13 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import EditorialCallout from '../components/EditorialCallout.jsx'
 import IssueToc from '../components/IssueToc.jsx'
 import PlatformProofBanner from '../components/PlatformProofBanner.jsx'
-import { ContentApiError, fetchCurrentIssue } from '../services/contentApi.js'
+import {
+  ContentApiError,
+  fetchCurrentIssue,
+  fetchIssueByNumber,
+} from '../services/contentApi.js'
 
 function materialCountLabel(count) {
   const mod10 = count % 10
@@ -26,16 +30,28 @@ function toTocItems(items) {
   }))
 }
 
-export default function IssuePage() {
+/**
+ * @param {{ isCurrent?: boolean }} props
+ * isCurrent=true on `/` (EditorialCallout, D-34); false on `/issues/:number`.
+ */
+export default function IssuePage({ isCurrent = true }) {
+  const { number: numberParam } = useParams()
   const [issue, setIssue] = useState(null)
   const [status, setStatus] = useState('loading')
   const [error, setError] = useState(null)
+  const [notFound, setNotFound] = useState(false)
 
   useEffect(() => {
     let cancelled = false
     setStatus('loading')
     setError(null)
-    fetchCurrentIssue()
+    setNotFound(false)
+
+    const load = isCurrent
+      ? fetchCurrentIssue()
+      : fetchIssueByNumber(numberParam)
+
+    load
       .then((dto) => {
         if (cancelled) return
         setIssue(dto)
@@ -43,6 +59,11 @@ export default function IssuePage() {
       })
       .catch((err) => {
         if (cancelled) return
+        if (err instanceof ContentApiError && err.code === 'NOT_FOUND') {
+          setNotFound(true)
+          setStatus('ready')
+          return
+        }
         const message =
           err instanceof ContentApiError
             ? err.message
@@ -53,12 +74,12 @@ export default function IssuePage() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [isCurrent, numberParam])
 
   if (status === 'loading') {
     return (
       <section aria-busy="true" data-testid="issue-loading">
-        <PlatformProofBanner />
+        {isCurrent ? <PlatformProofBanner /> : null}
         <div className="mt-3 h-4 w-48 animate-pulse rounded bg-rule" />
         <div className="mt-4 h-10 max-w-xl animate-pulse rounded bg-rule" />
         <div className="mt-6 h-24 animate-pulse rounded bg-rule" />
@@ -69,9 +90,28 @@ export default function IssuePage() {
   if (status === 'error') {
     return (
       <section>
-        <PlatformProofBanner />
+        {isCurrent ? <PlatformProofBanner /> : null}
         <p role="alert" className="text-ink-2">
           {error}
+        </p>
+      </section>
+    )
+  }
+
+  if (notFound) {
+    return (
+      <section data-testid="issue-not-found">
+        <h1 className="font-display text-3xl font-semibold">Выпуск не найден</h1>
+        <p className="mt-3 max-w-prose text-ink-2">
+          Проверьте номер выпуска или вернитесь к актуальному.
+        </p>
+        <p className="mt-6">
+          <Link
+            to="/"
+            className="inline-flex min-h-11 items-center font-medium text-accent no-underline hover:underline"
+          >
+            К текущему выпуску →
+          </Link>
         </p>
       </section>
     )
@@ -83,7 +123,7 @@ export default function IssuePage() {
   if (isEmpty) {
     return (
       <section data-testid="issue-empty">
-        <PlatformProofBanner />
+        {isCurrent ? <PlatformProofBanner /> : null}
         <h2 className="font-display text-2xl font-semibold">Выпуск готовится</h2>
         <p className="mt-3 max-w-prose text-ink-2">
           Свежий выпуск скоро появится. А пока — загляните в архив прошлых недель.
@@ -99,7 +139,7 @@ export default function IssuePage() {
 
   return (
     <section data-testid="issue-ready">
-      <PlatformProofBanner />
+      {isCurrent ? <PlatformProofBanner /> : null}
       <p className="text-xs uppercase tracking-wide text-muted">
         Выпуск №{issue.number} · {issue.period_label}
       </p>
@@ -112,9 +152,11 @@ export default function IssuePage() {
 
       <hr className="my-8 border-rule" />
 
-      <EditorialCallout actionTo="/voting" actionLabel="Выбрать тему →">
-        <strong>Голосование открыто</strong> — выберите тему следующего разбора.
-      </EditorialCallout>
+      {isCurrent ? (
+        <EditorialCallout actionTo="/voting" actionLabel="Выбрать тему →">
+          <strong>Голосование открыто</strong> — выберите тему следующего разбора.
+        </EditorialCallout>
+      ) : null}
 
       <h2 className="mb-6 font-display text-2xl font-semibold">В этом выпуске</h2>
       <IssueToc items={toTocItems(items)} />

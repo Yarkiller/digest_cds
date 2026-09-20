@@ -8,6 +8,32 @@ export const currentIssue = {
   votingOpenUntil: '28 марта 2026',
 }
 
+/** Past published issue for archive demo (D-27 / ISSUE-04) — not current. */
+export const pastIssue = {
+  number: 13,
+  period: '10–16 марта 2026',
+  title: 'Прошлый выпуск · DS для СВА',
+  editor: 'Редакция Digest CDS',
+  items: [
+    {
+      slug: 'sql-dashboards',
+      title: 'SQL-дашборды для аудиторской отчётности',
+      position: 1,
+      format: 'Статья',
+      reading_minutes: 9,
+      dek: 'Шаблоны витрин и дашбордов для ежемесячной отчётности аналитика СВА.',
+    },
+    {
+      slug: 'prompt-engineering',
+      title: 'Prompt Engineering Patterns 2026',
+      position: 2,
+      format: 'Статья',
+      reading_minutes: 7,
+      dek: 'Паттерны формулировок запросов к LLM для аудита.',
+    },
+  ],
+}
+
 export const materials = [
   {
     id: 'rag-systems',
@@ -170,4 +196,50 @@ export function getIssueMaterials() {
   return materials
     .filter((item) => item.inIssue)
     .sort((a, b) => a.issuePosition - b.issuePosition)
+}
+
+/** Archive cards: past published only (excludes current — D-31). */
+export function getArchiveIssues() {
+  return [
+    {
+      number: pastIssue.number,
+      period_label: pastIssue.period,
+      title: pastIssue.title,
+      material_count: pastIssue.items.length,
+    },
+  ]
+}
+
+/**
+ * @param {number} number
+ * @returns {import('../services/contentApi.js').IssueDto | null}
+ */
+export function getIssueByNumber(number) {
+  const n = Number(number)
+  if (n === currentIssue.number) {
+    return {
+      number: currentIssue.number,
+      period_label: currentIssue.period,
+      title: currentIssue.title,
+      editor: currentIssue.editor,
+      items: getIssueMaterials().map((m) => ({
+        slug: m.id,
+        title: m.title,
+        position: m.issuePosition,
+        format: m.format,
+        reading_minutes: m.readingMinutes,
+        dek: m.dek ?? null,
+      })),
+    }
+  }
+  if (n === pastIssue.number) {
+    return {
+      number: pastIssue.number,
+      period_label: pastIssue.period,
+      title: pastIssue.title,
+      editor: pastIssue.editor,
+      items: pastIssue.items.map((item) => ({ ...item })),
+    }
+  }
+  return null
 }

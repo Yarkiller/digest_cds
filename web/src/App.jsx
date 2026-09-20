@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import AppShell from './components/AppShell.jsx'
 import RequireAuth from './components/RequireAuth.jsx'
+import ArchivePage from './pages/ArchivePage.jsx'
 import IssuePage from './pages/IssuePage.jsx'
 import KnowledgePage from './pages/KnowledgePage.jsx'
 import LoginPage from './pages/LoginPage.jsx'
@@ -21,7 +22,9 @@ export default function App() {
             </RequireAuth>
           }
         >
-          <Route index element={<IssuePage />} />
+          <Route index element={<IssuePage isCurrent />} />
+          <Route path="archive" element={<ArchivePage />} />
+          <Route path="issues/:number" element={<IssuePage isCurrent={false} />} />
           <Route path="voting" element={<VotingPage />} />
           <Route path="knowledge" element={<KnowledgePage />} />
           <Route path="materials/:id" element={<MaterialPage />} />
