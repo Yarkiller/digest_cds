@@ -9,6 +9,7 @@ import {
   getArchiveIssues,
   getIssueByNumber,
   getIssueMaterials,
+  getMaterialById,
 } from '../data/mock.js'
 
 export class ContentApiError extends Error {
@@ -238,6 +239,81 @@ export async function fetchIssueByNumber(number, accessToken) {
   }
   if (!response.ok) {
     throwNetwork()
+  }
+  return response.json()
+}
+
+/**
+ * Map mock.js material to API reader DTO (body[] → body_markdown).
+ * @param {NonNullable<ReturnType<typeof getMaterialById>>} material
+ */
+function mapMockMaterial(material) {
+  const bodyMarkdown =
+    material.body_markdown ??
+    (Array.isArray(material.body) ? material.body.join('\n\n') : String(material.body ?? ''))
+  const format =
+    typeof material.format === 'string' && material.format.toLowerCase() === 'статья'
+      ? 'статья'
+      : material.format
+  return {
+    slug: material.id,
+    title: material.title,
+    dek: material.dek ?? '',
+    body_markdown: bodyMarkdown,
+    format,
+    provenance: material.provenance ?? '',
+    tags: Array.isArray(material.tags) ? material.tags : [],
+    related: Array.isArray(material.related) ? material.related : [],
+    reading_minutes: material.readingMinutes,
+    published_at: material.published_at ?? null,
+    published_label: material.date ?? null,
+    editor: 'Редакция Digest CDS',
+  }
+}
+
+/**
+ * Ready material by slug — HTTP 404 → NOT_FOUND (soft editorial empty).
+ * @param {string} slug
+ */
+export async function fetchMaterial(slug, accessToken) {
+  if (failNextFetch) {
+    failNextFetch = false
+    throwNetwork('Не удалось загрузить материал. Проверьте сеть.')
+  }
+
+  if (isMocksEnabled()) {
+    const material = getMaterialById(slug)
+    if (!material) {
+      throw new ContentApiError('Материал не найден.', {
+        code: 'NOT_FOUND',
+        retryable: false,
+      })
+    }
+    return mapMockMaterial(material)
+  }
+
+  const headers = await authHeaders(accessToken)
+  let response
+  try {
+    response = await fetch(`${apiBase()}/materials/${encodeURIComponent(slug)}`, { headers })
+  } catch {
+    throwNetwork('Не удалось загрузить материал. Проверьте сеть.')
+  }
+
+  if (response.status === 401) {
+    throw new ContentApiError('Сессия истекла. Войдите снова.', {
+      code: 'UNAUTHORIZED',
+      retryable: false,
+    })
+  }
+  if (response.status === 404) {
+    throw new ContentApiError('Материал не найден.', {
+      code: 'NOT_FOUND',
+      retryable: false,
+    })
+  }
+  if (!response.ok) {
+    throwNetwork('Не удалось загрузить материал. Проверьте сеть.')
   }
   return response.json()
 }
