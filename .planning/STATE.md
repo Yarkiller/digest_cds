@@ -3,16 +3,16 @@ gsd_state_version: 1.0
 current_phase: 03
 current_phase_name: Voting Cycle
 status: executing
-stopped_at: Completed 03-03-PLAN.md
-last_updated: "2026-09-20T16:00:24.860Z"
+stopped_at: Completed 03-05-PLAN.md
+last_updated: "2026-09-20T16:09:10.525Z"
 last_activity: 2026-09-20
 last_activity_desc: Phase 03 execution started
-state_head: 36898cb352458399f0b1c7f8af74481d7e6f3993
+state_head: c1265aff5fb3eb78b7c5caabdba0aef1cce11879
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 21
-  completed_plans: 16
+  completed_plans: 17
   percent: 40
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-09-19)
 ## Current Position
 
 Phase: 03 (Voting Cycle) — EXECUTING
-Plan: 4 of 6
+Plan: 5 of 6
 Status: Ready to execute
 Last activity: 2026-09-20 — Phase 03 execution started
 
@@ -68,6 +68,7 @@ Progress: [████░░░░░░] 40%
 | Phase 02 P06 | 12min | 2 tasks | 9 files |
 | Phase 03 P01 | 22min | 2 tasks | 13 files |
 | Phase 03-voting-cycle P03 | 4min | 2 tasks | 1 files |
+| Phase 03-voting-cycle P05 | 8min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -113,6 +114,8 @@ Decisions are logged in PROJECT.md Key Decisions and `<decisions>` blocks.
 - [Phase 03]: Reuse select_active_voting_cycle; status column is open/closed switch
 - [Phase 03]: Leaders/ties/hide-when-zero already in get_ballot from 03-01 — plan 03-03 adds contract tests only
 - [Phase 03]: Closed-cycle GET reuses select_active_voting_cycle (latest closed when no open)
+- [Phase 03]: Empty «Выберите тему» shown when ready && !selectedId (disabled CTA cannot receive click)
+- [Phase 03]: SPA votingApi uses isMocksEnabled; POST BallotSnapshot applied without mandatory re-GET (D-52, D-56)
 
 ### Pending Todos
 
@@ -135,7 +138,7 @@ None. Live FE↔BE proof approved 2026-09-19.
 
 ## Session Continuity
 
-Last session: 2026-09-20T16:00:24.490Z
-Stopped at: Completed 03-03-PLAN.md
+Last session: 2026-09-20T16:09:10.156Z
+Stopped at: Completed 03-05-PLAN.md
 Resume file: None
 Verification: `.planning/phases/01-platform-foundation-auth/01-VERIFICATION.md`
