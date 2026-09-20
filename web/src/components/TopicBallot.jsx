@@ -1,4 +1,4 @@
-export default function TopicBallot({ topics, selectedId, onSelect }) {
+export default function TopicBallot({ topics, selectedId, onSelect, disabled = false }) {
   return (
     <div role="radiogroup" aria-label="Темы для голосования" className="border-t border-rule">
       {topics.map((topic) => {
@@ -9,10 +9,12 @@ export default function TopicBallot({ topics, selectedId, onSelect }) {
             type="button"
             role="radio"
             aria-checked={checked}
+            disabled={disabled}
             onClick={() => onSelect(topic.id)}
             className={[
               'grid w-full grid-cols-[1.5rem_minmax(0,1fr)] gap-4 border-b border-rule py-5 text-left',
               checked ? 'bg-[oklch(94%_0.025_278)]' : 'hover:bg-paper-2',
+              disabled ? 'cursor-not-allowed opacity-70' : '',
             ].join(' ')}
           >
             <span
@@ -25,8 +27,7 @@ export default function TopicBallot({ topics, selectedId, onSelect }) {
             <span>
               <span className="block font-display text-lg font-semibold">{topic.title}</span>
               <span className="mt-1 block text-xs text-ink-2">
-                {topic.materialsCount} материалов
-                {topic.leading ? ' · Лидирует' : ''} · {topic.votes} голосов
+                {topic.materialsCount} материалов · {topic.votes} голосов
               </span>
             </span>
           </button>

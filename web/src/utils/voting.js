@@ -1,5 +1,5 @@
 /**
- * Pure helpers for voting UI copy and button labels.
+ * Pure helpers for voting UI copy and button labels (D-44, VOTE-02).
  */
 export function voteStatusText({ confirmedId, selectedId, topics }) {
   if (confirmedId) {
@@ -10,12 +10,16 @@ export function voteStatusText({ confirmedId, selectedId, topics }) {
     const topic = topics.find((item) => item.id === selectedId)
     return `Выбор: «${topic?.title ?? selectedId}» (нажмите «Подтвердить голос»)`
   }
-  return 'Ваш голос: не отдан'
+  return 'голос не отдан'
 }
 
-export function voteButtonLabel(state) {
+/**
+ * @param {string} state
+ * @param {{ confirmedId?: string | null }} [opts]
+ */
+export function voteButtonLabel(state, { confirmedId } = {}) {
   if (state === 'loading') return 'Сохраняем…'
-  if (state === 'success') return 'Голос принят'
   if (state === 'error') return 'Повторить'
+  if (confirmedId) return 'Изменить голос'
   return 'Подтвердить голос'
 }

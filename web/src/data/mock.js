@@ -199,23 +199,23 @@ export const votingTopics = [
   {
     id: 'llm-audit',
     title: 'LLM для анализа аудиторских данных',
+    description: 'Проверка полноты выборок и аномалий в аудиторских данных с помощью LLM.',
     materialsCount: 3,
     votes: 24,
-    leading: false,
   },
   {
     id: 'rag-corp',
     title: 'RAG в корпоративной среде',
+    description: 'Корпоративный RAG: источники, доступы и контроль галлюцинаций.',
     materialsCount: 5,
     votes: 31,
-    leading: true,
   },
   {
     id: 'automl-risk',
     title: 'AutoML для прогнозирования рисков',
+    description: 'AutoML-пайплайны для оценки операционных и кредитных рисков.',
     materialsCount: 2,
     votes: 18,
-    leading: false,
   },
 ]
 

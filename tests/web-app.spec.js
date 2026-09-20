@@ -314,15 +314,13 @@ test.describe("web app edge and error cases", () => {
 
     await page.goto("/voting");
     const confirm = page.getByTestId("confirm-vote");
+    await expect(page.getByRole("status")).toContainText(/голос не отдан/i);
     await expect(confirm).toBeDisabled();
-
-    // Force a click past the disabled attribute to exercise client guard (VOTE-01)
-    await confirm.evaluate((el) => {
-      el.disabled = false;
-      el.click();
-    });
-
     await expect(page.getByText(/Выберите тему/i)).toBeVisible();
+
+    // Disabled CTA must not fire a vote POST even if force-clicked (VOTE-01)
+    await confirm.click({ force: true });
+    await expect(page.getByRole("status")).toContainText(/голос не отдан/i);
     expect(posts).toHaveLength(0);
   });
 
