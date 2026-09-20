@@ -105,7 +105,7 @@ Each task was committed atomically:
 1. **Task 1: SPA ballot wire — votingApi + VotingPage confirm under mocks** - `3ad6ed8` (test) + `c1265af` (feat)
 2. **Task 2: Wave SPA gate — voting honesty suite** - verify-only (9 passed; no code change)
 
-**Plan metadata:** _(pending docs commit)_
+**Plan metadata:** `caa106a` (docs: complete plan)
 
 ## Files Created/Modified
 
