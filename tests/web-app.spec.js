@@ -44,6 +44,42 @@ test.describe("web app main flows", () => {
     await expect(archiveCta).toHaveAttribute("href", "/archive");
   });
 
+  test("shows open voting callout with Выбрать тему CTA on current issue", async ({ page }) => {
+    await page.goto("/");
+
+    await expect(page.getByTestId("issue-ready")).toBeVisible();
+    const callout = page.getByTestId("editorial-callout");
+    await expect(callout).toBeVisible();
+    await expect(callout.getByText(/голосование открыто до/i)).toBeVisible();
+    const cta = callout.getByRole("link", { name: /выбрать тему →/i });
+    await expect(cta).toBeVisible();
+    await expect(cta).toHaveAttribute("href", "/voting");
+  });
+
+  test("shows closed voting callout without topic-select CTA", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__DIGEST_VOTING_CYCLE_CLOSED__ = true;
+    });
+    await page.goto("/");
+
+    await expect(page.getByTestId("issue-ready")).toBeVisible();
+    const callout = page.getByTestId("editorial-callout");
+    await expect(callout).toBeVisible();
+    await expect(callout.getByText(/голосование закрыто/i)).toBeVisible();
+    await expect(callout.getByRole("link", { name: /выбрать тему/i })).toHaveCount(0);
+  });
+
+  test("hides voting callout when cycle is absent", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__DIGEST_NO_VOTING_CYCLE__ = true;
+    });
+    await page.goto("/");
+
+    await expect(page.getByTestId("issue-ready")).toBeVisible();
+    await expect(page.getByTestId("editorial-callout")).toHaveCount(0);
+    await expect(page.getByText(/голосование открыто|голосование закрыто/i)).toHaveCount(0);
+  });
+
   test("navigates Архив nav to past issue without voting callout", async ({ page }) => {
     await page.goto("/");
 
