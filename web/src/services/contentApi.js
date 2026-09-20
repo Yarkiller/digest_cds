@@ -25,11 +25,22 @@ export function armFailNextContentFetch() {
 /** Playwright/unit harness: force empty current DTO under mocks (D-30). */
 export function armEmptyCurrentIssue() {
   emptyCurrentIssue = true
+  if (typeof window !== 'undefined') {
+    window.__DIGEST_EMPTY_CURRENT_ISSUE__ = true
+  }
 }
 
 export function resetContentHarness() {
   failNextFetch = false
   emptyCurrentIssue = false
+  if (typeof window !== 'undefined') {
+    window.__DIGEST_EMPTY_CURRENT_ISSUE__ = false
+  }
+}
+
+function isEmptyCurrentArmed() {
+  if (emptyCurrentIssue) return true
+  return typeof window !== 'undefined' && window.__DIGEST_EMPTY_CURRENT_ISSUE__ === true
 }
 
 function apiBase() {
@@ -77,7 +88,7 @@ export async function fetchCurrentIssue(accessToken) {
   }
 
   if (isMocksEnabled()) {
-    if (emptyCurrentIssue) {
+    if (isEmptyCurrentArmed()) {
       return {
         number: null,
         period_label: null,
