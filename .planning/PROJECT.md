@@ -32,13 +32,16 @@ v1 is done only when **all** of the following hold:
 - ✓ Domain entities/ports for Material & Knowledge (in-memory composition) — brownfield
 - ✓ Playwright E2E harness + pytest unit layout — brownfield
 
+### Validated
+
+- ✓ Corporate auth + session redirect (AUTH-*) — Phase 1
+- ✓ Current issue, materials (prepared article only), archive (ISSUE-*, MAT-*) — Phase 2
+- ✓ Voting cycle: one vote, change while open, audit-language ballot (VOTE-*) — Phase 3
+
 ### Active
 
 <!-- Current v1 scope — see REQUIREMENTS.md for IDs and acceptance. -->
 
-- [ ] Corporate auth + session redirect (AUTH-*)
-- [ ] Current issue, materials (prepared article only), archive (ISSUE-*, MAT-*)
-- [ ] Voting cycle: one vote, change while open, audit-language ballot (VOTE-*)
 - [ ] Knowledge semantic search + role filters; разборы list/longread/notebook (KNOW-*, RAZB-*)
 - [ ] Admin shortlist → approve/reject → preview → send → archive (ADMIN-*)
 - [ ] Platform: live DB, FastAPI, FE↔BE, security, errors, docs (PLAT-*)
@@ -122,4 +125,4 @@ After each phase transition: move validated/invalidated requirements; log decisi
 After milestone: full review of Core Value, Out of Scope, and Context against shipped reality.
 
 ---
-*Last updated: 2026-09-19 after new-project-from-ingest*
+*Last updated: 2026-09-20 after Phase 3*

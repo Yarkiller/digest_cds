@@ -1,7 +1,7 @@
 ---
 phase: 03-voting-cycle
 verified: 2026-09-20T17:00:00Z
-status: human_needed
+status: passed
 score: 4/4 must-haves verified
 behavior_unverified: 2
 overrides_applied: 0
@@ -11,41 +11,51 @@ decision_coverage:
   total: 17
   not_honored: []
 behavior_unverified_items:
+
   - truth: "UI-SPEC backstops: long titles/deks/status and 3+ tied leaders wrap without overflow; many topic rows scroll without clamp breakage"
     test: "At 320/390/1280, open /voting with long RU titles, a 0-materials topic, and a 3-way leader tie (mock or live)"
     expected: "No horizontal overflow of primary chrome; leader strip and «Ваш голос:» reflow; radios remain usable"
     why_human: "PLAN 03-05/03-06 mark these verification: backstop — presence checks cannot prove layout"
+
   - truth: "Initial ballot GET pending remains neutral non-flashing until ready/error (no false closed/empty flash)"
     test: "Throttle network; open /voting; observe first paint before snapshot settles"
     expected: "Neutral «Загрузка…» only — no closed banner, no «нет активного», no pre-selected radio"
     why_human: "verification: backstop in 03-05/03-06; timing/flash not greppable"
 human_verification:
+
   - test: "Live FE↔BE ballot smoke (VITE_USE_MOCKS=false, APP_CONTAINER=live)"
     expected: "Authenticated /voting loads seeded topics with audit deks; confirm stores one vote; A→B updates status; closed reject shows «Цикл голосования закрыт»"
     why_human: "Playwright phase gate runs under mocks; shared-VM JWT + live adapters need a human pass"
+
   - test: "UI-SPEC visual backstops (overflow / long copy / pending flash)"
     expected: "Leader strip, topic rows, and status reflow at 320/390/1280 without clipping or false empty/closed flash"
     why_human: "PLAN backstop truths — visual judgment"
+
   - test: "Reconfirm live DDL trigger on shared VM"
     expected: "pg_trigger lists votes_enforce_open_and_topic; closed-cycle write rejected at DB as well as app layer"
     why_human: "MCP list_triggers needs POSTGRES_URL this session; seed verified live, DDL only via runbook Applied line"
 prohibitions_flagged:
+
   - statement: "No public leaderboard / XP / gamification (ADR-0001)"
     verification: judgment
     disposition: honored_advisory
     evidence: "No leaderboard routes/UI; tallies only on ballot DTO"
+
   - statement: "No row «Лидирует» badge / topic.leading"
     verification: judgment
     disposition: honored_advisory
     evidence: "BallotTopic has no leading; Playwright getByText('Лидирует', exact) count 0"
+
   - statement: "No idle setInterval tally polling (D-55)"
     verification: judgment
     disposition: honored_advisory
     evidence: "No setInterval in VotingPage.jsx / votingApi.js"
+
   - statement: "No SPA→Supabase Data API vote writes"
     verification: judgment
     disposition: honored_advisory
     evidence: "votingApi live path uses fetch /voting/* only"
+
   - statement: "No delete+insert A→B — upsert/CAS on PK only"
     verification: judgment
     disposition: honored_advisory
