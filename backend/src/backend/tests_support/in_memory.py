@@ -83,12 +83,17 @@ class InMemoryProfileRepository:
 class InMemoryMaterialRepository:
     def __init__(self, materials: list[Material] | None = None) -> None:
         self._by_id: dict[int, Material] = {m.id: m for m in (materials or [])}
+        self._by_slug: dict[str, Material] = {m.slug: m for m in (materials or [])}
 
     def get(self, material_id: int) -> Material | None:
         return self._by_id.get(material_id)
 
+    def get_by_slug(self, slug: str) -> Material | None:
+        return self._by_slug.get(slug)
+
     def save(self, material: Material) -> Material:
         self._by_id[material.id] = material
+        self._by_slug[material.slug] = material
         return material
 
 
@@ -135,3 +140,20 @@ class InMemoryIssueRepository:
         if not published:
             return None
         return max(published, key=lambda i: i.published_at)
+
+    def get_by_number(self, number: int) -> Issue | None:
+        for issue in self._issues:
+            if issue.number == number and issue.published_at is not None:
+                return issue
+        return None
+
+    def list_past_published(self) -> list[Issue]:
+        current = self.get_latest_published()
+        published = [i for i in self._issues if i.published_at is not None]
+        if current is None:
+            return sorted(published, key=lambda i: i.published_at, reverse=True)
+        return sorted(
+            [i for i in published if i.id != current.id],
+            key=lambda i: i.published_at,
+            reverse=True,
+        )

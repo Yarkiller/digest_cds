@@ -4,12 +4,10 @@ from __future__ import annotations
 
 from backend.composition.container import AppContainer
 from backend.composition.settings import Settings
-from backend.tests_support.in_memory import (
-    InMemoryIssueRepository,
-    InMemoryKnowledgeChunkRepository,
-    InMemoryMaterialRepository,
-)
+from backend.tests_support.in_memory import InMemoryKnowledgeChunkRepository
 from supabase_integration import (
+    SupabaseIssueRepository,
+    SupabaseMaterialRepository,
     SupabasePingRecorder,
     SupabaseProfileRepository,
     create_publishable_client,
@@ -18,14 +16,14 @@ from supabase_integration import (
 
 
 def build_live_container(settings: Settings) -> AppContainer:
-    """Wire service_role adapters for profiles + activity_events; materials stay in-memory."""
+    """Wire service_role adapters for profiles, pings, issues, and materials."""
     if not settings.supabase_url or not settings.supabase_secret_key:
         raise ValueError(
             "live container requires SUPABASE_URL and SUPABASE_SECRET_KEY "
             "(construct clients only in composition/live.py — never expose via VITE_)"
         )
 
-    # service_role: RLS bypass for activity_events insert + profiles upsert (T-01-06)
+    # service_role: RLS bypass for content reads + activity_events / profiles (T-02-03)
     admin_client = create_service_role_client(
         settings.supabase_url,
         settings.supabase_secret_key,
@@ -38,10 +36,9 @@ def build_live_container(settings: Settings) -> AppContainer:
         )
 
     return AppContainer(
-        materials=InMemoryMaterialRepository(),
+        materials=SupabaseMaterialRepository(admin_client),
         chunks=InMemoryKnowledgeChunkRepository(),
         profiles=SupabaseProfileRepository(admin_client),
         pings=SupabasePingRecorder(admin_client),
-        # Live IssueRepository lands in 02-02; empty in-memory keeps AppContainer constructible.
-        issues=InMemoryIssueRepository(),
+        issues=SupabaseIssueRepository(admin_client),
     )

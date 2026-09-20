@@ -52,6 +52,7 @@ class _FakeQuery:
         self._neq_filters.append((column, value))
         return self
 
+    @property
     def not_(self) -> "_FakeNot":
         return _FakeNot(self)
 
