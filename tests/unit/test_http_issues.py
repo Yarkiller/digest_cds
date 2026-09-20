@@ -137,3 +137,104 @@ def test_issues_current_with_no_published_returns_honest_empty_200() -> None:
     body = response.json()
     assert body["number"] is None
     assert body["items"] == []
+
+
+def _two_issue_container() -> AppContainer:
+    older = Issue(
+        id="iss-13",
+        number=13,
+        period_label="10–16 марта 2026",
+        title="Прошлый выпуск",
+        editor="Редакция Digest CDS",
+        published_at=datetime(2026, 3, 10, tzinfo=timezone.utc),
+        items=(
+            IssueItem(
+                slug="past-mat",
+                title="Past Material",
+                position=1,
+                format="Статья",
+                reading_minutes=6,
+                dek=None,
+            ),
+        ),
+    )
+    current = Issue(
+        id="iss-14",
+        number=14,
+        period_label="17–23 марта 2026",
+        title="Новости DS для СВА",
+        editor="Редакция Digest CDS",
+        published_at=datetime(2026, 3, 17, tzinfo=timezone.utc),
+        items=(
+            IssueItem(
+                slug="rag-systems",
+                title="Building Production RAG Systems",
+                position=1,
+                format="Статья",
+                reading_minutes=8,
+                dek="Как быстро находить нужные фрагменты.",
+            ),
+        ),
+    )
+    container = build_in_memory_container()
+    container.issues = InMemoryIssueRepository([older, current])
+    return container
+
+
+def test_archive_without_authorization_returns_401() -> None:
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    client = _client(_public_jwk(private_key))
+    response = client.get("/archive")
+    assert response.status_code == 401
+
+
+def test_archive_excludes_current_and_lists_past() -> None:
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    client = _client(jwk, _two_issue_container())
+    token = _mint(private_key, email="alice@sberbank.ru")
+    response = client.get("/archive", headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 200
+    body = response.json()
+    numbers = [item["number"] for item in body["issues"]]
+    assert 14 not in numbers
+    assert 13 in numbers
+    past = next(item for item in body["issues"] if item["number"] == 13)
+    assert past["period_label"] == "10–16 марта 2026"
+    assert past["title"] == "Прошлый выпуск"
+    assert past["material_count"] == 1
+
+
+def test_issues_by_number_without_authorization_returns_401() -> None:
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    client = _client(_public_jwk(private_key))
+    response = client.get("/issues/13")
+    assert response.status_code == 401
+
+
+def test_issues_by_number_returns_published_issue() -> None:
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    client = _client(jwk, _two_issue_container())
+    token = _mint(private_key, email="alice@sberbank.ru")
+    response = client.get(
+        "/issues/13",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["number"] == 13
+    assert body["title"] == "Прошлый выпуск"
+    assert body["items"][0]["slug"] == "past-mat"
+
+
+def test_issues_by_number_missing_returns_404() -> None:
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    client = _client(jwk, _two_issue_container())
+    token = _mint(private_key, email="alice@sberbank.ru")
+    response = client.get(
+        "/issues/99999",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert response.status_code == 404
