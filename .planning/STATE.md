@@ -3,16 +3,16 @@ gsd_state_version: 1.0
 current_phase: 03
 current_phase_name: Voting Cycle
 status: verifying
-stopped_at: Completed 03-06-PLAN.md
-last_updated: "2026-09-20T16:42:15.872Z"
+stopped_at: Completed 03-04-PLAN.md
+last_updated: "2026-09-20T16:54:25.268Z"
 last_activity: 2026-09-20
 last_activity_desc: Phase 03 execution started
-state_head: a06a453183b6d53b7aced83d4cceac1ab4b206aa
+state_head: 53e4d76098c1d651e7026f96e4f3752cc44078e4
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 21
-  completed_plans: 19
+  completed_plans: 20
   percent: 40
 ---
 
@@ -71,6 +71,7 @@ Progress: [████░░░░░░] 40%
 | Phase 03-voting-cycle P05 | 8min | 2 tasks | 6 files |
 | Phase 03-voting-cycle P02 | 45min | 3 tasks | 7 files |
 | Phase 03-voting-cycle P06 | 8min | 2 tasks | 9 files |
+| Phase 03 P04 | 12min | 3 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -124,6 +125,8 @@ Decisions are logged in PROJECT.md Key Decisions and `<decisions>` blocks.
 - [Phase 03]: Leader strip test uses exact:true for «Лидирует» so strip phrase does not false-fail
 - [Phase 03]: Confirm CTA omitted entirely when cycle.status===closed (not merely disabled)
 - [Phase 03]: Mock closed POST throws CYCLE_CLOSED with ballot payload for D-51 readiness
+- [Phase 03]: 409 detail.ballot for CYCLE_CLOSED/VOTE_CONFLICT; expected_updated_at CAS only (no ETag)
+- [Phase 03]: GET ballot fail → ServiceUnavailable; POST fail → ErrorPanel; toast fade ~4s
 
 ### Pending Todos
 
@@ -146,7 +149,7 @@ None. Live FE↔BE proof approved 2026-09-19.
 
 ## Session Continuity
 
-Last session: 2026-09-20T16:42:15.448Z
-Stopped at: Completed 03-06-PLAN.md
+Last session: 2026-09-20T16:54:24.879Z
+Stopped at: Completed 03-04-PLAN.md
 Resume file: None
 Verification: `.planning/phases/01-platform-foundation-auth/01-VERIFICATION.md`
