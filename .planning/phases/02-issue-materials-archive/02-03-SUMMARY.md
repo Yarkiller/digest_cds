@@ -125,7 +125,7 @@ status: complete
 3. **Task 2 RED:** `d97a1bd` — test(02-03): add failing Playwright for archive and soft-404
 4. **Task 2 GREEN:** `3365f76` — feat(02-03): add ArchivePage, nav, and past IssuePage soft-404
 
-**Plan metadata:** _(pending docs commit)_
+**Plan metadata:** `5290e92` (docs: complete plan)
 
 ## Files Created/Modified
 
