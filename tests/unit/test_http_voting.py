@@ -257,3 +257,93 @@ def test_voting_post_empty_topic_returns_400() -> None:
 
     assert response.status_code == 400
     assert response.json()["detail"] == "invalid_vote"
+
+
+def test_voting_post_change_a_to_b_returns_200_with_moved_tallies() -> None:
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    client = _client(jwk, _seeded_container())
+    token = _mint(private_key, email="alice@sberbank.ru")
+    headers = {"Authorization": f"Bearer {token}"}
+
+    first = client.post(
+        "/voting/votes",
+        headers=headers,
+        json={"topic_id": "topic-1", "expected_updated_at": None},
+    )
+    assert first.status_code == 200
+    updated_at = first.json()["personal_vote"]["updated_at"]
+
+    second = client.post(
+        "/voting/votes",
+        headers=headers,
+        json={"topic_id": "topic-2", "expected_updated_at": updated_at},
+    )
+    assert second.status_code == 200
+    body = second.json()
+    assert body["personal_vote"]["topic_id"] == "topic-2"
+    by_id = {t["id"]: t["votes"] for t in body["topics"]}
+    assert by_id["topic-1"] == 0
+    assert by_id["topic-2"] == 1
+
+
+def test_voting_post_closed_returns_409_cycle_closed_with_ballot() -> None:
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    container = _seeded_container()
+    container.voting_cycles = InMemoryVotingCycleReader(
+        [
+            VotingCycle(
+                id="cycle-1",
+                status="closed",
+                opens_at=datetime(2026, 4, 3, tzinfo=timezone.utc),
+                closes_at=datetime(2026, 4, 16, 23, 59, 59, tzinfo=timezone.utc),
+            )
+        ]
+    )
+    client = _client(jwk, container)
+    token = _mint(private_key, email="alice@sberbank.ru")
+
+    response = client.post(
+        "/voting/votes",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"topic_id": "topic-1", "expected_updated_at": None},
+    )
+
+    assert response.status_code == 409
+    detail = response.json()["detail"]
+    assert detail["code"] == "CYCLE_CLOSED"
+    assert "закрыт" in detail["message"].lower()
+    assert isinstance(detail["ballot"], dict)
+    assert "topics" in detail["ballot"]
+    assert detail["ballot"]["cycle"]["status"] == "closed"
+
+
+def test_voting_post_cas_mismatch_returns_409_vote_conflict_with_ballot() -> None:
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    client = _client(jwk, _seeded_container())
+    token = _mint(private_key, email="alice@sberbank.ru")
+    headers = {"Authorization": f"Bearer {token}"}
+
+    first = client.post(
+        "/voting/votes",
+        headers=headers,
+        json={"topic_id": "topic-1", "expected_updated_at": None},
+    )
+    assert first.status_code == 200
+
+    response = client.post(
+        "/voting/votes",
+        headers=headers,
+        json={
+            "topic_id": "topic-2",
+            "expected_updated_at": "2020-01-01T00:00:00+00:00",
+        },
+    )
+
+    assert response.status_code == 409
+    detail = response.json()["detail"]
+    assert detail["code"] == "VOTE_CONFLICT"
+    assert isinstance(detail["ballot"], dict)
+    assert detail["ballot"]["personal_vote"]["topic_id"] == "topic-1"
