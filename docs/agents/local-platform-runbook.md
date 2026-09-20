@@ -132,6 +132,8 @@ select count(*) from voting_cycles;                                -- expect >= 
 
 Record the apply method in the operator resume signal (or append a one-line note below when confirmed).
 
+**Applied (2026-09-20):** Supabase MCP PostgREST `insert` (service_role) — `raw_sql` unavailable without `POSTGRES_URL`. Verified: published issues=2 (№13, №14), materials=6 (incl. `rag-systems`), voting_cycles=1 (open).
+
 ---
 
 ## 5. Live FE↔BE proof checklist (D-10)
