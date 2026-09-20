@@ -76,7 +76,7 @@ export const materials = [
     readingMinutes: 3,
     date: '15 марта 2026',
     provenance: '',
-    cover: '',
+    cover: '/covers/rag-systems.png',
     roles: ['ds'],
     tags: [],
     topic: 'ml-search',
