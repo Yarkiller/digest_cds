@@ -29,6 +29,49 @@ test.describe("web app main flows", () => {
     await expect(archiveCta).toHaveAttribute("href", "/archive");
   });
 
+  test("navigates Архив nav to past issue without voting callout", async ({ page }) => {
+    await page.goto("/");
+
+    const nav = page.getByRole("navigation", { name: /основная навигация/i });
+    const archiveNav = nav.getByRole("link", { name: /^Архив$/ });
+    await expect(archiveNav).toBeVisible();
+
+    // Архив sits between Выпуск and База (D-28)
+    const labels = await nav.getByRole("link").allTextContents();
+    const archiveIdx = labels.findIndex((t) => t.trim() === "Архив");
+    const issueIdx = labels.findIndex((t) => t.trim() === "Выпуск");
+    const knowledgeIdx = labels.findIndex((t) => t.trim() === "База");
+    expect(archiveIdx).toBeGreaterThan(issueIdx);
+    expect(knowledgeIdx).toBeGreaterThan(archiveIdx);
+
+    await archiveNav.click();
+    await expect(page).toHaveURL(/\/archive/);
+    await expect(page.getByRole("link", { name: /← К текущему выпуску/ })).toBeVisible();
+    await expect(page.getByText(/текущий/i)).toHaveCount(0);
+
+    await page.getByRole("link", { name: /выпуск №13/i }).click();
+    await expect(page).toHaveURL(/\/issues\/13/);
+    await expect(page.getByRole("heading", { name: /прошлый выпуск/i })).toBeVisible();
+    await expect(page.getByText(/голосование открыто/i)).toHaveCount(0);
+    await expect(page.getByRole("link", { name: /выбрать тему/i })).toHaveCount(0);
+  });
+
+  test("shows empty archive «Архив пуст» with CTA to current", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__DIGEST_EMPTY_ARCHIVE__ = true;
+    });
+    await page.goto("/archive");
+
+    await expect(page.getByRole("heading", { name: "Архив пуст" })).toBeVisible();
+    await expect(page.getByText(/прошлых выпусков пока нет/i)).toBeVisible();
+    await expect(page.getByRole("link", { name: /← К текущему выпуску/ })).toBeVisible();
+    const cta = page.getByRole("link", { name: /к текущему выпуску →/i });
+    await expect(cta).toBeVisible();
+    await expect(cta).toHaveAttribute("href", "/");
+    await cta.click();
+    await expect(page).toHaveURL(/\/$/);
+  });
+
   test("lets a reader pick a voting topic and confirm", async ({ page }) => {
     await page.goto("/voting");
 
@@ -120,6 +163,19 @@ test.describe("web app edge and error cases", () => {
     await page.getByRole("link", { name: /к выпуску/i }).click();
     await expect(page).toHaveURL(/\/$/);
     await expect(page.getByRole("heading", { name: /новости ds для сва/i })).toBeVisible();
+  });
+
+  test("shows soft empty «Выпуск не найден» for unknown issue number", async ({ page }) => {
+    await page.goto("/issues/99999");
+
+    await expect(page.getByRole("heading", { name: "Выпуск не найден" })).toBeVisible();
+    await expect(page.getByText(/проверьте номер выпуска/i)).toBeVisible();
+    await expect(page.locator('img[src*="bad_gateway"]')).toHaveCount(0);
+    const cta = page.getByRole("link", { name: /к текущему выпуску →/i });
+    await expect(cta).toBeVisible();
+    await expect(cta).toHaveAttribute("href", "/");
+    await cta.click();
+    await expect(page).toHaveURL(/\/$/);
   });
 
   test("keeps confirm vote disabled when no topic is selected", async ({ page }) => {
