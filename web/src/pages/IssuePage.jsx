@@ -30,6 +30,21 @@ function toTocItems(items) {
   }))
 }
 
+/** Format cycle closes_at for callout copy (UI-SPEC). */
+function formatClosesAt(iso) {
+  if (!iso) return ''
+  try {
+    return new Intl.DateTimeFormat('ru-RU', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      timeZone: 'UTC',
+    }).format(new Date(iso))
+  } catch {
+    return String(iso)
+  }
+}
+
 /**
  * @param {{ isCurrent?: boolean }} props
  * isCurrent=true on `/` (EditorialCallout, D-34); false on `/issues/:number`.
@@ -137,6 +152,9 @@ export default function IssuePage({ isCurrent = true }) {
     )
   }
 
+  const cycle = isCurrent ? issue?.voting_cycle : null
+  const showCallout = Boolean(cycle?.status)
+
   return (
     <section data-testid="issue-ready">
       {isCurrent ? <PlatformProofBanner /> : null}
@@ -152,9 +170,16 @@ export default function IssuePage({ isCurrent = true }) {
 
       <hr className="my-8 border-rule" />
 
-      {isCurrent ? (
+      {showCallout && cycle.status === 'open' ? (
         <EditorialCallout actionTo="/voting" actionLabel="Выбрать тему →">
-          <strong>Голосование открыто</strong> — выберите тему следующего разбора.
+          <strong>Голосование открыто</strong> до {formatClosesAt(cycle.closes_at)} — выберите тему
+          следующего разбора.
+        </EditorialCallout>
+      ) : null}
+
+      {showCallout && cycle.status === 'closed' ? (
+        <EditorialCallout muted>
+          <strong>Голосование закрыто.</strong> Итоги появятся в ближайшем разборе.
         </EditorialCallout>
       ) : null}
 

@@ -52,6 +52,8 @@ export function resetContentHarness() {
   if (typeof window !== 'undefined') {
     window.__DIGEST_EMPTY_CURRENT_ISSUE__ = false
     window.__DIGEST_EMPTY_ARCHIVE__ = false
+    window.__DIGEST_VOTING_CYCLE_CLOSED__ = false
+    window.__DIGEST_NO_VOTING_CYCLE__ = false
   }
 }
 
@@ -63,6 +65,20 @@ function isEmptyCurrentArmed() {
 function isEmptyArchiveArmed() {
   if (emptyArchive) return true
   return typeof window !== 'undefined' && window.__DIGEST_EMPTY_ARCHIVE__ === true
+}
+
+/** Mock/live voting_cycle stub for current issue (D-33). */
+function mockVotingCycle() {
+  if (typeof window !== 'undefined' && window.__DIGEST_NO_VOTING_CYCLE__ === true) {
+    return null
+  }
+  const closed =
+    typeof window !== 'undefined' && window.__DIGEST_VOTING_CYCLE_CLOSED__ === true
+  return {
+    status: closed ? 'closed' : 'open',
+    // Matches currentIssue.votingOpenUntil narrative (28 марта 2026 UTC).
+    closes_at: '2026-03-28T21:00:00.000Z',
+  }
 }
 
 function apiBase() {
@@ -109,7 +125,8 @@ function throwNetwork(message = 'Не удалось загрузить выпу
  *     format: string,
  *     reading_minutes: number,
  *     dek: string | null,
- *   }>
+ *   }>,
+ *   voting_cycle: { status: string, closes_at: string } | null,
  * }>}
  */
 export async function fetchCurrentIssue(accessToken) {
@@ -126,6 +143,7 @@ export async function fetchCurrentIssue(accessToken) {
         title: null,
         editor: null,
         items: [],
+        voting_cycle: null,
       }
     }
     return {
@@ -134,6 +152,7 @@ export async function fetchCurrentIssue(accessToken) {
       title: currentIssue.title,
       editor: currentIssue.editor,
       items: mapMockItems(getIssueMaterials()),
+      voting_cycle: mockVotingCycle(),
     }
   }
 
