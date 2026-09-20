@@ -9,7 +9,22 @@ test.describe("web app main flows", () => {
 
     await expect(page).toHaveURL(/\/materials\/rag-systems/);
     await expect(page.getByRole("heading", { name: /building production rag systems/i })).toBeVisible();
-    await expect(page.getByRole("heading", { name: /резюме/i })).toBeVisible();
+    // MAT-01/03: Статья badge + markdown prose (not legacy «Резюме» stub)
+    await expect(page.getByTestId("material-format-badge")).toHaveText(/статья/i);
+    await expect(page.getByTestId("material-prose")).toBeVisible();
+    await expect(page.getByTestId("material-prose")).toContainText(/регламент/i);
+    // TOC present when body_markdown has headings
+    const toc = page.getByRole("navigation", { name: /содержание/i });
+    await expect(toc).toBeVisible();
+    await expect(toc.getByRole("link").first()).toBeVisible();
+  });
+
+  test("hides material dek block when empty", async ({ page }) => {
+    await page.goto("/materials/empty-dek-article");
+
+    await expect(page.getByRole("heading", { name: /empty dek article/i })).toBeVisible();
+    await expect(page.getByTestId("material-dek")).toHaveCount(0);
+    await expect(page.getByText(/заглушк|stub|dek отсутствует|нет описания/i)).toHaveCount(0);
   });
 
   test("shows empty current issue «Выпуск готовится» with archive CTA", async ({ page }) => {
@@ -160,6 +175,9 @@ test.describe("web app edge and error cases", () => {
     await page.goto("/materials/does-not-exist");
 
     await expect(page.getByRole("heading", { name: /материал не найден/i })).toBeVisible();
+    await expect(page.getByText(/ссылка устарела|ещё готовится/i)).toBeVisible();
+    await expect(page.locator('img[src*="bad_gateway"]')).toHaveCount(0);
+    await expect(page.getByRole("link", { name: /в архив/i })).toBeVisible();
     await page.getByRole("link", { name: /к выпуску/i }).click();
     await expect(page).toHaveURL(/\/$/);
     await expect(page.getByRole("heading", { name: /новости ds для сва/i })).toBeVisible();
