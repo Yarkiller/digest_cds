@@ -103,6 +103,37 @@ Do **not** run DROP/TRUNCATE/reset SQL on the shared VM during proof (T-01-14). 
 
 ---
 
+## 4b. Phase 2 content seed (D-25, D-27)
+
+Checked-in idempotent SQL: `supabase-integration/migrations/002_phase2_issue_seed.sql`.
+
+Creates / upserts:
+
+- Two **published** `digest_issues` (№14 current from mock.js + №13 past for archive)
+- Ready `materials` with Playwright slugs (`rag-systems`, …) + tags/relations
+- `digest_issue_items` TOC positions
+- One `voting_cycles` row (open window 3–16 Apr 2026) when missing
+
+**Apply once on the shared VM** (`knowledge-db.ru`):
+
+1. Prefer Supabase MCP / Studio SQL / `psql` — execute the file as **insert/upsert only**.
+2. Or non-interactive CLI when `SUPABASE_ACCESS_TOKEN` is set: `supabase db push` (or Cloud.ru-documented remote equivalent) from repo root.
+3. Re-running the file is safe (`ON CONFLICT` on `number` / `slug`; voting cycle uses `WHERE NOT EXISTS`).
+
+**Do not** `TRUNCATE` / `DELETE` wipe / `db reset` on the shared VM. No `cover_url` / `is_current` columns (D-24/D-26).
+
+**Verify after apply:**
+
+```sql
+select count(*) from digest_issues where published_at is not null;  -- expect >= 2
+select slug from materials where slug = 'rag-systems';             -- expect 1 row
+select count(*) from voting_cycles;                                -- expect >= 1
+```
+
+Record the apply method in the operator resume signal (or append a one-line note below when confirmed).
+
+---
+
 ## 5. Live FE↔BE proof checklist (D-10)
 
 With API on `:8000`, Vite on `:5173`, `APP_CONTAINER=live`, and `VITE_USE_MOCKS=false`:
