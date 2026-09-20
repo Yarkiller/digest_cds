@@ -1,10 +1,11 @@
 ---
 phase: 3
 slug: voting-cycle
-status: draft
+status: approved
 shadcn_initialized: false
 preset: none
 created: 2026-09-20
+reviewed_at: 2026-09-20
 ---
 
 # Phase 3 — UI Design Contract
@@ -114,19 +115,29 @@ All copy is Russian and locked by CONTEXT.md decisions D-40…D-56 and VOTE-01�
 ## UI Considerations
 
 > State coverage for the voting ballot. Empty/error COPY is defined in `## Copywriting Contract` above; rows here reference it rather than restate.
+> Populated by the ui-phase UI-consideration probe (Step 9.5) over surfaces E1–E8 (ballot list, leader strip, CTA, status text, closed banner, submit-error panel, GET-failure splash, empty states). Probe raised 31 applicable considerations; dispositions below are grounded in the locked Copywriting Contract and CONTEXT decisions D-40…D-56.
 
-Applicable state considerations resolved: 7 covered, 1 backstop, 0 unresolved.
+Applicable state considerations resolved: 12 covered, 5 backstop, 0 unresolved (14 dismissed as N/A — see footnote).
 
 | Category | Element(s) | Status | Resolution / Reason |
 |----------|------------|--------|---------------------|
-| empty | ballot (list-collection) | ✅ covered | Open cycle with 0 topics → «Темы ещё не объявлены» + «К выпуску»; no active cycle → «Сейчас нет активного голосования» + «К выпуску» (D-49/D-50) |
-| loading | CTA + initial fetch | ✅ covered | CTA shows «Сохраняем…» + disabled while submitting; initial ballot GET pending renders neutral until snapshot or splash |
-| error | submit (mutation) | ✅ covered | Network/5xx → ErrorPanel «Ошибка сохранения» + Retry, selection kept (D-53); initial GET failure → ServiceUnavailable splash (D-55); conflict → adopt-server banner (D-54) |
-| populated | ballot rows + leader strip | ✅ covered | Rows show title + audit dek + «{N} материалов» + «{N} голосов»; leader strip on muted surface when ≥1 vote (D-40/41/43) |
-| partial | zero-materials topic | ✅ covered | Topic with no linked materials renders «0 материалов» honestly (VOTE-04) |
-| zero-one-many | plural «голос/голоса/голосов», «материал/материала/материалов» | ✅ covered | Shared RU pluralization helper (extract from `IssuePage.jsx materialCountLabel`; add votes plural) |
-| closed | read-only ballot | ✅ covered | Banner «Цикл голосования закрыт»; radios disabled; tallies + leader strip visible; last personal vote shown; CTA hidden/disabled (D-48/D-51) |
-| long-text | long topic title / audit description (static-content) | 🧪 backstop | Long RU titles/deks must wrap without truncation or row breakage; held for visual/UI-state check (no fixed-height clamp) |
+| empty | ballot list (E1), empty states (E8) | ✅ covered | Open cycle with 0 topics → «Темы ещё не объявлены» + «К выпуску»; no active cycle → «Сейчас нет активного голосования» + «К выпуску» (D-49/D-50) |
+| loading | CTA (E3) | ✅ covered | CTA shows «Сохраняем…» and is disabled while the vote mutation is in flight |
+| loading | ballot list initial fetch (E1), empty states (E8) | 🧪 backstop | Initial ballot GET pending renders a neutral (non-flashing) state until snapshot or splash; no skeleton specified — held for visual/UI-state check |
+| error | submit mutation (E3, E6) | ✅ covered | Network/5xx → ErrorPanel «Ошибка сохранения» + Retry, selection kept, vote NOT applied (D-53); multi-device conflict → adopt-server banner (D-54) |
+| error | ballot list initial load (E1, E8) | ✅ covered | Initial ballot GET failure → ServiceUnavailable splash «Не удалось загрузить…» + «Повторить» (D-55) |
+| populated | ballot rows (E1) | ✅ covered | Rows show title + audit dek + «{N} материалов» + «{N} голосов»; leader strip on muted surface when ≥1 vote (D-40/41/43) |
+| populated | leader strip (E2) | ✅ covered | Single leader «Сейчас лидирует: {title} · {N} голосов»; tie «Сейчас лидируют: {A} и {B}…» (D-40/D-42); muted surface, never accent (C3-02 honesty guard) |
+| partial | zero-materials topic (E1) | ✅ covered | Topic with no linked materials renders «0 материалов» honestly (VOTE-04) |
+| zero-one-many | plural «голос/голоса/голосов», «материал/материала/материалов» (E1, E8) | ✅ covered | Shared RU pluralization helper (extract from `IssuePage.jsx materialCountLabel`; add votes plural) — reads correctly at 0/1/many |
+| closed | read-only ballot (E5) | ✅ covered | Banner «Цикл голосования закрыт»; radios disabled; tallies + leader strip visible; last personal vote shown; CTA hidden/disabled (D-48/D-51) |
+| status | vote status text (E4) | ✅ covered | «голос не отдан» (never voted) / «Ваш голос: {title}» (confirmed) (VOTE-02/D-45) |
+| overflow | ballot list many topics (E1) | 🧪 backstop | Many topic rows must scroll/wrap gracefully with no fixed-height clamp or row breakage — held for visual/UI-state check |
+| long-text | long topic title / audit description (E1, static-content) | 🧪 backstop | Long RU titles/deks must wrap without truncation or row breakage (no fixed-height clamp) — held for visual/UI-state check |
+| long-text | vote status text long title (E4) | 🧪 backstop | «Ваш голос: {long title}» must wrap/reflow without clipping — held for visual/UI-state check |
+| long-text | leader strip long/tie title (E2) | 🧪 backstop | Leader/tie strip with long titles or 3+ tied topics must wrap without overflow — held for visual/UI-state check |
+
+**Dismissed as N/A (audit trail, not lifted):** CTA (E3) empty/partial/overflow/long-text — a single control with fixed short RU labels, no data/overflow state; empty-submit is handled by «Выберите тему», not an empty state. Submit-error panel (E6) empty/loading/partial/long-text — renders only on error with fixed copy. Empty states (E8) populated/partial/overflow — the empty-state element is not shown when data is present, and its copy is short and fixed.
 
 ---
 
@@ -142,11 +153,11 @@ No component registry is in use. Components are hand-rolled in `web/src/componen
 
 ## Checker Sign-Off
 
-- [ ] Dimension 1 Copywriting: PASS
-- [ ] Dimension 2 Visuals: PASS
-- [ ] Dimension 3 Color: PASS
-- [ ] Dimension 4 Typography: PASS
-- [ ] Dimension 5 Spacing: PASS
-- [ ] Dimension 6 Registry Safety: PASS
+- [x] Dimension 1 Copywriting: PASS
+- [x] Dimension 2 Visuals: PASS (FLAG — no explicit focal point; non-blocking)
+- [x] Dimension 3 Color: PASS
+- [x] Dimension 4 Typography: PASS (FLAG — inherited `ActionButton` 500 weight; non-blocking)
+- [x] Dimension 5 Spacing: PASS
+- [x] Dimension 6 Registry Safety: PASS
 
-**Approval:** pending
+**Approval:** approved 2026-09-20
