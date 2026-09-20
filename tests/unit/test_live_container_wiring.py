@@ -21,9 +21,11 @@ from supabase_integration import SupabasePingRecorder, SupabaseProfileRepository
 
 
 def test_build_live_container_wires_supabase_adapters(monkeypatch: pytest.MonkeyPatch) -> None:
+    from backend.tests_support.in_memory import InMemoryVoteRepository
     from supabase_integration import (
         SupabaseIssueRepository,
         SupabaseMaterialRepository,
+        SupabaseVoteRepository,
         SupabaseVotingCycleReader,
     )
 
@@ -56,6 +58,8 @@ def test_build_live_container_wires_supabase_adapters(monkeypatch: pytest.Monkey
     assert isinstance(container.materials, SupabaseMaterialRepository)
     assert isinstance(container.issues, SupabaseIssueRepository)
     assert isinstance(container.voting_cycles, SupabaseVotingCycleReader)
+    assert isinstance(container.votes, SupabaseVoteRepository)
+    assert not isinstance(container.votes, InMemoryVoteRepository)
     assert not isinstance(container.materials, InMemoryMaterialRepository)
     assert not isinstance(container.issues, InMemoryIssueRepository)
     create_service.assert_called_once_with(
