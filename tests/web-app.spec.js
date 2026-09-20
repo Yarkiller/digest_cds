@@ -155,6 +155,50 @@ test.describe("web app main flows", () => {
     ).toContainText(/Корпоративный RAG/i);
   });
 
+  // VOTE-03 · D-48…50 — closed / empty topics / no cycle under mock harnesses
+  test("shows closed banner Цикл голосования закрыт with disabled radios", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__DIGEST_VOTING_CLOSED__ = true;
+    });
+    await page.goto("/voting");
+
+    await expect(page.getByTestId("voting-closed-banner")).toContainText(/Цикл голосования закрыт/i);
+    await expect(page.getByTestId("leader-strip")).toBeVisible();
+    const radios = page.getByRole("radio");
+    await expect(radios.first()).toBeDisabled();
+    await expect(page.getByTestId("confirm-vote")).toHaveCount(0);
+    await expect(page.getByText(/Темы ещё не объявлены/i)).toHaveCount(0);
+    await expect(page.getByText(/Сейчас нет активного голосования/i)).toHaveCount(0);
+  });
+
+  test("shows Темы ещё не объявлены empty state with К выпуску", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__DIGEST_VOTING_NO_TOPICS__ = true;
+    });
+    await page.goto("/voting");
+
+    await expect(page.getByRole("heading", { name: /Темы ещё не объявлены/i })).toBeVisible();
+    const cta = page.getByRole("link", { name: /К выпуску/i });
+    await expect(cta).toBeVisible();
+    await expect(cta).toHaveAttribute("href", "/");
+    await expect(page.getByTestId("voting-closed-banner")).toHaveCount(0);
+    await expect(page.getByRole("radio")).toHaveCount(0);
+  });
+
+  test("shows Сейчас нет активного голосования without closed banner", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__DIGEST_VOTING_NO_CYCLE__ = true;
+    });
+    await page.goto("/voting");
+
+    await expect(page.getByText(/Сейчас нет активного голосования/i)).toBeVisible();
+    const cta = page.getByRole("link", { name: /К выпуску/i });
+    await expect(cta).toBeVisible();
+    await expect(cta).toHaveAttribute("href", "/");
+    await expect(page.getByTestId("voting-closed-banner")).toHaveCount(0);
+    await expect(page.getByText(/Темы ещё не объявлены/i)).toHaveCount(0);
+  });
+
   // VOTE-01/02 · D-40, D-44, D-47, D-52, D-56 — honest never-voted + confirm under mocks
   test("lets a reader pick a voting topic and confirm", async ({ page }) => {
     await page.goto("/voting");
