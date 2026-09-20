@@ -177,7 +177,7 @@ where c.relname = 'votes' and not tg.tgisinternal;
 
 Record the apply method in the operator resume signal (or append a one-line note below when confirmed).
 
-**Applied:** _pending — blocking human apply (plan 03-02 Task 3)._
+**Applied (2026-09-20):** Seed via Supabase MCP PostgREST `insert` (service_role) — 3 topics on `cycle_id=1` (LLM id=1 materials=3, RAG id=2 materials=5, AutoML id=3 materials=0). DDL (`votes_enforce_open_and_topic` function/trigger + `votes_cycle_id_topic_id_idx`) via Studio SQL — operator confirmed `Success. No rows returned`. `raw_sql`/CLI `db push` unavailable without `POSTGRES_URL` / access token path.
 
 ---
 
