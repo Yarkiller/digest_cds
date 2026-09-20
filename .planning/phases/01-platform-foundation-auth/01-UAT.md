@@ -1,5 +1,5 @@
 ---
-status: testing
+status: complete
 phase: 01-platform-foundation-auth
 source:
   - 01-01-SUMMARY.md
@@ -11,13 +11,12 @@ source:
   - 01-07-SUMMARY.md
   - 01-08-SUMMARY.md
 started: 2026-09-19T18:50:00Z
-updated: 2026-09-20T09:13:00Z
+updated: 2026-09-20T09:24:00Z
 ---
 
 ## Current Test
 
-### 3. Live FE↔BE proof + registration UX (G-01-3b retest)
-expected: With VITE_USE_MOCKS=false and live API — (1) /login is email+password only (no «Имя»/«Логин»); «Регистрация» goes to /register; (2) /register has «Логин» (nickname) + email + password and can create a user; (3) after login or register, PlatformProofBanner shows identity from GET /me and Ping writes platform_ping to activity_events.
+[testing complete]
 
 ## Tests
 
@@ -34,8 +33,9 @@ coverage_id: 01-04-D5
 
 ### 3. Live FE↔BE proof + registration UX (G-01-3b retest)
 expected: With VITE_USE_MOCKS=false and live API — (1) /login is email+password only (no «Имя»/«Логин»); «Регистрация» goes to /register; (2) /register has «Логин» (nickname) + email + password and can create a user; (3) after login or register, PlatformProofBanner shows identity from GET /me and Ping writes platform_ping to activity_events.
-result: pending
-ops_note: "2026-09-20 mailer_autoconfirm=true; curl signup 200 — awaiting human SPA retest"
+result: pass
+reported: "всё прошло успешно. yarkiller@sberbank.ru / display yarkiller created in Auth Users. Remark (deferred): password <6 chars rejected without placeholder/hint."
+ops_note: "2026-09-20 mailer_autoconfirm=true; SPA register confirmed"
 prior_issue: "регистрация не проходит (mailer 500) — ops autoconfirm applied"
 rationale: Re-test after G-01-3b ops fix
 reason: human_judgment
@@ -194,8 +194,8 @@ coverage_id: 01-06-D2
 ## Summary
 
 total: 28
-passed: 27
-issues: 1
+passed: 28
+issues: 0
 pending: 0
 skipped: 0
 blocked: 0
@@ -218,7 +218,9 @@ blocked: 0
 
 - gap_id: G-01-3b
   truth: "Self-service /register creates an Auth user (Логин + corporate email) and can proceed to live /me + ping"
-  status: awaiting_retest
+  status: resolved
+  resolved_by: "ops: Confirm email OFF (mailer_autoconfirm=true) on knowledge-db.ru"
+  resolved_at: 2026-09-20
   reason: "User reported: регистрация не проходит. Новый пользователь в Supabase не появился. UI shows NETWORK ErrorPanel."
   severity: blocker
   test: 3
@@ -229,7 +231,8 @@ blocked: 0
     - web/src/pages/RegisterPage.jsx
   missing: []
   ops_verified_at: 2026-09-20
-  ops_verified: "mailer_autoconfirm=true; POST /auth/v1/signup → 200 + session (uat3.20260920121318@sberbank.ru)"
+  ops_verified: "mailer_autoconfirm=true; POST /auth/v1/signup → 200; SPA register yarkiller@sberbank.ru created"
+  retest: pass
   debug_session: g-01-3b-signup-mailer
   decision: |
     Option 3 split (2026-09-19): (1) autoconfirm now to unblock UAT — DONE 2026-09-20;
@@ -248,4 +251,8 @@ blocked: 0
   idea: "Ops ticket: configure working SMTP for GoTrue on knowledge-db.ru; until then do not ship password-reset / invite / confirm-email product features"
   deferred_at: 2026-09-19
   tracks: G-01-3b-smtp-ops
+- test: 3
+  idea: "Register password field: surface GoTrue min length (6) in placeholder and/or helper text so rejection is not a surprise"
+  deferred_at: 2026-09-20
+  tracks: G-01-3-password-hint
 ```
