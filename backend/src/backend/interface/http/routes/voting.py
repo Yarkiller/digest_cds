@@ -10,7 +10,7 @@ from pydantic import BaseModel, ConfigDict
 from backend.application.use_cases.cast_vote import cast_vote
 from backend.application.use_cases.get_ballot import get_ballot
 from backend.domain.auth_claims import AccessTokenClaims
-from backend.domain.errors import PersistenceError
+from backend.domain.errors import InvalidVoteError, PersistenceError
 from backend.domain.vote import BallotSnapshot
 from backend.interface.http.deps import get_principal
 
@@ -174,6 +174,11 @@ def post_vote(
             topic_id=body.topic_id,
             expected_updated_at=body.expected_updated_at,
         )
+    except InvalidVoteError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="invalid_vote",
+        ) from exc
     except PersistenceError as exc:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
