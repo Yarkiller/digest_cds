@@ -118,7 +118,7 @@ status: complete
 2. **Task 2: Migration 003 + SupabaseVoteRepository + live wiring** - `42cf0be` (test) → `23ed51e` (feat)
 3. **Task 3: [BLOCKING] Apply to shared DB** - human-action (seed MCP PostgREST; DDL Studio SQL) + docs close-out
 
-**Plan metadata:** _(pending docs commit)_
+**Plan metadata:** `48e3735` (docs: complete plan)
 
 _Note: TDD RED→GREEN for Task 2 (`42cf0be` then `23ed51e`)._
 

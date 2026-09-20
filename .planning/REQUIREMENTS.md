@@ -41,8 +41,8 @@ Requirements for initial release. Each maps to exactly one roadmap phase. Tracea
 
 - [x] **VOTE-01**: In an open cycle, user confirms exactly one vote; status shows «Ваш голос:» with topic; submit without selection blocked (REQ-US-10)
 - [x] **VOTE-02**: Before voting, status is «голос не отдан»; no radio pre-selected; leading topic shown separately (REQ-US-11)
-- [ ] **VOTE-03**: User can change vote A→B while cycle open; after close, change is rejected with closed-cycle message (REQ-US-12)
-- [ ] **VOTE-04**: Ballot topics show audit-language description and material count (including «0 материалов») (REQ-US-13)
+- [x] **VOTE-03**: User can change vote A→B while cycle open; after close, change is rejected with closed-cycle message (REQ-US-12)
+- [x] **VOTE-04**: Ballot topics show audit-language description and material count (including «0 материалов») (REQ-US-13)
 
 ### Knowledge Base
 
@@ -114,8 +114,8 @@ Deferred past v1. Tracked but not in current roadmap phases.
 | MAT-03 | Phase 2 | Complete |
 | VOTE-01 | Phase 3 | Complete |
 | VOTE-02 | Phase 3 | Complete |
-| VOTE-03 | Phase 3 | Pending |
-| VOTE-04 | Phase 3 | Pending |
+| VOTE-03 | Phase 3 | Complete |
+| VOTE-04 | Phase 3 | Complete |
 | KNOW-01 | Phase 4 | Pending |
 | KNOW-02 | Phase 4 | Pending |
 | KNOW-03 | Phase 4 | Pending |

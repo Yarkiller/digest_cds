@@ -3,16 +3,16 @@ gsd_state_version: 1.0
 current_phase: 03
 current_phase_name: Voting Cycle
 status: executing
-stopped_at: Completed 03-05-PLAN.md
-last_updated: "2026-09-20T16:09:10.525Z"
+stopped_at: Completed 03-02-PLAN.md
+last_updated: "2026-09-20T16:31:37.926Z"
 last_activity: 2026-09-20
 last_activity_desc: Phase 03 execution started
-state_head: c1265aff5fb3eb78b7c5caabdba0aef1cce11879
+state_head: 48e37355c63b9e741cc6b76bf24ff905e3d63311
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 21
-  completed_plans: 17
+  completed_plans: 18
   percent: 40
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-09-19)
 ## Current Position
 
 Phase: 03 (Voting Cycle) — EXECUTING
-Plan: 5 of 6
+Plan: 6 of 6
 Status: Ready to execute
 Last activity: 2026-09-20 — Phase 03 execution started
 
@@ -69,6 +69,7 @@ Progress: [████░░░░░░] 40%
 | Phase 03 P01 | 22min | 2 tasks | 13 files |
 | Phase 03-voting-cycle P03 | 4min | 2 tasks | 1 files |
 | Phase 03-voting-cycle P05 | 8min | 2 tasks | 6 files |
+| Phase 03-voting-cycle P02 | 45min | 3 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -116,6 +117,9 @@ Decisions are logged in PROJECT.md Key Decisions and `<decisions>` blocks.
 - [Phase 03]: Closed-cycle GET reuses select_active_voting_cycle (latest closed when no open)
 - [Phase 03]: Empty «Выберите тему» shown when ready && !selectedId (disabled CTA cannot receive click)
 - [Phase 03]: SPA votingApi uses isMocksEnabled; POST BallotSnapshot applied without mandatory re-GET (D-52, D-56)
+- [Phase 03]: Option-a: votes_enforce_open_and_topic trigger + use-case (not use-case-only)
+- [Phase 03]: 03-02 apply: MCP PostgREST seed + Studio SQL DDL (raw_sql/db push unavailable)
+- [Phase 03]: AutoML topic seeded with zero topic_materials (VOTE-04)
 
 ### Pending Todos
 
@@ -138,7 +142,7 @@ None. Live FE↔BE proof approved 2026-09-19.
 
 ## Session Continuity
 
-Last session: 2026-09-20T16:09:10.156Z
-Stopped at: Completed 03-05-PLAN.md
+Last session: 2026-09-20T16:31:37.562Z
+Stopped at: Completed 03-02-PLAN.md
 Resume file: None
 Verification: `.planning/phases/01-platform-foundation-auth/01-VERIFICATION.md`
