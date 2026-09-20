@@ -146,7 +146,7 @@ Each task was committed atomically:
    - `3746e05` feat(02-04): render MaterialPage markdown prose with honesty rules
    - `dae4185` fix(02-04): give empty-dek fixture a non-empty cover src
 
-**Plan metadata:** (pending docs commit)
+**Plan metadata:** `724aacb` (docs: complete material reader plan)
 
 ## Files Created/Modified
 
