@@ -33,7 +33,7 @@ Requirements for initial release. Each maps to exactly one roadmap phase. Tracea
 
 ### Materials
 
-- [ ] **MAT-01**: Opening a material shows prepared article in prose column with section TOC; no raw video/audio/transcript as content (REQ-US-07)
+- [x] **MAT-01**: Opening a material shows prepared article in prose column with section TOC; no raw video/audio/transcript as content (REQ-US-07)
 - [ ] **MAT-02**: Article from issue/knowledge opens with distinguishable «статья» type; unknown id → «материал не найден» with back nav (REQ-US-08)
 - [ ] **MAT-03**: Article shows «Статья» badge, provenance, tags when present, and internal related-term links without fabricating missing links (REQ-US-09)
 
@@ -109,7 +109,7 @@ Deferred past v1. Tracked but not in current roadmap phases.
 | ISSUE-02 | Phase 2 | Pending |
 | ISSUE-03 | Phase 2 | Pending |
 | ISSUE-04 | Phase 2 | Pending |
-| MAT-01 | Phase 2 | Pending |
+| MAT-01 | Phase 2 | Complete |
 | MAT-02 | Phase 2 | Pending |
 | MAT-03 | Phase 2 | Pending |
 | VOTE-01 | Phase 3 | Pending |

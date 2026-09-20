@@ -3,16 +3,16 @@ gsd_state_version: 1.0
 current_phase: 02
 current_phase_name: Issue, Materials & Archive
 status: executing
-stopped_at: Completed 02-01-PLAN.md
-last_updated: "2026-09-20T09:47:48.249Z"
+stopped_at: Completed 02-02-PLAN.md
+last_updated: "2026-09-20T10:33:36.402Z"
 last_activity: 2026-09-20
 last_activity_desc: Phase 02 execution started
-state_head: 1a7cdd8e1ac072bda62f0142430526183ce8d100
+state_head: 69ef7ac1a2c929b58a2e52c90106dab6ac6627af
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 15
-  completed_plans: 9
+  completed_plans: 10
   percent: 20
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-09-19)
 ## Current Position
 
 Phase: 02 (Issue, Materials & Archive) — EXECUTING
-Plan: 2 of 6
+Plan: 3 of 6
 Status: Ready to execute
 Last activity: 2026-09-20 — Phase 02 execution started
 
@@ -59,6 +59,7 @@ Progress: [██░░░░░░░░] 20%
 | Phase 01 P05 | 12min | 3 tasks | 16 files |
 | Phase 01 P06 | follow-up | 3 tasks | docs + human proof |
 | Phase 02 P01 | 10min | 3 tasks | 18 files |
+| Phase 02 P02 | 45min | 3 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -85,6 +86,9 @@ Decisions are logged in PROJECT.md Key Decisions and `<decisions>` blocks.
 - [Phase 02]: CurrentIssueResponse uses flat null fields + items=[] for no published issue
 - [Phase 02]: Empty Playwright arm uses window.__DIGEST_EMPTY_CURRENT_ISSUE__ across full reloads
 - [Phase 02]: live.py wires empty InMemoryIssueRepository until 02-02 Supabase adapter
+- [Phase 02]: Seed applied via Supabase MCP PostgREST insert (service_role) because raw_sql needs POSTGRES_URL
+- [Phase 02]: voting_cycles idempotency uses WHERE NOT EXISTS on opens_at/closes_at (no unique constraint)
+- [Phase 02]: MaterialRepository.get_by_slug + ready-only related filter landed for MAT-01 readiness
 
 ### Pending Todos
 
@@ -107,7 +111,7 @@ None. Live FE↔BE proof approved 2026-09-19.
 
 ## Session Continuity
 
-Last session: 2026-09-20T09:47:48.061Z
-Stopped at: Completed 02-01-PLAN.md
+Last session: 2026-09-20T10:33:36.231Z
+Stopped at: Completed 02-02-PLAN.md
 Resume file: None
 Verification: `.planning/phases/01-platform-foundation-auth/01-VERIFICATION.md`
