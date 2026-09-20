@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from backend.domain.current_user import CurrentUser
+from backend.domain.issue import Issue
 from backend.domain.knowledge import KnowledgeChunk
 from backend.domain.material import Material
 
@@ -55,7 +56,26 @@ class InMemoryProfileRepository:
         existing = self._by_id.get(user_id)
         if existing is not None and existing.email == email:
             return existing
-        user = CurrentUser(id=user_id, email=email, role="authenticated")
+        display_name = existing.display_name if existing is not None else None
+        user = CurrentUser(
+            id=user_id,
+            email=email,
+            role="authenticated",
+            display_name=display_name,
+        )
+        self._by_id[user_id] = user
+        return user
+
+    def set_display_name(self, user_id: str, display_name: str) -> CurrentUser:
+        existing = self._by_id.get(user_id)
+        if existing is None:
+            raise KeyError(f"profile not found: {user_id}")
+        user = CurrentUser(
+            id=existing.id,
+            email=existing.email,
+            role=existing.role,
+            display_name=display_name,
+        )
         self._by_id[user_id] = user
         return user
 
@@ -99,3 +119,19 @@ class InMemoryKnowledgeChunkRepository:
 
     def list_all(self) -> list[KnowledgeChunk]:
         return list(self._chunks)
+
+
+class InMemoryIssueRepository:
+    """In-memory IssueRepository — selects latest published_at (D-24)."""
+
+    def __init__(self, issues: list[Issue] | None = None) -> None:
+        self._issues: list[Issue] = list(issues or [])
+
+    def seed(self, issues: list[Issue]) -> None:
+        self._issues = list(issues)
+
+    def get_latest_published(self) -> Issue | None:
+        published = [i for i in self._issues if i.published_at is not None]
+        if not published:
+            return None
+        return max(published, key=lambda i: i.published_at)

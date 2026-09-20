@@ -5,6 +5,7 @@ from __future__ import annotations
 from backend.composition.container import AppContainer
 from backend.composition.settings import Settings
 from backend.tests_support.in_memory import (
+    InMemoryIssueRepository,
     InMemoryKnowledgeChunkRepository,
     InMemoryMaterialRepository,
 )
@@ -41,4 +42,6 @@ def build_live_container(settings: Settings) -> AppContainer:
         chunks=InMemoryKnowledgeChunkRepository(),
         profiles=SupabaseProfileRepository(admin_client),
         pings=SupabasePingRecorder(admin_client),
+        # Live IssueRepository lands in 02-02; empty in-memory keeps AppContainer constructible.
+        issues=InMemoryIssueRepository(),
     )
