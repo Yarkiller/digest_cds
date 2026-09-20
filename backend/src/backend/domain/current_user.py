@@ -10,3 +10,4 @@ class CurrentUser:
     id: str
     email: str
     role: str = "authenticated"
+    display_name: str | None = None
