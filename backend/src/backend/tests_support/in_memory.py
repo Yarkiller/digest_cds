@@ -1,11 +1,14 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
+from datetime import datetime, timezone
 
 from backend.domain.current_user import CurrentUser
+from backend.domain.errors import VoteConflictError
 from backend.domain.issue import Issue
 from backend.domain.knowledge import KnowledgeChunk
 from backend.domain.material import Material
+from backend.domain.vote import BallotTopic, PersonalVote
 from backend.domain.voting_cycle import VotingCycle
 
 
@@ -138,6 +141,68 @@ class InMemoryVotingCycleReader:
 
     def list_cycles(self) -> list[VotingCycle]:
         return list(self._cycles)
+
+
+class InMemoryVoteRepository:
+    """In-memory VoteRepository keyed by (cycle_id, user_id) — PK one-row guarantee."""
+
+    def __init__(
+        self,
+        topics_by_cycle: dict[str, list[BallotTopic]] | None = None,
+    ) -> None:
+        self._topics: dict[str, list[BallotTopic]] = {
+            cycle_id: list(topics) for cycle_id, topics in (topics_by_cycle or {}).items()
+        }
+        self._votes: dict[tuple[str, str], PersonalVote] = {}
+
+    def seed_topics(self, cycle_id: str, topics: list[BallotTopic]) -> None:
+        self._topics[cycle_id] = list(topics)
+
+    def list_topics_with_counts(self, cycle_id: str) -> list[BallotTopic]:
+        return list(self._topics.get(cycle_id, []))
+
+    def get_vote(self, cycle_id: str, user_id: str) -> PersonalVote | None:
+        return self._votes.get((cycle_id, user_id))
+
+    def vote_count_for(self, cycle_id: str) -> int:
+        return sum(1 for key in self._votes if key[0] == cycle_id)
+
+    def upsert_vote(
+        self,
+        *,
+        cycle_id: str,
+        user_id: str,
+        topic_id: str,
+        expected_updated_at: datetime | None,
+    ) -> PersonalVote:
+        key = (cycle_id, user_id)
+        existing = self._votes.get(key)
+
+        if existing is None:
+            if expected_updated_at is not None:
+                raise VoteConflictError(cycle_id, user_id)
+        elif existing.topic_id != topic_id:
+            # A→B change requires matching expected_updated_at (strict CAS in 03-04)
+            if expected_updated_at is None or existing.updated_at != expected_updated_at:
+                raise VoteConflictError(cycle_id, user_id)
+        # same-topic repeat: idempotent success regardless of expected drift (VOTE-01 assumption)
+
+        previous_topic = existing.topic_id if existing is not None else None
+        now = datetime.now(timezone.utc)
+        personal = PersonalVote(topic_id=topic_id, updated_at=now)
+        self._votes[key] = personal
+
+        topics = self._topics.get(cycle_id, [])
+        updated: list[BallotTopic] = []
+        for topic in topics:
+            votes = topic.votes
+            if previous_topic == topic.id and previous_topic != topic_id:
+                votes = max(0, votes - 1)
+            if topic.id == topic_id and previous_topic != topic_id:
+                votes = votes + 1
+            updated.append(replace(topic, votes=votes) if votes != topic.votes else topic)
+        self._topics[cycle_id] = updated
+        return personal
 
 
 class InMemoryIssueRepository:

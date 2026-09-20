@@ -9,6 +9,7 @@ from backend.application.ports.knowledge_chunk_repository import KnowledgeChunkR
 from backend.application.ports.material_repository import MaterialRepository
 from backend.application.ports.ping_recorder import PingRecorder
 from backend.application.ports.profile_repository import ProfileRepository
+from backend.application.ports.vote_repository import VoteRepository
 from backend.application.ports.voting_cycle_reader import VotingCycleReader
 from backend.application.use_cases.index_material_chunks import index_material_chunks
 from backend.application.use_cases.publish_material import publish_material
@@ -23,6 +24,7 @@ from backend.tests_support.in_memory import (
     InMemoryMaterialRepository,
     InMemoryPingRecorder,
     InMemoryProfileRepository,
+    InMemoryVoteRepository,
     InMemoryVotingCycleReader,
 )
 
@@ -35,6 +37,7 @@ class AppContainer:
     pings: PingRecorder
     issues: IssueRepository
     voting_cycles: VotingCycleReader
+    votes: VoteRepository
 
     def publish(self, material_id: int) -> Material:
         return publish_material(self.materials, material_id)
@@ -79,4 +82,5 @@ def build_in_memory_container(
         pings=InMemoryPingRecorder(),
         issues=InMemoryIssueRepository(issues),
         voting_cycles=InMemoryVotingCycleReader(voting_cycles),
+        votes=InMemoryVoteRepository(),
     )
