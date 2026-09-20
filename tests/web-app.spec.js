@@ -12,6 +12,27 @@ test.describe("web app main flows", () => {
     await expect(page.getByRole("heading", { name: /резюме/i })).toBeVisible();
   });
 
+  test("shows empty current issue «Выпуск готовится» with archive CTA", async ({ page }) => {
+    await page.goto("/");
+    await page.waitForFunction(() => Boolean(window.__DIGEST_CONTENT_HARNESS__));
+    await page.evaluate(() => {
+      window.__DIGEST_CONTENT_HARNESS__.armEmptyCurrentIssue();
+    });
+    await page.goto("/");
+
+    await expect(page.getByTestId("issue-loading")).toHaveCount(0);
+    const empty = page.getByTestId("issue-empty");
+    await expect(empty).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Выпуск готовится" })).toBeVisible();
+    await expect(page.getByText(/свежий выпуск скоро появится/i)).toBeVisible();
+    const archiveCta = page.getByRole("link", { name: /в архив/i });
+    await expect(archiveCta).toBeVisible();
+    await archiveCta.click();
+    await expect(page).toHaveURL(/\/archive/);
+
+    await page.evaluate(() => window.__DIGEST_CONTENT_HARNESS__.resetContentHarness());
+  });
+
   test("lets a reader pick a voting topic and confirm", async ({ page }) => {
     await page.goto("/voting");
 
