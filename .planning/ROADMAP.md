@@ -56,7 +56,7 @@ Plans:
   3. User reads a material as prose + section TOC with «Статья» badge/provenance/tags/related links as available; unknown id shows editorial 404
   4. Audit-dek appears under title when present; archive opens a past issue or empty-archive CTA to current
 
-**Plans**: 3/6 plans executed
+**Plans**: 4/6 plans executed
 **UI hint**: yes
 
 Plans:
@@ -64,7 +64,7 @@ Plans:
 - [x] 02-01-PLAN.md — Tracer: current issue API + IssuePage (ISSUE-01)
 - [x] 02-02-PLAN.md — Idempotent seed + live Supabase adapters + [BLOCKING] db push
 - [x] 02-03-PLAN.md — Archive list/page + past `/issues/:number` (ISSUE-04)
-- [ ] 02-04-PLAN.md — Material-by-slug + markdown TOC/honesty (MAT-01..03, ISSUE-03)
+- [x] 02-04-PLAN.md — Material-by-slug + markdown TOC/honesty (MAT-01..03, ISSUE-03)
 - [ ] 02-05-PLAN.md — Voting callout stub on current issue (ISSUE-02)
 - [ ] 02-06-PLAN.md — ServiceUnavailable splash/Retry + phase e2e gate
 
@@ -122,7 +122,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Platform Foundation & Auth | 6/7 | Verified (PASS_WITH_GAPS) | 2026-09-19 |
-| 2. Issue, Materials & Archive | 3/6 | In Progress|  |
+| 2. Issue, Materials & Archive | 4/6 | In Progress|  |
 | 3. Voting Cycle | 0/TBD | Not started | - |
 | 4. Knowledge & Razbory | 0/TBD | Not started | - |
 | 5. Admin Digest Publish | 0/TBD | Not started | - |

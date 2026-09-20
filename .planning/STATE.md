@@ -3,16 +3,16 @@ gsd_state_version: 1.0
 current_phase: 02
 current_phase_name: Issue, Materials & Archive
 status: executing
-stopped_at: Completed 02-03-PLAN.md
-last_updated: "2026-09-20T10:42:12.490Z"
+stopped_at: Completed 02-04-PLAN.md
+last_updated: "2026-09-20T10:51:11.516Z"
 last_activity: 2026-09-20
 last_activity_desc: Phase 02 execution started
-state_head: 3365f76fd0a18546c7cfcfba77dd350afa95de55
+state_head: dae418554979812eca4a7d4cd31525eb59b15662
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 15
-  completed_plans: 11
+  completed_plans: 12
   percent: 20
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-09-19)
 ## Current Position
 
 Phase: 02 (Issue, Materials & Archive) — EXECUTING
-Plan: 4 of 6
+Plan: 5 of 6
 Status: Ready to execute
 Last activity: 2026-09-20 — Phase 02 execution started
 
@@ -61,6 +61,7 @@ Progress: [██░░░░░░░░] 20%
 | Phase 02 P01 | 10min | 3 tasks | 18 files |
 | Phase 02 P02 | 45min | 3 tasks | 11 files |
 | Phase 02 P03 | 7min | 2 tasks | 15 files |
+| Phase 02 P04 | 17min | 3 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -92,6 +93,9 @@ Decisions are logged in PROJECT.md Key Decisions and `<decisions>` blocks.
 - [Phase 02]: MaterialRepository.get_by_slug + ready-only related filter landed for MAT-01 readiness
 - [Phase 02]: GET /archive via sibling archive_router; past issues reuse CurrentIssueResponse without voting_cycle
 - [Phase 02]: Issue soft-404 uses ContentApiError NOT_FOUND; EditorialCallout only when IssuePage isCurrent
+- [Phase 02]: MaterialNotFoundError accepts int|str for slug misses; draft always 404
+- [Phase 02]: Editor byline constant «Редакция Digest CDS» in material reader DTO
+- [Phase 02]: MaterialPage uses rehypeSlug+rehypeSanitize only; soft NOT_FOUND via contentApi
 
 ### Pending Todos
 
@@ -114,7 +118,7 @@ None. Live FE↔BE proof approved 2026-09-19.
 
 ## Session Continuity
 
-Last session: 2026-09-20T10:42:12.249Z
-Stopped at: Completed 02-03-PLAN.md
+Last session: 2026-09-20T10:51:11.351Z
+Stopped at: Completed 02-04-PLAN.md
 Resume file: None
 Verification: `.planning/phases/01-platform-foundation-auth/01-VERIFICATION.md`
