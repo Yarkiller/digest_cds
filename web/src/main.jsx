@@ -11,6 +11,7 @@ import { armFailNextMeFetch, resetMeHarness } from './services/meApi.js'
 import {
   armEmptyCurrentIssue,
   armFailNextContentFetch,
+  clearFailNextContentFetch,
   resetContentHarness,
 } from './services/contentApi.js'
 
@@ -24,6 +25,7 @@ window.__DIGEST_ME_HARNESS__ = { armFailNextMeFetch, resetMeHarness }
 window.__DIGEST_CONTENT_HARNESS__ = {
   armEmptyCurrentIssue,
   armFailNextContentFetch,
+  clearFailNextContentFetch,
   resetContentHarness,
 }
 

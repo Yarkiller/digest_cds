@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ContentApiError, fetchArchive } from '../services/contentApi.js'
+import ServiceUnavailable from '../components/ServiceUnavailable.jsx'
+import { clearFailNextContentFetch, fetchArchive } from '../services/contentApi.js'
 
 function materialCountLabel(count) {
   const mod10 = count % 10
@@ -15,31 +16,30 @@ function materialCountLabel(count) {
 export default function ArchivePage() {
   const [issues, setIssues] = useState([])
   const [status, setStatus] = useState('loading')
-  const [error, setError] = useState(null)
+  const [loadKey, setLoadKey] = useState(0)
+
+  const reload = useCallback(() => {
+    clearFailNextContentFetch()
+    setLoadKey((k) => k + 1)
+  }, [])
 
   useEffect(() => {
     let cancelled = false
     setStatus('loading')
-    setError(null)
     fetchArchive()
       .then((dto) => {
         if (cancelled) return
         setIssues(dto.issues ?? [])
         setStatus('ready')
       })
-      .catch((err) => {
+      .catch(() => {
         if (cancelled) return
-        const message =
-          err instanceof ContentApiError
-            ? err.message
-            : 'Не удалось загрузить архив. Проверьте сеть.'
-        setError(message)
         setStatus('error')
       })
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [loadKey])
 
   return (
     <section data-testid="archive-page">
@@ -58,11 +58,7 @@ export default function ArchivePage() {
         </div>
       ) : null}
 
-      {status === 'error' ? (
-        <p role="alert" className="text-ink-2">
-          {error}
-        </p>
-      ) : null}
+      {status === 'error' ? <ServiceUnavailable onRetry={reload} /> : null}
 
       {status === 'ready' && issues.length === 0 ? (
         <div data-testid="archive-empty">

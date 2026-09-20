@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import EditorialCallout from '../components/EditorialCallout.jsx'
 import IssueToc from '../components/IssueToc.jsx'
 import PlatformProofBanner from '../components/PlatformProofBanner.jsx'
+import ServiceUnavailable from '../components/ServiceUnavailable.jsx'
 import {
   ContentApiError,
+  clearFailNextContentFetch,
   fetchCurrentIssue,
   fetchIssueByNumber,
 } from '../services/contentApi.js'
@@ -53,13 +55,17 @@ export default function IssuePage({ isCurrent = true }) {
   const { number: numberParam } = useParams()
   const [issue, setIssue] = useState(null)
   const [status, setStatus] = useState('loading')
-  const [error, setError] = useState(null)
   const [notFound, setNotFound] = useState(false)
+  const [loadKey, setLoadKey] = useState(0)
+
+  const reload = useCallback(() => {
+    clearFailNextContentFetch()
+    setLoadKey((k) => k + 1)
+  }, [])
 
   useEffect(() => {
     let cancelled = false
     setStatus('loading')
-    setError(null)
     setNotFound(false)
 
     const load = isCurrent
@@ -79,17 +85,12 @@ export default function IssuePage({ isCurrent = true }) {
           setStatus('ready')
           return
         }
-        const message =
-          err instanceof ContentApiError
-            ? err.message
-            : 'Не удалось загрузить выпуск. Проверьте сеть.'
-        setError(message)
         setStatus('error')
       })
     return () => {
       cancelled = true
     }
-  }, [isCurrent, numberParam])
+  }, [isCurrent, numberParam, loadKey])
 
   if (status === 'loading') {
     return (
@@ -106,9 +107,7 @@ export default function IssuePage({ isCurrent = true }) {
     return (
       <section>
         {isCurrent ? <PlatformProofBanner /> : null}
-        <p role="alert" className="text-ink-2">
-          {error}
-        </p>
+        <ServiceUnavailable onRetry={reload} />
       </section>
     )
   }

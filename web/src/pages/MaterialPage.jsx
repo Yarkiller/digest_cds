@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import Markdown from 'react-markdown'
 import { Link, useParams } from 'react-router-dom'
 import remarkGfm from 'remark-gfm'
 import rehypeSanitize from 'rehype-sanitize'
 import rehypeSlug from 'rehype-slug'
-import { ContentApiError, fetchMaterial } from '../services/contentApi.js'
+import ServiceUnavailable from '../components/ServiceUnavailable.jsx'
+import { ContentApiError, clearFailNextContentFetch, fetchMaterial } from '../services/contentApi.js'
 import { extractMarkdownHeadings } from '../utils/markdownToc.js'
 
 function formatPublishedLabel(material) {
@@ -57,13 +58,17 @@ export default function MaterialPage() {
   const { id: slug } = useParams()
   const [material, setMaterial] = useState(null)
   const [status, setStatus] = useState('loading')
-  const [error, setError] = useState(null)
   const [notFound, setNotFound] = useState(false)
+  const [loadKey, setLoadKey] = useState(0)
+
+  const reload = useCallback(() => {
+    clearFailNextContentFetch()
+    setLoadKey((k) => k + 1)
+  }, [])
 
   useEffect(() => {
     let cancelled = false
     setStatus('loading')
-    setError(null)
     setNotFound(false)
 
     fetchMaterial(slug)
@@ -79,18 +84,13 @@ export default function MaterialPage() {
           setStatus('ready')
           return
         }
-        const message =
-          err instanceof ContentApiError
-            ? err.message
-            : 'Не удалось загрузить материал. Проверьте сеть.'
-        setError(message)
         setStatus('error')
       })
 
     return () => {
       cancelled = true
     }
-  }, [slug])
+  }, [slug, loadKey])
 
   if (status === 'loading') {
     return (
@@ -105,9 +105,7 @@ export default function MaterialPage() {
   if (status === 'error') {
     return (
       <section>
-        <p role="alert" className="text-ink-2">
-          {error}
-        </p>
+        <ServiceUnavailable onRetry={reload} />
       </section>
     )
   }

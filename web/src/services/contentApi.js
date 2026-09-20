@@ -27,6 +27,17 @@ let emptyArchive = false
 
 export function armFailNextContentFetch() {
   failNextFetch = true
+  if (typeof window !== 'undefined') {
+    window.__DIGEST_FAIL_NEXT_CONTENT__ = true
+  }
+}
+
+/** Clear fail arm so Retry can succeed (window flag is sticky for StrictMode). */
+export function clearFailNextContentFetch() {
+  failNextFetch = false
+  if (typeof window !== 'undefined') {
+    window.__DIGEST_FAIL_NEXT_CONTENT__ = false
+  }
 }
 
 /** Playwright/unit harness: force empty current DTO under mocks (D-30). */
@@ -50,11 +61,24 @@ export function resetContentHarness() {
   emptyCurrentIssue = false
   emptyArchive = false
   if (typeof window !== 'undefined') {
+    window.__DIGEST_FAIL_NEXT_CONTENT__ = false
     window.__DIGEST_EMPTY_CURRENT_ISSUE__ = false
     window.__DIGEST_EMPTY_ARCHIVE__ = false
     window.__DIGEST_VOTING_CYCLE_CLOSED__ = false
     window.__DIGEST_NO_VOTING_CYCLE__ = false
   }
+}
+
+/**
+ * Fail arm: module flag is one-shot; window.__DIGEST_FAIL_NEXT_CONTENT__ is sticky
+ * (survives React StrictMode remount) until clearFailNextContentFetch / reset.
+ */
+function consumeFailNext() {
+  if (failNextFetch) {
+    failNextFetch = false
+    return true
+  }
+  return typeof window !== 'undefined' && window.__DIGEST_FAIL_NEXT_CONTENT__ === true
 }
 
 function isEmptyCurrentArmed() {
@@ -130,8 +154,7 @@ function throwNetwork(message = 'Не удалось загрузить выпу
  * }>}
  */
 export async function fetchCurrentIssue(accessToken) {
-  if (failNextFetch) {
-    failNextFetch = false
+  if (consumeFailNext()) {
     throwNetwork()
   }
 
@@ -181,8 +204,7 @@ export async function fetchCurrentIssue(accessToken) {
  * @returns {Promise<{ issues: Array<{ number: number, period_label: string, title: string, material_count: number }> }>}
  */
 export async function fetchArchive(accessToken) {
-  if (failNextFetch) {
-    failNextFetch = false
+  if (consumeFailNext()) {
     throwNetwork('Не удалось загрузить архив. Проверьте сеть.')
   }
 
@@ -218,8 +240,7 @@ export async function fetchArchive(accessToken) {
  * @param {number|string} number
  */
 export async function fetchIssueByNumber(number, accessToken) {
-  if (failNextFetch) {
-    failNextFetch = false
+  if (consumeFailNext()) {
     throwNetwork()
   }
 
@@ -295,8 +316,7 @@ function mapMockMaterial(material) {
  * @param {string} slug
  */
 export async function fetchMaterial(slug, accessToken) {
-  if (failNextFetch) {
-    failNextFetch = false
+  if (consumeFailNext()) {
     throwNetwork('Не удалось загрузить материал. Проверьте сеть.')
   }
 
