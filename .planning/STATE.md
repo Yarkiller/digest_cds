@@ -2,17 +2,17 @@
 gsd_state_version: 1.0
 current_phase: 03
 current_phase_name: Voting Cycle
-status: executing
-stopped_at: Completed 03-02-PLAN.md
-last_updated: "2026-09-20T16:31:37.926Z"
+status: verifying
+stopped_at: Completed 03-06-PLAN.md
+last_updated: "2026-09-20T16:42:15.872Z"
 last_activity: 2026-09-20
 last_activity_desc: Phase 03 execution started
-state_head: 48e37355c63b9e741cc6b76bf24ff905e3d63311
+state_head: a06a453183b6d53b7aced83d4cceac1ab4b206aa
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 21
-  completed_plans: 18
+  completed_plans: 19
   percent: 40
 ---
 
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-09-19)
 
 Phase: 03 (Voting Cycle) — EXECUTING
 Plan: 6 of 6
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-09-20 — Phase 03 execution started
 
 Progress: [████░░░░░░] 40%
@@ -70,6 +70,7 @@ Progress: [████░░░░░░] 40%
 | Phase 03-voting-cycle P03 | 4min | 2 tasks | 1 files |
 | Phase 03-voting-cycle P05 | 8min | 2 tasks | 6 files |
 | Phase 03-voting-cycle P02 | 45min | 3 tasks | 7 files |
+| Phase 03-voting-cycle P06 | 8min | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -120,6 +121,9 @@ Decisions are logged in PROJECT.md Key Decisions and `<decisions>` blocks.
 - [Phase 03]: Option-a: votes_enforce_open_and_topic trigger + use-case (not use-case-only)
 - [Phase 03]: 03-02 apply: MCP PostgREST seed + Studio SQL DDL (raw_sql/db push unavailable)
 - [Phase 03]: AutoML topic seeded with zero topic_materials (VOTE-04)
+- [Phase 03]: Leader strip test uses exact:true for «Лидирует» so strip phrase does not false-fail
+- [Phase 03]: Confirm CTA omitted entirely when cycle.status===closed (not merely disabled)
+- [Phase 03]: Mock closed POST throws CYCLE_CLOSED with ballot payload for D-51 readiness
 
 ### Pending Todos
 
@@ -142,7 +146,7 @@ None. Live FE↔BE proof approved 2026-09-19.
 
 ## Session Continuity
 
-Last session: 2026-09-20T16:31:37.562Z
-Stopped at: Completed 03-02-PLAN.md
+Last session: 2026-09-20T16:42:15.448Z
+Stopped at: Completed 03-06-PLAN.md
 Resume file: None
 Verification: `.planning/phases/01-platform-foundation-auth/01-VERIFICATION.md`

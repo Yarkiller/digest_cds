@@ -80,7 +80,7 @@ Plans:
   3. Changing A→B while open updates counters/status; after close, change is rejected with closed-cycle message
   4. Topics show audit-language description and material count (including «0 материалов»)
 
-**Plans**: 4/6 plans executed
+**Plans**: 5/6 plans executed
 **Wave 1**
 
 - [x] 03-01-PLAN.md — Backend tracer: ballot GET/POST + PersistenceError 503 (VOTE-01, VOTE-02)
@@ -93,7 +93,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 03-06-PLAN.md — Leader strip + VOTE-04 dek/counts + closed/empty UI (VOTE-02…04)
+- [x] 03-06-PLAN.md — Leader strip + VOTE-04 dek/counts + closed/empty UI (VOTE-02…04)
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
@@ -141,6 +141,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. Platform Foundation & Auth | 6/7 | Verified (PASS_WITH_GAPS) | 2026-09-19 |
 | 2. Issue, Materials & Archive | 6/6 | Complete    | 2026-09-20 |
-| 3. Voting Cycle | 4/6 | In Progress|  |
+| 3. Voting Cycle | 5/6 | In Progress|  |
 | 4. Knowledge & Razbory | 0/TBD | Not started | - |
 | 5. Admin Digest Publish | 0/TBD | Not started | - |
