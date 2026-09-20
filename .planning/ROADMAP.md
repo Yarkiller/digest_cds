@@ -117,15 +117,37 @@ Plans:
 **UI hint**: yes
 
 Plans:
+**Wave 1**
 
 - [ ] 04-01-PLAN.md — Knowledge backend tracer: ports → GET /knowledge/search (KNOW-01)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 04-02-PLAN.md — Knowledge SPA Submit/Enter + blank guards (KNOW-01)
-- [ ] 04-03-PLAN.md — Role chips + analyst empty honesty + DS open (KNOW-02…04)
 - [ ] 04-04-PLAN.md — Razbor backend list tracer: domain → GET /razbory (RAZB-01)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 04-03-PLAN.md — Role chips + analyst empty honesty + DS open (KNOW-02…04)
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
 - [ ] 04-05-PLAN.md — Razbor SPA list + nav «Разборы» + empty CTA (RAZB-01)
+
+**Wave 5** *(blocked on Wave 4 completion)*
+
 - [ ] 04-06-PLAN.md — Razbor detail TOC + metrics vs Обзор (RAZB-02, RAZB-04)
+
+**Wave 6** *(blocked on Wave 5 completion)*
+
 - [ ] 04-07-PLAN.md — Notebook FileResponse dual strip (RAZB-03)
+
+**Wave 7** *(blocked on Wave 6 completion)*
+
 - [ ] 04-08-PLAN.md — Migration 004 + Supabase adapters + [BLOCKING] db push
+
+**Wave 8** *(blocked on Wave 7 completion)*
+
 - [ ] 04-09-PLAN.md — Playwright honesty gate + VALIDATION refresh
 
 ### Phase 5: Admin Digest Publish
