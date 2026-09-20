@@ -11,10 +11,18 @@ from backend.composition.live import build_live_container
 from backend.composition.settings import Settings
 from backend.interface.http.app import create_app, resolve_container
 from backend.tests_support.in_memory import InMemoryPingRecorder, InMemoryProfileRepository
+from backend.tests_support.in_memory import (
+    InMemoryIssueRepository,
+    InMemoryMaterialRepository,
+    InMemoryPingRecorder,
+    InMemoryProfileRepository,
+)
 from supabase_integration import SupabasePingRecorder, SupabaseProfileRepository
 
 
 def test_build_live_container_wires_supabase_adapters(monkeypatch: pytest.MonkeyPatch) -> None:
+    from supabase_integration import SupabaseIssueRepository, SupabaseMaterialRepository
+
     fake_service = object()
     fake_publishable = object()
     create_service = MagicMock(return_value=fake_service)
@@ -41,6 +49,10 @@ def test_build_live_container_wires_supabase_adapters(monkeypatch: pytest.Monkey
     assert isinstance(container, AppContainer)
     assert isinstance(container.profiles, SupabaseProfileRepository)
     assert isinstance(container.pings, SupabasePingRecorder)
+    assert isinstance(container.materials, SupabaseMaterialRepository)
+    assert isinstance(container.issues, SupabaseIssueRepository)
+    assert not isinstance(container.materials, InMemoryMaterialRepository)
+    assert not isinstance(container.issues, InMemoryIssueRepository)
     create_service.assert_called_once_with(
         "https://example.test",
         "secret-key",
