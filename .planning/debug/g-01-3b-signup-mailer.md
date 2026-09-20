@@ -33,6 +33,11 @@ This is **not** an SPA routing/UI bug from 01-07; the FE correctly calls `supaba
 2. **SPA error UX** — **deferred follow-up** (not blocking Phase 1 seal): map confirmation-mailer failures to honest Russian copy; never lie with generic NETWORK «Сервис входа временно недоступен».
 3. **SMTP** — **ops ticket, not Phase 1.** Document and do not ship email-dependent features until mailer is healthy. Revisit later.
 
+## Verification (2026-09-20)
+
+- `GET /auth/v1/settings` → `mailer_autoconfirm: true`
+- `POST /auth/v1/signup` (`uat3.20260920121318@sberbank.ru`) → **HTTP 200**, `access_token` issued, `email_confirmed_at` set, user id `88953191-e3ed-4623-9326-9d47dda35ca8`
+
 ## Evidence artifacts
 
 - Browser: RegisterPage ErrorPanel + Retry

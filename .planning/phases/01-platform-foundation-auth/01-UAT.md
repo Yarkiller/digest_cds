@@ -1,5 +1,5 @@
 ---
-status: diagnosed
+status: testing
 phase: 01-platform-foundation-auth
 source:
   - 01-01-SUMMARY.md
@@ -11,12 +11,13 @@ source:
   - 01-07-SUMMARY.md
   - 01-08-SUMMARY.md
 started: 2026-09-19T18:50:00Z
-updated: 2026-09-19T19:42:00Z
+updated: 2026-09-20T09:13:00Z
 ---
 
 ## Current Test
 
-[testing complete]
+### 3. Live FE↔BE proof + registration UX (G-01-3b retest)
+expected: With VITE_USE_MOCKS=false and live API — (1) /login is email+password only (no «Имя»/«Логин»); «Регистрация» goes to /register; (2) /register has «Логин» (nickname) + email + password and can create a user; (3) after login or register, PlatformProofBanner shows identity from GET /me and Ping writes platform_ping to activity_events.
 
 ## Tests
 
@@ -31,13 +32,12 @@ rationale: D-08 forbids automated seed against shared VM; deferred to Plan 01-06
 reason: human_judgment
 coverage_id: 01-04-D5
 
-### 3. Live FE↔BE proof + registration UX (G-01-3 retest)
+### 3. Live FE↔BE proof + registration UX (G-01-3b retest)
 expected: With VITE_USE_MOCKS=false and live API — (1) /login is email+password only (no «Имя»/«Логин»); «Регистрация» goes to /register; (2) /register has «Логин» (nickname) + email + password and can create a user; (3) after login or register, PlatformProofBanner shows identity from GET /me and Ping writes platform_ping to activity_events.
-result: issue
-reported: "регистрация не проходит. Новый пользователь в Supabase не появился. UI: ErrorPanel «Сервис входа временно недоступен» + Повторить (Логин Петя, test3@sberbank.ru)."
-severity: blocker
-prior_issue: "Регистрация dead; Имя on login — fixed by 01-07/01-08"
-rationale: Re-test after gap closure; gap G-01-3 status=resolved
+result: pending
+ops_note: "2026-09-20 mailer_autoconfirm=true; curl signup 200 — awaiting human SPA retest"
+prior_issue: "регистрация не проходит (mailer 500) — ops autoconfirm applied"
+rationale: Re-test after G-01-3b ops fix
 reason: human_judgment
 coverage_id: 01-06-D3
 
@@ -218,7 +218,7 @@ blocked: 0
 
 - gap_id: G-01-3b
   truth: "Self-service /register creates an Auth user (Логин + corporate email) and can proceed to live /me + ping"
-  status: failed
+  status: awaiting_retest
   reason: "User reported: регистрация не проходит. Новый пользователь в Supabase не появился. UI shows NETWORK ErrorPanel."
   severity: blocker
   test: 3
@@ -227,11 +227,12 @@ blocked: 0
     - .planning/debug/g-01-3b-signup-mailer.md
     - web/src/services/authApi.js
     - web/src/pages/RegisterPage.jsx
-  missing:
-    - "GOTRUE_MAILER_AUTOCONFIRM=true / Confirm email OFF on knowledge-db.ru (ops — now)"
+  missing: []
+  ops_verified_at: 2026-09-20
+  ops_verified: "mailer_autoconfirm=true; POST /auth/v1/signup → 200 + session (uat3.20260920121318@sberbank.ru)"
   debug_session: g-01-3b-signup-mailer
   decision: |
-    Option 3 split (2026-09-19): (1) autoconfirm now to unblock UAT;
+    Option 3 split (2026-09-19): (1) autoconfirm now to unblock UAT — DONE 2026-09-20;
     (2) SPA honest mailer error UX = deferred follow-up;
     (3) SMTP = ops ticket outside Phase 1 — no email-dependent product features until fixed.
 ```
