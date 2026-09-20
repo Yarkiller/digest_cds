@@ -35,18 +35,25 @@ class PersistenceError(DomainError):
 class VotingCycleClosedError(DomainError):
     """Raised when cast_vote is attempted while cycle status is not open (D-51)."""
 
-    def __init__(self, cycle_id: str) -> None:
+    def __init__(self, cycle_id: str, ballot: object | None = None) -> None:
         super().__init__(f"voting cycle {cycle_id} is closed")
         self.cycle_id = cycle_id
+        self.ballot = ballot
 
 
 class VoteConflictError(DomainError):
     """Raised when expected_updated_at does not match the stored vote (D-54)."""
 
-    def __init__(self, cycle_id: str, user_id: str) -> None:
+    def __init__(
+        self,
+        cycle_id: str,
+        user_id: str,
+        ballot: object | None = None,
+    ) -> None:
         super().__init__(f"vote conflict for cycle {cycle_id} user {user_id}")
         self.cycle_id = cycle_id
         self.user_id = user_id
+        self.ballot = ballot
 
 
 class InvalidVoteError(DomainError):

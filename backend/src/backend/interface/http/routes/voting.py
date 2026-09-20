@@ -10,7 +10,12 @@ from pydantic import BaseModel, ConfigDict
 from backend.application.use_cases.cast_vote import cast_vote
 from backend.application.use_cases.get_ballot import get_ballot
 from backend.domain.auth_claims import AccessTokenClaims
-from backend.domain.errors import InvalidVoteError, PersistenceError
+from backend.domain.errors import (
+    InvalidVoteError,
+    PersistenceError,
+    VoteConflictError,
+    VotingCycleClosedError,
+)
 from backend.domain.vote import BallotSnapshot
 from backend.interface.http.deps import get_principal
 
@@ -149,13 +154,26 @@ def read_current_ballot(
     return _to_response(snapshot)
 
 
+def _conflict_detail(
+    *,
+    code: str,
+    message: str,
+    ballot: BallotSnapshot | None,
+) -> dict:
+    ballot_payload = (
+        _to_response(ballot).model_dump(mode="json") if ballot is not None else None
+    )
+    return {"code": code, "message": message, "ballot": ballot_payload}
+
+
 @router.post(
     "/votes",
     response_model=BallotSnapshotResponse,
     summary="Cast or confirm vote",
     description=(
-        "Upserts exactly one vote for claims.sub on the open cycle (VOTE-01, D-52). "
+        "Upserts exactly one vote for claims.sub on the open cycle (VOTE-01/03, D-52). "
         "Returns full BallotSnapshot. Same-topic repeat is idempotent 200. "
+        "Closed cycle → 409 CYCLE_CLOSED + ballot; CAS mismatch → 409 VOTE_CONFLICT + ballot. "
         "PersistenceError → 503 voting_unavailable."
     ),
 )
@@ -178,6 +196,24 @@ def post_vote(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="invalid_vote",
+        ) from exc
+    except VotingCycleClosedError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=_conflict_detail(
+                code="CYCLE_CLOSED",
+                message="Цикл голосования закрыт",
+                ballot=exc.ballot if isinstance(exc.ballot, BallotSnapshot) else None,
+            ),
+        ) from exc
+    except VoteConflictError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=_conflict_detail(
+                code="VOTE_CONFLICT",
+                message="Голос уже изменён на другом устройстве",
+                ballot=exc.ballot if isinstance(exc.ballot, BallotSnapshot) else None,
+            ),
         ) from exc
     except PersistenceError as exc:
         raise HTTPException(
