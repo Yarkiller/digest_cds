@@ -115,7 +115,7 @@ Each task was committed atomically:
 3. **Task 2 RED:** `4879cfb` — test(02-05): failing Playwright callout state tests
 4. **Task 2 GREEN:** `750776e` — feat(02-05): wire EditorialCallout from voting_cycle DTO
 
-**Plan metadata:** _(pending docs commit)_
+**Plan metadata:** `98b9ec6` (docs: complete plan)
 
 ## Files Created/Modified
 
