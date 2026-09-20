@@ -1,12 +1,14 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import TopicBallot from '../components/TopicBallot.jsx'
 import ActionButton from '../components/ActionButton.jsx'
 import ErrorPanel from '../components/ErrorPanel.jsx'
+import ServiceUnavailable from '../components/ServiceUnavailable.jsx'
 import {
   BallotFetchError,
   VoteSubmitError,
   armFailNextVoteSubmit,
+  clearFailNextBallotFetch,
   fetchBallot,
   submitVote,
 } from '../services/votingApi.js'
@@ -19,6 +21,8 @@ const FALLBACK_CYCLE = {
   progressRatio: 0,
   status: 'open',
 }
+
+const TOAST_DISMISS_MS = 4000
 
 function applySnapshot(snapshot, setters) {
   const {
@@ -67,6 +71,11 @@ function EmptyVotingCta() {
   )
 }
 
+function topicTitleById(topics, topicId) {
+  if (!topicId) return null
+  return topics.find((t) => t.id === topicId)?.title ?? null
+}
+
 export default function VotingPage() {
   const [searchParams] = useSearchParams()
   const [topics, setTopics] = useState([])
@@ -76,9 +85,11 @@ export default function VotingPage() {
   const [confirmedId, setConfirmedId] = useState(null)
   const [expectedUpdatedAt, setExpectedUpdatedAt] = useState(null)
   const [loadState, setLoadState] = useState('loading')
+  const [loadKey, setLoadKey] = useState(0)
   const [buttonState, setButtonState] = useState('idle')
   const [toast, setToast] = useState('')
   const [error, setError] = useState(null)
+  const [conflictBanner, setConflictBanner] = useState('')
   const [validationMessage, setValidationMessage] = useState('')
   const [attemptCount, setAttemptCount] = useState(0)
   const [armedFailOnce] = useState(() => {
@@ -87,20 +98,28 @@ export default function VotingPage() {
     return shouldFail
   })
 
+  const snapshotSetters = {
+    setTopics,
+    setLeaders,
+    setCycleMeta,
+    setConfirmedId,
+    setSelectedId,
+    setExpectedUpdatedAt,
+  }
+
+  const reloadBallot = useCallback(() => {
+    clearFailNextBallotFetch()
+    setError(null)
+    setLoadKey((k) => k + 1)
+  }, [])
+
   useEffect(() => {
     let cancelled = false
     setLoadState('loading')
     fetchBallot()
       .then((snapshot) => {
         if (cancelled) return
-        applySnapshot(snapshot, {
-          setTopics,
-          setLeaders,
-          setCycleMeta,
-          setConfirmedId,
-          setSelectedId,
-          setExpectedUpdatedAt,
-        })
+        applySnapshot(snapshot, snapshotSetters)
         setLoadState('ready')
       })
       .catch((err) => {
@@ -120,7 +139,15 @@ export default function VotingPage() {
     return () => {
       cancelled = true
     }
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reload via loadKey only
+  }, [loadKey])
+
+  // D-45: toast fades after ~3–5s (PlatformProofBanner pattern)
+  useEffect(() => {
+    if (!toast) return undefined
+    const timer = window.setTimeout(() => setToast(''), TOAST_DISMISS_MS)
+    return () => window.clearTimeout(timer)
+  }, [toast])
 
   const status = useMemo(
     () =>
@@ -159,20 +186,14 @@ export default function VotingPage() {
     setButtonState('loading')
     setToast('')
     setError(null)
+    setConflictBanner('')
     setAttemptCount((count) => count + 1)
 
     const hadConfirmed = Boolean(confirmedId)
 
     try {
       const snapshot = await submitVote(selectedId, expectedUpdatedAt)
-      applySnapshot(snapshot, {
-        setTopics,
-        setLeaders,
-        setCycleMeta,
-        setConfirmedId,
-        setSelectedId,
-        setExpectedUpdatedAt,
-      })
+      applySnapshot(snapshot, snapshotSetters)
       setButtonState('idle')
       setToast(hadConfirmed ? 'Голос изменён' : 'Голос сохранён')
       setAttemptCount(0)
@@ -189,14 +210,23 @@ export default function VotingPage() {
       }
 
       if (voteError.code === 'CYCLE_CLOSED' && voteError.ballot) {
-        applySnapshot(voteError.ballot, {
-          setTopics,
-          setLeaders,
-          setCycleMeta,
-          setConfirmedId,
-          setSelectedId,
-          setExpectedUpdatedAt,
-        })
+        applySnapshot(voteError.ballot, snapshotSetters)
+        setButtonState('idle')
+        setError(null)
+        return
+      }
+
+      if (voteError.code === 'VOTE_CONFLICT' && voteError.ballot) {
+        applySnapshot(voteError.ballot, snapshotSetters)
+        const serverTitle = topicTitleById(
+          voteError.ballot.topics ?? [],
+          voteError.ballot.personal_vote?.topic_id,
+        )
+        setConflictBanner(
+          serverTitle
+            ? `Голос уже изменён на другом устройстве. На сервере: «${serverTitle}».`
+            : 'Голос уже изменён на другом устройстве. Показан актуальный выбор сервера.',
+        )
         setButtonState('idle')
         setError(null)
         return
@@ -218,6 +248,16 @@ export default function VotingPage() {
   }
 
   const leaderCopy = showBallot || cycleClosed ? leaderStripText(leaders) : null
+
+  // D-55: GET failure → full ServiceUnavailable splash (not ErrorPanel-only)
+  if (loadState === 'error') {
+    return (
+      <section className="max-w-3xl" data-testid="voting-page">
+        <h1 className="mb-6 font-display text-3xl font-semibold">Голосование за тему разбора</h1>
+        <ServiceUnavailable onRetry={reloadBallot} />
+      </section>
+    )
+  }
 
   return (
     <section className="max-w-3xl" data-testid="voting-page">
@@ -246,6 +286,16 @@ export default function VotingPage() {
               className="mb-6 rounded-2xl border border-rule bg-paper-2 p-5 text-sm text-ink-2"
             >
               Цикл голосования закрыт
+            </div>
+          ) : null}
+
+          {conflictBanner ? (
+            <div
+              data-testid="vote-conflict-banner"
+              className="mb-6 rounded-2xl border border-rule bg-paper-2 p-5 text-sm text-ink-2"
+              role="alert"
+            >
+              {conflictBanner}
             </div>
           ) : null}
 
@@ -295,6 +345,7 @@ export default function VotingPage() {
               if (cycleClosed) return
               setSelectedId(id)
               setValidationMessage('')
+              setConflictBanner('')
               if (buttonState === 'success' || buttonState === 'error') setButtonState('idle')
               if (error) setError(null)
             }}
@@ -320,7 +371,11 @@ export default function VotingPage() {
                 />
               ) : null}
               {toast ? (
-                <p className="text-sm text-[oklch(45%_0.13_155)]" aria-live="polite">
+                <p
+                  data-testid="vote-toast"
+                  className="text-sm text-[oklch(45%_0.13_155)]"
+                  aria-live="polite"
+                >
                   {toast}
                 </p>
               ) : null}
@@ -342,15 +397,6 @@ export default function VotingPage() {
         <p className="text-sm text-ink-2" role="status" aria-live="polite">
           Загрузка…
         </p>
-      ) : null}
-
-      {loadState === 'error' && error ? (
-        <ErrorPanel
-          title={error.title}
-          message={error.message}
-          meta={`Код: ${error.code}`}
-          onDismiss={clearError}
-        />
       ) : null}
     </section>
   )

@@ -466,7 +466,10 @@ test.describe("web app edge and error cases", () => {
     await page.getByTestId("confirm-vote").click();
 
     await expect(page.getByTestId("vote-conflict-banner")).toBeVisible();
-    await expect(page.getByRole("status")).toContainText(/ваш голос:\s*RAG в корпоративной среде/i);
+    await expect(page.getByTestId("vote-conflict-banner")).toContainText(/на сервере/i);
+    await expect(page.locator('[role="status"][aria-live="polite"]')).toContainText(
+      /ваш голос:\s*RAG в корпоративной среде/i,
+    );
     await expect(page.getByRole("radio", { name: /RAG в корпоративной среде/i })).toBeChecked();
   });
 
