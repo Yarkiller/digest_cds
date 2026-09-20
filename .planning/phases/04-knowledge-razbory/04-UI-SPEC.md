@@ -1,10 +1,11 @@
 ---
 phase: 4
 slug: knowledge-razbory
-status: draft
+status: approved
 shadcn_initialized: false
 preset: none
 created: 2026-09-20
+reviewed_at: 2026-09-20T20:23:00Z
 ---
 
 # Phase 4 — UI Design Contract
@@ -136,9 +137,10 @@ All copy is **Russian**, calm editorial tone. **Never** show HTTP codes, stacktr
 | Chronology CTA | **«Читать разбор →»** → `/razbory/:id` |
 | Announcement status | Overline includes **«Анонс»** (D-68) |
 | Empty razbory heading | **«Разборов пока нет»** (D-69 / RAZB-01) |
-| Empty razbory body + CTA | One short sentence inviting a vote · primary CTA **«К голосованию»** → `/voting` only — **no** secondary «К выпуску» (D-69) |
+| Empty razbory body + CTA | **«Когда появятся — опубликуем здесь. Пока можно проголосовать за следующую тему.»** · primary CTA **«К голосованию»** → `/voting` only — **no** secondary «К выпуску» (D-69) |
+| Announcement stub pending note | **«Полный разбор ещё готовится — следите за обновлениями.»** — no fake empty prose (D-68 / §2.6) |
 | Detail back-nav | **«← Все разборы»** → `/razbory` |
-| Announcement stub body | Name + date + status only; calm note that longread is not published yet — **no fake empty prose** (D-68 / §2.6) |
+| Announcement stub body | Name + date + status only + pending note above — **no fake empty prose** (D-68 / §2.6) |
 | Soft-404 heading | **«Разбор не найден»** |
 | Soft-404 body + CTA | **«Возможно, ссылка устарела или разбор ещё готовится.»** · **«К списку разборов»** → `/razbory` — no `bad_gateway.png` |
 | Notebook CTA | **«Скачать .ipynb»** (D-70) |
@@ -150,6 +152,17 @@ All copy is **Russian**, calm editorial tone. **Never** show HTTP codes, stacktr
 | End-of-longread secondary | **«← К списку разборов»** |
 | Page GET failure | ServiceUnavailable splash «Ошибочка вышла» / «Не удалось загрузить…» + **«Повторить»** (Phase 2 pattern) |
 | Destructive confirmation | **none** — no destructive actions this phase |
+
+---
+
+## Focal Points
+
+| Screen | Primary focal point |
+|--------|---------------------|
+| `/knowledge` | Search field + **«Найти»** (Submit/Enter) |
+| `/razbory` | Chronology title stack (first readable row / empty heading) |
+| `/razbory/:id` published | Display title + top notebook strip |
+| `/razbory/:id` announcement | Title + **«Анонс»** status (stub only) |
 
 ---
 
@@ -181,7 +194,7 @@ All copy is **Russian**, calm editorial tone. **Never** show HTTP codes, stacktr
 
 ### Razbor detail (`/razbory/:id`) — RAZB-02…04, D-68…D-73
 - Back link «← Все разборы».
-- **Announcement stub:** title + date + «Анонс» status; **no** prose column, **no** TOC, **no** metrics, **no** notebook strip pretending content exists (D-68). Optional short calm sentence that publication is pending.
+- **Announcement stub:** title + date + «Анонс» status + pending note «Полный разбор ещё готовится — следите за обновлениями.»; **no** prose column, **no** TOC, **no** metrics, **no** notebook strip pretending content exists (D-68).
 - **Published longread:**
   - Reading layout = MaterialPage pattern: prose column + sticky TOC at `lg:`; mobile `<details>` «Содержание».
   - **Notebook dual action strip** (D-71): (1) top `info-banner--with-action` with «Скачать .ipynb»; (2) repeat download control near end / editorial-box. Download only — no in-app viewer (D-70).
@@ -194,9 +207,10 @@ All copy is **Russian**, calm editorial tone. **Never** show HTTP codes, stacktr
 
 ## UI Considerations
 
-> Shape-rooted state coverage for Phase 4 surfaces. Empty/error **copy** lives in `## Copywriting Contract`; rows reference those rows rather than restating.
+> Shape-rooted state coverage from ui-phase probe Step 9.5. Kinds (user-confirmed): E1 `form`+`interactive-control`; E2/E3 `list-collection`; E4 `static-content`+`nav`+`interactive-control`; E5/E7 `static-content`; E6 `interactive-control`; E8 `nav`. Empty/error **copy** lives in `## Copywriting Contract`; rows reference those rows rather than restating.
 
-Applicable state considerations resolved: **22 covered**, **6 backstop**, **0 unresolved** (8 dismissed — see footnote).
+Applicable: **34** probe items → **18 covered** · **6 backstop** · **10 dismissed** · **0 unresolved**.  
+Domain extras (not taxonomy-raised, still planner-visible): E5 empty stub honesty; E6 missing-notebook strip; E4 Качество vs Обзор (D-73).
 
 Surfaces: **E1** Knowledge search form + chips · **E2** Knowledge hit list · **E3** Razbory chronology list · **E4** Published razbor longread + TOC · **E5** Announcement stub · **E6** Notebook dual strip · **E7** Soft-404 · **E8** AppShell nav «Разборы».
 
@@ -204,35 +218,34 @@ Surfaces: **E1** Knowledge search form + chips · **E2** Knowledge hit list · *
 |----------|------------|--------|---------------------|
 | empty | E1 pre-search | ✅ covered | Neutral empty + topic hint chips; no recommended materials (D-60) |
 | empty | E2 zero-hit | ✅ covered | «Ничего не нашли» + «Сбросить фильтр» clears role only (D-65); never ML substitution (KNOW-04) |
-| empty | E3 razbory list | ✅ covered | «Разборов пока нет» + «К голосованию» → `/voting` (D-69) |
-| empty | E5 announcement | ✅ covered | Stub name/date/status only — no fake longread (D-68) |
-| empty | E6 notebook missing | ✅ covered | Strip kept; download disabled + «Notebook скоро будет» (D-72) |
-| loading | E2 search in-flight | ✅ covered | Disable «Найти» / show busy on results zone; distinct from empty (§1.2) |
-| loading | E2 «Показать ещё» | ✅ covered | Button busy/disabled while next page loads; prior rows remain |
-| loading | E3/E4 page GET | ✅ covered | Neutral skeleton / pending until DTO or splash — not flash empty |
-| error | E1 blank query | ✅ covered | Inline «Введите запрос»; no network call (KNOW-01) |
+| empty | E3 razbory list | ✅ covered | «Разборов пока нет» + body + «К голосованию» → `/voting` (D-69) |
+| empty | E5 announcement *(domain)* | ✅ covered | Stub name/date/status + pending note — no fake longread (D-68) |
+| empty | E6 notebook missing *(domain)* | ✅ covered | Strip kept; download disabled + «Notebook скоро будет» (D-72) |
+| loading | E2 search / «Показать ещё» | ✅ covered | Disable «Найти» / busy results zone; prior rows remain while next page loads |
+| loading | E3/E4 page GET | ✅ covered | Neutral pending until DTO or splash — not flash empty |
+| error | E1 blank/overlong | ✅ covered | Inline «Введите запрос» / «Сократите запрос»; no network call (KNOW-01) |
 | error | E2 search 5xx | ✅ covered | Banner + «Повторить»; query preserved (§2.5) |
 | error | E3/E4 page GET | ✅ covered | ServiceUnavailable splash + «Повторить» |
 | error | E6 download fail | ✅ covered | Toast «Не удалось скачать» (D-72) |
-| error | E7 soft-404 | ✅ covered | «Разбор не найден» + «К списку разборов» — distinct from network splash |
+| error | E7 soft-404 *(domain)* | ✅ covered | «Разбор не найден» + «К списку разборов» — distinct from network splash |
 | populated | E2 hits | ✅ covered | Ranked rows: cover/title/tags/snippet; no scores (D-59); link by slug |
 | populated | E3 chronology | ✅ covered | Date/status overline, title, byline, «Читать разбор →» (D-67) |
-| populated | E4 longread | ✅ covered | Markdown prose + sticky TOC; dual notebook strip; metrics or Обзор per D-73 |
-| partial | E2 cover null | ✅ covered | Row degrades without thumbnail when `cover_url` null **[assumption RESEARCH A6]** |
-| partial | E4 optional metrics | ✅ covered | Quality block only when `content_kind=quality`; overview omits section (D-73) |
-| partial | E6 notebook | ✅ covered | Available → enabled download; missing → disabled + caption (same strip) |
-| overflow | E2 many hits | 🧪 backstop | { statement: "Hit list + «Показать ещё» paginates without clipping 44px row targets", verification: backstop } |
-| overflow | E4 long prose/TOC | 🧪 backstop | { statement: "Long razbor scrolls; sticky TOC / mobile details stays usable; no horizontal overflow", verification: backstop } |
-| overflow | E3 many chronology items | 🧪 backstop | { statement: "Chronology list reflows at many items without clipped CTAs", verification: backstop } |
+| populated | E4 longread *(domain)* | ✅ covered | Markdown prose + sticky TOC; dual notebook strip; metrics or Обзор per D-73 |
+| partial | E2 cover null | ✅ covered | Row degrades without thumbnail when `cover_url` null |
+| partial | E3 Анонс | ✅ covered | Announcement rows listed with «Анонс»; open stub detail (D-68) |
+| partial | E4 optional metrics *(domain)* | ✅ covered | Quality block only when `content_kind=quality`; overview omits section (D-73) |
 | zero-one-many | E2 hits | ✅ covered | 0 → empty; 1 → single row; many → page + «Показать ещё» when has_more |
 | zero-one-many | E3 list | ✅ covered | 0 → empty CTA; 1 → single chronology-item; many → stacked items |
-| long-text | E2 titles/snippets | 🧪 backstop | { statement: "Long titles/snippets wrap (overflow-wrap) without breaking row grid", verification: backstop } |
+| overflow | E2 many hits | 🧪 backstop | { statement: "Hit list + «Показать ещё» paginates without clipping 44px row targets", verification: backstop } |
+| overflow | E3 many chronology items | 🧪 backstop | { statement: "Chronology list reflows at many items without clipped CTAs", verification: backstop } |
+| overflow | E4 long prose/TOC | 🧪 backstop | { statement: "Long razbor scrolls; sticky TOC / mobile details stays usable; no horizontal overflow", verification: backstop } |
+| long-text | E1 query | 🧪 backstop | { statement: "Long query text wraps/scrolls in the search field without breaking the form layout", verification: backstop } |
 | long-text | E4 display title | 🧪 backstop | { statement: "Long razbor title wraps in hero without clipping", verification: backstop } |
-| long-text | E3 chronology titles | 🧪 backstop | { statement: "Long chronology titles wrap; CTA remains reachable", verification: backstop } |
+| long-text | E5 announcement title | 🧪 backstop | { statement: "Long announcement title wraps on stub without clipping", verification: backstop } |
 
-**Dismissed as N/A (audit trail):** E1 empty for role chips alone (chips always have a selected «Все» default); E8 nav empty/loading/error/partial/zero-one-many/long-text (static chrome); E7 loading/overflow/long-text (fixed short copy); E5 loading (stub is terminal after successful GET).
+**Dismissed as N/A (audit trail):** E1 loading (in-flight lives on E2 after Submit); E1 partial (chips always have selected «Все»); E5 overflow (short stub); E6 loading (download is sync click; page load is E4); E6 long-text (fixed CTA labels); E7 overflow/long-text (fixed short copy); E8 loading/error/overflow/long-text (static nav chrome, fixed label «Разборы»).
 
-> **Planner note:** the 6 `backstop` rows lift into `must_haves.truths` — at verify time each needs an explicit visual/held-out check or routes to `insufficient_spec → human_needed`; never a silent pass.
+> **Planner note:** the 6 `backstop` rows lift into `must_haves.truths` as `{ statement, verification: backstop }` — at verify time each needs an explicit visual/held-out check or routes to `insufficient_spec → human_needed`; never a silent pass.
 
 ---
 
@@ -248,11 +261,11 @@ No shadcn initialization and no third-party registries declared for this phase. 
 
 ## Checker Sign-Off
 
-- [ ] Dimension 1 Copywriting: PASS
-- [ ] Dimension 2 Visuals: PASS
-- [ ] Dimension 3 Color: PASS
-- [ ] Dimension 4 Typography: PASS
-- [ ] Dimension 5 Spacing: PASS
-- [ ] Dimension 6 Registry Safety: PASS
+- [x] Dimension 1 Copywriting: PASS (FLAG addressed — empty razbory body + announcement pending note locked)
+- [x] Dimension 2 Visuals: PASS (FLAG addressed — Focal Points table)
+- [x] Dimension 3 Color: PASS
+- [x] Dimension 4 Typography: PASS (FLAG — Label/Caption inherited meta tokens; same disposition as Phase 2)
+- [x] Dimension 5 Spacing: PASS (FLAG — `--space-3/5/10` locked `tokens.css` / Phase 2–3 reuse)
+- [x] Dimension 6 Registry Safety: PASS
 
-**Approval:** pending
+**Approval:** approved 2026-09-20
