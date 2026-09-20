@@ -8,6 +8,12 @@ class MaterialNotFoundError(DomainError):
         self.material_id = material_id
 
 
+class IssueNotFoundError(DomainError):
+    def __init__(self, number: int) -> None:
+        super().__init__(f"issue {number} not found")
+        self.number = number
+
+
 class MaterialValidationError(DomainError):
     def __init__(self, message: str) -> None:
         super().__init__(message)

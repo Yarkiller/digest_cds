@@ -1,4 +1,4 @@
-"""Authenticated current-issue endpoint — GET /issues/current (ISSUE-01 / D-24 / D-26)."""
+"""Authenticated issue endpoints — current, archive, by-number (ISSUE-01 / ISSUE-04)."""
 
 from __future__ import annotations
 
@@ -6,12 +6,15 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, ConfigDict
 
 from backend.application.use_cases.get_current_issue import get_current_issue
+from backend.application.use_cases.get_issue_by_number import get_issue_by_number
+from backend.application.use_cases.list_archive_issues import list_archive_issues
 from backend.domain.auth_claims import AccessTokenClaims
-from backend.domain.errors import PersistenceError
+from backend.domain.errors import IssueNotFoundError, PersistenceError
 from backend.domain.issue import Issue
 from backend.interface.http.deps import get_principal
 
 router = APIRouter(prefix="/issues", tags=["issues"])
+archive_router = APIRouter(tags=["archive"])
 
 
 class IssueItemResponse(BaseModel):
@@ -37,6 +40,21 @@ class CurrentIssueResponse(BaseModel):
     items: list[IssueItemResponse] = []
 
 
+class ArchiveIssueResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    number: int
+    period_label: str
+    title: str
+    material_count: int
+
+
+class ArchiveListResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    issues: list[ArchiveIssueResponse] = []
+
+
 def _to_response(issue: Issue | None) -> CurrentIssueResponse:
     if issue is None:
         return CurrentIssueResponse()
@@ -59,6 +77,16 @@ def _to_response(issue: Issue | None) -> CurrentIssueResponse:
     )
 
 
+def _require_issues(request: Request):
+    container = request.app.state.container
+    if container is None or getattr(container, "issues", None) is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="issues_not_configured",
+        )
+    return container.issues
+
+
 @router.get(
     "/current",
     response_model=CurrentIssueResponse,
@@ -73,17 +101,78 @@ def read_current_issue(
     claims: AccessTokenClaims = Depends(get_principal),
 ) -> CurrentIssueResponse:
     del claims  # auth gate only; content is reader-shared
-    container = request.app.state.container
-    if container is None or getattr(container, "issues", None) is None:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="issues_not_configured",
-        )
+    issues = _require_issues(request)
     try:
-        issue = get_current_issue(container.issues)
+        issue = get_current_issue(issues)
     except PersistenceError as exc:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="issues_unavailable",
         ) from exc
     return _to_response(issue)
+
+
+@router.get(
+    "/{number}",
+    response_model=CurrentIssueResponse,
+    summary="Published issue by number",
+    description=(
+        "Returns a published digest issue by number. "
+        "Requires Bearer JWT. Missing or unpublished → 404."
+    ),
+)
+def read_issue_by_number(
+    number: int,
+    request: Request,
+    claims: AccessTokenClaims = Depends(get_principal),
+) -> CurrentIssueResponse:
+    del claims
+    issues = _require_issues(request)
+    try:
+        issue = get_issue_by_number(issues, number)
+    except IssueNotFoundError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="issue_not_found",
+        ) from exc
+    except PersistenceError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="issues_unavailable",
+        ) from exc
+    return _to_response(issue)
+
+
+@archive_router.get(
+    "/archive",
+    response_model=ArchiveListResponse,
+    summary="Past published issues",
+    description=(
+        "Returns past published issues excluding the current latest-published (D-31). "
+        "Requires Bearer JWT. Empty archive → 200 with issues=[]."
+    ),
+)
+def read_archive(
+    request: Request,
+    claims: AccessTokenClaims = Depends(get_principal),
+) -> ArchiveListResponse:
+    del claims
+    issues = _require_issues(request)
+    try:
+        archive = list_archive_issues(issues)
+    except PersistenceError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="issues_unavailable",
+        ) from exc
+    return ArchiveListResponse(
+        issues=[
+            ArchiveIssueResponse(
+                number=issue.number,
+                period_label=issue.period_label,
+                title=issue.title,
+                material_count=len(issue.items),
+            )
+            for issue in archive
+        ]
+    )

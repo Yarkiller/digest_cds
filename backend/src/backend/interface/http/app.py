@@ -48,6 +48,7 @@ def create_app(
     app.include_router(health.router)
     app.include_router(me.router)
     app.include_router(issues.router)
+    app.include_router(issues.archive_router)
     return app
 
 
