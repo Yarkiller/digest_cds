@@ -136,7 +136,7 @@ Each task was committed atomically:
 3. **Task 2 (RED): InvalidVoteError → 400 tests** - `d12051f` (test)
 4. **Task 2 (GREEN): Map InvalidVoteError to 400** - `b2eea1b` (feat)
 
-**Plan metadata:** (pending docs commit)
+**Plan metadata:** `5f3549f` (docs: complete plan)
 
 ## Files Created/Modified
 
