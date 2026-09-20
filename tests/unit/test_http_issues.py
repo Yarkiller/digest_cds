@@ -15,8 +15,9 @@ from jwt.algorithms import ECAlgorithm
 from backend.composition.container import AppContainer, build_in_memory_container
 from backend.composition.settings import Settings
 from backend.domain.issue import Issue, IssueItem
+from backend.domain.voting_cycle import VotingCycle
 from backend.interface.http.app import create_app
-from backend.tests_support.in_memory import InMemoryIssueRepository
+from backend.tests_support.in_memory import InMemoryIssueRepository, InMemoryVotingCycleReader
 
 
 ISSUER = "https://auth.example/auth/v1"
@@ -137,6 +138,82 @@ def test_issues_current_with_no_published_returns_honest_empty_200() -> None:
     body = response.json()
     assert body["number"] is None
     assert body["items"] == []
+    assert body.get("voting_cycle") is None
+
+
+def test_issues_current_includes_open_voting_cycle() -> None:
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    container = _seeded_container()
+    container.voting_cycles = InMemoryVotingCycleReader(
+        [
+            VotingCycle(
+                id="vc-1",
+                status="open",
+                opens_at=datetime(2026, 4, 3, tzinfo=timezone.utc),
+                closes_at=datetime(2026, 4, 16, 23, 59, 59, tzinfo=timezone.utc),
+            )
+        ]
+    )
+    client = _client(jwk, container)
+    token = _mint(private_key, email="alice@sberbank.ru")
+    response = client.get(
+        "/issues/current",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["voting_cycle"]["status"] == "open"
+    assert "2026-04-16" in body["voting_cycle"]["closes_at"]
+
+
+def test_issues_current_includes_closed_voting_cycle() -> None:
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    container = _seeded_container()
+    container.voting_cycles = InMemoryVotingCycleReader(
+        [
+            VotingCycle(
+                id="vc-closed",
+                status="closed",
+                opens_at=datetime(2026, 3, 1, tzinfo=timezone.utc),
+                closes_at=datetime(2026, 3, 15, tzinfo=timezone.utc),
+            )
+        ]
+    )
+    client = _client(jwk, container)
+    token = _mint(private_key, email="alice@sberbank.ru")
+    response = client.get(
+        "/issues/current",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert response.status_code == 200
+    assert response.json()["voting_cycle"]["status"] == "closed"
+
+
+def test_issues_by_number_omits_voting_cycle() -> None:
+    """Past issues reuse CurrentIssueResponse without requiring voting_cycle (D-34)."""
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    container = _two_issue_container()
+    container.voting_cycles = InMemoryVotingCycleReader(
+        [
+            VotingCycle(
+                id="vc-1",
+                status="open",
+                opens_at=datetime(2026, 4, 3, tzinfo=timezone.utc),
+                closes_at=datetime(2026, 4, 16, tzinfo=timezone.utc),
+            )
+        ]
+    )
+    client = _client(jwk, container)
+    token = _mint(private_key, email="alice@sberbank.ru")
+    response = client.get(
+        "/issues/13",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert response.status_code == 200
+    assert response.json().get("voting_cycle") is None
 
 
 def _two_issue_container() -> AppContainer:
