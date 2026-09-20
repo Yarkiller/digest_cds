@@ -97,3 +97,37 @@ def test_cast_vote_unknown_topic_raises_invalid_vote() -> None:
             topic_id="topic-missing",
             expected_updated_at=None,
         )
+
+
+def test_cast_vote_empty_topic_raises_invalid_vote() -> None:
+    votes, cycles = _seeded()
+
+    with pytest.raises(InvalidVoteError):
+        cast_vote(
+            votes,
+            cycles,
+            user_id="user-uuid-1",
+            topic_id="  ",
+            expected_updated_at=None,
+        )
+
+
+def test_cast_vote_topic_from_other_cycle_raises_invalid_vote() -> None:
+    votes, cycles = _seeded()
+    foreign = BallotTopic(
+        id="foreign-topic",
+        title="Другой цикл",
+        description="не здесь",
+        materials_count=0,
+        votes=0,
+    )
+    votes.seed_topics("other-cycle", [foreign])
+
+    with pytest.raises(InvalidVoteError):
+        cast_vote(
+            votes,
+            cycles,
+            user_id="user-uuid-1",
+            topic_id="foreign-topic",
+            expected_updated_at=None,
+        )

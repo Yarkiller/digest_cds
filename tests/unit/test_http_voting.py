@@ -225,3 +225,35 @@ def test_voting_current_persistence_error_returns_503_voting_unavailable() -> No
 
     assert response.status_code == 503
     assert response.json()["detail"] == "voting_unavailable"
+
+
+def test_voting_post_unknown_topic_returns_400() -> None:
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    client = _client(jwk, _seeded_container())
+    token = _mint(private_key, email="alice@sberbank.ru")
+
+    response = client.post(
+        "/voting/votes",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"topic_id": "topic-missing", "expected_updated_at": None},
+    )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "invalid_vote"
+
+
+def test_voting_post_empty_topic_returns_400() -> None:
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    client = _client(jwk, _seeded_container())
+    token = _mint(private_key, email="alice@sberbank.ru")
+
+    response = client.post(
+        "/voting/votes",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"topic_id": "   ", "expected_updated_at": None},
+    )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "invalid_vote"
