@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import TopicBallot from '../components/TopicBallot.jsx'
 import ActionButton from '../components/ActionButton.jsx'
 import ErrorPanel from '../components/ErrorPanel.jsx'
@@ -17,6 +17,7 @@ const FALLBACK_CYCLE = {
   period: '',
   closesOn: 'закрытия цикла',
   progressRatio: 0,
+  status: 'open',
 }
 
 function applySnapshot(snapshot, setters) {
@@ -51,6 +52,19 @@ function applySnapshot(snapshot, setters) {
   setExpectedUpdatedAt(personal?.updated_at ?? null)
   // D-46: radios mirror server vote after confirm/load; never-voted stays empty
   setSelectedId(confirmed)
+}
+
+function EmptyVotingCta() {
+  return (
+    <p className="mt-6">
+      <Link
+        to="/"
+        className="inline-flex min-h-11 items-center font-medium text-accent no-underline hover:underline"
+      >
+        К выпуску →
+      </Link>
+    </p>
+  )
 }
 
 export default function VotingPage() {
@@ -118,14 +132,22 @@ export default function VotingPage() {
     [confirmedId, selectedId, topics],
   )
 
+  const cycleClosed = cycleMeta.status === 'closed'
+  const noCycle = loadState === 'ready' && cycleMeta.status === null
+  const noTopics =
+    loadState === 'ready' && cycleMeta.status === 'open' && topics.length === 0
+  const showBallot =
+    loadState === 'ready' && !noCycle && !noTopics && topics.length > 0
+
   const confirmDisabled =
     loadState !== 'ready' ||
+    cycleClosed ||
     buttonState === 'loading' ||
     !selectedId ||
     selectedId === confirmedId
 
   async function confirmVote() {
-    if (buttonState === 'loading') return
+    if (buttonState === 'loading' || cycleClosed) return
 
     if (!selectedId) {
       setValidationMessage('Выберите тему')
@@ -166,6 +188,20 @@ export default function VotingPage() {
         return
       }
 
+      if (voteError.code === 'CYCLE_CLOSED' && voteError.ballot) {
+        applySnapshot(voteError.ballot, {
+          setTopics,
+          setLeaders,
+          setCycleMeta,
+          setConfirmedId,
+          setSelectedId,
+          setExpectedUpdatedAt,
+        })
+        setButtonState('idle')
+        setError(null)
+        return
+      }
+
       setButtonState(voteError.retryable ? 'error' : 'idle')
       setError({
         title: 'Ошибка сохранения',
@@ -181,92 +217,141 @@ export default function VotingPage() {
     if (buttonState === 'error') setButtonState('idle')
   }
 
-  const leaderCopy = loadState === 'ready' ? leaderStripText(leaders) : null
+  const leaderCopy = showBallot || cycleClosed ? leaderStripText(leaders) : null
 
   return (
-    <section className="max-w-3xl">
+    <section className="max-w-3xl" data-testid="voting-page">
       <h1 className="mb-6 font-display text-3xl font-semibold">Голосование за тему разбора</h1>
 
-      <div className="mb-8 rounded-2xl border border-rule bg-[oklch(98.5%_0.009_95)] p-5">
-        <div className="mb-3 flex items-baseline justify-between gap-3">
-          <span className="text-xs uppercase tracking-wide text-muted">{cycleMeta.label}</span>
-          <span className="text-xs text-ink-2">{cycleMeta.period}</span>
-        </div>
-        <div className="h-1 overflow-hidden rounded bg-[oklch(93%_0.035_78)]">
-          <div
-            className="h-full bg-voting"
-            style={{ width: `${Math.round(cycleMeta.progressRatio * 100)}%` }}
-          />
-        </div>
-        <p className="mt-3 text-sm text-ink-2" role="status" aria-live="polite">
-          {loadState === 'ready' ? status : loadState === 'loading' ? 'Загрузка…' : status}
-        </p>
-        {armedFailOnce ? (
-          <p className="mt-2 text-xs text-muted">
-            Демо режима сбоя: первая отправка будет отклонена сервером (повторите).
-          </p>
-        ) : null}
-      </div>
-
-      <p className="mb-8 text-sm text-ink-2">
-        Один голос за цикл. Вы можете изменить выбор до {cycleMeta.closesOn}.
-      </p>
-
-      {leaderCopy ? (
-        <div
-          data-testid="leader-strip"
-          className="mb-6 rounded-2xl border border-rule bg-paper-2 p-5 text-sm text-ink-2"
-        >
-          {leaderCopy}
+      {noCycle ? (
+        <div data-testid="voting-no-cycle">
+          <p className="max-w-prose text-ink-2">Сейчас нет активного голосования</p>
+          <EmptyVotingCta />
         </div>
       ) : null}
 
-      {loadState === 'ready' ? (
-        <TopicBallot
-          topics={topics}
-          selectedId={selectedId}
-          onSelect={(id) => {
-            setSelectedId(id)
-            setValidationMessage('')
-            if (buttonState === 'success' || buttonState === 'error') setButtonState('idle')
-            if (error) setError(null)
-          }}
+      {noTopics ? (
+        <div data-testid="voting-no-topics">
+          <h2 className="font-display text-2xl font-semibold">Темы ещё не объявлены</h2>
+          <p className="mt-3 max-w-prose text-ink-2">Когда редакция откроет темы, они появятся здесь.</p>
+          <EmptyVotingCta />
+        </div>
+      ) : null}
+
+      {showBallot || cycleClosed ? (
+        <>
+          {cycleClosed ? (
+            <div
+              data-testid="voting-closed-banner"
+              className="mb-6 rounded-2xl border border-rule bg-paper-2 p-5 text-sm text-ink-2"
+            >
+              Цикл голосования закрыт
+            </div>
+          ) : null}
+
+          <div className="mb-8 rounded-2xl border border-rule bg-[oklch(98.5%_0.009_95)] p-5">
+            <div className="mb-3 flex items-baseline justify-between gap-3">
+              <span className="text-xs uppercase tracking-wide text-muted">{cycleMeta.label}</span>
+              <span className="text-xs text-ink-2">{cycleMeta.period}</span>
+            </div>
+            <div className="h-1 overflow-hidden rounded bg-[oklch(93%_0.035_78)]">
+              <div
+                className="h-full bg-voting"
+                style={{ width: `${Math.round(cycleMeta.progressRatio * 100)}%` }}
+              />
+            </div>
+            <p className="mt-3 text-sm text-ink-2" role="status" aria-live="polite">
+              {loadState === 'ready' ? status : loadState === 'loading' ? 'Загрузка…' : status}
+            </p>
+            {armedFailOnce && !cycleClosed ? (
+              <p className="mt-2 text-xs text-muted">
+                Демо режима сбоя: первая отправка будет отклонена сервером (повторите).
+              </p>
+            ) : null}
+          </div>
+
+          {!cycleClosed ? (
+            <p className="mb-8 text-sm text-ink-2">
+              Один голос за цикл. Вы можете изменить выбор до {cycleMeta.closesOn}.
+            </p>
+          ) : (
+            <p className="mb-8 text-sm text-ink-2">Результаты цикла (только чтение).</p>
+          )}
+
+          {leaderCopy ? (
+            <div
+              data-testid="leader-strip"
+              className="mb-6 rounded-2xl border border-rule bg-paper-2 p-5 text-sm text-ink-2"
+            >
+              {leaderCopy}
+            </div>
+          ) : null}
+
+          <TopicBallot
+            topics={topics}
+            selectedId={selectedId}
+            disabled={cycleClosed}
+            onSelect={(id) => {
+              if (cycleClosed) return
+              setSelectedId(id)
+              setValidationMessage('')
+              if (buttonState === 'success' || buttonState === 'error') setButtonState('idle')
+              if (error) setError(null)
+            }}
+          />
+
+          {!cycleClosed ? (
+            <div className="sticky bottom-0 mt-8 flex flex-wrap items-center justify-end gap-3 border-t border-rule bg-paper/95 py-3 backdrop-blur">
+              {validationMessage || (loadState === 'ready' && !selectedId) ? (
+                <p className="text-sm text-[oklch(45%_0.14_25)]" role="alert">
+                  {validationMessage || 'Выберите тему'}
+                </p>
+              ) : null}
+              {error ? (
+                <ErrorPanel
+                  title={error.title}
+                  message={error.message}
+                  meta={
+                    error.retryable
+                      ? `Попытка ${attemptCount}. Код: ${error.code}. Можно повторить.`
+                      : `Код: ${error.code}`
+                  }
+                  onDismiss={clearError}
+                />
+              ) : null}
+              {toast ? (
+                <p className="text-sm text-[oklch(45%_0.13_155)]" aria-live="polite">
+                  {toast}
+                </p>
+              ) : null}
+              <ActionButton
+                data-testid="confirm-vote"
+                variant="voting"
+                state={buttonState}
+                disabled={confirmDisabled}
+                onClick={confirmVote}
+              >
+                {voteButtonLabel(buttonState, { confirmedId })}
+              </ActionButton>
+            </div>
+          ) : null}
+        </>
+      ) : null}
+
+      {loadState === 'loading' ? (
+        <p className="text-sm text-ink-2" role="status" aria-live="polite">
+          Загрузка…
+        </p>
+      ) : null}
+
+      {loadState === 'error' && error ? (
+        <ErrorPanel
+          title={error.title}
+          message={error.message}
+          meta={`Код: ${error.code}`}
+          onDismiss={clearError}
         />
       ) : null}
-
-      <div className="sticky bottom-0 mt-8 flex flex-wrap items-center justify-end gap-3 border-t border-rule bg-paper/95 py-3 backdrop-blur">
-        {validationMessage || (loadState === 'ready' && !selectedId) ? (
-          <p className="text-sm text-[oklch(45%_0.14_25)]" role="alert">
-            {validationMessage || 'Выберите тему'}
-          </p>
-        ) : null}
-        {error ? (
-          <ErrorPanel
-            title={error.title}
-            message={error.message}
-            meta={
-              error.retryable
-                ? `Попытка ${attemptCount}. Код: ${error.code}. Можно повторить.`
-                : `Код: ${error.code}`
-            }
-            onDismiss={clearError}
-          />
-        ) : null}
-        {toast ? (
-          <p className="text-sm text-[oklch(45%_0.13_155)]" aria-live="polite">
-            {toast}
-          </p>
-        ) : null}
-        <ActionButton
-          data-testid="confirm-vote"
-          variant="voting"
-          state={buttonState}
-          disabled={confirmDisabled}
-          onClick={confirmVote}
-        >
-          {voteButtonLabel(buttonState, { confirmedId })}
-        </ActionButton>
-      </div>
     </section>
   )
 }

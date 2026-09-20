@@ -30,6 +30,11 @@ export class BallotFetchError extends Error {
  * Mock vote API. Fail-once can be armed via:
  * - `armFailNextVoteSubmit()` (tests / demos)
  * - URL `?simulateError=1` (handled by VotingPage before first submit)
+ *
+ * Empty/closed harnesses (sticky window flags for Playwright reloads):
+ * - `__DIGEST_VOTING_CLOSED__` — D-48 closed cycle with tallies/leaders
+ * - `__DIGEST_VOTING_NO_TOPICS__` — D-49 open cycle, zero topics
+ * - `__DIGEST_VOTING_NO_CYCLE__` — D-50 null cycle
  */
 let failNextSubmit = false
 
@@ -47,6 +52,23 @@ export function resetVoteSubmitHarness() {
   failNextSubmit = false
   mockPersonalVote = null
   mockTopicTallies = null
+  if (typeof window !== 'undefined') {
+    window.__DIGEST_VOTING_CLOSED__ = false
+    window.__DIGEST_VOTING_NO_TOPICS__ = false
+    window.__DIGEST_VOTING_NO_CYCLE__ = false
+  }
+}
+
+function mockHarnessClosed() {
+  return typeof window !== 'undefined' && window.__DIGEST_VOTING_CLOSED__ === true
+}
+
+function mockHarnessNoTopics() {
+  return typeof window !== 'undefined' && window.__DIGEST_VOTING_NO_TOPICS__ === true
+}
+
+function mockHarnessNoCycle() {
+  return typeof window !== 'undefined' && window.__DIGEST_VOTING_NO_CYCLE__ === true
 }
 
 function apiBase() {
@@ -77,11 +99,39 @@ function computeLeaders(topics) {
 }
 
 function buildMockSnapshot() {
+  if (mockHarnessNoCycle()) {
+    return {
+      cycle: null,
+      topics: [],
+      personal_vote: null,
+      leaders: [],
+    }
+  }
+
+  if (mockHarnessNoTopics()) {
+    return {
+      cycle: {
+        id: 'mock-cycle',
+        status: 'open',
+        opens_at: '2026-04-03T00:00:00Z',
+        closes_at: '2026-04-16T23:59:59Z',
+        progress_ratio: votingCycle.progressRatio,
+        label: votingCycle.label,
+        period: votingCycle.period,
+        closesOn: votingCycle.closesOn,
+      },
+      topics: [],
+      personal_vote: null,
+      leaders: [],
+    }
+  }
+
   const topics = cloneTopics()
+  const closed = mockHarnessClosed()
   return {
     cycle: {
       id: 'mock-cycle',
-      status: 'open',
+      status: closed ? 'closed' : 'open',
       opens_at: '2026-04-03T00:00:00Z',
       closes_at: '2026-04-16T23:59:59Z',
       progress_ratio: votingCycle.progressRatio,
@@ -181,6 +231,14 @@ export async function submitVote(topicId, expectedUpdatedAt = null, accessToken 
 
   if (isMocksEnabled()) {
     await delay()
+
+    if (mockHarnessClosed()) {
+      throw new VoteSubmitError('Цикл голосования закрыт', {
+        code: 'CYCLE_CLOSED',
+        retryable: false,
+        ballot: buildMockSnapshot(),
+      })
+    }
 
     if (failNextSubmit) {
       failNextSubmit = false
