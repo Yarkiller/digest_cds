@@ -136,6 +136,51 @@ Record the apply method in the operator resume signal (or append a one-line note
 
 ---
 
+## 4c. Phase 3 voting ballot seed + open-cycle trigger (VOTE-01/03/04)
+
+Checked-in idempotent SQL: `supabase-integration/migrations/003_phase3_voting_ballot.sql`.
+
+Creates / upserts (option-a — trigger + use-case):
+
+- `BEFORE INSERT OR UPDATE` trigger `votes_enforce_open_and_topic` — rejects writes when `voting_cycles.status != 'open'` or `topics.cycle_id != votes.cycle_id`
+- ≥3 `topics` on the open Phase 2 cycle (titles from `mock.js` votingTopics: LLM / RAG / AutoML) with audit-language `description`
+- `topic_materials` links for LLM + RAG only — **AutoML has zero materials** (VOTE-04 «0 материалов»)
+- Index `votes_cycle_id_topic_id_idx` for tallies
+
+**Apply once on the shared VM** (`knowledge-db.ru`) **after** Phase 2 seed (open cycle must exist):
+
+1. Prefer non-interactive CLI when `SUPABASE_ACCESS_TOKEN` is set: `supabase db push` (or Cloud.ru-documented remote equivalent) from repo root.
+2. If CLI cannot reach the shared VM: apply the SQL file once via Supabase MCP / Studio SQL / `psql` — **insert/upsert + DDL for function/trigger only**; do not reset DB.
+3. Re-running the file is safe (`CREATE OR REPLACE` / `DROP TRIGGER IF EXISTS` / `WHERE NOT EXISTS` on topic names / `ON CONFLICT DO NOTHING` for topic_materials).
+
+**Do not** `TRUNCATE` / `DELETE` wipe / `db reset` on the shared VM. Never expose `SUPABASE_SECRET_KEY` via `VITE_`.
+
+**Verify after apply:**
+
+```sql
+-- expect >= 3 topics on an open cycle
+select t.name, count(tm.material_id) as materials_count
+from topics t
+join voting_cycles vc on vc.id = t.cycle_id and vc.status = 'open'
+left join topic_materials tm on tm.topic_id = t.id
+group by t.id, t.name
+order by t.name;
+-- expect AutoML row with materials_count = 0
+-- expect RAG title present
+
+select tg.tgname
+from pg_trigger tg
+join pg_class c on c.oid = tg.tgrelid
+where c.relname = 'votes' and not tg.tgisinternal;
+-- expect votes_enforce_open_and_topic
+```
+
+Record the apply method in the operator resume signal (or append a one-line note below when confirmed).
+
+**Applied:** _pending — blocking human apply (plan 03-02 Task 3)._
+
+---
+
 ## 5. Live FE↔BE proof checklist (D-10)
 
 With API on `:8000`, Vite on `:5173`, `APP_CONTAINER=live`, and `VITE_USE_MOCKS=false`:

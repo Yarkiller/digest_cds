@@ -4,15 +4,13 @@ from __future__ import annotations
 
 from backend.composition.container import AppContainer
 from backend.composition.settings import Settings
-from backend.tests_support.in_memory import (
-    InMemoryKnowledgeChunkRepository,
-    InMemoryVoteRepository,
-)
+from backend.tests_support.in_memory import InMemoryKnowledgeChunkRepository
 from supabase_integration import (
     SupabaseIssueRepository,
     SupabaseMaterialRepository,
     SupabasePingRecorder,
     SupabaseProfileRepository,
+    SupabaseVoteRepository,
     SupabaseVotingCycleReader,
     create_publishable_client,
     create_service_role_client,
@@ -46,6 +44,5 @@ def build_live_container(settings: Settings) -> AppContainer:
         pings=SupabasePingRecorder(admin_client),
         issues=SupabaseIssueRepository(admin_client),
         voting_cycles=SupabaseVotingCycleReader(admin_client),
-        # Plan 03-02 replaces with SupabaseVoteRepository after migration/seed
-        votes=InMemoryVoteRepository(),
+        votes=SupabaseVoteRepository(admin_client),
     )

@@ -7,6 +7,7 @@ from supabase_integration.issue_repository import SupabaseIssueRepository
 from supabase_integration.material_repository import SupabaseMaterialRepository
 from supabase_integration.ping_recorder import SupabasePingRecorder
 from supabase_integration.profile_repository import SupabaseProfileRepository
+from supabase_integration.vote_repository import SupabaseVoteRepository
 from supabase_integration.voting_cycle_repository import SupabaseVotingCycleReader
 
 
@@ -19,6 +20,7 @@ __all__ = [
     "SupabaseMaterialRepository",
     "SupabasePingRecorder",
     "SupabaseProfileRepository",
+    "SupabaseVoteRepository",
     "SupabaseVotingCycleReader",
     "create_publishable_client",
     "create_service_role_client",
