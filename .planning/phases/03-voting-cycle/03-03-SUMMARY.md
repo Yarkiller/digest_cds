@@ -98,7 +98,7 @@ Each task was committed atomically:
 1. **Task 1: get_ballot leaders — single, ties, hide-when-zero** - `6a6f001` (test)
 2. **Task 2: get_ballot empty shapes — no cycle / zero topics** - `36898cb` (test)
 
-**Plan metadata:** (pending docs commit)
+**Plan metadata:** `fd00b14` (docs: complete plan)
 
 ## Files Created/Modified
 
