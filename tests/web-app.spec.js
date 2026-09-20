@@ -136,18 +136,30 @@ test.describe("web app main flows", () => {
     await expect(page).toHaveURL(/\/$/);
   });
 
+  // VOTE-01/02 · D-40, D-44, D-47, D-52, D-56 — honest never-voted + confirm under mocks
   test("lets a reader pick a voting topic and confirm", async ({ page }) => {
     await page.goto("/voting");
 
+    await expect(page.getByRole("radio", { checked: true })).toHaveCount(0);
+    await expect(page.getByRole("status")).toContainText(/голос не отдан/i);
+    await expect(page.getByText("Лидирует")).toHaveCount(0);
+
     const confirm = page.getByTestId("confirm-vote");
     await expect(confirm).toBeDisabled();
+    await expect(confirm).toHaveText(/подтвердить голос/i);
 
     await page.getByRole("radio", { name: /RAG в корпоративной среде/i }).click();
     await expect(confirm).toBeEnabled();
     await confirm.click();
 
-    await expect(confirm).toHaveAttribute("data-state", "success");
     await expect(page.getByRole("status")).toContainText(/ваш голос:\s*RAG в корпоративной среде/i);
+    await expect(confirm).toHaveText(/изменить голос/i);
+    await expect(confirm).not.toHaveText(/голос принят/i);
+    // D-47: pointless POST guard while selection equals confirmed topic
+    await expect(confirm).toBeDisabled();
+
+    await page.getByRole("radio", { name: /LLM для анализа аудиторских данных/i }).click();
+    await expect(confirm).toBeEnabled();
   });
 
   test("filters knowledge materials by tag facet", async ({ page }) => {
@@ -161,7 +173,7 @@ test.describe("web app main flows", () => {
 });
 
 test.describe("web app UI states", () => {
-  test("confirms a vote with loading then success state", async ({ page }) => {
+  test("confirms a vote with loading then Изменить голос state", async ({ page }) => {
     await page.goto("/voting");
 
     await page.getByRole("radio", { name: /RAG в корпоративной среде/i }).click();
@@ -169,9 +181,10 @@ test.describe("web app UI states", () => {
     await confirm.click();
 
     await expect(confirm).toHaveAttribute("data-state", "loading");
-    await expect(confirm).toHaveAttribute("data-state", "success");
-    await expect(confirm).toHaveText(/голос принят/i);
-    await expect(page.getByRole("status")).toContainText(/ваш голос:/i);
+    await expect(page.getByRole("status")).toContainText(/ваш голос:\s*RAG в корпоративной среде/i);
+    await expect(confirm).toHaveText(/изменить голос/i);
+    await expect(confirm).not.toHaveText(/голос принят/i);
+    await expect(confirm).toBeDisabled();
   });
 
   test("shows empty-state recovery when knowledge search misses", async ({ page }) => {
@@ -254,7 +267,8 @@ test.describe("web app edge and error cases", () => {
 
     const splash = page.getByTestId("service-unavailable");
     await expect(splash).toBeVisible();
-    await expect(splash.getByRole("heading", { name: /ошибочка вышла/i })).toBeVisible();
+    // Title lives on the art — no duplicate heading under the image
+    await expect(splash.getByRole("heading", { name: /ошибочка вышла/i })).toHaveCount(0);
     await expect(splash.getByText(/не удалось загрузить/i)).toBeVisible();
     const art = splash.locator('img[src="/bad_gateway.png"]');
     await expect(art).toBeVisible();
@@ -262,6 +276,11 @@ test.describe("web app edge and error cases", () => {
     // D-23: no HTTP status codes or stacktraces on screen
     await expect(splash).not.toContainText(/\b(502|503|500|404)\b/);
     await expect(splash).not.toContainText(/stack|traceback|Error:/i);
+    // Primary UX: splash only — no Phase-1 profile ErrorPanel crowding the failure
+    await expect(page.getByRole("heading", { name: /ошибка профиля/i })).toHaveCount(0);
+    await expect(page.getByTestId("welcome-toast")).toHaveCount(0);
+    await expect(page.getByText(/платформенный контур/i)).toHaveCount(0);
+    await expect(page.getByText(/не удалось загрузить выпуск\. проверьте сеть/i)).toHaveCount(0);
     // D-21: must not silently show mock issue content
     await expect(page.getByTestId("issue-ready")).toHaveCount(0);
     await expect(page.getByRole("heading", { name: /новости ds для сва/i })).toHaveCount(0);
@@ -280,7 +299,31 @@ test.describe("web app edge and error cases", () => {
 
     const confirm = page.getByTestId("confirm-vote");
     await expect(confirm).toBeDisabled();
-    await expect(page.getByRole("status")).toContainText(/не отдан/i);
+    await expect(page.getByRole("status")).toContainText(/голос не отдан/i);
+    await expect(page.getByRole("radio", { checked: true })).toHaveCount(0);
+  });
+
+  // VOTE-01 / D-47 — empty submit blocked client-side; no POST
+  test("blocks empty submit with Выберите тему and does not POST", async ({ page }) => {
+    const posts = [];
+    page.on("request", (req) => {
+      if (req.method() === "POST" && /\/voting\//.test(req.url())) {
+        posts.push(req.url());
+      }
+    });
+
+    await page.goto("/voting");
+    const confirm = page.getByTestId("confirm-vote");
+    await expect(confirm).toBeDisabled();
+
+    // Force a click past the disabled attribute to exercise client guard (VOTE-01)
+    await confirm.evaluate((el) => {
+      el.disabled = false;
+      el.click();
+    });
+
+    await expect(page.getByText(/Выберите тему/i)).toBeVisible();
+    expect(posts).toHaveLength(0);
   });
 
   test("shows vote error state and recovers on retry", async ({ page }) => {
@@ -301,9 +344,9 @@ test.describe("web app edge and error cases", () => {
     await expect(alert).toContainText(/попытка 1/i);
 
     await confirm.click();
-    await expect(confirm).toHaveAttribute("data-state", "success");
-    await expect(confirm).toHaveText(/голос принят/i);
-    await expect(page.getByRole("status")).toContainText(/ваш голос:/i);
+    await expect(page.getByRole("status")).toContainText(/ваш голос:\s*RAG в корпоративной среде/i);
+    await expect(confirm).toHaveText(/изменить голос/i);
+    await expect(confirm).not.toHaveText(/голос принят/i);
     await expect(page.getByRole("alert")).toHaveCount(0);
   });
 });
