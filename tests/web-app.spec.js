@@ -136,6 +136,24 @@ test.describe("web app main flows", () => {
     await expect(page).toHaveURL(/\/$/);
   });
 
+  // VOTE-02/04 · D-40…43, D-41 — leader strip + audit dek + 0 материалов (03-06)
+  test("shows leader strip and 0 материалов without row Лидирует", async ({ page }) => {
+    await page.goto("/voting");
+
+    const strip = page.getByTestId("leader-strip");
+    await expect(strip).toBeVisible();
+    await expect(strip).toContainText(/Сейчас лидирует:\s*RAG в корпоративной среде\s*·\s*31 голосов/i);
+    await expect(page.getByText("Лидирует")).toHaveCount(0);
+
+    await expect(page.getByText("0 материалов")).toBeVisible();
+    await expect(
+      page.getByRole("radio", { name: /AutoML для прогнозирования рисков/i }),
+    ).toContainText(/0 материалов/i);
+    await expect(
+      page.getByRole("radio", { name: /RAG в корпоративной среде/i }),
+    ).toContainText(/Корпоративный RAG/i);
+  });
+
   // VOTE-01/02 · D-40, D-44, D-47, D-52, D-56 — honest never-voted + confirm under mocks
   test("lets a reader pick a voting topic and confirm", async ({ page }) => {
     await page.goto("/voting");
