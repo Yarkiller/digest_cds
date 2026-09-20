@@ -27,7 +27,7 @@ Requirements for initial release. Each maps to exactly one roadmap phase. Tracea
 ### Issue & Archive
 
 - [x] **ISSUE-01**: Authenticated user opens current published issue with cover, period/title, and IssueTOC; empty materials show «выпуск готовится» + CTA (REQ-US-03)
-- [ ] **ISSUE-02**: Open voting cycle shows EditorialCallout with end date and CTA; closed cycle shows closed messaging without topic-select CTA (REQ-US-04)
+- [x] **ISSUE-02**: Open voting cycle shows EditorialCallout with end date and CTA; closed cycle shows closed messaging without topic-select CTA (REQ-US-04)
 - [x] **ISSUE-03**: Material with audit-dek shows 1–2 audit-language sentences under title; missing dek hides stub or uses neutral editorial fallback (REQ-US-05)
 - [x] **ISSUE-04**: User can open a past issue from archive; empty archive shows CTA to current issue (REQ-US-28)
 
@@ -106,7 +106,7 @@ Deferred past v1. Tracked but not in current roadmap phases.
 | AUTH-02 | Phase 1 | Complete |
 | AUTH-03 | Phase 1 | Complete |
 | ISSUE-01 | Phase 2 | Complete |
-| ISSUE-02 | Phase 2 | Pending |
+| ISSUE-02 | Phase 2 | Complete |
 | ISSUE-03 | Phase 2 | Complete |
 | ISSUE-04 | Phase 2 | Complete |
 | MAT-01 | Phase 2 | Complete |

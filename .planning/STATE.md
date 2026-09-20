@@ -3,16 +3,16 @@ gsd_state_version: 1.0
 current_phase: 02
 current_phase_name: Issue, Materials & Archive
 status: executing
-stopped_at: Completed 02-04-PLAN.md
-last_updated: "2026-09-20T10:51:11.516Z"
+stopped_at: Completed 02-05-PLAN.md
+last_updated: "2026-09-20T10:58:40.330Z"
 last_activity: 2026-09-20
-last_activity_desc: Phase 02 execution started
-state_head: dae418554979812eca4a7d4cd31525eb59b15662
+last_activity_desc: Completed 02-05 voting callout stub
+state_head: 750776e00e969fd6416b3f30dd6a7fbc60ae3d5a
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 15
-  completed_plans: 12
+  completed_plans: 13
   percent: 20
 ---
 
@@ -28,9 +28,9 @@ See: .planning/PROJECT.md (updated 2026-09-19)
 ## Current Position
 
 Phase: 02 (Issue, Materials & Archive) — EXECUTING
-Plan: 5 of 6
+Plan: 6 of 6
 Status: Ready to execute
-Last activity: 2026-09-20 — Phase 02 execution started
+Last activity: 2026-09-20 — Completed 02-05 voting callout stub
 
 Progress: [██░░░░░░░░] 20%
 
@@ -62,6 +62,8 @@ Progress: [██░░░░░░░░] 20%
 | Phase 02 P02 | 45min | 3 tasks | 11 files |
 | Phase 02 P03 | 7min | 2 tasks | 15 files |
 | Phase 02 P04 | 17min | 3 tasks | 14 files |
+| Phase 02 P05 | 7min | 2 tasks | 16 files |
+| Phase 02 P05 | 7min | 2 tasks | 16 files |
 
 ## Accumulated Context
 
@@ -96,6 +98,10 @@ Decisions are logged in PROJECT.md Key Decisions and `<decisions>` blocks.
 - [Phase 02]: MaterialNotFoundError accepts int|str for slug misses; draft always 404
 - [Phase 02]: Editor byline constant «Редакция Digest CDS» in material reader DTO
 - [Phase 02]: MaterialPage uses rehypeSlug+rehypeSanitize only; soft NOT_FOUND via contentApi
+- [Phase 02]: Cycle selection in get_current_issue (A2); adapters list_cycles only
+- [Phase 02]: SupabaseVotingCycleReader sibling module; past issues force voting_cycle=null
+- [Phase 02]: Cycle selection in get_current_issue (A2); adapters list_cycles only
+- [Phase 02]: SupabaseVotingCycleReader sibling module; past issues force voting_cycle=null
 
 ### Pending Todos
 
@@ -118,7 +124,7 @@ None. Live FE↔BE proof approved 2026-09-19.
 
 ## Session Continuity
 
-Last session: 2026-09-20T10:51:11.351Z
-Stopped at: Completed 02-04-PLAN.md
+Last session: 2026-09-20T10:58:40.134Z
+Stopped at: Completed 02-05-PLAN.md
 Resume file: None
 Verification: `.planning/phases/01-platform-foundation-auth/01-VERIFICATION.md`
