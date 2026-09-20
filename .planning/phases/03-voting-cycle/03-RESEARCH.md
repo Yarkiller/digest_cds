@@ -366,16 +366,18 @@ RLS own votes (`282-293`): `votes_select_own` / `votes_insert_own` / `votes_upda
 
 **If this table is empty:** All claims in this research were verified or cited — no user confirmation needed.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Live Playwright against real votes?**  
    - What we know: Phase 1–2 default Playwright uses mocks (`VITE_USE_MOCKS` not false).  
    - What's unclear: whether Phase 3 adds a gated live vote proof.  
-   - Recommendation: unit+HTTP pytest for rules; Playwright mock for UX; live proof optional/human like Phase 1 ping.
+   - Recommendation: unit+HTTP pytest for rules; Playwright mock for UX; live proof optional/human like Phase 1 ping.  
+   - **RESOLVED:** Phase 3 automated e2e stays mocks-only (`VITE_USE_MOCKS` / `isMocksEnabled`); live vote proof is optional human/runbook, not a plan gate (matches 03-01 SPA / 03-04 e2e gate).
 
 2. **401 mid-vote `sessionStorage` restore** (`error_handling.md` §2.4)  
    - Not locked in D-40…56.  
-   - Recommendation: implement if cheap (store `selectedId`); do not block VOTE-01…04.
+   - Recommendation: implement if cheap (store `selectedId`); do not block VOTE-01…04.  
+   - **RESOLVED:** Optional / non-blocking — do not gate VOTE-01…04 on 401 mid-vote restore; implement only if cheap during SPA error polish (03-04), otherwise defer.
 
 ## Environment Availability
 

@@ -80,7 +80,15 @@ Plans:
   3. Changing A→B while open updates counters/status; after close, change is rejected with closed-cycle message
   4. Topics show audit-language description and material count (including «0 материалов»)
 
-**Plans**: TBD
+**Plans**: 6 plans
+
+- [ ] 03-01-PLAN.md — Backend tracer: ballot GET/POST + PersistenceError 503 (VOTE-01, VOTE-02)
+- [ ] 03-02-PLAN.md — Migration 003 + SupabaseVoteRepository + [BLOCKING] db push (VOTE-01, VOTE-03, VOTE-04)
+- [ ] 03-03-PLAN.md — get_ballot leaders/ties + empty snapshot shapes (VOTE-02…04)
+- [ ] 03-04-PLAN.md — A→B, closed 409 flip, CAS, toast/ErrorPanel, e2e gate (VOTE-01, VOTE-03)
+- [ ] 03-05-PLAN.md — SPA tracer: honesty UX + confirm + D-47 under mocks (VOTE-01, VOTE-02)
+- [ ] 03-06-PLAN.md — Leader strip + VOTE-04 dek/counts + closed/empty UI (VOTE-02…04)
+
 **UI hint**: yes
 
 ### Phase 4: Knowledge & Razbory
