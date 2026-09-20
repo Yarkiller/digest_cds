@@ -403,12 +403,92 @@ test.describe("web app edge and error cases", () => {
     await expect(alert.getByRole("heading", { name: /ошибка сохранения/i })).toBeVisible();
     await expect(alert).toContainText(/временно недоступен|соединен/i);
     await expect(alert).toContainText(/попытка 1/i);
+    // D-53: selection kept; no full ServiceUnavailable splash for mutation failure
+    await expect(page.getByTestId("service-unavailable")).toHaveCount(0);
+    await expect(page.getByRole("radio", { name: /RAG в корпоративной среде/i })).toBeChecked();
 
     await confirm.click();
     await expect(page.getByRole("status")).toContainText(/ваш голос:\s*RAG в корпоративной среде/i);
     await expect(confirm).toHaveText(/изменить голос/i);
     await expect(confirm).not.toHaveText(/голос принят/i);
     await expect(page.getByRole("alert")).toHaveCount(0);
+  });
+
+  // VOTE-03 · D-45 — first save toast «Голос сохранён»; A→B status + «Голос изменён»
+  test("shows Голос сохранён then changes vote A→B with Голос изменён", async ({ page }) => {
+    await page.goto("/voting");
+
+    await page.getByRole("radio", { name: /RAG в корпоративной среде/i }).click();
+    await page.getByTestId("confirm-vote").click();
+
+    await expect(page.getByTestId("vote-toast")).toContainText(/Голос сохранён/i);
+    await expect(page.getByRole("status")).toContainText(/ваш голос:\s*RAG в корпоративной среде/i);
+
+    await page.getByRole("radio", { name: /LLM для анализа аудиторских данных/i }).click();
+    await page.getByTestId("confirm-vote").click();
+
+    await expect(page.getByTestId("vote-toast")).toContainText(/Голос изменён/i);
+    await expect(page.getByRole("status")).toContainText(
+      /ваш голос:\s*LLM для анализа аудиторских данных/i,
+    );
+  });
+
+  // VOTE-03 · D-51 — close mid-submit flips to read-only closed UI (not toast-only)
+  test("flips to closed banner when submit races cycle close", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__DIGEST_VOTING_CLOSE_ON_SUBMIT__ = true;
+    });
+    await page.goto("/voting");
+
+    await expect(page.getByTestId("voting-closed-banner")).toHaveCount(0);
+    await page.getByRole("radio", { name: /RAG в корпоративной среде/i }).click();
+    await page.getByTestId("confirm-vote").click();
+
+    await expect(page.getByTestId("voting-closed-banner")).toContainText(/Цикл голосования закрыт/i);
+    await expect(page.getByRole("radio").first()).toBeDisabled();
+    await expect(page.getByTestId("confirm-vote")).toHaveCount(0);
+  });
+
+  // D-54 — CAS conflict adopts server vote into radios/status
+  test("adopts server vote on VOTE_CONFLICT response", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__DIGEST_VOTING_CONFLICT_ON_SUBMIT__ = true;
+    });
+    await page.goto("/voting");
+
+    // Seed a prior server vote via conflict harness setup: first confirm succeeds
+    await page.getByRole("radio", { name: /RAG в корпоративной среде/i }).click();
+    await page.getByTestId("confirm-vote").click();
+    await expect(page.getByRole("status")).toContainText(/ваш голос:\s*RAG в корпоративной среде/i);
+
+    // Change selection then conflict: server stays on RAG
+    await page.getByRole("radio", { name: /LLM для анализа аудиторских данных/i }).click();
+    await page.getByTestId("confirm-vote").click();
+
+    await expect(page.getByTestId("vote-conflict-banner")).toBeVisible();
+    await expect(page.getByRole("status")).toContainText(/ваш голос:\s*RAG в корпоративной среде/i);
+    await expect(page.getByRole("radio", { name: /RAG в корпоративной среде/i })).toBeChecked();
+  });
+
+  // D-55 — initial ballot GET failure → ServiceUnavailable splash + Повторить
+  test("shows ServiceUnavailable splash on ballot GET failure with Повторить", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__DIGEST_FAIL_NEXT_BALLOT__ = true;
+    });
+    await page.goto("/voting");
+
+    const splash = page.getByTestId("service-unavailable");
+    await expect(splash).toBeVisible();
+    await expect(splash.getByText(/не удалось загрузить/i)).toBeVisible();
+    await expect(splash.getByRole("button", { name: /^Повторить$/ })).toBeVisible();
+    // Mutation ErrorPanel must not replace the splash for GET failure
+    await expect(page.getByRole("heading", { name: /ошибка сохранения/i })).toHaveCount(0);
+    await expect(page.getByTestId("confirm-vote")).toHaveCount(0);
+
+    await splash.getByRole("button", { name: /^Повторить$/ }).click();
+    await expect(page.getByTestId("service-unavailable")).toHaveCount(0);
+    await expect(page.getByTestId("voting-page")).toBeVisible();
+    await expect(page.getByTestId("confirm-vote")).toBeVisible();
   });
 });
 
