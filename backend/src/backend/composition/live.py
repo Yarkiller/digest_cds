@@ -10,13 +10,14 @@ from supabase_integration import (
     SupabaseMaterialRepository,
     SupabasePingRecorder,
     SupabaseProfileRepository,
+    SupabaseVotingCycleReader,
     create_publishable_client,
     create_service_role_client,
 )
 
 
 def build_live_container(settings: Settings) -> AppContainer:
-    """Wire service_role adapters for profiles, pings, issues, and materials."""
+    """Wire service_role adapters for profiles, pings, issues, materials, cycles."""
     if not settings.supabase_url or not settings.supabase_secret_key:
         raise ValueError(
             "live container requires SUPABASE_URL and SUPABASE_SECRET_KEY "
@@ -41,4 +42,5 @@ def build_live_container(settings: Settings) -> AppContainer:
         profiles=SupabaseProfileRepository(admin_client),
         pings=SupabasePingRecorder(admin_client),
         issues=SupabaseIssueRepository(admin_client),
+        voting_cycles=SupabaseVotingCycleReader(admin_client),
     )

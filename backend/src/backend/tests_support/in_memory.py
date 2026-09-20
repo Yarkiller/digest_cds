@@ -6,6 +6,7 @@ from backend.domain.current_user import CurrentUser
 from backend.domain.issue import Issue
 from backend.domain.knowledge import KnowledgeChunk
 from backend.domain.material import Material
+from backend.domain.voting_cycle import VotingCycle
 
 
 @dataclass(frozen=True)
@@ -124,6 +125,19 @@ class InMemoryKnowledgeChunkRepository:
 
     def list_all(self) -> list[KnowledgeChunk]:
         return list(self._chunks)
+
+
+class InMemoryVotingCycleReader:
+    """In-memory VotingCycleReader — returns seeded cycles as-is (selection in use-case)."""
+
+    def __init__(self, cycles: list[VotingCycle] | None = None) -> None:
+        self._cycles: list[VotingCycle] = list(cycles or [])
+
+    def seed(self, cycles: list[VotingCycle]) -> None:
+        self._cycles = list(cycles)
+
+    def list_cycles(self) -> list[VotingCycle]:
+        return list(self._cycles)
 
 
 class InMemoryIssueRepository:

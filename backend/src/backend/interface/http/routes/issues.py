@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import datetime
+
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, ConfigDict
 
@@ -11,6 +13,7 @@ from backend.application.use_cases.list_archive_issues import list_archive_issue
 from backend.domain.auth_claims import AccessTokenClaims
 from backend.domain.errors import IssueNotFoundError, PersistenceError
 from backend.domain.issue import Issue
+from backend.domain.voting_cycle import VotingCycle
 from backend.interface.http.deps import get_principal
 
 router = APIRouter(prefix="/issues", tags=["issues"])
@@ -28,6 +31,15 @@ class IssueItemResponse(BaseModel):
     dek: str | None = None
 
 
+class VotingCycleResponse(BaseModel):
+    """Read-only cycle stub on current issue only (D-32/D-33)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    status: str
+    closes_at: datetime
+
+
 class CurrentIssueResponse(BaseModel):
     """Honest empty: number/title null and items=[] when no published issue (D-24/D-30)."""
 
@@ -38,6 +50,7 @@ class CurrentIssueResponse(BaseModel):
     title: str | None = None
     editor: str | None = None
     items: list[IssueItemResponse] = []
+    voting_cycle: VotingCycleResponse | None = None
 
 
 class ArchiveIssueResponse(BaseModel):
@@ -55,9 +68,19 @@ class ArchiveListResponse(BaseModel):
     issues: list[ArchiveIssueResponse] = []
 
 
-def _to_response(issue: Issue | None) -> CurrentIssueResponse:
+def _cycle_response(cycle: VotingCycle | None) -> VotingCycleResponse | None:
+    if cycle is None:
+        return None
+    return VotingCycleResponse(status=cycle.status, closes_at=cycle.closes_at)
+
+
+def _to_response(
+    issue: Issue | None,
+    *,
+    voting_cycle: VotingCycle | None = None,
+) -> CurrentIssueResponse:
     if issue is None:
-        return CurrentIssueResponse()
+        return CurrentIssueResponse(voting_cycle=_cycle_response(voting_cycle))
     return CurrentIssueResponse(
         number=issue.number,
         period_label=issue.period_label,
@@ -74,6 +97,7 @@ def _to_response(issue: Issue | None) -> CurrentIssueResponse:
             )
             for item in issue.items
         ],
+        voting_cycle=_cycle_response(voting_cycle),
     )
 
 
@@ -87,12 +111,20 @@ def _require_issues(request: Request):
     return container.issues
 
 
+def _voting_cycles(request: Request):
+    container = request.app.state.container
+    if container is None:
+        return None
+    return getattr(container, "voting_cycles", None)
+
+
 @router.get(
     "/current",
     response_model=CurrentIssueResponse,
     summary="Current published issue",
     description=(
         "Returns the latest published digest issue by published_at (D-24). "
+        "Includes read-only voting_cycle when present (D-33). "
         "Requires Bearer JWT. Empty published set → 200 with null fields and empty items."
     ),
 )
@@ -103,13 +135,13 @@ def read_current_issue(
     del claims  # auth gate only; content is reader-shared
     issues = _require_issues(request)
     try:
-        issue = get_current_issue(issues)
+        view = get_current_issue(issues, _voting_cycles(request))
     except PersistenceError as exc:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="issues_unavailable",
         ) from exc
-    return _to_response(issue)
+    return _to_response(view.issue, voting_cycle=view.voting_cycle)
 
 
 @router.get(
@@ -118,7 +150,8 @@ def read_current_issue(
     summary="Published issue by number",
     description=(
         "Returns a published digest issue by number. "
-        "Requires Bearer JWT. Missing or unpublished → 404."
+        "Requires Bearer JWT. Missing or unpublished → 404. "
+        "Never includes voting_cycle (D-34)."
     ),
 )
 def read_issue_by_number(
@@ -140,7 +173,7 @@ def read_issue_by_number(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="issues_unavailable",
         ) from exc
-    return _to_response(issue)
+    return _to_response(issue, voting_cycle=None)
 
 
 @archive_router.get(

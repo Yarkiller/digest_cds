@@ -21,7 +21,11 @@ from supabase_integration import SupabasePingRecorder, SupabaseProfileRepository
 
 
 def test_build_live_container_wires_supabase_adapters(monkeypatch: pytest.MonkeyPatch) -> None:
-    from supabase_integration import SupabaseIssueRepository, SupabaseMaterialRepository
+    from supabase_integration import (
+        SupabaseIssueRepository,
+        SupabaseMaterialRepository,
+        SupabaseVotingCycleReader,
+    )
 
     fake_service = object()
     fake_publishable = object()
@@ -51,6 +55,7 @@ def test_build_live_container_wires_supabase_adapters(monkeypatch: pytest.Monkey
     assert isinstance(container.pings, SupabasePingRecorder)
     assert isinstance(container.materials, SupabaseMaterialRepository)
     assert isinstance(container.issues, SupabaseIssueRepository)
+    assert isinstance(container.voting_cycles, SupabaseVotingCycleReader)
     assert not isinstance(container.materials, InMemoryMaterialRepository)
     assert not isinstance(container.issues, InMemoryIssueRepository)
     create_service.assert_called_once_with(
