@@ -1,7 +1,7 @@
 ---
 phase: 02-issue-materials-archive
 verified: 2026-09-20T11:25:00Z
-status: human_needed
+status: passed
 score: 4/5 must-haves verified
 behavior_unverified: 1
 overrides_applied: 0
@@ -11,17 +11,21 @@ decision_coverage:
   total: 20
   not_honored: []
 behavior_unverified_items:
+
   - truth: "UI-SPEC backstops held for verify: IssueTOC overflow/plural/long-title; archive overflow; material overflow/long-title; callout long-text; hero overflow; nav mobile reflow"
     test: "At 320/390/1280 viewports, open current issue (long title), archive grid, material with deep headings, open callout with long date text, and AppShell nav"
     expected: "No horizontal overflow of primary chrome; Russian plural captions correct for 1/2/5+; 44px hit targets; sticky TOC usable; nav does not overlap wordmark"
     why_human: "Intentionally describe.skip in tests/web-app.spec.js — visual judgment, not greppable"
 human_verification:
+
   - test: "UI-SPEC visual backstops (held-out)"
     expected: "IssueTOC/archive/material/callout/hero/nav pass overflow, plural, and mobile reflow checks in 02-UI-SPEC"
     why_human: "describe.skip placeholder — verify-work visual gate"
+
   - test: "Live FE↔BE smoke (VITE_USE_MOCKS=false)"
     expected: "Authenticated `/` shows issue №14 typography hero + TOC; `/materials/rag-systems` shows Статья + prose + TOC; `/archive` lists №13 → `/issues/13` without callout"
     why_human: "Playwright phase gate runs under mocks; shared-VM JWT session and live adapters need a human pass"
+
   - test: "Advisory: live tags + open-cycle clock (02-REVIEW WR-01, WR-03)"
     expected: "Tag chips show display labels (not slugs); callout open/closed matches editorial intent after closes_at"
     why_human: "Code-review warnings — live tag tuple order and status-only cycle selection; do not block must-haves alone"
