@@ -3,7 +3,7 @@ class DomainError(Exception):
 
 
 class MaterialNotFoundError(DomainError):
-    def __init__(self, material_id: int) -> None:
+    def __init__(self, material_id: int | str) -> None:
         super().__init__(f"material {material_id} not found")
         self.material_id = material_id
 

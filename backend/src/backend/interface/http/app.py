@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend.composition.container import AppContainer, build_in_memory_container
 from backend.composition.settings import Settings
 from backend.interface.http.middleware import RequestIdMiddleware, configure_structlog
-from backend.interface.http.routes import health, issues, me
+from backend.interface.http.routes import health, issues, materials, me
 
 
 def resolve_container(settings: Settings) -> AppContainer:
@@ -49,6 +49,7 @@ def create_app(
     app.include_router(me.router)
     app.include_router(issues.router)
     app.include_router(issues.archive_router)
+    app.include_router(materials.router)
     return app
 
 
