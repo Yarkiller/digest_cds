@@ -113,17 +113,20 @@ Plans:
   3. Razbor list shows name/date/status (or empty CTA); multi-section разбор has sticky TOC navigation
   4. Notebook download works when attached and is clearly disabled when missing; metrics/overview labeling is honest
 
-**Plans**: 6 plans
+**Plans**: 9 plans
 **UI hint**: yes
 
 Plans:
 
-- [ ] 04-01-PLAN.md — Knowledge search tracer: Submit → GET /knowledge/search → hit rows (KNOW-01)
-- [ ] 04-02-PLAN.md — Role chips + analyst empty honesty + DS open (KNOW-02…04)
-- [ ] 04-03-PLAN.md — Razbor list tracer: /razbory + nav + empty CTA (RAZB-01)
-- [ ] 04-04-PLAN.md — Razbor detail TOC, notebook download, metrics vs Обзор (RAZB-02…04)
-- [ ] 04-05-PLAN.md — Migration 004 + Supabase adapters + [BLOCKING] db push
-- [ ] 04-06-PLAN.md — Playwright honesty gate + VALIDATION refresh
+- [ ] 04-01-PLAN.md — Knowledge backend tracer: ports → GET /knowledge/search (KNOW-01)
+- [ ] 04-02-PLAN.md — Knowledge SPA Submit/Enter + blank guards (KNOW-01)
+- [ ] 04-03-PLAN.md — Role chips + analyst empty honesty + DS open (KNOW-02…04)
+- [ ] 04-04-PLAN.md — Razbor backend list tracer: domain → GET /razbory (RAZB-01)
+- [ ] 04-05-PLAN.md — Razbor SPA list + nav «Разборы» + empty CTA (RAZB-01)
+- [ ] 04-06-PLAN.md — Razbor detail TOC + metrics vs Обзор (RAZB-02, RAZB-04)
+- [ ] 04-07-PLAN.md — Notebook FileResponse dual strip (RAZB-03)
+- [ ] 04-08-PLAN.md — Migration 004 + Supabase adapters + [BLOCKING] db push
+- [ ] 04-09-PLAN.md — Playwright honesty gate + VALIDATION refresh
 
 ### Phase 5: Admin Digest Publish
 

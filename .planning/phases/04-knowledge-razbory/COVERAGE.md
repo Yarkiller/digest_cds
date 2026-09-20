@@ -42,3 +42,17 @@
 - Secrets: `SUPABASE_SECRET_KEY` only in `composition/live.py`; never `VITE_`.
 - Notebook bytes: authenticated `GET /razbory/{id}/notebook` with path containment under `NOTEBOOK_ROOT` — not public StaticFiles.
 - Assumption-delta scan for phase 4: **no-change** (detector `detected: false`).
+
+## Specless unclassified probe dispositions
+
+Auto-generated `_edge_coverage4.json` entries with `category: unclassified` for KNOW-01 / KNOW-03 / KNOW-04 / RAZB-02 / RAZB-04 have no additional edge beyond the requirement text already planned. Disposition: **N/A — resolved as covered by existing plans** (not deferred features).
+
+| Requirement | Disposition | Covered by |
+|-------------|-------------|------------|
+| KNOW-01 unclassified | N/A | 04-01/04-02 Submit+blank+no-score; 04-09 e2e gate |
+| KNOW-03 unclassified | N/A | 04-03 DS filter → `/materials/{slug}`; 04-09 e2e gate |
+| KNOW-04 unclassified | N/A | 04-03 zero-hit honesty + «Сбросить фильтр»; 04-09 e2e gate |
+| RAZB-02 unclassified | N/A | 04-06 sticky TOC; 04-09 e2e gate |
+| RAZB-04 unclassified | N/A | 04-06 content_kind quality/overview; 04-09 e2e gate |
+
+Classified probes (KNOW-02 empty/encoding, RAZB-01 adjacency/empty/ordering, RAZB-03 concurrency) remain explicit ASSUMPTIONs in plan `must_haves` — not unclassified.

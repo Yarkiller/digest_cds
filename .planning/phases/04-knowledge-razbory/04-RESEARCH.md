@@ -470,20 +470,23 @@ No `score` field.
 
 **If empty:** N/A — assumptions listed for planner confirmation where needed.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **FoundryModels for query embed in Phase 4?**
    - What we know: `data-collection` only has DTOs; no HTTP client.
    - What's unclear: whether Cloud.ru credentials are ready for live embed.
    - Recommendation: ship deterministic seed+embedder; optional env-gated Foundry later — do not block Phase 4.
+   - **RESOLVED:** Use `StubQueryEmbedder` (deterministic length-1024) + seeded vectors this phase; Foundry HTTP client remains OPT-OUT (COVERAGE.md).
 
 2. **Cover images for knowledge hits?**
    - What we know: MaterialListRow expects `material.cover`; materials schema has no cover column in initial migration excerpt.
    - Recommendation: allow `cover_url: null` and degrade row layout, or seed static paths — planner pick one.
+   - **RESOLVED:** `cover_url` may be `null`; `MaterialListRow` degrades without thumbnail (no seeded static cover paths).
 
 3. **Byline on chronology items?**
    - What we know: design shows author + DS badge; schema has no author column on razbors.
    - Recommendation: constant «Редакция Digest CDS» or omit byline until profile join exists.
+   - **RESOLVED:** Constant byline «Редакция Digest CDS» on chronology items (no author join this phase).
 
 ## Environment Availability
 
