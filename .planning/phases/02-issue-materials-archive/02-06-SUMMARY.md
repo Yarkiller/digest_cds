@@ -113,7 +113,7 @@ Each task was committed atomically:
 2. **Task 1 GREEN:** `ec18d39` — `feat(02-06): ServiceUnavailable splash + sticky fail harness`
 3. **Task 2:** `8d10d1f` — `test(02-06): expand phase-gate e2e + VALIDATION map`
 
-**Plan metadata:** (pending docs commit)
+**Plan metadata:** `9950fa5` (docs: complete plan)
 
 ## Files Created/Modified
 
