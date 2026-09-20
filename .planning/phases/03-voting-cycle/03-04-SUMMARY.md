@@ -146,7 +146,7 @@ status: complete
 4. **Task 2 GREEN:** `53e4d76` — feat(03-04): SPA 409 flip, conflict adopt, toast fade, GET splash
 5. **Task 3:** verify-only (no code commit) — phase gate already green after Task 2
 
-**Plan metadata:** _(pending docs commit)_
+**Plan metadata:** `4a5e35d` (docs: complete plan)
 
 ## Files Created/Modified
 
