@@ -143,7 +143,8 @@ test.describe("web app main flows", () => {
     const strip = page.getByTestId("leader-strip");
     await expect(strip).toBeVisible();
     await expect(strip).toContainText(/Сейчас лидирует:\s*RAG в корпоративной среде\s*·\s*31 голосов/i);
-    await expect(page.getByText("Лидирует")).toHaveCount(0);
+    // Row badge forbidden (D-40); strip may contain «лидирует» as phrase
+    await expect(page.getByText("Лидирует", { exact: true })).toHaveCount(0);
 
     await expect(page.getByText("0 материалов")).toBeVisible();
     await expect(
@@ -160,7 +161,7 @@ test.describe("web app main flows", () => {
 
     await expect(page.getByRole("radio", { checked: true })).toHaveCount(0);
     await expect(page.getByRole("status")).toContainText(/голос не отдан/i);
-    await expect(page.getByText("Лидирует")).toHaveCount(0);
+    await expect(page.getByText("Лидирует", { exact: true })).toHaveCount(0);
 
     const confirm = page.getByTestId("confirm-vote");
     await expect(confirm).toBeDisabled();

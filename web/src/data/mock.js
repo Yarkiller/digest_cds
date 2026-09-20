@@ -214,7 +214,7 @@ export const votingTopics = [
     id: 'automl-risk',
     title: 'AutoML для прогнозирования рисков',
     description: 'AutoML-пайплайны для оценки операционных и кредитных рисков.',
-    materialsCount: 2,
+    materialsCount: 0,
     votes: 18,
   },
 ]

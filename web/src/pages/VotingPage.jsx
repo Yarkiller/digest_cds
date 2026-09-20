@@ -10,7 +10,7 @@ import {
   fetchBallot,
   submitVote,
 } from '../services/votingApi.js'
-import { voteButtonLabel, voteStatusText } from '../utils/voting.js'
+import { leaderStripText, voteButtonLabel, voteStatusText } from '../utils/voting.js'
 
 const FALLBACK_CYCLE = {
   label: 'Цикл голосования',
@@ -20,9 +20,17 @@ const FALLBACK_CYCLE = {
 }
 
 function applySnapshot(snapshot, setters) {
-  const { setTopics, setCycleMeta, setConfirmedId, setSelectedId, setExpectedUpdatedAt } = setters
+  const {
+    setTopics,
+    setLeaders,
+    setCycleMeta,
+    setConfirmedId,
+    setSelectedId,
+    setExpectedUpdatedAt,
+  } = setters
   const topics = snapshot?.topics ?? []
   setTopics(topics)
+  setLeaders(Array.isArray(snapshot?.leaders) ? snapshot.leaders : [])
 
   const cycle = snapshot?.cycle
   if (cycle) {
@@ -31,9 +39,10 @@ function applySnapshot(snapshot, setters) {
       period: cycle.period ?? '',
       closesOn: cycle.closesOn ?? FALLBACK_CYCLE.closesOn,
       progressRatio: cycle.progress_ratio ?? cycle.progressRatio ?? 0,
+      status: cycle.status ?? 'open',
     })
   } else {
-    setCycleMeta(FALLBACK_CYCLE)
+    setCycleMeta({ ...FALLBACK_CYCLE, status: null })
   }
 
   const personal = snapshot?.personal_vote ?? null
@@ -47,6 +56,7 @@ function applySnapshot(snapshot, setters) {
 export default function VotingPage() {
   const [searchParams] = useSearchParams()
   const [topics, setTopics] = useState([])
+  const [leaders, setLeaders] = useState([])
   const [cycleMeta, setCycleMeta] = useState(FALLBACK_CYCLE)
   const [selectedId, setSelectedId] = useState(null)
   const [confirmedId, setConfirmedId] = useState(null)
@@ -71,6 +81,7 @@ export default function VotingPage() {
         if (cancelled) return
         applySnapshot(snapshot, {
           setTopics,
+          setLeaders,
           setCycleMeta,
           setConfirmedId,
           setSelectedId,
@@ -134,6 +145,7 @@ export default function VotingPage() {
       const snapshot = await submitVote(selectedId, expectedUpdatedAt)
       applySnapshot(snapshot, {
         setTopics,
+        setLeaders,
         setCycleMeta,
         setConfirmedId,
         setSelectedId,
@@ -169,6 +181,8 @@ export default function VotingPage() {
     if (buttonState === 'error') setButtonState('idle')
   }
 
+  const leaderCopy = loadState === 'ready' ? leaderStripText(leaders) : null
+
   return (
     <section className="max-w-3xl">
       <h1 className="mb-6 font-display text-3xl font-semibold">Голосование за тему разбора</h1>
@@ -197,6 +211,15 @@ export default function VotingPage() {
       <p className="mb-8 text-sm text-ink-2">
         Один голос за цикл. Вы можете изменить выбор до {cycleMeta.closesOn}.
       </p>
+
+      {leaderCopy ? (
+        <div
+          data-testid="leader-strip"
+          className="mb-6 rounded-2xl border border-rule bg-paper-2 p-5 text-sm text-ink-2"
+        >
+          {leaderCopy}
+        </div>
+      ) : null}
 
       {loadState === 'ready' ? (
         <TopicBallot
