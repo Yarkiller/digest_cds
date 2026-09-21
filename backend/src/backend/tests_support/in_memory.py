@@ -6,8 +6,14 @@ from dataclasses import dataclass, field, replace
 from datetime import datetime, timezone
 from typing import Any
 
+from backend.application.ports.digest_publisher import DigestPublication
 from backend.domain.current_user import CurrentUser
-from backend.domain.errors import AlreadySentError, ShortlistNotFoundError, VoteConflictError
+from backend.domain.errors import (
+    AlreadySentError,
+    EmptySendPoolError,
+    ShortlistNotFoundError,
+    VoteConflictError,
+)
 from backend.domain.issue import Issue, IssueItem
 from backend.domain.knowledge import KnowledgeChunk, KnowledgeHit
 from backend.domain.material import Material, MaterialStatus
@@ -421,6 +427,79 @@ class InMemoryIssueRepository:
         )
         self._issues.append(issue)
         return issue
+
+
+class InMemoryDigestPublisher:
+    """In-memory DigestPublisher — simulates migration 005's atomic claim+publish RPC.
+
+    Claims the batch, publishes its approved∩ready issue, and returns a DigestPublication.
+    On any publish failure it releases the claim (CR-01 compensation) so the fake mirrors the
+    RPC's all-or-nothing behavior. Repos are resolved lazily via callables so composition can
+    reassign ``container.shortlist`` after wiring (HTTP tests swap it post-build).
+    """
+
+    def __init__(
+        self,
+        shortlist_provider: Any,
+        issues_provider: Any,
+        *,
+        delivery_status: str = "stubbed",
+        recipient_count: int = 0,
+    ) -> None:
+        self._shortlist_provider = shortlist_provider
+        self._issues_provider = issues_provider
+        self._delivery_status = delivery_status
+        self._recipient_count = recipient_count
+
+    def claim_and_publish(
+        self,
+        *,
+        batch_id: int,
+        sent_at: datetime,
+        period_label: str,
+        title: str,
+    ) -> DigestPublication:
+        shortlist = self._shortlist_provider()
+        issues = self._issues_provider()
+        claimed = shortlist.claim_sent(batch_id=batch_id, sent_at=sent_at)
+        try:
+            pool = sorted(
+                [
+                    item
+                    for item in claimed.items
+                    if item.decision == "approved" and item.material_status == "ready"
+                ],
+                key=lambda item: item.rank,
+            )
+            if not pool:
+                raise EmptySendPoolError(batch_id=batch_id)
+            issue_items = tuple(
+                IssueItem(
+                    slug=f"material-{item.material_id}",
+                    title=item.title,
+                    position=item.rank,
+                    format="article",
+                    reading_minutes=5,
+                )
+                for item in pool
+            )
+            published = issues.publish(
+                period_label=period_label,
+                title=title,
+                editor=None,
+                published_at=sent_at,
+                items=issue_items,
+            )
+        except Exception:
+            shortlist.release_claim(batch_id=batch_id)
+            raise
+        return DigestPublication(
+            batch_id=claimed.id,
+            issue_number=published.number,
+            issue_url=f"/issues/{published.number}",
+            delivery_status=self._delivery_status,
+            recipient_count=self._recipient_count,
+        )
 
 
 class InMemoryRazborRepository:

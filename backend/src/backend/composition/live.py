@@ -8,6 +8,7 @@ from backend.application.ports.query_embedder import StubQueryEmbedder
 from backend.infrastructure.local_notebook_storage import LocalNotebookStorage
 from backend.infrastructure.stub_mailer import resolve_mailer
 from supabase_integration import (
+    SupabaseDigestPublisher,
     SupabaseIssueRepository,
     SupabaseKnowledgeChunkRepository,
     SupabaseMaterialRepository,
@@ -56,4 +57,6 @@ def build_live_container(settings: Settings) -> AppContainer:
         shortlist=SupabaseShortlistRepository(admin_client),
         # StubMailer via resolve_mailer — MAILER=smtp fail-fast (D-87 / COVERAGE OPT-OUT)
         mailer=resolve_mailer(settings.mailer),
+        # Atomic claim+publish via claim_and_publish_digest RPC (CR-01/WR-01, migration 005)
+        publisher=SupabaseDigestPublisher(admin_client),
     )

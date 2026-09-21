@@ -1,11 +1,11 @@
-"""send_digest — claim, publish issue, stub mail (ADMIN-03/07/08, D-85…D-90)."""
+"""send_digest — validate, atomic claim+publish, stub mail (ADMIN-03/07/08, D-85…D-90)."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
-from backend.application.ports.issue_repository import IssueRepository
+from backend.application.ports.digest_publisher import DigestPublisher
 from backend.application.ports.mailer import Mailer
 from backend.application.ports.ping_recorder import PingRecorder
 from backend.application.ports.shortlist_repository import ShortlistRepository
@@ -13,12 +13,8 @@ from backend.domain.errors import (
     AlreadySentError,
     DraftInSendPoolError,
     EmptySendPoolError,
-    ShortlistNotFoundError,
 )
-from backend.domain.issue import IssueItem
 from backend.domain.shortlist import ShortlistItem
-
-_EDITOR_BYLINE = "Редакция Digest CDS"
 
 
 @dataclass(frozen=True)
@@ -52,14 +48,19 @@ def _approved_ready(items: tuple[ShortlistItem, ...]) -> list[ShortlistItem]:
 
 def send_digest(
     shortlist: ShortlistRepository,
-    issues: IssueRepository,
+    publisher: DigestPublisher,
     mailer: Mailer,
     pings: PingRecorder,
     *,
     actor_user_id: str,
     now: datetime | None = None,
 ) -> SendDigestResult:
-    """Validate pool → claim → publish → mail → audit (D-88 mandatory publish-on-send)."""
+    """Validate pool → atomic claim+publish → mail → audit (D-88 mandatory publish-on-send).
+
+    CR-01/WR-01: the claim, digest_issues publish, and delivery-column stamp are a single
+    transaction inside ``DigestPublisher.claim_and_publish`` (migration 005 RPC on live), so a
+    publish failure can never leave a batch stamped ``sent_at`` with no issue.
+    """
     clock = now or datetime.now(timezone.utc)
     batch = shortlist.get_current_batch()
     if batch is None:
@@ -76,74 +77,47 @@ def send_digest(
     if not pool:
         raise EmptySendPoolError(batch_id=batch.id)
 
-    try:
-        claimed = shortlist.claim_sent(batch_id=batch.id, sent_at=clock)
-    except AlreadySentError:
-        raise
-    except ShortlistNotFoundError as exc:
-        raise AlreadySentError(batch.id) from exc
-
-    issue_items = tuple(
-        IssueItem(
-            slug=f"material-{item.material_id}",
-            title=item.title,
-            position=item.rank,
-            format="article",
-            reading_minutes=5,
-        )
-        for item in pool
+    publication = publisher.claim_and_publish(
+        batch_id=batch.id,
+        sent_at=clock,
+        period_label=batch.week_start.isoformat(),
+        title=f"Digest CDS — {batch.week_start.isoformat()}",
     )
-    # CR-01: claim and publish are two writes. If publish fails after the claim, the
-    # batch would stay stamped sent_at with no issue and no recoverable retry. Compensate
-    # by releasing the claim so the batch returns to the unsent pool. (The fully-atomic
-    # path is migration 005's claim_and_publish_digest RPC — see WR-01.)
-    try:
-        published = issues.publish(
-            period_label=claimed.week_start.isoformat(),
-            title=f"Digest CDS — {claimed.week_start.isoformat()}",
-            editor=_EDITOR_BYLINE,
-            published_at=clock,
-            items=issue_items,
-        )
-    except Exception:
-        shortlist.release_claim(batch_id=claimed.id)
-        raise
-    issue_url = f"/issues/{published.number}"
+
+    issue_url = publication.issue_url
     titles = "\n".join(f"- {item.title}" for item in pool)
-    subject = f"Digest CDS — выпуск {published.number}"
+    subject = f"Digest CDS — выпуск {publication.issue_number}"
     body_text = (
-        f"Новый выпуск Digest CDS №{published.number}.\n"
+        f"Новый выпуск Digest CDS №{publication.issue_number}.\n"
         f"Читать: {issue_url}\n\n"
         f"Материалы:\n{titles}\n"
     )
-    delivery = mailer.send_digest(
-        batch_id=claimed.id,
+    mailer.send_digest(
+        batch_id=publication.batch_id,
         issue_url=issue_url,
         subject=subject,
         body_text=body_text,
-        recipient_count=0,
+        recipient_count=publication.recipient_count,
     )
-    delivery_status = str(delivery.get("delivery_status", "stubbed"))
-    recipient_count = int(delivery.get("recipient_count", 0) or 0)
 
     pings.record(
         user_id=actor_user_id,
         kind="digest_send",
         payload={
             "action": "send",
-            "batch_id": claimed.id,
-            "issue_number": published.number,
+            "batch_id": publication.batch_id,
+            "issue_number": publication.issue_number,
             "issue_url": issue_url,
-            "delivery_status": delivery_status,
-            "recipient_count": recipient_count,
+            "delivery_status": publication.delivery_status,
+            "recipient_count": publication.recipient_count,
         },
     )
 
     return SendDigestResult(
-        batch_id=claimed.id,
-        issue_number=published.number,
+        batch_id=publication.batch_id,
+        issue_number=publication.issue_number,
         issue_url=issue_url,
-        delivery_status=delivery_status,
-        recipient_count=recipient_count,
+        delivery_status=publication.delivery_status,
+        recipient_count=publication.recipient_count,
         message="Отправка записана",
     )

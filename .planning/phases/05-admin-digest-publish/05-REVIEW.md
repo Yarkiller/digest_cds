@@ -49,16 +49,16 @@ findings:
   total: 8
 resolved:
   - CR-01
+  - WR-01
   - WR-02
 open:
-  - WR-01
   - WR-03
   - WR-04
   - WR-05
   - IN-01
   - IN-02
 status: issues_found
-fix_applied: 2026-09-21T16:05:00Z
+fix_applied: 2026-09-21T16:40:00Z
 ---
 
 # Phase 05: Code Review Report
@@ -80,7 +80,12 @@ The main defect is non-atomic live send: `claim_sent` then `IssueRepository.publ
 
 ### CR-01: Claim-then-publish is not atomic — stuck `sent_at` without issue  — ✅ RESOLVED (2026-09-21)
 
-**Resolution:** Added a `ShortlistRepository.release_claim(batch_id)` compensating action (in-memory + Supabase adapters) and wrapped `IssueRepository.publish` in `send_digest` with a `try/except` that releases the claim and re-raises on any publish failure. A failed publish now returns the batch to the unsent pool so a retry can succeed instead of wedging it as claimed-but-unpublished. Covered by `test_send_publish_failure_releases_claim_for_retry` (use case) and `test_release_claim_clears_sent_at_for_retry` / `test_release_claim_maps_sdk_failure_to_persistence_error` (adapter contract). The fully-atomic single-transaction path (migration 005 `claim_and_publish_digest` RPC) remains the recommended follow-up — tracked under WR-01.
+**Resolution (2-step):**
+
+1. *Compensation (interim):* Added `ShortlistRepository.release_claim(batch_id)` and wrapped publish in `send_digest` so a publish failure un-claimed the batch.
+2. *Full atomic fix (current):* Introduced a dedicated `DigestPublisher` port whose live adapter (`SupabaseDigestPublisher`) calls migration 005's **`claim_and_publish_digest`** RPC — claim + `digest_issues` publish + delivery-column stamp all commit/rollback in a **single DB transaction**. `send_digest` now performs domain validation (draft/empty) then a single `publisher.claim_and_publish(...)`; there is no longer a window where the batch is claimed without an issue. RPC SQLSTATEs map to domain errors (`P0001` → `AlreadySentError`, `23514`/check_violation → `EmptySendPoolError`). The `InMemoryDigestPublisher` simulates the same all-or-nothing behavior for unit tests. Covered by `test_supabase_digest_publisher_contract.py` (5 tests) + the refactored `test_send_digest.py` suite.
+
+> **Deploy note:** the live path requires `claim_and_publish_digest` to exist in the shared Supabase DB. Apply `supabase-integration/migrations/005_phase5_admin_shortlist.sql` once via MCP/Studio SQL or `supabase db push` (idempotent; never reset the shared VM).
 
 
 
@@ -239,14 +244,14 @@ Reviewed each open warning for validity, severity, and fix risk. Verdicts:
 
 | ID | Verdict | Recommended action | Risk / why deferred |
 |----|---------|--------------------|---------------------|
-| **WR-01** | **Valid** — delivery columns (`delivery_status`, `recipient_count`, `published_issue_id`, `issue_url`) stay NULL on the live Python path after a successful send. | Route send through the `claim_and_publish_digest` RPC (also closes CR-01 atomicity fully), **or** add a post-publish `update(...)` on the batch. Prefer the RPC. | Needs a new port method (e.g. `publish_digest`) or an extra adapter write + a Supabase-contract test that asserts the columns are stamped. Larger than a use-case-local change; not blindly auto-applied. Recommend doing next. |
+| **WR-01** | ✅ **RESOLVED (2026-09-21)** — routed send through `claim_and_publish_digest` RPC (`DigestPublisher` port + `SupabaseDigestPublisher`), which stamps `delivery_status`, `recipient_count`, `published_issue_id`, `issue_url` in the same transaction as the publish. | — | Closed together with CR-01. Requires migration 005 applied on the shared DB (see deploy note). |
 | **WR-03** | **Valid** — in-memory `get_current_batch` ignores `sent_at`, drifting from the live `sent_at IS NULL` contract. | Return `None` when `_batch.sent_at is not None`. | ⚠️ Conflicts with 3 existing `send_digest` tests that assert `get_current_batch().sent_at == now` post-send. Fixing correctly also means giving those tests a sent-batch accessor. Small but touches test expectations — recommend a dedicated pass so the intent stays clear. |
 | **WR-04** | **Valid (defense-in-depth)** — SPA renders `result.issue_url` as a Router `to` without same-origin sanitization; backend value is currently safe (`/issues/{n}`). | Pass `issue_url` through `sanitizeReturnUrl` / gate on `/^\/issues\/\d+$/` before `<Link>`. | Frontend change → requires a Playwright/unit test per repo TDD. Deferred to a UI-scoped fix session. |
 | **WR-05** | **Valid** — batch Approve/Reject stops mid-loop; partial persist with a generic toast. | Collect failed IDs, continue, and report which IDs failed (or add a bulk endpoint). | Frontend + UX decision (all-or-nothing vs best-effort). Needs Playwright coverage. Deferred to UI session. |
 | IN-01 / IN-02 | Info only | As noted in each finding. | Non-blocking. |
 
-**Applied this session:** CR-01 (compensation), WR-02 (honesty fallback) — both TDD, full suite green (229 passed).
-**Recommended next:** WR-01 (RPC) → then WR-03; WR-04/WR-05 in a UI-scoped session.
+**Applied:** CR-01 (now fully atomic via RPC), WR-01 (delivery stamping via RPC), WR-02 (honesty fallback) — all TDD, full suite green (234 passed).
+**Recommended next:** WR-03 (in-memory contract drift); WR-04/WR-05 in a UI-scoped session.
 
 ---
 

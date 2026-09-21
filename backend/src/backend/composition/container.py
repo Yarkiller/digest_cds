@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
+from backend.application.ports.digest_publisher import DigestPublisher
 from backend.application.ports.issue_repository import IssueRepository
 from backend.application.ports.knowledge_chunk_repository import KnowledgeChunkRepository
 from backend.application.ports.mailer import Mailer
@@ -27,6 +28,7 @@ from backend.domain.voting_cycle import VotingCycle
 from backend.infrastructure.local_notebook_storage import LocalNotebookStorage
 from backend.infrastructure.stub_mailer import StubMailer
 from backend.tests_support.in_memory import (
+    InMemoryDigestPublisher,
     InMemoryIssueRepository,
     InMemoryKnowledgeChunkRepository,
     InMemoryMaterialRepository,
@@ -53,6 +55,7 @@ class AppContainer:
     notebook_storage: NotebookStorage
     shortlist: ShortlistRepository
     mailer: Mailer
+    publisher: DigestPublisher
 
     def publish(self, material_id: int) -> Material:
         return publish_material(self.materials, material_id)
@@ -96,7 +99,7 @@ def build_in_memory_container(
     """Default local wiring until supabase-integration adapters are connected."""
     materials_repo = InMemoryMaterialRepository(materials)
     root = Path(notebook_root) if notebook_root else Path(".")
-    return AppContainer(
+    container = AppContainer(
         materials=materials_repo,
         chunks=InMemoryKnowledgeChunkRepository(materials=materials_repo),
         profiles=InMemoryProfileRepository(),
@@ -109,4 +112,12 @@ def build_in_memory_container(
         notebook_storage=LocalNotebookStorage(root),
         shortlist=InMemoryShortlistRepository(),
         mailer=StubMailer(),
+        # Placeholder replaced below with a publisher bound to this container so tests that
+        # reassign container.shortlist post-build are still resolved (lazy providers).
+        publisher=None,  # type: ignore[arg-type]
     )
+    container.publisher = InMemoryDigestPublisher(
+        lambda: container.shortlist,
+        lambda: container.issues,
+    )
+    return container

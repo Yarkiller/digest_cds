@@ -245,7 +245,7 @@ def post_shortlist_send(
     try:
         result = send_digest(
             shortlist,
-            container.issues,
+            container.publisher,
             container.mailer,
             container.pings,
             actor_user_id=admin.id,

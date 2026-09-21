@@ -78,12 +78,17 @@ def test_build_live_container_wires_supabase_adapters(monkeypatch: pytest.Monkey
     assert not isinstance(container.razbors, InMemoryRazborRepository)
 
     from backend.infrastructure.stub_mailer import StubMailer
-    from backend.tests_support.in_memory import InMemoryShortlistRepository
-    from supabase_integration import SupabaseShortlistRepository
+    from backend.tests_support.in_memory import (
+        InMemoryDigestPublisher,
+        InMemoryShortlistRepository,
+    )
+    from supabase_integration import SupabaseDigestPublisher, SupabaseShortlistRepository
 
     assert isinstance(container.shortlist, SupabaseShortlistRepository)
     assert not isinstance(container.shortlist, InMemoryShortlistRepository)
     assert isinstance(container.mailer, StubMailer)
+    assert isinstance(container.publisher, SupabaseDigestPublisher)
+    assert not isinstance(container.publisher, InMemoryDigestPublisher)
     create_service.assert_called_once_with(
         "https://example.test",
         "secret-key",

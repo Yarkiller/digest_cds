@@ -16,6 +16,7 @@ from backend.domain.errors import (
 from backend.domain.shortlist import ShortlistBatch, ShortlistItem
 from backend.infrastructure.stub_mailer import StubMailer
 from backend.tests_support.in_memory import (
+    InMemoryDigestPublisher,
     InMemoryIssueRepository,
     InMemoryPingRecorder,
     InMemoryShortlistRepository,
@@ -50,6 +51,14 @@ def _batch(*items: ShortlistItem, sent_at: datetime | None = None) -> ShortlistB
     )
 
 
+def _publisher(
+    shortlist: InMemoryShortlistRepository,
+    issues: InMemoryIssueRepository,
+) -> InMemoryDigestPublisher:
+    """Atomic claim+publish backed by the same in-memory repos the assertions inspect."""
+    return InMemoryDigestPublisher(lambda: shortlist, lambda: issues)
+
+
 def test_send_happy_path_publishes_issue_claims_sent_and_stubs_mail() -> None:
     """ADMIN-07/08 / D-88/D-90: publish + claim + stub body with /issues/{n}."""
     shortlist = InMemoryShortlistRepository(
@@ -71,7 +80,7 @@ def test_send_happy_path_publishes_issue_claims_sent_and_stubs_mail() -> None:
 
     result = send_digest(
         shortlist,
-        issues,
+        _publisher(shortlist, issues),
         mailer,
         pings,
         actor_user_id=actor,
@@ -125,7 +134,7 @@ def test_send_blocks_approved_draft_in_pool() -> None:
     with pytest.raises(DraftInSendPoolError) as exc_info:
         send_digest(
             shortlist,
-            issues,
+            _publisher(shortlist, issues),
             mailer,
             pings,
             actor_user_id="admin-uuid-1",
@@ -148,10 +157,11 @@ def test_send_empty_approved_ready_raises() -> None:
             ),
         )
     )
+    issues = InMemoryIssueRepository()
     with pytest.raises(EmptySendPoolError):
         send_digest(
             shortlist,
-            InMemoryIssueRepository(),
+            _publisher(shortlist, issues),
             StubMailer(),
             InMemoryPingRecorder(),
             actor_user_id="admin-uuid-1",
@@ -171,7 +181,7 @@ def test_send_already_sent_raises_and_does_not_republish() -> None:
     with pytest.raises(AlreadySentError):
         send_digest(
             shortlist,
-            issues,
+            _publisher(shortlist, issues),
             mailer,
             pings,
             actor_user_id="admin-uuid-1",
@@ -190,7 +200,7 @@ class _FailingIssueRepository(InMemoryIssueRepository):
 
 
 def test_send_publish_failure_releases_claim_for_retry() -> None:
-    """CR-01: a publish failure after claim must un-claim the batch so a retry can succeed."""
+    """CR-01: a publish failure inside the atomic op must leave the batch un-claimed for retry."""
     shortlist = InMemoryShortlistRepository(batch=_batch(_item(material_id=101)))
     issues = _FailingIssueRepository()
     mailer = StubMailer()
@@ -199,15 +209,15 @@ def test_send_publish_failure_releases_claim_for_retry() -> None:
     with pytest.raises(PersistenceError):
         send_digest(
             shortlist,
-            issues,
+            _publisher(shortlist, issues),
             mailer,
             pings,
             actor_user_id="admin-uuid-1",
             now=datetime(2026, 9, 21, 15, 0, tzinfo=timezone.utc),
         )
 
-    # Claim must be rolled back — otherwise the batch is permanently stuck as "sent"
-    # with no published issue and no recoverable retry (CR-01).
+    # The atomic claim+publish rolled back — otherwise the batch is permanently stuck as
+    # "sent" with no published issue and no recoverable retry (CR-01).
     batch = shortlist.get_current_batch()
     assert batch is not None
     assert batch.sent_at is None
@@ -223,10 +233,11 @@ def test_send_repeat_after_success_is_idempotent_409_path() -> None:
     issues = InMemoryIssueRepository()
     mailer = StubMailer()
     pings = InMemoryPingRecorder()
+    publisher = _publisher(shortlist, issues)
 
     first = send_digest(
         shortlist,
-        issues,
+        publisher,
         mailer,
         pings,
         actor_user_id="admin-uuid-1",
@@ -239,7 +250,7 @@ def test_send_repeat_after_success_is_idempotent_409_path() -> None:
     with pytest.raises(AlreadySentError):
         send_digest(
             shortlist,
-            issues,
+            publisher,
             mailer,
             pings,
             actor_user_id="admin-uuid-1",

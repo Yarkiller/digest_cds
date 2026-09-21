@@ -19,6 +19,7 @@ from backend.domain.knowledge import KnowledgeChunk
 from backend.domain.material import Material, MaterialStatus
 from backend.interface.http.app import create_app
 from backend.tests_support.in_memory import (
+    InMemoryDigestPublisher,
     InMemoryIssueRepository,
     InMemoryKnowledgeChunkRepository,
     InMemoryMaterialRepository,
@@ -94,19 +95,22 @@ def _seeded_container(materials: list[Material], chunks_by_material: dict[int, l
     from backend.infrastructure.local_notebook_storage import LocalNotebookStorage
     from backend.infrastructure.stub_mailer import StubMailer
 
+    shortlist_repo = InMemoryShortlistRepository()
+    issues_repo = InMemoryIssueRepository()
     return AppContainer(
         materials=materials_repo,
         chunks=chunks,
         profiles=InMemoryProfileRepository(),
         pings=InMemoryPingRecorder(),
-        issues=InMemoryIssueRepository(),
+        issues=issues_repo,
         voting_cycles=InMemoryVotingCycleReader(),
         votes=InMemoryVoteRepository(),
         embedder=StubQueryEmbedder(),
         razbors=InMemoryRazborRepository(),
         notebook_storage=LocalNotebookStorage("."),
-        shortlist=InMemoryShortlistRepository(),
+        shortlist=shortlist_repo,
         mailer=StubMailer(),
+        publisher=InMemoryDigestPublisher(lambda: shortlist_repo, lambda: issues_repo),
     )
 
 
