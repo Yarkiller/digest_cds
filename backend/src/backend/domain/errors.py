@@ -14,6 +14,12 @@ class IssueNotFoundError(DomainError):
         self.number = number
 
 
+class RazborNotFoundError(DomainError):
+    def __init__(self, razbor_id: int) -> None:
+        super().__init__(f"razbor {razbor_id} not found")
+        self.razbor_id = razbor_id
+
+
 class MaterialValidationError(DomainError):
     def __init__(self, message: str) -> None:
         super().__init__(message)

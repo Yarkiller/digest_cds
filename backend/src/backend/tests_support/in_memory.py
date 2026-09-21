@@ -11,6 +11,7 @@ from backend.domain.errors import VoteConflictError
 from backend.domain.issue import Issue
 from backend.domain.knowledge import KnowledgeChunk, KnowledgeHit
 from backend.domain.material import Material, MaterialStatus
+from backend.domain.razbor import Razbor
 from backend.domain.vote import BallotTopic, PersonalVote
 from backend.domain.voting_cycle import VotingCycle
 
@@ -310,3 +311,29 @@ class InMemoryIssueRepository:
             key=lambda i: i.published_at,
             reverse=True,
         )
+
+
+class InMemoryRazborRepository:
+    """In-memory RazborRepository — meeting_at DESC NULLS LAST, created_at DESC (RAZB-01)."""
+
+    def __init__(self, razbors: list[Razbor] | None = None) -> None:
+        self._razbors: list[Razbor] = list(razbors or [])
+
+    def seed(self, razbors: list[Razbor]) -> None:
+        self._razbors = list(razbors)
+
+    def list_for_reader(self) -> list[Razbor]:
+        return sorted(
+            self._razbors,
+            key=lambda r: (
+                r.meeting_at is None,
+                -(r.meeting_at.timestamp()) if r.meeting_at is not None else 0.0,
+                -r.created_at.timestamp(),
+            ),
+        )
+
+    def get(self, razbor_id: int) -> Razbor | None:
+        for razbor in self._razbors:
+            if razbor.id == razbor_id:
+                return razbor
+        return None

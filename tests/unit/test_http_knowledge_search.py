@@ -24,6 +24,7 @@ from backend.tests_support.in_memory import (
     InMemoryMaterialRepository,
     InMemoryPingRecorder,
     InMemoryProfileRepository,
+    InMemoryRazborRepository,
     InMemoryVoteRepository,
     InMemoryVotingCycleReader,
 )
@@ -93,6 +94,7 @@ def _seeded_container(materials: list[Material], chunks_by_material: dict[int, l
         voting_cycles=InMemoryVotingCycleReader(),
         votes=InMemoryVoteRepository(),
         embedder=StubQueryEmbedder(),
+        razbors=InMemoryRazborRepository(),
     )
 
 
