@@ -91,3 +91,70 @@ test.describe("Admin Digest — shortlist triage (ADMIN-01…03, ADMIN-05, D-79,
     await expect(firstRow.getByText("одобрен")).toBeVisible();
   });
 });
+
+test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07)", () => {
+  test("Выбрать все and Оставить топ-3 update checkboxes", async ({ page }) => {
+    await gotoAsRole(page, "admin", "/admin/digest");
+    const rows = page.getByTestId("admin-shortlist-row");
+    await expect(rows).toHaveCount(5);
+
+    await page.getByRole("button", { name: /выбрать все/i }).click();
+    for (let i = 0; i < 5; i += 1) {
+      await expect(rows.nth(i).getByRole("checkbox")).toBeChecked();
+    }
+
+    await page.getByRole("button", { name: /оставить топ-3/i }).click();
+    for (let i = 0; i < 3; i += 1) {
+      await expect(rows.nth(i).getByRole("checkbox")).toBeChecked();
+    }
+    await expect(rows.nth(3).getByRole("checkbox")).not.toBeChecked();
+    await expect(rows.nth(4).getByRole("checkbox")).not.toBeChecked();
+
+    await rows.nth(1).getByRole("checkbox").uncheck();
+    await expect(rows.nth(0).getByRole("checkbox")).toBeChecked();
+    await expect(rows.nth(1).getByRole("checkbox")).not.toBeChecked();
+    await expect(rows.nth(2).getByRole("checkbox")).toBeChecked();
+  });
+
+  test("превью unlocks send; confirm records Отправка записана", async ({ page }) => {
+    await gotoAsRole(page, "admin", "/admin/digest");
+    const rows = page.getByTestId("admin-shortlist-row");
+    // Approve two ready rows (ranks 1 and 2)
+    await rows.nth(0).getByRole("checkbox").check();
+    await rows.nth(1).getByRole("checkbox").check();
+    await page.getByRole("button", { name: /одобрить выбранные/i }).click();
+    await expect(rows.nth(0).getByText("одобрен")).toBeVisible();
+
+    const sendBtn = page.getByRole("button", { name: /отправить дайджест/i });
+    await expect(sendBtn).toBeDisabled();
+    await expect(page.getByText(/сначала откройте превью письма/i)).toBeVisible();
+
+    await page.getByRole("button", { name: /предпросмотр письма/i }).click();
+    await expect(page.getByRole("heading", { name: "Превью письма" })).toBeVisible();
+    await page.getByRole("button", { name: "Закрыть" }).click();
+
+    await expect(page.getByText(/превью просмотрено\. можно отправить/i)).toBeVisible();
+    await expect(sendBtn).toBeEnabled();
+
+    await sendBtn.click();
+    await expect(page.getByRole("heading", { name: "Подтвердите отправку" })).toBeVisible();
+    await page.getByRole("button", { name: /подтвердить отправку/i }).click();
+    await expect(page.getByText("Отправка записана")).toBeVisible();
+  });
+
+  test("Уже отправлено when batch already sent", async ({ page }) => {
+    await gotoAsRole(page, "admin", "/admin/digest", {
+      __DIGEST_ADMIN_ALREADY_SENT__: true,
+    });
+    const rows = page.getByTestId("admin-shortlist-row");
+    await rows.nth(0).getByRole("checkbox").check();
+    await page.getByRole("button", { name: /одобрить выбранные/i }).click();
+    await page.getByRole("button", { name: /предпросмотр письма/i }).click();
+    await expect(page.getByRole("heading", { name: "Превью письма" })).toBeVisible();
+    await page.getByRole("button", { name: "Закрыть" }).click();
+
+    await page.getByRole("button", { name: /отправить дайджест/i }).click();
+    await page.getByRole("button", { name: /подтвердить отправку/i }).click();
+    await expect(page.getByText("Уже отправлено")).toBeVisible();
+  });
+});
