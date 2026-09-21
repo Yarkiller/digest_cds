@@ -45,4 +45,25 @@ describe('mockListRazbory', () => {
     const { RAZBOR_EDITOR_BYLINE } = await import('../../web/src/services/razboryApi.js')
     assert.equal(RAZBOR_EDITOR_BYLINE, 'Редакция Digest CDS')
   })
+
+  it('empty list DTO has items=[] for D-69 CTA path', async () => {
+    const { mockListRazbory } = await import('../../web/src/services/razboryApi.js')
+    const dto = mockListRazbory([])
+    assert.deepEqual(dto, { items: [] })
+  })
+})
+
+describe('RazboryListPage empty honesty (D-69)', () => {
+  it('page source has empty copy + /voting CTA and no К выпуску', () => {
+    const fs = require('node:fs')
+    const path = require('node:path')
+    const page = fs.readFileSync(
+      path.join(__dirname, '../../web/src/pages/RazboryListPage.jsx'),
+      'utf8',
+    )
+    assert.match(page, /Разборов пока нет/)
+    assert.match(page, /К голосованию/)
+    assert.match(page, /\/voting/)
+    assert.equal(/К выпуску/.test(page), false)
+  })
 })
