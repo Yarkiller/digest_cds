@@ -122,9 +122,9 @@ Each task was committed atomically:
 1. **Task 1: Idempotent Phase 4 seed SQL + runbook** - `d7b7593` (feat)
 2. **Task 2 (RED): failing live adapter/wiring tests** - `b4f870d` (test)
 3. **Task 2 (GREEN): wire Supabase knowledge and razbor live adapters** - `f78d144` (feat)
-4. **Task 3: record human apply + SUMMARY** - _(this docs commit)_
+4. **Task 3: record human apply + SUMMARY** - `31f4f1e` (docs)
 
-**Plan metadata:** _(docs commit after SUMMARY)_
+**Plan metadata:** `31f4f1e` (docs: complete plan) — STATE/ROADMAP follow in final docs commit if needed
 
 ## Files Created/Modified
 
