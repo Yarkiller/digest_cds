@@ -32,6 +32,9 @@ export default function AppShell() {
             <NavLink to="/voting" className={linkClass}>
               Голосование
             </NavLink>
+            <NavLink to="/razbory" className={linkClass}>
+              Разборы
+            </NavLink>
           </nav>
           <SearchPill />
           <div className="hidden shrink-0 text-sm text-ink-2 md:block">Мария Сидорова</div>

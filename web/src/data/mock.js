@@ -249,6 +249,42 @@ export function getIssueMaterials() {
     .sort((a, b) => a.issuePosition - b.issuePosition)
 }
 
+/**
+ * Razbory chronology seed for mocks (RAZB-01 / D-67 / D-68).
+ * Order: meeting_at DESC (newest first) — matches backend list_for_reader.
+ */
+export const razbory = [
+  {
+    id: 4,
+    title: 'RAG в корпоративной среде',
+    meeting_at: '2026-04-14T10:00:00.000Z',
+    status: 'announcement',
+  },
+  {
+    id: 3,
+    title: 'LLM для анализа аудиторских данных',
+    meeting_at: '2026-03-31T10:00:00.000Z',
+    status: 'published',
+  },
+  {
+    id: 2,
+    title: 'Anomaly Detection во внутреннем аудите',
+    meeting_at: '2026-03-17T10:00:00.000Z',
+    status: 'published',
+  },
+  {
+    id: 1,
+    title: 'Vector Search с pgvector',
+    meeting_at: '2026-03-03T10:00:00.000Z',
+    status: 'published',
+  },
+]
+
+/** @returns {typeof razbory} */
+export function getRazboryList() {
+  return razbory.map((row) => ({ ...row }))
+}
+
 /** Archive cards: past published only (excludes current — D-31). */
 export function getArchiveIssues() {
   return [
