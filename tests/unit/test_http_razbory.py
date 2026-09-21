@@ -1,10 +1,15 @@
-"""HTTP GET /razbory — JWT gate + chronology list DTO (RAZB-01 / D-66)."""
+"""HTTP GET /razbory — JWT gate + chronology list DTO (RAZB-01 / D-66).
+
+Notebook download: GET /razbory/{id}/notebook FileResponse (RAZB-03 / D-70…72).
+"""
 
 from __future__ import annotations
 
 import json
+import shutil
 import time
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any
 
 import jwt
@@ -20,6 +25,8 @@ from backend.interface.http.app import create_app
 from backend.tests_support.in_memory import InMemoryRazborRepository
 
 ISSUER = "https://auth.example/auth/v1"
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+_SEED_IPYNB = _REPO_ROOT / "design-frontend" / "assets" / "notebooks" / "hybrid-retrieval.ipynb"
 
 
 def _public_jwk(private_key: ec.EllipticCurvePrivateKey) -> dict[str, Any]:
@@ -67,7 +74,13 @@ def _razbor(
     )
 
 
-def _client(signing_jwk: dict[str, Any], container: AppContainer | None = None) -> TestClient:
+def _client(
+    signing_jwk: dict[str, Any],
+    container: AppContainer | None = None,
+    *,
+    notebook_root: str = "",
+) -> TestClient:
+    del notebook_root  # wired in GREEN via Settings.notebook_root + NotebookStorage
     settings = Settings(
         api_cors_origins="http://127.0.0.1:5173",
         allowed_email_domains="@sberbank.ru,@omega.sbrf.ru",
@@ -290,3 +303,117 @@ def test_razbory_detail_announcement_returns_empty_body() -> None:
     assert payload["status"] == "announcement"
     assert payload["title"] == "RAG в корпоративной среде"
     assert payload["body_markdown"] == ""
+
+
+def test_razbory_notebook_without_authorization_returns_401(tmp_path: Path) -> None:
+    """RAZB-03 / D-70: GET /razbory/{id}/notebook requires Bearer JWT."""
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    client = _client(_public_jwk(private_key), notebook_root=str(tmp_path))
+    response = client.get("/razbory/2/notebook")
+    assert response.status_code == 401
+
+
+def test_razbory_notebook_streams_attachment_when_available(tmp_path: Path) -> None:
+    """RAZB-03 / D-70: notebook_available → FileResponse attachment with ipynb bytes."""
+    assert _SEED_IPYNB.is_file()
+    dest = tmp_path / "notebooks" / "anomaly.ipynb"
+    dest.parent.mkdir(parents=True)
+    shutil.copyfile(_SEED_IPYNB, dest)
+    expected = dest.read_bytes()
+
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    created = datetime(2026, 3, 1, tzinfo=timezone.utc)
+    container = build_in_memory_container()
+    container.razbors = InMemoryRazborRepository(
+        [
+            Razbor(
+                id=2,
+                title="Anomaly Detection",
+                body_markdown="## Intro\n\nHi.",
+                meeting_at=created,
+                status=RazborStatus.PUBLISHED,
+                notebook_path="notebooks/anomaly.ipynb",
+                created_at=created,
+            )
+        ]
+    )
+    client = _client(jwk, container, notebook_root=str(tmp_path))
+    token = _mint(private_key, email="alice@sberbank.ru")
+    headers = {"Authorization": f"Bearer {token}"}
+
+    response = client.get("/razbory/2/notebook", headers=headers)
+    assert response.status_code == 200
+    assert response.content == expected
+    content_type = response.headers.get("content-type", "")
+    assert "ipynb" in content_type or content_type.startswith("application/")
+    disposition = response.headers.get("content-disposition", "")
+    assert "attachment" in disposition.lower()
+    assert "anomaly.ipynb" in disposition
+
+    # Idempotent read — repeat download succeeds again (RAZB-03 ASSUMPTION).
+    again = client.get("/razbory/2/notebook", headers=headers)
+    assert again.status_code == 200
+    assert again.content == expected
+
+
+def test_razbory_notebook_rejects_path_traversal(tmp_path: Path) -> None:
+    """RAZB-03 / T-04-09: path with .. outside NOTEBOOK_ROOT → 400/404, never file bytes."""
+    secret = tmp_path.parent / "outside-secret.ipynb"
+    secret.write_text('{"cells":[]}', encoding="utf-8")
+    (tmp_path / "notebooks").mkdir(parents=True, exist_ok=True)
+
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    created = datetime(2026, 3, 1, tzinfo=timezone.utc)
+    container = build_in_memory_container()
+    container.razbors = InMemoryRazborRepository(
+        [
+            Razbor(
+                id=7,
+                title="Escape attempt",
+                body_markdown="## Intro\n\nHi.",
+                meeting_at=created,
+                status=RazborStatus.PUBLISHED,
+                notebook_path="../outside-secret.ipynb",
+                created_at=created,
+            )
+        ]
+    )
+    client = _client(jwk, container, notebook_root=str(tmp_path))
+    token = _mint(private_key, email="alice@sberbank.ru")
+    response = client.get(
+        "/razbory/7/notebook",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert response.status_code in (400, 404)
+    assert response.content != secret.read_bytes()
+    assert b'"cells"' not in response.content
+
+
+def test_razbory_notebook_missing_returns_404(tmp_path: Path) -> None:
+    """RAZB-03 / D-72: missing notebook_path or file → 404 (UI shows disabled strip)."""
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    created = datetime(2026, 3, 1, tzinfo=timezone.utc)
+    container = build_in_memory_container()
+    container.razbors = InMemoryRazborRepository(
+        [
+            Razbor(
+                id=3,
+                title="No notebook",
+                body_markdown="## Intro\n\nHi.",
+                meeting_at=created,
+                status=RazborStatus.PUBLISHED,
+                notebook_path=None,
+                created_at=created,
+            )
+        ]
+    )
+    client = _client(jwk, container, notebook_root=str(tmp_path))
+    token = _mint(private_key, email="alice@sberbank.ru")
+    response = client.get(
+        "/razbory/3/notebook",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert response.status_code == 404
