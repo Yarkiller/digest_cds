@@ -47,9 +47,9 @@ Requirements for initial release. Each maps to exactly one roadmap phase. Tracea
 ### Knowledge Base
 
 - [x] **KNOW-01**: Meaningful semantic query returns relevant results or honest empty; whitespace-only query → inline «Введите запрос», no search executed (REQ-US-14)
-- [ ] **KNOW-02**: Analyst role filter shows only analyst-tagged materials; clearing filter restores unrestricted results keeping query text (REQ-US-15)
-- [ ] **KNOW-03**: DS search/filter surfaces ML/experiment materials that open to the expected material page (REQ-US-16)
-- [ ] **KNOW-04**: Analyst search with no matches shows honest empty without substituting irrelevant ML top; reset/refine CTA works (REQ-US-17)
+- [x] **KNOW-02**: Analyst role filter shows only analyst-tagged materials; clearing filter restores unrestricted results keeping query text (REQ-US-15)
+- [x] **KNOW-03**: DS search/filter surfaces ML/experiment materials that open to the expected material page (REQ-US-16)
+- [x] **KNOW-04**: Analyst search with no matches shows honest empty without substituting irrelevant ML top; reset/refine CTA works (REQ-US-17)
 
 ### Razbory
 
@@ -117,9 +117,9 @@ Deferred past v1. Tracked but not in current roadmap phases.
 | VOTE-03 | Phase 3 | Complete |
 | VOTE-04 | Phase 3 | Complete |
 | KNOW-01 | Phase 4 | Complete |
-| KNOW-02 | Phase 4 | Pending |
-| KNOW-03 | Phase 4 | Pending |
-| KNOW-04 | Phase 4 | Pending |
+| KNOW-02 | Phase 4 | Complete |
+| KNOW-03 | Phase 4 | Complete |
+| KNOW-04 | Phase 4 | Complete |
 | RAZB-01 | Phase 4 | Complete |
 | RAZB-02 | Phase 4 | Pending |
 | RAZB-03 | Phase 4 | Pending |

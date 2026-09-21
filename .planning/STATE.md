@@ -3,16 +3,16 @@ gsd_state_version: 1.0
 current_phase: 04
 current_phase_name: Knowledge & Razbory
 status: executing
-stopped_at: Completed 04-04-PLAN.md
-last_updated: "2026-09-21T04:45:47.572Z"
+stopped_at: Completed 04-03-PLAN.md
+last_updated: "2026-09-21T05:04:35.050Z"
 last_activity: 2026-09-21
 last_activity_desc: Phase 04 execution started
-state_head: 1b07b44864a2d18cc3de9ef068c70dcfeb8e77ab
+state_head: 26c2f79177cea2440a5966a7ef72392f0479b358
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 30
-  completed_plans: 23
+  completed_plans: 24
   percent: 60
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-09-20)
 ## Current Position
 
 Phase: 04 (Knowledge & Razbory) — EXECUTING
-Plan: 4 of 9
+Plan: 5 of 9
 Status: Ready to execute
 Last activity: 2026-09-21 — Phase 04 execution started
 
@@ -76,6 +76,7 @@ Progress: [███████████████████░] 20/21 p
 | Phase 04 P01 | 7min | 2 tasks | 11 files |
 | Phase 04-knowledge-razbory P02 | 5min | 2 tasks | 5 files |
 | Phase 04-knowledge-razbory P04 | 3min | 2 tasks | 13 files |
+| Phase 04-knowledge-razbory P03 | 15min | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -136,6 +137,9 @@ Decisions are logged in PROJECT.md Key Decisions and `<decisions>` blocks.
 - [Phase 04]: [Phase 04]: Knowledge SPA Submit/Enter via knowledgeApi; blank/overlong client guards (500 code points); role chips deferred to 04-03
 - [Phase 04]: [Phase 04]: GET /razbory items[] chronology DTO; announcement|published status strings; empty 200; PersistenceError→503
 - [Phase 04]: [Phase 04]: live.py keeps InMemoryRazborRepository until Supabase razbor adapter
+- [Phase 04]: Invalid knowledge role is 400 invalid_role; SPA toasts Фильтр недоступен and resets to Все
+- [Phase 04]: Null, empty, and whitespace knowledge role means unrestricted (Все)
+- [Phase 04]: Zero-hit Сбросить фильтр clears role only and keeps the query (D-65)
 
 ### Pending Todos
 
@@ -158,7 +162,7 @@ None. Live FE↔BE proof approved 2026-09-19.
 
 ## Session Continuity
 
-Last session: 2026-09-21T04:45:47.090Z
-Stopped at: Completed 04-04-PLAN.md
+Last session: 2026-09-21T05:04:34.569Z
+Stopped at: Completed 04-03-PLAN.md
 Resume file: None
 Verification: `.planning/phases/01-platform-foundation-auth/01-VERIFICATION.md`
