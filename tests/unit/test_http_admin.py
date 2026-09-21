@@ -405,3 +405,181 @@ def test_admin_decision_persistence_error_returns_503() -> None:
 
     assert response.status_code == 503
     assert response.json()["detail"] == "shortlist_unavailable"
+
+
+def _admin_client_with_batch(batch: ShortlistBatch | None):
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    container = build_in_memory_container()
+    container.shortlist = InMemoryShortlistRepository(batch=batch)
+    _seed_profile(
+        container,
+        user_id="admin-uuid-1",
+        email="admin@sberbank.ru",
+        role="admin",
+    )
+    client = _client(jwk, container)
+    token = _mint(private_key, email="admin@sberbank.ru", sub="admin-uuid-1")
+    return client, {"Authorization": f"Bearer {token}"}, container
+
+
+def _ready_approved_batch() -> ShortlistBatch:
+    return ShortlistBatch(
+        id=42,
+        week_start=date(2026, 9, 15),
+        sent_at=None,
+        items=(
+            ShortlistItem(
+                material_id=101,
+                rank=1,
+                title="RAG в продакшене",
+                material_status="ready",
+                decision="approved",
+                score=0.92,
+                score_factors={
+                    "factors": [
+                        {"label": "Релевантность"},
+                        {"label": "Свежесть"},
+                    ]
+                },
+            ),
+            ShortlistItem(
+                material_id=102,
+                rank=2,
+                title="Черновик",
+                material_status="draft",
+                decision="pending",
+                score=0.4,
+                score_factors={},
+            ),
+        ),
+    )
+
+
+def test_admin_preview_returns_approved_ready_only_without_sent_at() -> None:
+    """ADMIN-04 / D-86: preview lists approved∩ready; never sets sent_at."""
+    client, headers, container = _admin_client_with_batch(_ready_approved_batch())
+
+    response = client.post("/admin/shortlist/preview", headers=headers)
+
+    assert response.status_code == 200
+    body = response.json()
+    assert [item["material_id"] for item in body["items"]] == [101]
+    assert body["subject"]
+    assert body["body"]
+    assert container.shortlist.get_current_batch().sent_at is None
+
+
+def test_admin_preview_employee_returns_403() -> None:
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    container = build_in_memory_container()
+    container.shortlist = InMemoryShortlistRepository(batch=_ready_approved_batch())
+    _seed_profile(
+        container,
+        user_id="user-uuid-1",
+        email="alice@sberbank.ru",
+        role="employee",
+    )
+    client = _client(jwk, container)
+    token = _mint(private_key, email="alice@sberbank.ru")
+
+    response = client.post(
+        "/admin/shortlist/preview",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 403
+    assert response.json()["detail"] == "forbidden"
+
+
+def test_admin_send_happy_path_publishes_and_returns_issue_link() -> None:
+    """ADMIN-07/08 / D-88: send publishes once; stub honesty message."""
+    client, headers, container = _admin_client_with_batch(_ready_approved_batch())
+
+    response = client.post("/admin/shortlist/send", headers=headers)
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["message"] == "Отправка записана"
+    assert body["delivery_status"] == "stubbed"
+    assert body["issue_url"].startswith("/issues/")
+    assert container.shortlist.get_current_batch().sent_at is not None
+    assert container.issues.get_by_number(body["issue_number"]) is not None
+
+
+def test_admin_send_second_returns_409_already_sent() -> None:
+    """ADMIN-07 / D-89: repeat send → 409 «Уже отправлено»."""
+    client, headers, _container = _admin_client_with_batch(_ready_approved_batch())
+
+    first = client.post("/admin/shortlist/send", headers=headers)
+    assert first.status_code == 200
+
+    second = client.post("/admin/shortlist/send", headers=headers)
+    assert second.status_code == 409
+    detail = second.json()["detail"]
+    assert detail == "already_sent" or (
+        isinstance(detail, dict) and detail.get("code") == "already_sent"
+    )
+
+
+def test_admin_send_draft_in_pool_returns_400() -> None:
+    """ADMIN-03 / D-85: approved draft blocks send with 400."""
+    batch = ShortlistBatch(
+        id=42,
+        week_start=date(2026, 9, 15),
+        sent_at=None,
+        items=(
+            ShortlistItem(
+                material_id=101,
+                rank=1,
+                title="Ready",
+                material_status="ready",
+                decision="approved",
+                score=0.9,
+                score_factors={"factors": [{"label": "A"}, {"label": "B"}]},
+            ),
+            ShortlistItem(
+                material_id=102,
+                rank=2,
+                title="Draft approved",
+                material_status="draft",
+                decision="approved",
+                score=0.4,
+                score_factors={},
+            ),
+        ),
+    )
+    client, headers, container = _admin_client_with_batch(batch)
+
+    response = client.post("/admin/shortlist/send", headers=headers)
+
+    assert response.status_code == 400
+    detail = response.json()["detail"]
+    assert detail == "draft_in_send_pool" or (
+        isinstance(detail, dict) and detail.get("code") == "draft_in_send_pool"
+    )
+    assert container.shortlist.get_current_batch().sent_at is None
+
+
+def test_admin_send_employee_returns_403() -> None:
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    container = build_in_memory_container()
+    container.shortlist = InMemoryShortlistRepository(batch=_ready_approved_batch())
+    _seed_profile(
+        container,
+        user_id="user-uuid-1",
+        email="alice@sberbank.ru",
+        role="employee",
+    )
+    client = _client(jwk, container)
+    token = _mint(private_key, email="alice@sberbank.ru")
+
+    response = client.post(
+        "/admin/shortlist/send",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 403
+    assert response.json()["detail"] == "forbidden"
