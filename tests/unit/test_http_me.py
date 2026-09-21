@@ -83,6 +83,7 @@ def test_me_without_authorization_returns_401() -> None:
 
 
 def test_me_with_valid_corporate_jwt_returns_current_user() -> None:
+    """GET /me.role is app_role (default employee), never JWT role claim (D-76)."""
     private_key = ec.generate_private_key(ec.SECP256R1())
     jwk = _public_jwk(private_key)
     client = _client(jwk)
@@ -93,8 +94,53 @@ def test_me_with_valid_corporate_jwt_returns_current_user() -> None:
     assert body == {
         "id": "user-uuid-1",
         "email": "alice@sberbank.ru",
-        "role": "authenticated",
+        "role": "employee",
+        "display_name": None,
     }
+
+
+def test_me_with_seeded_admin_profile_returns_role_admin() -> None:
+    """Seeded profiles.role=admin is returned on GET /me (D-76); JWT claim stays authenticated."""
+    from backend.domain.current_user import CurrentUser
+
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    client, container = _app_bundle(jwk)
+    container.profiles._by_id["user-uuid-1"] = CurrentUser(
+        id="user-uuid-1",
+        email="alice@sberbank.ru",
+        role="admin",
+        display_name=None,
+    )
+    token = _mint(private_key, email="alice@sberbank.ru")
+    response = client.get("/me", headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 200
+    assert response.json()["role"] == "admin"
+
+
+def test_patch_me_sets_display_name_and_returns_updated_user() -> None:
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    client = _client(jwk)
+    token = _mint(private_key, email="alice@sberbank.ru")
+    headers = {"Authorization": f"Bearer {token}"}
+
+    patched = client.patch(
+        "/me",
+        headers=headers,
+        json={"display_name": "Алиса Иванова"},
+    )
+    assert patched.status_code == 200
+    assert patched.json() == {
+        "id": "user-uuid-1",
+        "email": "alice@sberbank.ru",
+        "role": "employee",
+        "display_name": "Алиса Иванова",
+    }
+
+    fetched = client.get("/me", headers=headers)
+    assert fetched.status_code == 200
+    assert fetched.json()["display_name"] == "Алиса Иванова"
 
 
 def test_me_with_disallowed_email_domain_returns_403() -> None:

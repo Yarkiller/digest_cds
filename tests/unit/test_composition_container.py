@@ -47,4 +47,4 @@ def test_in_memory_container_publish_and_index() -> None:
     user = app.profiles.get_or_upsert("user-uuid-1", "alice@sberbank.ru")
     assert user.id == "user-uuid-1"
     assert user.email == "alice@sberbank.ru"
-    assert user.role == "authenticated"
+    assert user.role == "employee"
