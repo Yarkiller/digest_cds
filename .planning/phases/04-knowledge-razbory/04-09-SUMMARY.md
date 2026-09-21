@@ -107,7 +107,7 @@ status: complete
 2. **Task 1 (GREEN): Register suites + TOC fix** — `00fb077` (feat)
 3. **Task 2: Unit gate + VALIDATION Nyquist refresh** — `fde14e4` (docs)
 
-**Plan metadata:** (pending final docs commit)
+**Plan metadata:** `7688392` (docs: complete plan)
 
 ## Files Created/Modified
 
