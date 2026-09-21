@@ -437,22 +437,19 @@ Stub email should link e.g. `/issues/{number}` so RequireAuth → `/login?return
 
 **If this table is empty:** N/A — several discretion items remain for planner/UI-SPEC.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Transactional publish vs PostgREST steps**
+1. **Transactional publish vs PostgREST steps** — **RESOLVED** (plan-locked in 05-05)
    - What we know: service_role adapters today are table-oriented; Phase 3 used Studio SQL for triggers when raw_sql unavailable.
-   - What's unclear: whether shared VM can apply a new `claim_and_publish_digest` RPC easily.
-   - Recommendation: Plan Wave 0 includes migration+RPC if feasible; else document ordered adapter methods + unique protection on `sent_at` claim and accept brief race window only in memory tests.
+   - Resolution: Prefer SECURITY INVOKER RPC `claim_and_publish_digest` (service_role execute only) when concurrent admins are realistic; otherwise documented ordered adapter steps with atomic `UPDATE … WHERE sent_at IS NULL RETURNING` claim (RESEARCH A4 / 05-05 must_haves). Memory tests simulate single-winner claim; live path chooses RPC-or-UPDATE in migration 005.
 
-2. **Where to store mailer delivery fields**
+2. **Where to store mailer delivery fields** — **RESOLVED** (plan-locked in 05-05, D-87 / A3)
    - What we know: D-87 requires persist; batches lack columns.
-   - What's unclear: columns vs payload-only.
-   - Recommendation: Add columns on batches (A3) + activity_events audit.
+   - Resolution: Migration `005_phase5_admin_shortlist.sql` adds nullable `delivery_status`, `recipient_count`, and `published_issue_id` and/or `issue_url` on `digest_shortlist_batches`, plus `activity_events` audit on send — not payload-only.
 
-3. **Admin user seed on shared VM**
+3. **Admin user seed on shared VM** — **RESOLVED** (plan-locked in 05-05 runbook §4e)
    - What we know: profiles upsert defaults to `employee`.
-   - What's unclear: which Auth user is promoted to `admin` for live proof.
-   - Recommendation: Runbook §4e documents `update profiles set role='admin' where email=…` (ops), plus memory fixture for unit tests.
+   - Resolution: Runbook §4e documents ops promote (`update profiles set role='admin' where email=…`); unit tests use in-memory admin fixture. No seeded Auth user identity locked in-repo — operator promotes one profile after migration apply.
 
 ## Environment Availability
 
