@@ -83,3 +83,34 @@ describe('mockSearchKnowledge', () => {
     assert.equal(hit.cover_url, null)
   })
 })
+
+describe('validateKnowledgeQuery', () => {
+  it('rejects blank and whitespace-only with Введите запрос (KNOW-01)', async () => {
+    const { validateKnowledgeQuery } = await import('../../web/src/services/knowledgeApi.js')
+    for (const q of ['', '   ', '\t\n']) {
+      const result = validateKnowledgeQuery(q)
+      assert.equal(result.ok, false)
+      assert.equal(result.code, 'EMPTY_QUERY')
+      assert.equal(result.message, 'Введите запрос')
+    }
+  })
+
+  it('rejects overlong queries with Сократите запрос (500 code points)', async () => {
+    const { validateKnowledgeQuery, MAX_QUERY_CODE_POINTS } = await import(
+      '../../web/src/services/knowledgeApi.js'
+    )
+    assert.equal(MAX_QUERY_CODE_POINTS, 500)
+    const overlong = 'я'.repeat(501)
+    const result = validateKnowledgeQuery(overlong)
+    assert.equal(result.ok, false)
+    assert.equal(result.code, 'QUERY_TOO_LONG')
+    assert.equal(result.message, 'Сократите запрос')
+  })
+
+  it('accepts trimmed query within limit', async () => {
+    const { validateKnowledgeQuery } = await import('../../web/src/services/knowledgeApi.js')
+    const result = validateKnowledgeQuery('  RAG  ')
+    assert.equal(result.ok, true)
+    assert.equal(result.q, 'RAG')
+  })
+})
