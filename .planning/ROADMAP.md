@@ -113,7 +113,7 @@ Plans:
   3. Razbor list shows name/date/status (or empty CTA); multi-section разбор has sticky TOC navigation
   4. Notebook download works when attached and is clearly disabled when missing; metrics/overview labeling is honest
 
-**Plans**: 9/9 plans executed
+**Plans**: 9/9 plans executed (+ 04-10 gap closure for G-04-2)
 **UI hint**: yes
 
 Plans:
@@ -149,6 +149,10 @@ Plans:
 **Wave 8** *(blocked on Wave 7 completion)*
 
 - [x] 04-09-PLAN.md — Playwright honesty gate + VALIDATION refresh
+
+**Wave 9** *(gap closure — UAT G-04-2)*
+
+- [ ] 04-10-PLAN.md — Gap G-04-2: announcement rows show «готовится» placeholder, suppress read CTA (RAZB-01)
 
 ### Phase 5: Admin Digest Publish
 
