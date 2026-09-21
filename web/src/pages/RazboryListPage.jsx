@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import ChronologyItem from '../components/ChronologyItem.jsx'
 import ServiceUnavailable from '../components/ServiceUnavailable.jsx'
 import { clearFailNextRazboryFetch, fetchRazbory } from '../services/razboryApi.js'
 
 /**
- * Razbory chronology list at /razbory (RAZB-01 / D-66 / D-67 / D-68).
- * Empty CTA (D-69) lands in 04-05 Task 2.
+ * Razbory chronology list at /razbory (RAZB-01 / D-66…D-69).
  */
 export default function RazboryListPage() {
   const [items, setItems] = useState([])
@@ -50,6 +50,23 @@ export default function RazboryListPage() {
       ) : null}
 
       {status === 'error' ? <ServiceUnavailable onRetry={reload} /> : null}
+
+      {status === 'ready' && items.length === 0 ? (
+        <div data-testid="razbory-empty">
+          <h2 className="font-display text-2xl font-semibold">Разборов пока нет</h2>
+          <p className="mt-3 max-w-prose text-ink-2">
+            Когда появятся — опубликуем здесь. Пока можно проголосовать за следующую тему.
+          </p>
+          <p className="mt-6">
+            <Link
+              to="/voting"
+              className="inline-flex min-h-11 items-center font-medium text-accent no-underline hover:underline"
+            >
+              К голосованию
+            </Link>
+          </p>
+        </div>
+      ) : null}
 
       {status === 'ready' && items.length > 0 ? (
         <div data-testid="razbory-list">
