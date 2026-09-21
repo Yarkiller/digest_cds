@@ -3,16 +3,16 @@ gsd_state_version: 1.0
 current_phase: 05
 current_phase_name: Admin Digest Publish
 status: executing
-stopped_at: Completed 05-07-PLAN.md
-last_updated: "2026-09-21T18:31:43.397Z"
+stopped_at: Completed 05-08-PLAN.md
+last_updated: "2026-09-21T18:59:27.093Z"
 last_activity: 2026-09-21
 last_activity_desc: Phase 05 execution started
-state_head: 737920bf1649a80347404f38017f1a885b8e96c1
+state_head: b0a0ee895fed0e990978b19465eb3989268ed25b
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 40
-  completed_plans: 37
+  completed_plans: 38
   percent: 80
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-09-20)
 ## Current Position
 
 Phase: 05 (Admin Digest Publish) — EXECUTING
-Plan: 8 of 9
+Plan: 9 of 9
 Status: Ready to execute
 Last activity: 2026-09-21 — Completed 05-07 preview composition spine (G-05-1)
 
@@ -91,6 +91,7 @@ Progress: [████████░░] 80% (37/40 plans)
 | Phase 05-admin-digest-publish P05 | continuation-closeout | 3 tasks | 9 files |
 | Phase 05-admin-digest-publish P06 | 12min | 2 tasks | 6 files |
 | Phase 05-admin-digest-publish P07 | 25min | 3 tasks | 10 files |
+| Phase 05 P08 | 25min | 3 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -185,6 +186,8 @@ Decisions are logged in PROJECT.md Key Decisions and `<decisions>` blocks.
 - [Phase 05]: ADMIN-08 e2e via auth.spec returnUrl=/issues/{n}; open-redirect // rejected
 - [Phase 05]: Default preview blocks = approved∩ready by rank until 05-08 reorder UI
 - [Phase 05]: Pure adminPreviewComposition.js for node --test without Vite import.meta
+- [Phase 05]: Button reorder (not HTML5 DnD) for a11y and Playwright stability
+- [Phase 05]: Publication order via material_ids + rank rewrite before claim_and_publish_digest (no new RPC)
 
 ### Pending Todos
 
@@ -207,7 +210,7 @@ None. Live FE↔BE proof approved 2026-09-19.
 
 ## Session Continuity
 
-Last session: 2026-09-21T18:31:42.661Z
-Stopped at: Completed 05-07-PLAN.md
+Last session: 2026-09-21T18:59:26.272Z
+Stopped at: Completed 05-08-PLAN.md
 Resume file: None
 Verification: `.planning/phases/01-platform-foundation-auth/01-VERIFICATION.md`
