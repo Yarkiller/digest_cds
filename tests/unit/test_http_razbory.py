@@ -80,7 +80,6 @@ def _client(
     *,
     notebook_root: str = "",
 ) -> TestClient:
-    del notebook_root  # wired in GREEN via Settings.notebook_root + NotebookStorage
     settings = Settings(
         api_cors_origins="http://127.0.0.1:5173",
         allowed_email_domains="@sberbank.ru,@omega.sbrf.ru",
@@ -89,10 +88,18 @@ def _client(
         supabase_secret_key="",
         supabase_jwks_url="https://unused.example/jwks.json",
         supabase_jwt_issuer=ISSUER,
+        notebook_root=notebook_root,
     )
+    wired = container
+    if wired is None:
+        wired = build_in_memory_container(notebook_root=notebook_root or None)
+    elif notebook_root:
+        from backend.infrastructure.local_notebook_storage import LocalNotebookStorage
+
+        wired.notebook_storage = LocalNotebookStorage(notebook_root)
     app = create_app(
         settings,
-        container=container or build_in_memory_container(),
+        container=wired,
         signing_key_resolver=lambda _token: signing_jwk,
     )
     return TestClient(app)

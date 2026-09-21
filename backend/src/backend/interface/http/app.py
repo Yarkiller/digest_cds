@@ -20,7 +20,7 @@ def resolve_container(settings: Settings) -> AppContainer:
         from backend.composition.live import build_live_container
 
         return build_live_container(settings)
-    return build_in_memory_container()
+    return build_in_memory_container(notebook_root=settings.notebook_root or None)
 
 
 def create_app(

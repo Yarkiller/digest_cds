@@ -20,6 +20,24 @@ class RazborNotFoundError(DomainError):
         self.razbor_id = razbor_id
 
 
+class NotebookNotAvailableError(DomainError):
+    """Raised when a razbor has no notebook or the file is missing (RAZB-03 / D-72)."""
+
+    def __init__(self, razbor_id: int | None = None, *, path: str | None = None) -> None:
+        target = f"razbor {razbor_id}" if razbor_id is not None else (path or "notebook")
+        super().__init__(f"notebook not available for {target}")
+        self.razbor_id = razbor_id
+        self.path = path
+
+
+class NotebookPathInvalidError(DomainError):
+    """Raised when notebook_path escapes NOTEBOOK_ROOT (T-04-09)."""
+
+    def __init__(self, path: str) -> None:
+        super().__init__(f"notebook path invalid: {path!r}")
+        self.path = path
+
+
 class MaterialValidationError(DomainError):
     def __init__(self, message: str) -> None:
         super().__init__(message)

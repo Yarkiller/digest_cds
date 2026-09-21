@@ -5,6 +5,7 @@ from __future__ import annotations
 from backend.composition.container import AppContainer
 from backend.composition.settings import Settings
 from backend.application.ports.query_embedder import StubQueryEmbedder
+from backend.infrastructure.local_notebook_storage import LocalNotebookStorage
 from backend.tests_support.in_memory import InMemoryKnowledgeChunkRepository, InMemoryRazborRepository
 from supabase_integration import (
     SupabaseIssueRepository,
@@ -48,4 +49,5 @@ def build_live_container(settings: Settings) -> AppContainer:
         votes=SupabaseVoteRepository(admin_client),
         embedder=StubQueryEmbedder(),
         razbors=InMemoryRazborRepository(),
+        notebook_storage=LocalNotebookStorage(settings.notebook_root or "."),
     )

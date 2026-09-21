@@ -21,6 +21,8 @@ class Settings:
     supabase_jwt_issuer: str = ""
     # memory (default, unit tests) | live (Supabase adapters via composition/live.py)
     app_container: str = "memory"
+    # Local filesystem root for authenticated .ipynb FileResponse (RAZB-03 / A5)
+    notebook_root: str = ""
 
     @property
     def cors_origins(self) -> tuple[str, ...]:
@@ -45,4 +47,5 @@ class Settings:
             supabase_jwks_url=env.get("SUPABASE_JWKS_URL", ""),
             supabase_jwt_issuer=env.get("SUPABASE_JWT_ISSUER", ""),
             app_container=mode,
+            notebook_root=env.get("NOTEBOOK_ROOT", ""),
         )

@@ -1,96 +1,105 @@
-"""Composition root: wire adapters into use-cases."""
-
-from __future__ import annotations
-
-from dataclasses import dataclass
-
-from backend.application.ports.issue_repository import IssueRepository
-from backend.application.ports.knowledge_chunk_repository import KnowledgeChunkRepository
-from backend.application.ports.material_repository import MaterialRepository
-from backend.application.ports.ping_recorder import PingRecorder
-from backend.application.ports.profile_repository import ProfileRepository
-from backend.application.ports.query_embedder import QueryEmbedder, StubQueryEmbedder
-from backend.application.ports.razbor_repository import RazborRepository
-from backend.application.ports.vote_repository import VoteRepository
-from backend.application.ports.voting_cycle_reader import VotingCycleReader
-from backend.application.use_cases.index_material_chunks import index_material_chunks
-from backend.application.use_cases.publish_material import publish_material
-from backend.application.use_cases.search_knowledge import DEFAULT_SEARCH_LIMIT, search_knowledge
-from backend.domain.issue import Issue
-from backend.domain.knowledge import KnowledgeHit
-from backend.domain.material import Material
-from backend.domain.voting_cycle import VotingCycle
-from backend.tests_support.in_memory import (
-    InMemoryIssueRepository,
-    InMemoryKnowledgeChunkRepository,
-    InMemoryMaterialRepository,
-    InMemoryPingRecorder,
-    InMemoryProfileRepository,
-    InMemoryRazborRepository,
-    InMemoryVoteRepository,
-    InMemoryVotingCycleReader,
-)
-
-
-@dataclass
-class AppContainer:
-    materials: MaterialRepository
-    chunks: KnowledgeChunkRepository
-    profiles: ProfileRepository
-    pings: PingRecorder
-    issues: IssueRepository
-    voting_cycles: VotingCycleReader
-    votes: VoteRepository
-    embedder: QueryEmbedder
-    razbors: RazborRepository
-
-    def publish(self, material_id: int) -> Material:
-        return publish_material(self.materials, material_id)
-
-    def index(self, material_id: int, *, embedding_model_id: str, embed) -> list:
-        return index_material_chunks(
-            materials=self.materials,
-            chunks=self.chunks,
-            material_id=material_id,
-            embedding_model_id=embedding_model_id,
-            embed=embed,
-        )
-
-    def search(
-        self,
-        *,
-        query_embedding: list[float] | None = None,
-        query_text: str,
-        role_filter: str | None = None,
-        limit: int = DEFAULT_SEARCH_LIMIT,
-        offset: int = 0,
-    ) -> list[KnowledgeHit]:
-        embedding = query_embedding if query_embedding is not None else self.embedder.embed(query_text)
-        return search_knowledge(
-            chunks=self.chunks,
-            query_embedding=embedding,
-            query_text=query_text,
-            role_filter=role_filter,
-            limit=limit,
-            offset=offset,
-        )
-
-
-def build_in_memory_container(
-    materials: list[Material] | None = None,
-    issues: list[Issue] | None = None,
-    voting_cycles: list[VotingCycle] | None = None,
-) -> AppContainer:
-    """Default local wiring until supabase-integration adapters are connected."""
-    materials_repo = InMemoryMaterialRepository(materials)
-    return AppContainer(
-        materials=materials_repo,
-        chunks=InMemoryKnowledgeChunkRepository(materials=materials_repo),
-        profiles=InMemoryProfileRepository(),
-        pings=InMemoryPingRecorder(),
-        issues=InMemoryIssueRepository(issues),
-        voting_cycles=InMemoryVotingCycleReader(voting_cycles),
-        votes=InMemoryVoteRepository(),
-        embedder=StubQueryEmbedder(),
-        razbors=InMemoryRazborRepository(),
-    )
+"""Composition root: wire adapters into use-cases."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from pathlib import Path
+
+from backend.application.ports.issue_repository import IssueRepository
+from backend.application.ports.knowledge_chunk_repository import KnowledgeChunkRepository
+from backend.application.ports.material_repository import MaterialRepository
+from backend.application.ports.notebook_storage import NotebookStorage
+from backend.application.ports.ping_recorder import PingRecorder
+from backend.application.ports.profile_repository import ProfileRepository
+from backend.application.ports.query_embedder import QueryEmbedder, StubQueryEmbedder
+from backend.application.ports.razbor_repository import RazborRepository
+from backend.application.ports.vote_repository import VoteRepository
+from backend.application.ports.voting_cycle_reader import VotingCycleReader
+from backend.application.use_cases.index_material_chunks import index_material_chunks
+from backend.application.use_cases.publish_material import publish_material
+from backend.application.use_cases.search_knowledge import DEFAULT_SEARCH_LIMIT, search_knowledge
+from backend.domain.issue import Issue
+from backend.domain.knowledge import KnowledgeHit
+from backend.domain.material import Material
+from backend.domain.voting_cycle import VotingCycle
+from backend.infrastructure.local_notebook_storage import LocalNotebookStorage
+from backend.tests_support.in_memory import (
+    InMemoryIssueRepository,
+    InMemoryKnowledgeChunkRepository,
+    InMemoryMaterialRepository,
+    InMemoryPingRecorder,
+    InMemoryProfileRepository,
+    InMemoryRazborRepository,
+    InMemoryVoteRepository,
+    InMemoryVotingCycleReader,
+)
+
+
+@dataclass
+class AppContainer:
+    materials: MaterialRepository
+    chunks: KnowledgeChunkRepository
+    profiles: ProfileRepository
+    pings: PingRecorder
+    issues: IssueRepository
+    voting_cycles: VotingCycleReader
+    votes: VoteRepository
+    embedder: QueryEmbedder
+    razbors: RazborRepository
+    notebook_storage: NotebookStorage
+
+    def publish(self, material_id: int) -> Material:
+        return publish_material(self.materials, material_id)
+
+    def index(self, material_id: int, *, embedding_model_id: str, embed) -> list:
+        return index_material_chunks(
+            materials=self.materials,
+            chunks=self.chunks,
+            material_id=material_id,
+            embedding_model_id=embedding_model_id,
+            embed=embed,
+        )
+
+    def search(
+        self,
+        *,
+        query_embedding: list[float] | None = None,
+        query_text: str,
+        role_filter: str | None = None,
+        limit: int = DEFAULT_SEARCH_LIMIT,
+        offset: int = 0,
+    ) -> list[KnowledgeHit]:
+        embedding = query_embedding if query_embedding is not None else self.embedder.embed(query_text)
+        return search_knowledge(
+            chunks=self.chunks,
+            query_embedding=embedding,
+            query_text=query_text,
+            role_filter=role_filter,
+            limit=limit,
+            offset=offset,
+        )
+
+
+def build_in_memory_container(
+    materials: list[Material] | None = None,
+    issues: list[Issue] | None = None,
+    voting_cycles: list[VotingCycle] | None = None,
+    *,
+    notebook_root: str | Path | None = None,
+) -> AppContainer:
+    """Default local wiring until supabase-integration adapters are connected."""
+    materials_repo = InMemoryMaterialRepository(materials)
+    root = Path(notebook_root) if notebook_root else Path(".")
+    return AppContainer(
+        materials=materials_repo,
+        chunks=InMemoryKnowledgeChunkRepository(materials=materials_repo),
+        profiles=InMemoryProfileRepository(),
+        pings=InMemoryPingRecorder(),
+        issues=InMemoryIssueRepository(issues),
+        voting_cycles=InMemoryVotingCycleReader(voting_cycles),
+        votes=InMemoryVoteRepository(),
+        embedder=StubQueryEmbedder(),
+        razbors=InMemoryRazborRepository(),
+        notebook_storage=LocalNotebookStorage(root),
+    )
+
