@@ -45,6 +45,51 @@ def test_get_admin_shortlist_empty_batch_returns_empty_items() -> None:
     result = get_admin_shortlist(repo)
     assert result.batch_id is None
     assert result.items == ()
+    assert result.digest_rest is False
+    assert result.days_until_next_batch is None
+
+
+def test_get_admin_shortlist_after_send_returns_digest_rest() -> None:
+    """G-05-2: current None + latest sent → rest DTO (not D-80 empty)."""
+    sent = ShortlistBatch(
+        id=42,
+        week_start=date(2026, 9, 15),
+        sent_at=datetime(2026, 9, 21, 12, 0, tzinfo=timezone.utc),
+        items=(_item(material_id=1, rank=1),),
+    )
+    repo = InMemoryShortlistRepository(batch=sent)
+    assert repo.get_current_batch() is None
+    assert repo.get_latest_batch() is not None
+    assert repo.get_latest_batch().sent_at is not None
+
+    result = get_admin_shortlist(repo)
+    assert result.batch_id is None
+    assert result.items == ()
+    assert result.digest_rest is True
+    assert result.days_until_next_batch == 7
+
+
+def test_get_admin_shortlist_no_latest_is_not_digest_rest() -> None:
+    """G-05-2: genuine empty (no latest) stays D-80-shaped."""
+    result = get_admin_shortlist(InMemoryShortlistRepository(batch=None))
+    assert result.digest_rest is False
+    assert result.days_until_next_batch is None
+    assert result.items == ()
+
+
+def test_get_admin_shortlist_unsent_batch_is_not_digest_rest() -> None:
+    """G-05-2: populated unsent shortlist keeps digest_rest=False."""
+    batch = ShortlistBatch(
+        id=10,
+        week_start=date(2026, 9, 15),
+        sent_at=None,
+        items=(_item(material_id=1, rank=1),),
+    )
+    result = get_admin_shortlist(InMemoryShortlistRepository(batch=batch))
+    assert result.batch_id == 10
+    assert len(result.items) == 1
+    assert result.digest_rest is False
+    assert result.days_until_next_batch is None
 
 
 def test_get_admin_shortlist_caps_at_five_ranked_items() -> None:

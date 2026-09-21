@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import time
-from datetime import date
+from datetime import date, datetime, timezone
 from typing import Any
 
 import jwt
@@ -205,7 +205,57 @@ def test_admin_shortlist_empty_batch_returns_200_empty_items() -> None:
     )
 
     assert response.status_code == 200
-    assert response.json() == {"batch_id": None, "items": []}
+    assert response.json() == {
+        "batch_id": None,
+        "items": [],
+        "digest_rest": False,
+        "days_until_next_batch": None,
+    }
+
+
+def test_admin_shortlist_after_send_returns_digest_rest() -> None:
+    """G-05-2: sent latest batch → digest_rest + weekly cadence days."""
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    container = build_in_memory_container()
+    container.shortlist = InMemoryShortlistRepository(
+        batch=ShortlistBatch(
+            id=99,
+            week_start=date(2026, 9, 15),
+            sent_at=datetime(2026, 9, 21, 12, 0, tzinfo=timezone.utc),
+            items=(
+                ShortlistItem(
+                    material_id=1,
+                    rank=1,
+                    title="Sent",
+                    material_status="ready",
+                    decision="approved",
+                    score=0.9,
+                    score_factors={"A": 1, "B": 2},
+                ),
+            ),
+        )
+    )
+    _seed_profile(
+        container,
+        user_id="admin-uuid-1",
+        email="admin@sberbank.ru",
+        role="admin",
+    )
+    client = _client(jwk, container)
+    token = _mint(private_key, email="admin@sberbank.ru", sub="admin-uuid-1")
+
+    response = client.get(
+        "/admin/shortlist",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["batch_id"] is None
+    assert body["items"] == []
+    assert body["digest_rest"] is True
+    assert body["days_until_next_batch"] == 7
 
 
 def test_admin_shortlist_persistence_error_returns_503() -> None:
