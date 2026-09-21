@@ -2,17 +2,17 @@
 gsd_state_version: 1.0
 current_phase: 05
 current_phase_name: Admin Digest Publish
-status: executing
-stopped_at: Completed 05-08-PLAN.md
-last_updated: "2026-09-21T18:59:27.093Z"
+status: verifying
+stopped_at: Completed 05-09-PLAN.md
+last_updated: "2026-09-21T19:13:20.743Z"
 last_activity: 2026-09-21
 last_activity_desc: Phase 05 execution started
-state_head: b0a0ee895fed0e990978b19465eb3989268ed25b
+state_head: 3f0c4255452116b7cc209e70694a05cc3cb46a36
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 40
-  completed_plans: 38
+  completed_plans: 39
   percent: 80
 ---
 
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-09-20)
 
 Phase: 05 (Admin Digest Publish) — EXECUTING
 Plan: 9 of 9
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-09-21 — Completed 05-07 preview composition spine (G-05-1)
 
 Progress: [████████░░] 80% (37/40 plans)
@@ -92,6 +92,7 @@ Progress: [████████░░] 80% (37/40 plans)
 | Phase 05-admin-digest-publish P06 | 12min | 2 tasks | 6 files |
 | Phase 05-admin-digest-publish P07 | 25min | 3 tasks | 10 files |
 | Phase 05 P08 | 25min | 3 tasks | 11 files |
+| Phase 05-admin-digest-publish P09 | 10min | 3 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -188,6 +189,8 @@ Decisions are logged in PROJECT.md Key Decisions and `<decisions>` blocks.
 - [Phase 05]: Pure adminPreviewComposition.js for node --test without Vite import.meta
 - [Phase 05]: Button reorder (not HTML5 DnD) for a11y and Playwright stability
 - [Phase 05]: Publication order via material_ids + rank rewrite before claim_and_publish_digest (no new RPC)
+- [Phase 05]: days_until_next_batch is DIGEST_WEEKLY_CADENCE_DAYS=7 from product weekly cadence — not voting_cycles or week_start math
+- [Phase 05]: D-80 empty copy only when digest_rest is false; post-send/cold rest uses separate rest surface
 
 ### Pending Todos
 
@@ -210,7 +213,7 @@ None. Live FE↔BE proof approved 2026-09-19.
 
 ## Session Continuity
 
-Last session: 2026-09-21T18:59:26.272Z
-Stopped at: Completed 05-08-PLAN.md
+Last session: 2026-09-21T19:13:20.005Z
+Stopped at: Completed 05-09-PLAN.md
 Resume file: None
 Verification: `.planning/phases/01-platform-foundation-auth/01-VERIFICATION.md`
