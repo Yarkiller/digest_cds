@@ -216,6 +216,25 @@ test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07
     await emailDialog.getByRole("button", { name: "Закрыть", exact: true }).click();
   });
 
+  test("Вводный текст appears in Превью письма (G-05-1 / ADMIN-04)", async ({
+    page,
+  }) => {
+    const introPhrase = `Добрый день коллеги! G05-1-${Date.now()}`;
+    await gotoAsRole(page, "admin", "/admin/digest");
+    await page.getByLabel(/вводный текст/i).fill(introPhrase);
+    await approveReadyRows(page, [0, 1]);
+
+    await page.getByRole("button", { name: /предпросмотр письма/i }).click();
+    const emailDialog = page.getByRole("dialog").filter({
+      has: page.getByRole("heading", { name: "Превью письма", exact: true }),
+    });
+    await expect(emailDialog.getByTestId("email-preview-body")).toContainText(
+      introPhrase,
+    );
+    await expect(emailDialog.locator("li")).toHaveCount(2);
+    await emailDialog.getByRole("button", { name: "Закрыть", exact: true }).click();
+  });
+
   test("превью unlocks send; confirm records Отправка записана + issue link (D-90)", async ({
     page,
   }) => {
