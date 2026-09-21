@@ -9,6 +9,7 @@ from supabase_integration.material_repository import SupabaseMaterialRepository
 from supabase_integration.ping_recorder import SupabasePingRecorder
 from supabase_integration.profile_repository import SupabaseProfileRepository
 from supabase_integration.razbor_repository import SupabaseRazborRepository
+from supabase_integration.shortlist_repository import SupabaseShortlistRepository
 from supabase_integration.vote_repository import SupabaseVoteRepository
 from supabase_integration.voting_cycle_repository import SupabaseVotingCycleReader
 
@@ -24,6 +25,7 @@ __all__ = [
     "SupabasePingRecorder",
     "SupabaseProfileRepository",
     "SupabaseRazborRepository",
+    "SupabaseShortlistRepository",
     "SupabaseVoteRepository",
     "SupabaseVotingCycleReader",
     "create_publishable_client",
