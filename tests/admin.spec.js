@@ -5,10 +5,18 @@ const { expect, test } = require("@playwright/test");
  * Role harness: sticky window.__DIGEST_MOCK_ME_ROLE__ (employee default).
  */
 
-async function gotoAsRole(page, role, path = "/") {
-  await page.addInitScript((r) => {
-    window.__DIGEST_MOCK_ME_ROLE__ = r;
-  }, role);
+async function gotoAsRole(page, role, path = "/", extraInit) {
+  await page.addInitScript(
+    ({ r, extra }) => {
+      window.__DIGEST_MOCK_ME_ROLE__ = r;
+      if (extra && typeof extra === "object") {
+        for (const [key, value] of Object.entries(extra)) {
+          window[key] = value;
+        }
+      }
+    },
+    { r: role, extra: extraInit ?? null },
+  );
   await page.goto(path);
 }
 
@@ -41,5 +49,45 @@ test.describe("Admin Digest — role gate (D-75, D-76, ADMIN-01)", () => {
     await expect(cta).toHaveAttribute("href", "/");
     await expect(page.getByText(/shortlist дайджеста/i)).toHaveCount(0);
     await expect(page.getByTestId("admin-shortlist")).toHaveCount(0);
+  });
+});
+
+test.describe("Admin Digest — shortlist triage (ADMIN-01…03, ADMIN-05, D-79, D-80)", () => {
+  test("populated shortlist shows ≤5 rows with badges and score factors", async ({
+    page,
+  }) => {
+    await gotoAsRole(page, "admin", "/admin/digest");
+    await expect(
+      page.getByRole("heading", { name: "Shortlist дайджеста" }),
+    ).toBeVisible();
+    const list = page.getByTestId("admin-shortlist");
+    await expect(list).toBeVisible();
+    const rows = page.getByTestId("admin-shortlist-row");
+    await expect(rows).toHaveCount(5);
+    await expect(rows.first()).toContainText(/ready/i);
+    await expect(page.getByText("обоснование недоступно").first()).toBeVisible();
+    await expect(page.getByText(/relevance · freshness/i).first()).toBeVisible();
+  });
+
+  test("empty shortlist shows Кандидатов пока нет without пайплайн", async ({
+    page,
+  }) => {
+    await gotoAsRole(page, "admin", "/admin/digest", {
+      __DIGEST_ADMIN_EMPTY__: true,
+    });
+    await expect(
+      page.getByRole("heading", { name: "Кандидатов пока нет" }),
+    ).toBeVisible();
+    await expect(page.getByRole("button", { name: /обновить список/i })).toBeVisible();
+    await expect(page.getByText(/пайплайн/i)).toHaveCount(0);
+    await expect(page.getByTestId("admin-shortlist-row")).toHaveCount(0);
+  });
+
+  test("Одобрить выбранные persists and shows одобрен caption", async ({ page }) => {
+    await gotoAsRole(page, "admin", "/admin/digest");
+    const firstRow = page.getByTestId("admin-shortlist-row").first();
+    await firstRow.getByRole("checkbox").check();
+    await page.getByRole("button", { name: /одобрить выбранные/i }).click();
+    await expect(firstRow.getByText("одобрен")).toBeVisible();
   });
 });
