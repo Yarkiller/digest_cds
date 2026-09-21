@@ -210,3 +210,19 @@ def test_search_knowledge_blank_query_raises_validation_error() -> None:
             role_filter=None,
         )
     assert "empty_query" in str(exc_info.value)
+
+
+def test_search_knowledge_overlong_query_raises_validation_error() -> None:
+    """Max length 500 Unicode code points (encoding probe / KNOW-02)."""
+    materials = InMemoryMaterialRepository([])
+    chunks = InMemoryKnowledgeChunkRepository(materials=materials)
+    overlong = "я" * 501
+    assert len(overlong) == 501
+    with pytest.raises(KnowledgeQueryValidationError) as exc_info:
+        search_knowledge(
+            chunks=chunks,
+            query_embedding=[0.0] * 1024,
+            query_text=overlong,
+            role_filter=None,
+        )
+    assert "query_too_long" in str(exc_info.value)

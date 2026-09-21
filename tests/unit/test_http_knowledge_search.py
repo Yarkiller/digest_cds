@@ -170,3 +170,80 @@ def test_knowledge_search_returns_200_without_score_field() -> None:
     assert item.get("cover_url") is None
     assert "score" not in item
     assert "score" not in body
+
+
+def test_knowledge_search_blank_q_returns_400_empty_query() -> None:
+    """KNOW-01: whitespace-only q → 400 empty_query when route is invoked."""
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    client = _client(jwk)
+    token = _mint(private_key, email="alice@sberbank.ru")
+    response = client.get(
+        "/knowledge/search",
+        params={"q": "   \t  "},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert response.status_code == 400
+    assert response.json()["detail"] == "empty_query"
+
+
+def test_knowledge_search_overlong_q_returns_400() -> None:
+    """Overlong q (>500 Unicode code points) → 400 when route is invoked."""
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    client = _client(jwk)
+    token = _mint(private_key, email="alice@sberbank.ru")
+    # 501 code points (CJK ideograph counts as one each)
+    overlong = "字" * 501
+    assert len(overlong) == 501
+    response = client.get(
+        "/knowledge/search",
+        params={"q": overlong},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert response.status_code == 400
+    assert response.json()["detail"] == "query_too_long"
+
+
+def test_knowledge_search_has_more_true_when_more_materials_exist() -> None:
+    """D-61: has_more true when results beyond limit exist."""
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    now = datetime(2026, 3, 17, tzinfo=timezone.utc)
+    embedder = StubQueryEmbedder()
+    query = "HNSW"
+    embedding = embedder.embed(query)
+    materials = [
+        _ready_material(material_id=i, slug=f"mat-{i}")
+        for i in range(1, 4)
+    ]
+    # Override titles for uniqueness — _ready_material uses fixed title; slug differs.
+    chunks_by_material = {
+        i: [
+            KnowledgeChunk(
+                id=i,
+                material_id=i,
+                chunk_index=0,
+                heading="Setup",
+                content_md=f"HNSW topic material {i}",
+                embedding=embedding,
+                embedding_model_id="foundry-embed-v1",
+                content_sha256="sha",
+                created_at=now,
+            )
+        ]
+        for i in range(1, 4)
+    }
+    container = _seeded_container(materials, chunks_by_material)
+    client = _client(jwk, container)
+    token = _mint(private_key, email="alice@sberbank.ru")
+    response = client.get(
+        "/knowledge/search",
+        params={"q": query, "limit": 2, "offset": 0},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["has_more"] is True
+    assert body["limit"] == 2
+    assert len(body["items"]) == 2
