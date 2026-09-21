@@ -398,9 +398,13 @@ export async function previewEmail(accessToken, composition = {}) {
 }
 
 /**
+ * @param {string} [accessToken]
+ * @param {{ material_ids?: number[] }} [options]
  * @returns {Promise<{ batch_id: number, issue_number: number, issue_url: string, delivery_status: string, recipient_count: number, message: string }>}
  */
-export async function sendDigest(accessToken) {
+export async function sendDigest(accessToken, options = {}) {
+  const materialIds = Array.isArray(options?.material_ids) ? options.material_ids : null
+
   if (useMocks()) {
     await delay(100)
     if (failNextSend) {
@@ -430,6 +434,15 @@ export async function sendDigest(accessToken) {
         retryable: false,
       })
     }
+    if (materialIds != null) {
+      const poolIds = new Set(pool.map((item) => item.material_id))
+      if (materialIds.length !== poolIds.size || materialIds.some((id) => !poolIds.has(id))) {
+        throw new AdminApiError('Некорректный порядок материалов.', {
+          code: 'BAD_REQUEST',
+          retryable: false,
+        })
+      }
+    }
     mockBatch.sent_at = new Date().toISOString()
     return {
       batch_id: mockBatch.batch_id ?? 1,
@@ -446,6 +459,8 @@ export async function sendDigest(accessToken) {
     throw new AdminApiError('Требуется вход.', { code: 'UNAUTHORIZED', retryable: false })
   }
 
+  const payload = materialIds != null ? { material_ids: materialIds } : {}
+
   let response
   try {
     response = await fetch(`${apiBase()}/admin/shortlist/send`, {
@@ -454,7 +469,7 @@ export async function sendDigest(accessToken) {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
-      body: '{}',
+      body: JSON.stringify(payload),
     })
   } catch {
     throw new AdminApiError('Рассылка не отправлена', { code: 'NETWORK', retryable: true })

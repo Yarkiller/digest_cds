@@ -31,9 +31,14 @@ class DigestPublisher(Protocol):
         sent_at: datetime,
         period_label: str,
         title: str,
+        material_ids: list[int] | None = None,
     ) -> DigestPublication:
         """Atomically claim the unsent batch (``sent_at IS NULL``), publish its approved∩ready
         issue, and stamp delivery columns — all in one transaction.
+
+        When ``material_ids`` is provided, issue item positions follow that order (G-05-1);
+        adapters may rewrite shortlist ranks before the claim RPC so the published issue
+        matches the admin's block order.
 
         Raises:
             AlreadySentError: batch already claimed or missing (lost the race, D-89).

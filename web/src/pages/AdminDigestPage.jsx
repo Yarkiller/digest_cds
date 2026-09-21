@@ -327,7 +327,10 @@ export default function AdminDigestPage() {
     setSending(true)
     setBanner('')
     try {
-      const result = await sendDigest()
+      const materialIds = issueBlocks
+        .filter((block) => block.kind === 'material')
+        .map((block) => block.material_id)
+      const result = await sendDigest(undefined, { material_ids: materialIds })
       setBanner(result.message || 'Отправка записана')
       setIssueUrl(typeof result.issue_url === 'string' ? result.issue_url : '')
       setBatchSent(true)

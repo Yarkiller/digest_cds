@@ -466,6 +466,7 @@ class InMemoryDigestPublisher:
         sent_at: datetime,
         period_label: str,
         title: str,
+        material_ids: list[int] | None = None,
     ) -> DigestPublication:
         shortlist = self._shortlist_provider()
         issues = self._issues_provider()
@@ -481,15 +482,20 @@ class InMemoryDigestPublisher:
             )
             if not pool:
                 raise EmptySendPoolError(batch_id=batch_id)
+            if material_ids is not None:
+                by_id = {item.material_id: item for item in pool}
+                pool = [by_id[mid] for mid in material_ids if mid in by_id]
+                if len(pool) != len(by_id):
+                    raise EmptySendPoolError(batch_id=batch_id)
             issue_items = tuple(
                 IssueItem(
                     slug=f"material-{item.material_id}",
                     title=item.title,
-                    position=item.rank,
+                    position=index,
                     format="article",
                     reading_minutes=5,
                 )
-                for item in pool
+                for index, item in enumerate(pool, start=1)
             )
             published = issues.publish(
                 period_label=period_label,

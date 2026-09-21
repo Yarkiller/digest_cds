@@ -19,6 +19,7 @@ from backend.domain.errors import (
     DraftInSendPoolError,
     EmptySendPoolError,
     InvalidPreviewCompositionError,
+    InvalidSendOrderError,
     InvalidShortlistDecisionError,
     PersistenceError,
     ShortlistNotFoundError,
@@ -94,6 +95,12 @@ class DigestPreviewRequest(BaseModel):
 
     intro: str = ""
     blocks: list[DigestPreviewMaterialBlockRequest | DigestPreviewTextBlockRequest] | None = None
+
+
+class SendDigestRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    material_ids: list[int] | None = None
 
 
 class SendDigestResponse(BaseModel):
@@ -284,10 +291,12 @@ def post_shortlist_preview(
 )
 def post_shortlist_send(
     request: Request,
+    body: SendDigestRequest | None = None,
     admin: CurrentUser = Depends(require_admin),
 ) -> SendDigestResponse:
     container = _require_container(request)
     shortlist = _require_shortlist(request)
+    payload = body or SendDigestRequest()
     try:
         result = send_digest(
             shortlist,
@@ -295,6 +304,7 @@ def post_shortlist_send(
             container.mailer,
             container.pings,
             actor_user_id=admin.id,
+            material_ids=payload.material_ids,
         )
     except DraftInSendPoolError as exc:
         raise HTTPException(
@@ -303,6 +313,11 @@ def post_shortlist_send(
                 "code": "draft_in_send_pool",
                 "draft_material_ids": exc.draft_material_ids,
             },
+        ) from exc
+    except InvalidSendOrderError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="invalid_send_order",
         ) from exc
     except EmptySendPoolError as exc:
         raise HTTPException(

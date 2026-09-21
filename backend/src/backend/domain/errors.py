@@ -150,6 +150,18 @@ class DraftInSendPoolError(DomainError):
         self.batch_id = batch_id
 
 
+class InvalidSendOrderError(DomainError):
+    """Raised when send material_ids is not an exact permutation of approved∩ready (G-05-1)."""
+
+    def __init__(self, *, batch_id: int | None = None) -> None:
+        super().__init__(
+            f"invalid send material_ids for batch {batch_id}"
+            if batch_id is not None
+            else "invalid send material_ids"
+        )
+        self.batch_id = batch_id
+
+
 class AlreadySentError(DomainError):
     """Raised when batch sent_at is set or claim loses the race (ADMIN-07, D-89)."""
 

@@ -13,6 +13,7 @@ from backend.domain.errors import (
     AlreadySentError,
     DraftInSendPoolError,
     EmptySendPoolError,
+    InvalidSendOrderError,
 )
 from backend.domain.shortlist import ShortlistItem
 
@@ -46,6 +47,22 @@ def _approved_ready(items: tuple[ShortlistItem, ...]) -> list[ShortlistItem]:
     )
 
 
+def _ordered_pool(
+    pool: list[ShortlistItem],
+    material_ids: list[int] | None,
+    *,
+    batch_id: int,
+) -> list[ShortlistItem]:
+    """Validate optional material_ids as exact permutation; return publication order."""
+    if material_ids is None:
+        return pool
+    pool_ids = {item.material_id for item in pool}
+    if len(material_ids) != len(pool_ids) or set(material_ids) != pool_ids:
+        raise InvalidSendOrderError(batch_id=batch_id)
+    by_id = {item.material_id: item for item in pool}
+    return [by_id[mid] for mid in material_ids]
+
+
 def send_digest(
     shortlist: ShortlistRepository,
     publisher: DigestPublisher,
@@ -54,12 +71,16 @@ def send_digest(
     *,
     actor_user_id: str,
     now: datetime | None = None,
+    material_ids: list[int] | None = None,
 ) -> SendDigestResult:
     """Validate pool → atomic claim+publish → mail → audit (D-88 mandatory publish-on-send).
 
     CR-01/WR-01: the claim, digest_issues publish, and delivery-column stamp are a single
     transaction inside ``DigestPublisher.claim_and_publish`` (migration 005 RPC on live), so a
     publish failure can never leave a batch stamped ``sent_at`` with no issue.
+
+    When ``material_ids`` is provided it must be an exact permutation of the approved∩ready
+    pool; that order becomes publication and mail order (G-05-1).
     """
     clock = now or datetime.now(timezone.utc)
     batch = shortlist.get_current_batch()
@@ -80,15 +101,19 @@ def send_digest(
     if not pool:
         raise EmptySendPoolError(batch_id=batch.id)
 
+    ordered = _ordered_pool(pool, material_ids, batch_id=batch.id)
+    ordered_ids = [item.material_id for item in ordered]
+
     publication = publisher.claim_and_publish(
         batch_id=batch.id,
         sent_at=clock,
         period_label=batch.week_start.isoformat(),
         title=f"Digest CDS — {batch.week_start.isoformat()}",
+        material_ids=ordered_ids,
     )
 
     issue_url = publication.issue_url
-    titles = "\n".join(f"- {item.title}" for item in pool)
+    titles = "\n".join(f"- {item.title}" for item in ordered)
     subject = f"Digest CDS — выпуск {publication.issue_number}"
     body_text = (
         f"Новый выпуск Digest CDS №{publication.issue_number}.\n"

@@ -11,6 +11,7 @@ from backend.domain.errors import (
     AlreadySentError,
     DraftInSendPoolError,
     EmptySendPoolError,
+    InvalidSendOrderError,
     PersistenceError,
 )
 from backend.domain.shortlist import ShortlistBatch, ShortlistItem
@@ -319,11 +320,6 @@ def test_send_material_ids_reversed_order_becomes_publication_and_mail_order() -
 
 def test_send_material_ids_mismatched_set_raises() -> None:
     """G-05-1: material_ids must be exact permutation of approved∩ready → domain error."""
-    import backend.domain.errors as domain_errors
-
-    InvalidSendOrderError = getattr(domain_errors, "InvalidSendOrderError", None)
-    assert InvalidSendOrderError is not None, "InvalidSendOrderError domain error missing"
-
     shortlist = InMemoryShortlistRepository(
         batch=_batch(
             _item(material_id=101, rank=1, title="A"),
