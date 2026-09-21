@@ -1,18 +1,18 @@
 ---
 gsd_state_version: 1.0
 current_phase: 04
-current_phase_name: knowledge-razbory
+current_phase_name: Knowledge & Razbory
 status: executing
-stopped_at: Phase 4 UI-SPEC approved
-last_updated: "2026-09-20T20:55:00.607Z"
-last_activity: 2026-09-20
-last_activity_desc: Phase 03 complete, transitioned to Phase 4
-state_head: 0090cedfe83c6c4652d42e62a6e6d17310520dec
+stopped_at: Completed 04-01-PLAN.md
+last_updated: "2026-09-21T04:34:46.904Z"
+last_activity: 2026-09-21
+last_activity_desc: Phase 04 execution started
+state_head: ea9561cc4e1cf11cf9edd99e248d724dd525ade8
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 30
-  completed_plans: 20
+  completed_plans: 21
   percent: 60
 ---
 
@@ -23,16 +23,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-09-20)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Phase 4 — Knowledge & Razbory
+**Current focus:** Phase 04 — Knowledge & Razbory
 
 ## Current Position
 
-Phase: 04 (knowledge-razbory) — READY TO EXECUTE
-Plan: Not started
+Phase: 04 (Knowledge & Razbory) — EXECUTING
+Plan: 2 of 9
 Status: Ready to execute
-Last activity: 2026-09-20 — Phase 03 complete, transitioned to Phase 4
+Last activity: 2026-09-21 — Phase 04 execution started
 
-Progress: [███████████████████░] 20/21 plans (95%)
+Progress: [███████████████████░] 20/21 plans ([██████░░░░] 60%)
 
 ## Performance Metrics
 
@@ -73,6 +73,7 @@ Progress: [███████████████████░] 20/21 p
 | Phase 03-voting-cycle P02 | 45min | 3 tasks | 7 files |
 | Phase 03-voting-cycle P06 | 8min | 2 tasks | 9 files |
 | Phase 03 P04 | 12min | 3 tasks | 8 files |
+| Phase 04 P01 | 7min | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -128,6 +129,8 @@ Decisions are logged in PROJECT.md Key Decisions and `<decisions>` blocks.
 - [Phase 03]: Mock closed POST throws CYCLE_CLOSED with ballot payload for D-51 readiness
 - [Phase 03]: 409 detail.ballot for CYCLE_CLOSED/VOTE_CONFLICT; expected_updated_at CAS only (no ETag)
 - [Phase 03]: GET ballot fail → ServiceUnavailable; POST fail → ErrorPanel; toast fade ~4s
+- [Phase 04]: [Phase 04]: Default knowledge search limit=10 with has_more via limit+1 (D-61)
+- [Phase 04]: [Phase 04]: StubQueryEmbedder 1024-d; Foundry HTTP deferred; max q 500 code points
 
 ### Pending Todos
 
@@ -150,7 +153,7 @@ None. Live FE↔BE proof approved 2026-09-19.
 
 ## Session Continuity
 
-Last session: 2026-09-20T20:24:21.641Z
-Stopped at: Phase 4 UI-SPEC approved
-Resume file: .planning/phases/04-knowledge-razbory/04-UI-SPEC.md
+Last session: 2026-09-21T04:34:46.144Z
+Stopped at: Completed 04-01-PLAN.md
+Resume file: None
 Verification: `.planning/phases/01-platform-foundation-auth/01-VERIFICATION.md`
