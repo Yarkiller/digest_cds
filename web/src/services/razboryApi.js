@@ -262,3 +262,74 @@ export async function fetchRazbor(id, accessToken = null) {
     editor: body.editor ?? RAZBOR_EDITOR_BYLINE,
   }
 }
+
+/**
+ * Authenticated notebook download (RAZB-03 / D-70…72).
+ * Returns a Blob for object-URL save; failures surface as RazboryApiError for toast.
+ * @param {number | string} id
+ * @param {string | null} [accessToken]
+ * @returns {Promise<{ blob: Blob, filename: string }>}
+ */
+export async function downloadRazborNotebook(id, accessToken = null) {
+  const { isMocksEnabled } = await import('./authEnv.js')
+  if (isMocksEnabled()) {
+    await delay(80)
+    const row = getRazborById(id)
+    if (!row || row.status === 'announcement' || !row.notebook_path) {
+      throw new RazboryApiError('Не удалось скачать', {
+        code: 'NOTEBOOK_NOT_AVAILABLE',
+        retryable: false,
+      })
+    }
+    const filename = String(row.notebook_path).split('/').pop() || 'notebook.ipynb'
+    const payload = JSON.stringify({
+      nbformat: 4,
+      nbformat_minor: 5,
+      metadata: { mock: true, title: row.title },
+      cells: [],
+    })
+    return {
+      blob: new Blob([payload], { type: 'application/x-ipynb+json' }),
+      filename,
+    }
+  }
+
+  const { getAccessToken } = await import('./authApi.js')
+  const token = accessToken ?? (await getAccessToken())
+  if (!token) {
+    throw new RazboryApiError('Требуется вход.', { code: 'UNAUTHORIZED', retryable: false })
+  }
+
+  const apiBase = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/$/, '')
+
+  let response
+  try {
+    response = await fetch(`${apiBase}/razbory/${encodeURIComponent(String(id))}/notebook`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+  } catch {
+    throw new RazboryApiError('Не удалось скачать', { code: 'NETWORK', retryable: true })
+  }
+
+  if (response.status === 401) {
+    throw new RazboryApiError('Сессия истекла. Войдите снова.', {
+      code: 'UNAUTHORIZED',
+      retryable: false,
+    })
+  }
+
+  if (!response.ok) {
+    throw new RazboryApiError('Не удалось скачать', {
+      code: response.status === 404 ? 'NOTEBOOK_NOT_AVAILABLE' : 'NETWORK',
+      retryable: response.status !== 404,
+    })
+  }
+
+  const blob = await response.blob()
+  const disposition = response.headers.get('content-disposition') ?? ''
+  const match = /filename\*?=(?:UTF-8''|")?([^\";]+)/i.exec(disposition)
+  const filename = match
+    ? decodeURIComponent(match[1].replace(/"/g, '').trim())
+    : `razbor-${id}.ipynb`
+  return { blob, filename }
+}
