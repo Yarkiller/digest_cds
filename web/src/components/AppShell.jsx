@@ -1,5 +1,11 @@
-import { NavLink, Outlet } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, NavLink, Outlet } from 'react-router-dom'
 import SearchPill from './SearchPill.jsx'
+import { getAccessToken } from '../services/authApi.js'
+import { isMocksEnabled } from '../services/authEnv.js'
+import { fetchMe } from '../services/meApi.js'
+
+const MOCK_SHELL_IDENTITY = 'Мария Сидорова'
 
 const linkClass = ({ isActive }) =>
   [
@@ -8,6 +14,47 @@ const linkClass = ({ isActive }) =>
   ].join(' ')
 
 export default function AppShell() {
+  const [identity, setIdentity] = useState(() => (isMocksEnabled() ? MOCK_SHELL_IDENTITY : ''))
+  const [appRole, setAppRole] = useState(/** @type {string | null} */ (null))
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadIdentity() {
+      try {
+        const token = await getAccessToken()
+        if (!token) {
+          if (!cancelled) {
+            setIdentity(isMocksEnabled() ? MOCK_SHELL_IDENTITY : '')
+            // Mocks still resolve /me for role-gated nav (D-76)
+            if (isMocksEnabled()) {
+              const me = await fetchMe(null)
+              if (!cancelled) setAppRole(me.role ?? 'employee')
+            } else if (!cancelled) {
+              setAppRole('employee')
+            }
+          }
+          return
+        }
+        const me = await fetchMe(token)
+        if (!cancelled) {
+          setIdentity(me.display_name?.trim() || me.email || (isMocksEnabled() ? MOCK_SHELL_IDENTITY : ''))
+          setAppRole(me.role ?? 'employee')
+        }
+      } catch {
+        if (!cancelled) {
+          setIdentity(isMocksEnabled() ? MOCK_SHELL_IDENTITY : '')
+          setAppRole('employee')
+        }
+      }
+    }
+
+    loadIdentity()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   return (
     <div className="min-h-svh bg-paper text-ink">
       <header className="sticky top-0 z-40 border-b border-rule bg-paper">
@@ -35,9 +82,23 @@ export default function AppShell() {
             <NavLink to="/razbory" className={linkClass}>
               Разборы
             </NavLink>
+            {appRole === 'admin' ? (
+              <NavLink to="/admin/digest" className={linkClass}>
+                Админ
+              </NavLink>
+            ) : null}
           </nav>
           <SearchPill />
-          <div className="hidden shrink-0 text-sm text-ink-2 md:block">Мария Сидорова</div>
+          {identity ? (
+            <Link
+              to="/profile"
+              className="max-w-[10rem] shrink-0 truncate text-sm text-ink-2 underline-offset-2 hover:text-accent hover:underline sm:max-w-[14rem]"
+              data-testid="shell-identity"
+              title={identity}
+            >
+              {identity}
+            </Link>
+          ) : null}
         </div>
       </header>
       <main className="mx-auto max-w-6xl px-4 py-10">

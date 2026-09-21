@@ -22,12 +22,25 @@ export function armFailNextMeFetch() {
 /** @param {'employee' | 'analyst' | 'ds' | 'admin'} role */
 export function setMockMeRole(role) {
   mockRole = role
+  if (typeof window !== 'undefined') {
+    window.__DIGEST_MOCK_ME_ROLE__ = role
+  }
 }
 
 export function resetMeHarness() {
   failNextFetch = false
   mockDisplayName = null
   mockRole = 'employee'
+  if (typeof window !== 'undefined') {
+    window.__DIGEST_MOCK_ME_ROLE__ = 'employee'
+  }
+}
+
+function resolveMockRole() {
+  if (typeof window !== 'undefined' && typeof window.__DIGEST_MOCK_ME_ROLE__ === 'string') {
+    return window.__DIGEST_MOCK_ME_ROLE__
+  }
+  return mockRole
 }
 
 /** @type {string | null} */
@@ -58,7 +71,7 @@ export async function fetchMe(accessToken) {
     return {
       id: 'mock-user-id',
       email: session?.user?.email ?? 'analyst@sberbank.ru',
-      role: mockRole,
+      role: resolveMockRole(),
       display_name: mockDisplayName,
     }
   }
@@ -113,7 +126,7 @@ export async function updateDisplayName(displayName, accessToken) {
     return {
       id: 'mock-user-id',
       email: session?.user?.email ?? 'analyst@sberbank.ru',
-      role: mockRole,
+      role: resolveMockRole(),
       display_name: mockDisplayName,
     }
   }
