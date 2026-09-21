@@ -93,3 +93,26 @@ class InvalidVoteError(DomainError):
 
     def __init__(self, message: str) -> None:
         super().__init__(message)
+
+
+class ShortlistNotFoundError(DomainError):
+    """Raised when current batch is missing or material_id is not in the batch."""
+
+    def __init__(self, *, batch_id: int | None = None, material_id: int | None = None) -> None:
+        if material_id is not None:
+            msg = f"shortlist material {material_id} not found"
+        elif batch_id is not None:
+            msg = f"shortlist batch {batch_id} not found"
+        else:
+            msg = "shortlist batch not found"
+        super().__init__(msg)
+        self.batch_id = batch_id
+        self.material_id = material_id
+
+
+class InvalidShortlistDecisionError(DomainError):
+    """Raised when decision is outside pending|approved|rejected (D-82)."""
+
+    def __init__(self, decision: str) -> None:
+        super().__init__(f"invalid shortlist decision: {decision!r}")
+        self.decision = decision

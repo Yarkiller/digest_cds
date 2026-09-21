@@ -7,12 +7,12 @@ from datetime import datetime, timezone
 from typing import Any
 
 from backend.domain.current_user import CurrentUser
-from backend.domain.errors import VoteConflictError
+from backend.domain.errors import ShortlistNotFoundError, VoteConflictError
 from backend.domain.issue import Issue
 from backend.domain.knowledge import KnowledgeChunk, KnowledgeHit
 from backend.domain.material import Material, MaterialStatus
 from backend.domain.razbor import Razbor
-from backend.domain.shortlist import ShortlistBatch
+from backend.domain.shortlist import ShortlistBatch, ShortlistItem
 from backend.domain.vote import BallotTopic, PersonalVote
 from backend.domain.voting_cycle import VotingCycle
 
@@ -79,6 +79,47 @@ class InMemoryShortlistRepository:
 
     def seed(self, batch: ShortlistBatch | None) -> None:
         self._batch = batch
+
+    def set_decision(
+        self,
+        *,
+        batch_id: int,
+        material_id: int,
+        decision: str,
+        actor_user_id: str,
+        decided_at: datetime,
+    ) -> ShortlistBatch:
+        if self._batch is None or self._batch.id != batch_id:
+            raise ShortlistNotFoundError(batch_id=batch_id, material_id=material_id)
+        updated: list[ShortlistItem] = []
+        found = False
+        for item in self._batch.items:
+            if item.material_id == material_id:
+                found = True
+                updated.append(
+                    ShortlistItem(
+                        material_id=item.material_id,
+                        rank=item.rank,
+                        title=item.title,
+                        material_status=item.material_status,
+                        decision=decision,
+                        score=item.score,
+                        score_factors=item.score_factors,
+                        decided_by=actor_user_id,
+                        decided_at=decided_at,
+                    )
+                )
+            else:
+                updated.append(item)
+        if not found:
+            raise ShortlistNotFoundError(batch_id=batch_id, material_id=material_id)
+        self._batch = ShortlistBatch(
+            id=self._batch.id,
+            week_start=self._batch.week_start,
+            sent_at=self._batch.sent_at,
+            items=tuple(updated),
+        )
+        return self._batch
 
 
 class InMemoryProfileRepository:

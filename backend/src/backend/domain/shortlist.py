@@ -43,6 +43,8 @@ class ShortlistItem:
     decision: str
     score: float | None
     score_factors: Mapping[str, Any]
+    decided_by: str | None = None
+    decided_at: datetime | None = None
 
 
 @dataclass(frozen=True)
