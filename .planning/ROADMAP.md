@@ -9,7 +9,7 @@ Brownfield path from mock UI + in-memory ports to a production-shaped Digest CDS
 - [x] **Phase 1: Platform Foundation & Auth** - Live Supabase, FastAPI, security, FE↔BE, corporate login
 - [x] **Phase 2: Issue, Materials & Archive** - Current issue, prepared articles, archive (completed 2026-09-20)
 - [x] **Phase 3: Voting Cycle** - One honest vote, change while open, audit-language ballot (completed 2026-09-20)
-- [ ] **Phase 4: Knowledge & Razbory** - Semantic search, role filters, разбор longread/notebook
+- [x] **Phase 4: Knowledge & Razbory** - Semantic search, role filters, разбор longread/notebook (completed 2026-09-21)
 - [ ] **Phase 5: Admin Digest Publish** - Shortlist triage, preview, send, email + archive
 
 ## Phase Details
@@ -180,5 +180,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. Platform Foundation & Auth | 6/7 | Verified (PASS_WITH_GAPS) | 2026-09-19 |
 | 2. Issue, Materials & Archive | 6/6 | Complete    | 2026-09-20 |
 | 3. Voting Cycle | 6/6 | Complete    | 2026-09-20 |
-| 4. Knowledge & Razbory | 10/10 | In Progress|  |
+| 4. Knowledge & Razbory | 10/10 | Complete    | 2026-09-21 |
 | 5. Admin Digest Publish | 0/TBD | Not started | - |
