@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from backend.composition.container import AppContainer
 from backend.composition.settings import Settings
+from backend.application.ports.query_embedder import StubQueryEmbedder
 from backend.tests_support.in_memory import InMemoryKnowledgeChunkRepository
 from supabase_integration import (
     SupabaseIssueRepository,
@@ -45,4 +46,5 @@ def build_live_container(settings: Settings) -> AppContainer:
         issues=SupabaseIssueRepository(admin_client),
         voting_cycles=SupabaseVotingCycleReader(admin_client),
         votes=SupabaseVoteRepository(admin_client),
+        embedder=StubQueryEmbedder(),
     )

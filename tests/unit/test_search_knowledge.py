@@ -114,14 +114,15 @@ def test_search_knowledge_dedupes_by_material_keeping_best_score() -> None:
     materials = InMemoryMaterialRepository([material])
     chunks = InMemoryKnowledgeChunkRepository(materials=materials)
     strong = [0.95] + [0.0] * 1023
-    weak = [0.1] + [0.0] * 1023
+    # Orthogonal-ish weak vector vs strong query embedding.
+    weak = [0.0] * 512 + [0.9] + [0.0] * 511
     chunks.replace_for_material(
         7,
         [
             _chunk(
                 material_id=7,
                 chunk_index=0,
-                content_md="Weak mention of HNSW only.",
+                content_md="Unrelated audit workflow notes without the keyword.",
                 embedding=weak,
                 chunk_id=1,
             ),

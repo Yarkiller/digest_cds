@@ -1,15 +1,29 @@
 from __future__ import annotations
 
+import math
+import re
 from dataclasses import dataclass, field, replace
 from datetime import datetime, timezone
+from typing import Any
 
 from backend.domain.current_user import CurrentUser
 from backend.domain.errors import VoteConflictError
 from backend.domain.issue import Issue
-from backend.domain.knowledge import KnowledgeChunk
-from backend.domain.material import Material
+from backend.domain.knowledge import KnowledgeChunk, KnowledgeHit
+from backend.domain.material import Material, MaterialStatus
 from backend.domain.vote import BallotTopic, PersonalVote
 from backend.domain.voting_cycle import VotingCycle
+
+
+def _cosine(a: list[float], b: list[float]) -> float:
+    if len(a) != len(b) or not a:
+        return 0.0
+    dot = sum(x * y for x, y in zip(a, b, strict=True))
+    na = math.sqrt(sum(x * x for x in a))
+    nb = math.sqrt(sum(y * y for y in b))
+    if na == 0.0 or nb == 0.0:
+        return 0.0
+    return dot / (na * nb)
 
 
 @dataclass(frozen=True)
@@ -102,9 +116,12 @@ class InMemoryMaterialRepository:
 
 
 class InMemoryKnowledgeChunkRepository:
-    def __init__(self) -> None:
+    """In-memory chunks with hybrid search (cosine 0.7 + FTS 0.3) for unit tests."""
+
+    def __init__(self, materials: Any | None = None) -> None:
         self._chunks: list[KnowledgeChunk] = []
         self._next_id = 1
+        self._materials = materials
 
     def replace_for_material(self, material_id: int, chunks: list[KnowledgeChunk]) -> list[KnowledgeChunk]:
         self._chunks = [c for c in self._chunks if c.material_id != material_id]
@@ -128,6 +145,63 @@ class InMemoryKnowledgeChunkRepository:
 
     def list_all(self) -> list[KnowledgeChunk]:
         return list(self._chunks)
+
+    def search(
+        self,
+        *,
+        query_embedding: list[float],
+        query_text: str,
+        role_filter: str | None,
+        limit: int,
+        offset: int,
+    ) -> list[KnowledgeHit]:
+        tokens = {t.lower() for t in re.findall(r"\w+", query_text, flags=re.UNICODE) if t}
+        scored: list[KnowledgeHit] = []
+
+        for chunk in self._chunks:
+            material = self._materials.get(chunk.material_id) if self._materials is not None else None
+            if material is None:
+                continue
+            if material.status != MaterialStatus.READY:
+                continue
+            if role_filter and role_filter not in material.roles:
+                continue
+
+            vector_score = _cosine(query_embedding, chunk.embedding)
+            text_l = chunk.content_md.lower()
+            fts_score = 0.0
+            if tokens:
+                fts_score = sum(1.0 for t in tokens if t in text_l) / len(tokens)
+            score = 0.7 * vector_score + 0.3 * fts_score
+            if score <= 0:
+                continue
+
+            snippet = chunk.content_md.strip()
+            if len(snippet) > 180:
+                snippet = snippet[:177] + "..."
+            scored.append(
+                KnowledgeHit(
+                    material_id=material.id,
+                    material_slug=material.slug,
+                    chunk_index=chunk.chunk_index,
+                    snippet=snippet,
+                    score=score,
+                )
+            )
+
+        # Dedupe by material_id — best score wins (D-61 / Pitfall 2).
+        best: dict[int, KnowledgeHit] = {}
+        for hit in scored:
+            existing = best.get(hit.material_id)
+            if existing is None or hit.score > existing.score:
+                best[hit.material_id] = hit
+
+        ranked = sorted(best.values(), key=lambda h: h.score, reverse=True)
+        if offset < 0:
+            offset = 0
+        if limit < 1:
+            return []
+        return ranked[offset : offset + limit]
 
 
 class InMemoryVotingCycleReader:

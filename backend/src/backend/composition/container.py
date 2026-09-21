@@ -9,11 +9,12 @@ from backend.application.ports.knowledge_chunk_repository import KnowledgeChunkR
 from backend.application.ports.material_repository import MaterialRepository
 from backend.application.ports.ping_recorder import PingRecorder
 from backend.application.ports.profile_repository import ProfileRepository
+from backend.application.ports.query_embedder import QueryEmbedder, StubQueryEmbedder
 from backend.application.ports.vote_repository import VoteRepository
 from backend.application.ports.voting_cycle_reader import VotingCycleReader
 from backend.application.use_cases.index_material_chunks import index_material_chunks
 from backend.application.use_cases.publish_material import publish_material
-from backend.application.use_cases.search_knowledge import search_knowledge
+from backend.application.use_cases.search_knowledge import DEFAULT_SEARCH_LIMIT, search_knowledge
 from backend.domain.issue import Issue
 from backend.domain.knowledge import KnowledgeHit
 from backend.domain.material import Material
@@ -38,6 +39,7 @@ class AppContainer:
     issues: IssueRepository
     voting_cycles: VotingCycleReader
     votes: VoteRepository
+    embedder: QueryEmbedder
 
     def publish(self, material_id: int) -> Material:
         return publish_material(self.materials, material_id)
@@ -54,18 +56,20 @@ class AppContainer:
     def search(
         self,
         *,
-        query_embedding: list[float],
+        query_embedding: list[float] | None = None,
         query_text: str,
         role_filter: str | None = None,
-        limit: int = 5,
+        limit: int = DEFAULT_SEARCH_LIMIT,
+        offset: int = 0,
     ) -> list[KnowledgeHit]:
+        embedding = query_embedding if query_embedding is not None else self.embedder.embed(query_text)
         return search_knowledge(
-            materials=self.materials,
             chunks=self.chunks,
-            query_embedding=query_embedding,
+            query_embedding=embedding,
             query_text=query_text,
             role_filter=role_filter,
             limit=limit,
+            offset=offset,
         )
 
 
@@ -75,12 +79,14 @@ def build_in_memory_container(
     voting_cycles: list[VotingCycle] | None = None,
 ) -> AppContainer:
     """Default local wiring until supabase-integration adapters are connected."""
+    materials_repo = InMemoryMaterialRepository(materials)
     return AppContainer(
-        materials=InMemoryMaterialRepository(materials),
-        chunks=InMemoryKnowledgeChunkRepository(),
+        materials=materials_repo,
+        chunks=InMemoryKnowledgeChunkRepository(materials=materials_repo),
         profiles=InMemoryProfileRepository(),
         pings=InMemoryPingRecorder(),
         issues=InMemoryIssueRepository(issues),
         voting_cycles=InMemoryVotingCycleReader(voting_cycles),
         votes=InMemoryVoteRepository(),
+        embedder=StubQueryEmbedder(),
     )

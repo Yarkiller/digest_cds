@@ -32,6 +32,14 @@ class PersistenceError(DomainError):
         super().__init__(message)
 
 
+class KnowledgeQueryValidationError(DomainError):
+    """Raised for blank or overlong knowledge search queries (KNOW-01)."""
+
+    def __init__(self, code: str) -> None:
+        super().__init__(code)
+        self.code = code
+
+
 class VotingCycleClosedError(DomainError):
     """Raised when cast_vote is attempted while cycle status is not open (D-51)."""
 
