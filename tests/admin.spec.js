@@ -105,6 +105,9 @@ test.describe("Admin Digest — shortlist triage (ADMIN-01…03, ADMIN-05, D-79,
     await expect(page.getByRole("button", { name: /обновить список/i })).toBeVisible();
     await expect(page.getByText(/пайплайн/i)).toHaveCount(0);
     await expect(page.getByTestId("admin-shortlist-row")).toHaveCount(0);
+    // G-05-2: genuine empty (digest_rest=false) must not show post-send rest copy
+    await expect(page.getByText(/дайджест успешно выпущен/i)).toHaveCount(0);
+    await expect(page.getByTestId("admin-digest-rest")).toHaveCount(0);
   });
 
   test("loading shortlist does not flash empty success", async ({ page }) => {
