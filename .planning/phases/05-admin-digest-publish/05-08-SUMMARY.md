@@ -111,7 +111,7 @@ Each task was committed atomically:
 2. **Task 2: Send honors material block order** — `28a4514` (test) → `9917b98` (feat)
 3. **Task 3: Playwright gate for intro + interstitial + send** — `b0a0ee8` (test)
 
-**Plan metadata:** _(pending docs commit)_
+**Plan metadata:** `a4b705e` (docs: complete plan)
 
 ## Files Created/Modified
 
