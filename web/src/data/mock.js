@@ -97,7 +97,8 @@ export const materials = [
     readingMinutes: 5,
     date: '18 марта 2026',
     provenance: 'внутренний разбор',
-    cover: '/covers/anomaly-detection.png',
+    // null cover for knowledge hit-row degradation (RESEARCH Q2 / KNOW-01)
+    cover: null,
     roles: ['analyst', 'sva'],
     tags: ['SQL', 'BI', 'аудит'],
     topic: 'reporting',
