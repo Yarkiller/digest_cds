@@ -323,3 +323,44 @@ def test_search_knowledge_invalid_role_raises_validation_error() -> None:
                 role_filter=bad,
             )
         assert exc_info.value.code == "invalid_role"
+
+
+def test_search_knowledge_analyst_empty_does_not_backfill_ds_materials() -> None:
+    """KNOW-04: analyst filter with no matches stays empty — never substitute ds tops.
+
+    The same query matches the ds-only material when role is unrestricted, so an
+    empty analyst result is exclusion, not a miss.
+    """
+    ds_only = _ready(material_id=2, slug="ml-experiment", title="ML experiment", roles=("ds",))
+    materials = InMemoryMaterialRepository([ds_only])
+    chunks = InMemoryKnowledgeChunkRepository(materials=materials)
+    embedding = [0.9] + [0.0] * 1023
+    chunks.replace_for_material(
+        2,
+        [
+            _chunk(
+                material_id=2,
+                chunk_index=0,
+                content_md="HNSW indexes for the ML experiment.",
+                embedding=embedding,
+            )
+        ],
+    )
+
+    unrestricted = search_knowledge(
+        chunks=chunks,
+        query_embedding=embedding,
+        query_text="HNSW",
+        role_filter=None,
+        limit=10,
+    )
+    assert [hit.material_slug for hit in unrestricted] == ["ml-experiment"]
+
+    analyst_hits = search_knowledge(
+        chunks=chunks,
+        query_embedding=embedding,
+        query_text="HNSW",
+        role_filter="analyst",
+        limit=10,
+    )
+    assert analyst_hits == []

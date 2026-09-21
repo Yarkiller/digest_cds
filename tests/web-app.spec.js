@@ -225,13 +225,21 @@ test.describe("web app main flows", () => {
     await expect(confirm).toBeEnabled();
   });
 
-  test("filters knowledge materials by tag facet", async ({ page }) => {
+  test("filters knowledge by the Analyst chip and opens a DS hit", async ({ page }) => {
     await page.goto("/knowledge");
 
-    await page.getByLabel("Теги").selectOption("SQL");
-    await expect(page.getByText(/показано \d+ из \d+/i)).toBeVisible();
-    await expect(page.getByRole("link", { name: /anomaly detection/i })).toBeVisible();
-    await expect(page.getByRole("link", { name: /building production rag systems/i })).toHaveCount(0);
+    await expect(page.locator("select")).toHaveCount(0);
+    await expect(page.getByLabel(/теги|формат|тема/i)).toHaveCount(0);
+
+    const search = page.getByRole("searchbox", { name: /поиск по базе знаний/i });
+    await search.fill("RAG");
+    // D-64: chip change re-runs search without «Найти».
+    await page.getByRole("button", { name: "DS", exact: true }).click();
+    const rag = page.getByRole("link", { name: /building production rag systems/i });
+    await expect(rag).toBeVisible();
+    await rag.click();
+    // KNOW-03: DS hit opens the material page by slug.
+    await expect(page).toHaveURL(/\/materials\/rag-systems/);
   });
 });
 
@@ -250,27 +258,30 @@ test.describe("web app UI states", () => {
     await expect(confirm).toBeDisabled();
   });
 
-  test("shows empty-state recovery when knowledge search misses", async ({ page }) => {
+  test("keeps the query when resetting a role filter that found nothing", async ({ page }) => {
     await page.goto("/knowledge");
 
-    await page.getByRole("searchbox", { name: /поиск по базе знаний/i }).fill("zzz-no-such-material");
+    const search = page.getByRole("searchbox", { name: /поиск по базе знаний/i });
+    await search.fill("RAG");
+    await page.getByRole("button", { name: "Analyst", exact: true }).click();
     await expect(page.getByRole("heading", { name: /ничего не нашли/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /building production rag systems/i })).toHaveCount(0);
+    await expect(search).toHaveValue("RAG");
 
-    await page.getByRole("button", { name: /сбросить фильтры/i }).click();
+    // D-65 / KNOW-04: clear role only, keep query, re-run.
+    await page.getByRole("button", { name: "Сбросить фильтр", exact: true }).click();
+    await expect(search).toHaveValue("RAG");
+    await expect(page.getByRole("link", { name: /building production rag systems/i })).toBeVisible();
     await expect(page.getByRole("heading", { name: /ничего не нашли/i })).toHaveCount(0);
-    await expect(page.getByText(/показано \d+ из \d+/i)).toBeVisible();
   });
 
-  test("loads more knowledge results after a loading state", async ({ page }) => {
+  test("loads knowledge hits without the retired load-more label", async ({ page }) => {
     await page.goto("/knowledge");
 
-    const loadMore = page.getByRole("button", { name: /загрузить ещё/i });
-    await expect(loadMore).toBeVisible();
-    await loadMore.click();
-
-    await expect(page.getByTestId("kb-skeleton")).toBeVisible();
-    await expect(page.getByRole("link", { name: /SQL-дашборды для аудиторской отчётности/i })).toBeVisible();
-    await expect(loadMore).toBeHidden();
+    await page.getByRole("searchbox", { name: /поиск по базе знаний/i }).fill("RAG");
+    await page.getByRole("button", { name: "Найти", exact: true }).click();
+    await expect(page.getByRole("link", { name: /building production rag systems/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /загрузить ещё/i })).toHaveCount(0);
   });
 
   test("keeps header search as an enlarged inline field without a modal", async ({ page }) => {
