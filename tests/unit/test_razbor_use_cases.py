@@ -123,3 +123,73 @@ def test_get_razbor_announcement_returns_empty_body() -> None:
     assert detail.status == RazborStatus.ANNOUNCEMENT
     assert detail.title == "RAG в корпоративной среде"
     assert detail.body_markdown == ""
+
+
+_QUALITY_BODY = """## Введение
+
+Контекст.
+
+## Качество
+
+| Метрика | Значение |
+| --- | --- |
+| Precision | 0.82 |
+| Recall | 0.71 |
+"""
+
+_OVERVIEW_BODY = """## Контекст
+
+Обзор темы без таблицы метрик.
+
+## Подход
+
+Как мы думаем об этом.
+"""
+
+
+def test_get_razbor_content_kind_quality_when_heading_and_numeric_table() -> None:
+    """RAZB-04 / D-73: ## Качество + numeric markdown table → content_kind=quality."""
+    from backend.application.use_cases.get_razbor import detect_content_kind
+
+    assert detect_content_kind(_QUALITY_BODY) == "quality"
+    repo = InMemoryRazborRepository(
+        [
+            Razbor(
+                id=2,
+                title="Anomaly",
+                body_markdown=_QUALITY_BODY,
+                meeting_at=datetime(2026, 3, 17, tzinfo=timezone.utc),
+                status=RazborStatus.PUBLISHED,
+                notebook_path=None,
+                created_at=datetime(2026, 3, 1, tzinfo=timezone.utc),
+            )
+        ]
+    )
+    detail = get_razbor(repo, 2)
+    assert detail.content_kind == "quality"
+
+
+def test_get_razbor_content_kind_overview_without_metrics() -> None:
+    """RAZB-04 / D-73: published without metrics table → content_kind=overview."""
+    from backend.application.use_cases.get_razbor import detect_content_kind
+
+    assert detect_content_kind(_OVERVIEW_BODY) == "overview"
+    # Quality heading alone without numeric table is still overview
+    assert (
+        detect_content_kind("## Оценка качества\n\nПока без цифр.\n") == "overview"
+    )
+    repo = InMemoryRazborRepository(
+        [
+            Razbor(
+                id=3,
+                title="LLM overview",
+                body_markdown=_OVERVIEW_BODY,
+                meeting_at=datetime(2026, 3, 31, tzinfo=timezone.utc),
+                status=RazborStatus.PUBLISHED,
+                notebook_path=None,
+                created_at=datetime(2026, 3, 1, tzinfo=timezone.utc),
+            )
+        ]
+    )
+    detail = get_razbor(repo, 3)
+    assert detail.content_kind == "overview"
