@@ -167,7 +167,7 @@ Plans:
   4. Successful send updates archive and success UI without uncontrolled duplicates; failure leaves selection and not-sent state
   5. Digest email link reaches issue after login via returnUrl when needed
 
-**Plans**: 1/6 plans executed
+**Plans**: 2/6 plans executed
 **UI hint**: yes
 
 Plans:
@@ -178,7 +178,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1)*
 
-- [ ] 05-02-PLAN.md — Approve/Reject persist + draft/ready badges (ADMIN-02, ADMIN-03)
+- [x] 05-02-PLAN.md — Approve/Reject persist + draft/ready badges (ADMIN-02, ADMIN-03)
 
 **Wave 3** *(blocked on Wave 2)*
 
@@ -204,4 +204,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 2. Issue, Materials & Archive | 6/6 | Complete    | 2026-09-20 |
 | 3. Voting Cycle | 6/6 | Complete    | 2026-09-20 |
 | 4. Knowledge & Razbory | 10/10 | Complete    | 2026-09-21 |
-| 5. Admin Digest Publish | 1/6 | In Progress|  |
+| 5. Admin Digest Publish | 2/6 | In Progress|  |

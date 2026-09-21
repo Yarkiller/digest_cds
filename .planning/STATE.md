@@ -3,16 +3,16 @@ gsd_state_version: 1.0
 current_phase: 05
 current_phase_name: Admin Digest Publish
 status: executing
-stopped_at: Completed 05-01-PLAN.md
-last_updated: "2026-09-21T14:35:31.551Z"
+stopped_at: Completed 05-02-PLAN.md
+last_updated: "2026-09-21T14:42:00.102Z"
 last_activity: 2026-09-21
 last_activity_desc: Phase 05 execution started
-state_head: c927aa06632fdbcafd38f16cc831c3d698ccc84c
+state_head: 789edf856bda95a89a25cb4ce4e75e94af9fb44d
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 37
-  completed_plans: 31
+  completed_plans: 32
   percent: 80
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-09-20)
 ## Current Position
 
 Phase: 05 (Admin Digest Publish) — EXECUTING
-Plan: 2 of 6
+Plan: 3 of 6
 Status: Ready to execute
 Last activity: 2026-09-21 — Phase 05 execution started
 
@@ -85,6 +85,7 @@ Progress: [███████████████████░] 30/31 p
 | Phase 04-knowledge-razbory P09 | 9min | 2 tasks | 9 files |
 | Phase 04-knowledge-razbory P10 | 2min | 2 tasks | 2 files |
 | Phase 05-admin-digest-publish P01 | 20min | 2 tasks | 18 files |
+| Phase 05-admin-digest-publish P02 | 4min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -164,6 +165,9 @@ Decisions are logged in PROJECT.md Key Decisions and `<decisions>` blocks.
 - [Phase 05]: Authorize admin only via profiles.role through require_admin — never JWT role claim (D-74)
 - [Phase 05]: Default app_role employee on CurrentUser / in-memory / meApi to match live adapter (D-76)
 - [Phase 05]: Empty shortlist batch returns 200 items=[] for D-80 SPA empty state
+- [Phase 05]: Decision allowlist pending|approved|rejected in use-case (HTTP 400); Pydantic forbids extras only
+- [Phase 05]: Approve on draft succeeds in 05-02; DraftInSendPoolError deferred to 05-03 (D-85)
+- [Phase 05]: decided_by from require_admin CurrentUser.id, not request body (T-05-07)
 
 ### Pending Todos
 
@@ -186,7 +190,7 @@ None. Live FE↔BE proof approved 2026-09-19.
 
 ## Session Continuity
 
-Last session: 2026-09-21T14:35:30.937Z
-Stopped at: Completed 05-01-PLAN.md
+Last session: 2026-09-21T14:41:59.452Z
+Stopped at: Completed 05-02-PLAN.md
 Resume file: None
 Verification: `.planning/phases/01-platform-foundation-auth/01-VERIFICATION.md`
