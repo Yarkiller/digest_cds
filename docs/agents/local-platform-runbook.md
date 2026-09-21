@@ -220,6 +220,57 @@ Record the apply method in the operator resume signal (or append a one-line note
 
 ---
 
+## 4e. Phase 5 admin shortlist delivery + demo seed (ADMIN-01/02/07/08, D-78, D-87)
+
+Checked-in idempotent SQL: `supabase-integration/migrations/005_phase5_admin_shortlist.sql`.
+
+Creates / alters (apply **after** Phase 2 materials seed):
+
+- Nullable delivery columns on `digest_shortlist_batches`: `delivery_status`, `recipient_count`, `published_issue_id`, `issue_url` (D-87)
+- Optional SECURITY INVOKER RPC `claim_and_publish_digest(...)` — execute granted to **`service_role` only** (revoked from `anon` / `authenticated`)
+- Idempotent **demo batch** (week_start `2026-09-15`, unsent) with ≤5 shortlist items: ready materials from Phase 2 seed + one draft (`phase5-admin-draft`) for ADMIN-03 demos; ≥1 item has ≥2 `score_factors` labels — honesty comment in SQL: «demo batch для Phase 5»
+- Seed is **not** the PIPE-01 ranking pipeline — product UI stays silent on seed vs pipeline (D-78)
+
+**Stub mailer vs SMTP (D-87):** Live `APP_CONTAINER=live` wires **`StubMailer`** (`MAILER=stub`, default). `MAILER=smtp` **fail-fast** at startup (`resolve_mailer`) — no live SMTP this phase. Success copy is «Отправка записана»; never imply subscriber delivery counts.
+
+**Promote admin profile** for live admin proof (profiles default to `employee`):
+
+```sql
+update profiles set role = 'admin' where email = 'your-corporate@example.com';
+```
+
+**Apply once on the shared VM** (`knowledge-db.ru`) **after** Phase 2 materials (and preferably Phase 3–4 seeds):
+
+1. Prefer non-interactive CLI when `SUPABASE_ACCESS_TOKEN` is set: `supabase db push` from repo root.
+2. If CLI cannot reach the shared VM: apply `005_phase5_admin_shortlist.sql` once via Supabase MCP / Studio SQL / `psql` — **ALTER + insert/WHERE NOT EXISTS only**; do not reset DB.
+3. Re-running the file is safe (`ADD COLUMN IF NOT EXISTS`, draft material `ON CONFLICT`, batch/items `WHERE NOT EXISTS`).
+
+**Do not** `TRUNCATE` / `DELETE` wipe / `db reset` on the shared VM. Never expose `SUPABASE_SECRET_KEY` via `VITE_`. Do not add authenticated RLS policies that let browsers mutate shortlist.
+
+**Verify after apply:**
+
+```sql
+select column_name from information_schema.columns
+where table_name = 'digest_shortlist_batches'
+  and column_name in ('delivery_status', 'recipient_count', 'published_issue_id', 'issue_url');
+-- expect 4 rows
+
+select b.id, b.week_start, b.sent_at, count(si.material_id) as items
+from digest_shortlist_batches b
+left join digest_shortlist_items si on si.batch_id = b.id
+where b.sent_at is null and b.week_start = date '2026-09-15'
+group by b.id, b.week_start, b.sent_at;
+-- expect 1 batch, items between 1 and 5
+
+select proname from pg_proc where proname = 'claim_and_publish_digest';  -- expect 1
+```
+
+Record the apply method in the operator resume signal (or append a one-line note below when confirmed).
+
+**Applied:** _(pending operator MCP/Studio apply — plan 05-05 blocking checkpoint)_
+
+---
+
 ## 5. Live FE↔BE proof checklist (D-10)
 
 With API on `:8000`, Vite on `:5173`, `APP_CONTAINER=live`, and `VITE_USE_MOCKS=false`:
