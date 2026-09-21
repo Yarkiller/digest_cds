@@ -16,7 +16,15 @@ test.describe("razbory honesty (RAZB-01…04)", () => {
     await expect(items).toHaveCount(4);
     await expect(items.first()).toContainText(/Анонс/i);
     await expect(items.first()).toContainText(/RAG в корпоративной среде/i);
-    await expect(items.first().getByRole("link", { name: /Читать разбор/i })).toBeVisible();
+    // G-04-2: announcement rows must not expose a read CTA
+    await expect(items.first().getByRole("link", { name: /Читать разбор/i })).toHaveCount(0);
+    await expect(items.first()).toContainText(
+      "Разбор этой темы ещё готовится — следите за обновлениями",
+    );
+    await expect(items.first().getByTestId("chronology-pending")).toBeVisible();
+
+    const published = items.filter({ hasNot: page.getByText(/Анонс/i) }).first();
+    await expect(published.getByRole("link", { name: /Читать разбор/i })).toBeVisible();
 
     await page.addInitScript(() => {
       window.__DIGEST_EMPTY_RAZBORY__ = true;
