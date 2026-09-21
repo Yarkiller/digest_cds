@@ -226,3 +226,100 @@ def test_search_knowledge_overlong_query_raises_validation_error() -> None:
             role_filter=None,
         )
     assert "query_too_long" in str(exc_info.value)
+
+
+def test_search_knowledge_role_analyst_excludes_ds_only_materials() -> None:
+    """KNOW-02 / D-62: role=analyst keeps membership matches and drops ds-only hits."""
+    analyst = _ready(material_id=1, slug="sql-notes", title="SQL notes", roles=("analyst",))
+    ds_only = _ready(material_id=2, slug="ml-experiment", title="ML experiment", roles=("ds",))
+    materials = InMemoryMaterialRepository([analyst, ds_only])
+    chunks = InMemoryKnowledgeChunkRepository(materials=materials)
+    embedding = [0.9] + [0.0] * 1023
+    for material_id, chunk_id in ((1, 1), (2, 2)):
+        chunks.replace_for_material(
+            material_id,
+            [
+                _chunk(
+                    material_id=material_id,
+                    chunk_index=0,
+                    content_md="HNSW indexes for this role-filter probe.",
+                    embedding=embedding,
+                    chunk_id=chunk_id,
+                )
+            ],
+        )
+
+    hits = search_knowledge(
+        chunks=chunks,
+        query_embedding=embedding,
+        query_text="HNSW",
+        role_filter="analyst",
+        limit=10,
+    )
+
+    assert [hit.material_slug for hit in hits] == ["sql-notes"]
+
+
+def test_search_knowledge_empty_role_filter_is_unrestricted() -> None:
+    """KNOW-02: omitted or blank role means «Все» — no role filter."""
+    analyst = _ready(material_id=1, slug="sql-notes", roles=("analyst",))
+    ds_only = _ready(material_id=2, slug="ml-experiment", roles=("ds",))
+    materials = InMemoryMaterialRepository([analyst, ds_only])
+    chunks = InMemoryKnowledgeChunkRepository(materials=materials)
+    embedding = [0.9] + [0.0] * 1023
+    for material_id, chunk_id in ((1, 1), (2, 2)):
+        chunks.replace_for_material(
+            material_id,
+            [
+                _chunk(
+                    material_id=material_id,
+                    chunk_index=0,
+                    content_md="HNSW indexes for unrestricted role probe.",
+                    embedding=embedding,
+                    chunk_id=chunk_id,
+                )
+            ],
+        )
+
+    def slugs(role_filter: str | None) -> set[str]:
+        found = search_knowledge(
+            chunks=chunks,
+            query_embedding=embedding,
+            query_text="HNSW",
+            role_filter=role_filter,
+            limit=10,
+        )
+        return {hit.material_slug for hit in found}
+
+    assert slugs(None) == {"sql-notes", "ml-experiment"}
+    assert slugs("") == {"sql-notes", "ml-experiment"}
+    assert slugs("   ") == {"sql-notes", "ml-experiment"}
+
+
+def test_search_knowledge_invalid_role_raises_validation_error() -> None:
+    """T-04-05 / D-62: only analyst|ds are filters; UI labels and sva are rejected."""
+    material = _ready(material_id=1, slug="sql-notes", roles=("analyst", "sva"))
+    materials = InMemoryMaterialRepository([material])
+    chunks = InMemoryKnowledgeChunkRepository(materials=materials)
+    embedding = [0.9] + [0.0] * 1023
+    chunks.replace_for_material(
+        1,
+        [
+            _chunk(
+                material_id=1,
+                chunk_index=0,
+                content_md="HNSW indexes.",
+                embedding=embedding,
+            )
+        ],
+    )
+
+    for bad in ("sva", "Analyst", "ml"):
+        with pytest.raises(KnowledgeQueryValidationError) as exc_info:
+            search_knowledge(
+                chunks=chunks,
+                query_embedding=embedding,
+                query_text="HNSW",
+                role_filter=bad,
+            )
+        assert exc_info.value.code == "invalid_role"

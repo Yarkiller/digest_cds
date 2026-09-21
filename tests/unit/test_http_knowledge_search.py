@@ -58,7 +58,12 @@ def _mint(private_key: ec.EllipticCurvePrivateKey, *, email: str) -> str:
     )
 
 
-def _ready_material(*, material_id: int = 7, slug: str = "pgvector") -> Material:
+def _ready_material(
+    *,
+    material_id: int = 7,
+    slug: str = "pgvector",
+    roles: tuple[str, ...] = ("ds", "sva"),
+) -> Material:
     now = datetime(2026, 3, 17, tzinfo=timezone.utc)
     return Material(
         id=material_id,
@@ -71,7 +76,7 @@ def _ready_material(*, material_id: int = 7, slug: str = "pgvector") -> Material
         reading_minutes=6,
         provenance_label="внешний текстовый источник",
         source_id=None,
-        roles=("ds", "sva"),
+        roles=roles,
         tags=(("pgvector", "pgvector"),),
         related_material_ids=(),
         published_at=now,
@@ -248,3 +253,86 @@ def test_knowledge_search_has_more_true_when_more_materials_exist() -> None:
     assert body["has_more"] is True
     assert body["limit"] == 2
     assert len(body["items"]) == 2
+
+
+def _hnsw_chunk(*, material_id: int, embedding: list[float], now: datetime) -> KnowledgeChunk:
+    return KnowledgeChunk(
+        id=material_id,
+        material_id=material_id,
+        chunk_index=0,
+        heading="Setup",
+        content_md="Use HNSW indexes for semantic search.",
+        embedding=embedding,
+        embedding_model_id="foundry-embed-v1",
+        content_sha256="sha",
+        created_at=now,
+    )
+
+
+def test_knowledge_search_role_analyst_returns_only_analyst_materials() -> None:
+    """KNOW-02 / D-62: role=analyst is membership; ds-only materials stay out."""
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    now = datetime(2026, 3, 17, tzinfo=timezone.utc)
+    embedding = StubQueryEmbedder().embed("HNSW")
+    analyst = _ready_material(material_id=1, slug="sql-notes", roles=("analyst",))
+    ds_only = _ready_material(material_id=2, slug="ml-experiment", roles=("ds",))
+    container = _seeded_container(
+        [analyst, ds_only],
+        {
+            1: [_hnsw_chunk(material_id=1, embedding=embedding, now=now)],
+            2: [_hnsw_chunk(material_id=2, embedding=embedding, now=now)],
+        },
+    )
+    client = _client(jwk, container)
+    token = _mint(private_key, email="alice@sberbank.ru")
+    response = client.get(
+        "/knowledge/search",
+        params={"q": "HNSW", "role": "analyst"},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert response.status_code == 200
+    slugs = [item["slug"] for item in response.json()["items"]]
+    assert slugs == ["sql-notes"]
+    assert "score" not in response.text
+
+
+def test_knowledge_search_empty_role_param_is_unrestricted() -> None:
+    """KNOW-02: role= (empty) is «Все», same as omitting the param."""
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    now = datetime(2026, 3, 17, tzinfo=timezone.utc)
+    embedding = StubQueryEmbedder().embed("HNSW")
+    analyst = _ready_material(material_id=1, slug="sql-notes", roles=("analyst",))
+    ds_only = _ready_material(material_id=2, slug="ml-experiment", roles=("ds",))
+    container = _seeded_container(
+        [analyst, ds_only],
+        {
+            1: [_hnsw_chunk(material_id=1, embedding=embedding, now=now)],
+            2: [_hnsw_chunk(material_id=2, embedding=embedding, now=now)],
+        },
+    )
+    client = _client(jwk, container)
+    token = _mint(private_key, email="alice@sberbank.ru")
+    response = client.get(
+        "/knowledge/search",
+        params={"q": "HNSW", "role": ""},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert response.status_code == 200
+    assert {item["slug"] for item in response.json()["items"]} == {"sql-notes", "ml-experiment"}
+
+
+def test_knowledge_search_invalid_role_returns_400() -> None:
+    """T-04-05: role outside analyst|ds → 400 invalid_role (not an empty 200)."""
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    client = _client(jwk)
+    token = _mint(private_key, email="alice@sberbank.ru")
+    response = client.get(
+        "/knowledge/search",
+        params={"q": "HNSW", "role": "sva"},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert response.status_code == 400
+    assert response.json()["detail"] == "invalid_role"
