@@ -18,6 +18,19 @@ async function gotoAsRole(page, role, path = "/", extraInit) {
     { r: role, extra: extraInit ?? null },
   );
   await page.goto(path);
+  // Reset module-level admin mocks between tests (Vite keeps singleton state).
+  if (path.startsWith("/admin")) {
+    await page.waitForFunction(() => Boolean(window.__DIGEST_ADMIN_HARNESS__));
+    await page.evaluate((extra) => {
+      window.__DIGEST_ADMIN_HARNESS__.resetAdminHarness();
+      if (extra && typeof extra === "object") {
+        for (const [key, value] of Object.entries(extra)) {
+          window[key] = value;
+        }
+      }
+    }, extraInit ?? null);
+    await page.reload();
+  }
 }
 
 test.describe("Admin Digest — role gate (D-75, D-76, ADMIN-01)", () => {
@@ -130,8 +143,12 @@ test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07
     await expect(page.getByText(/сначала откройте превью письма/i)).toBeVisible();
 
     await page.getByRole("button", { name: /предпросмотр письма/i }).click();
-    await expect(page.getByRole("heading", { name: "Превью письма" })).toBeVisible();
-    await page.getByRole("button", { name: "Закрыть" }).click();
+    const emailDialog = page.getByRole("dialog").filter({
+      has: page.getByRole("heading", { name: "Превью письма" }),
+    });
+    await expect(emailDialog.getByText(/только одобренные ready/i)).toBeVisible();
+    await emailDialog.getByRole("button", { name: "Закрыть" }).click();
+    await expect(emailDialog).toHaveCount(0);
 
     await expect(page.getByText(/превью просмотрено\. можно отправить/i)).toBeVisible();
     await expect(sendBtn).toBeEnabled();
@@ -149,12 +166,17 @@ test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07
     const rows = page.getByTestId("admin-shortlist-row");
     await rows.nth(0).getByRole("checkbox").check();
     await page.getByRole("button", { name: /одобрить выбранные/i }).click();
+    await expect(rows.nth(0).getByText("одобрен")).toBeVisible();
     await page.getByRole("button", { name: /предпросмотр письма/i }).click();
-    await expect(page.getByRole("heading", { name: "Превью письма" })).toBeVisible();
-    await page.getByRole("button", { name: "Закрыть" }).click();
+    const emailDialog = page.getByRole("dialog").filter({
+      has: page.getByRole("heading", { name: "Превью письма" }),
+    });
+    await expect(emailDialog.getByText(/только одобренные ready/i)).toBeVisible();
+    await emailDialog.getByRole("button", { name: "Закрыть" }).click();
+    await expect(emailDialog).toHaveCount(0);
 
     await page.getByRole("button", { name: /отправить дайджест/i }).click();
     await page.getByRole("button", { name: /подтвердить отправку/i }).click();
-    await expect(page.getByText("Уже отправлено")).toBeVisible();
+    await expect(page.getByRole("status").filter({ hasText: "Уже отправлено" })).toBeVisible();
   });
 });
