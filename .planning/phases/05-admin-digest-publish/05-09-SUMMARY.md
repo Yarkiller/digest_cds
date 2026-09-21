@@ -114,7 +114,7 @@ Each task was committed atomically:
 4. **Task 2 (GREEN): SPA rest panel** - `f45e435` (feat)
 5. **Task 3: D-80 vs rest regression** - `3f0c425` (test)
 
-**Plan metadata:** (pending docs commit)
+**Plan metadata:** `928b031` (docs: complete post-send shortlist rest plan)
 
 _Note: TDD tasks used separate test → feat commits_
 
