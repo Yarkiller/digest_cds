@@ -76,6 +76,14 @@ def test_build_live_container_wires_supabase_adapters(monkeypatch: pytest.Monkey
     assert isinstance(container.razbors, SupabaseRazborRepository)
     assert not isinstance(container.chunks, InMemoryKnowledgeChunkRepository)
     assert not isinstance(container.razbors, InMemoryRazborRepository)
+
+    from backend.infrastructure.stub_mailer import StubMailer
+    from backend.tests_support.in_memory import InMemoryShortlistRepository
+    from supabase_integration import SupabaseShortlistRepository
+
+    assert isinstance(container.shortlist, SupabaseShortlistRepository)
+    assert not isinstance(container.shortlist, InMemoryShortlistRepository)
+    assert isinstance(container.mailer, StubMailer)
     create_service.assert_called_once_with(
         "https://example.test",
         "secret-key",
@@ -84,6 +92,21 @@ def test_build_live_container_wires_supabase_adapters(monkeypatch: pytest.Monkey
         "https://example.test",
         "publishable-key",
     )
+
+
+def test_build_live_container_rejects_smtp_mailer(monkeypatch: pytest.MonkeyPatch) -> None:
+    """D-87: MAILER=smtp fail-fast at live container build."""
+    monkeypatch.setattr(
+        "backend.composition.live.create_service_role_client",
+        MagicMock(return_value=object()),
+    )
+    settings = Settings(
+        supabase_url="https://example.test",
+        supabase_secret_key="secret-key",
+        mailer="smtp",
+    )
+    with pytest.raises(RuntimeError, match="SMTP"):
+        build_live_container(settings)
 
 
 def test_settings_exposes_jwks_url_and_issuer_from_env() -> None:
