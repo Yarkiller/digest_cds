@@ -25,7 +25,7 @@ created: 2026-09-21
 | Tool | **none** — custom CSS token system (`design-frontend/styles/tokens.css`), mirrored into `web/src/index.css` via Tailwind v4 `@theme`. shadcn gate N/A: design system pre-exists and is locked (same disposition as Phases 2–4). **Do not** initialize shadcn this phase. |
 | Preset | not applicable |
 | Component library | **none** — hand-rolled React (`AppShell`, `ActionButton`, `ErrorPanel`, `ServiceUnavailable`, toast). New: `AdminDigestPage`, `ForbiddenPage` (or equivalent 403 view), shortlist row + toolbar + sticky send footer + email/item preview modals + confirm-send dialog. Reuse/extend; do not introduce a component kit. |
-| Icon library | **none** — text glyphs only (`→`, `←`, `✕`, `⌕`). Keep glyph convention; no icon package. |
+| Icon library | **none** — text glyphs only (`→`, `←`, `✕`, `⌕`). Keep glyph convention; no icon package. Glyph close (`✕`) must expose accessible name **`aria-label="Закрыть"`** (visible glyph alone is not a name). |
 | Font (display) | `Bricolage Grotesque` (fallback `Trebuchet MS`, sans-serif) — page H1 optional; email-preview display title |
 | Font (body) | `IBM Plex Sans` (fallback `Segoe UI`, sans-serif) — admin UI, toolbar, row titles, banners |
 | Font (mono) | `IBM Plex Mono` (fallback `Consolas`, monospace) — rank numbers, numeric score only |
@@ -55,15 +55,16 @@ Reuse the locked rem token scale (base 16px). Do **not** add new spacing values.
 **Layout container tokens (reuse):** `--container-wide` 75rem / SPA `max-w-6xl` (`main--wide`); `--header-height` 4.25rem; modal z-index `--z-modal` 400; toast `--z-toast` 500.
 
 Exceptions:
-- **44px minimum touch target** on toolbar buttons, row checkboxes (`.admin-row__check` already 44×44), sticky-footer CTAs, empty «Обновить», 403 «На выпуск», modal close — locked a11y from Phases 1–2.
+- **44px minimum touch target** on toolbar buttons, row checkboxes (`.admin-row__check` already 44×44), sticky-footer CTAs, empty «Обновить список», 403 «На выпуск», modal close (`✕` with `aria-label="Закрыть"`) — locked a11y from Phases 1–2.
 - Row preview ghost may stay 32px height only if the full hit area (padding) still meets 44px; otherwise bump to `min-h-11`. **[assumption: prefer 44px hit area over prototype 32px chrome]**
 - Mobile: sticky footer stacks full-width buttons (`flex-direction: column`) — reuse `components.css` `@media` rules.
+- **Continuity tokens (not new inventions):** `--space-3` (12px), `--space-5` (20px), `--space-10` (40px) are locked `tokens.css` / Phase 2–4 reuse — same disposition as Phase 4 Spacing FLAG. Documented for executor continuity; **do not invent** additional non-grid values this phase.
 
 ---
 
 ## Typography
 
-Reuse the locked type scale. Contract declares **4 primary roles** and **2 weights** (400 + 600).
+Reuse the locked type scale. Contract declares **4 primary roles** (Heading, Subhead, Body, Label) and **2 weights** (400 + 600). Caption is **inherited-meta-only** (Phase 4 disposition) — not a fifth contract size.
 
 | Role | Token / utility | Size | Weight | Line Height | Used for |
 |------|-----------------|------|--------|-------------|----------|
@@ -71,7 +72,8 @@ Reuse the locked type scale. Contract declares **4 primary roles** and **2 weigh
 | Subhead | `--text-h2` / `text-2xl` | clamp 1.5→2rem | 600 | 1.2 | Modal titles («Превью письма», «Подтвердите отправку»), digest-editor section titles |
 | Body | `--text-body` / `text-sm`–`text-base` | 1.0625rem (17px) / 14–15px UI | 400 | 1.5–1.65 | Banners, confirm dialog body, email preview prose |
 | Label | `--text-overline` / `text-xs` | 0.75rem (12px) | 600 | 1.4 | Page overline «Админ»; email modal overline; decision captions |
-| Caption | `--text-caption` / `text-xs` | 0.8125rem (13px) | 400 | 1.4 | Week dek, send hint, score factors, exclusion/decision captions |
+
+**Inherited meta (not a 5th contract size):** Caption (`--text-caption` / `text-xs`, 0.8125rem / 13px, weight 400, lh 1.4) — week dek, send hint, score factors, exclusion captions. Same Phase 2–4 disposition: reuse token only; do not introduce new caption sizes.
 
 Weights: **400 regular** + **600 semibold** (contract pair).
 Exception: inherited badge / row-title chrome may use **500 medium** (`font-medium`) — out of scope to change; do not introduce 500 in new markup beyond reusing shared controls.
@@ -94,7 +96,7 @@ Locked OKLCH palette. 60/30/10 discipline mapped to existing tokens. Do not add 
 
 **Accent (`--color-accent`) reserved for — explicit list, never "all interactive elements":**
 - Active AppShell nav item **«Админ»** + brand wordmark
-- Primary text links: 403 CTA **«На выпуск»**, empty **«Обновить»** (ghost/accent text), material title hover on row
+- Primary text links: 403 CTA **«На выпуск»**, empty **«Обновить список»** (ghost/accent text), material title hover on row
 - Focus rings on checkboxes / toolbar / modal controls (`outline-accent`)
 - Optional filled toolbar primary only if a single primary chrome is needed — default toolbar stays ghost/secondary (prototype)
 
@@ -134,26 +136,27 @@ All copy is **Russian**, calm editorial/ops tone. **Never** show HTTP codes, sta
 | Decision captions | **«одобрен»** · **«отклонён»** · pending shows no exclusion caption |
 | Score factors (honest) | Numeric score + ≥2 factor labels joined with **« · »** (e.g. `relevance · freshness · engagement`) when available (D-79 / ADMIN-05) |
 | Score factors missing | **«обоснование недоступно»** (D-79) — never fabricate factors |
-| Row item preview | Button **«Превью»**; modal title **«Превью материала»** |
+| Row item preview | Button **«Превью материала»**; modal title **«Превью материала»** |
+| Modal close (glyph) | Visible **`✕`** + **`aria-label="Закрыть"`** on email-preview, item-preview, and confirm-send dismiss controls |
 | Send hint — needs preview | **«Сначала откройте превью письма.»** (§2.7 / D-86) |
 | Send hint — drafts in pool | **«Уберите черновики из одобренных или дождитесь ready.»** + list draft titles/badges (§2.7 / D-85) |
 | Send hint — empty pool | **«Нет одобренных ready-материалов для отправки.»** **[assumption: replaces §2.7 «Выберите хотя бы один материал» to match D-83 send-pool ≠ checkboxes]** |
 | Send hint — ready | **«Превью просмотрено. Можно отправить.»** **[assumption]** |
 | Empty shortlist heading | **«Кандидатов пока нет»** (D-80) |
-| Empty shortlist body + CTA | **«Обновите список позже.»** · secondary **«Обновить»** — **no** «пайплайн не вернул» (D-80) |
+| Empty shortlist body + CTA | **«Обновите список позже.»** · secondary **«Обновить список»** — **no** «пайплайн не вернул» (D-80) |
 | 403 heading | **«Недостаточно прав»** (D-75) |
 | 403 body + CTA | **«Этот раздел доступен только администраторам Digest CDS.»** · **«На выпуск»** → `/` or current issue route (D-75) |
 | Email preview modal title | **«Превью письма»** |
-| Email preview failure | **«Превью недоступно»** + Retry; send stays locked (ADMIN-04 / §2.7) |
+| Email preview failure | **«Превью недоступно»** + **«Повторить»**; send stays locked (ADMIN-04 / §2.7) |
 | Email preview caption | **«только approved ready»** (or Russian **«только одобренные ready»**) under period line |
 | Confirm-send title | **«Подтвердите отправку»** |
 | Confirm-send body | **«Будет создан новый выпуск и записана stub-отправка. Живая почта не используется.»** + count of approved ready items **[assumption: honesty per D-87]** |
 | Confirm-send primary | **«Подтвердить отправку»** |
-| Confirm-send cancel | **«Отмена»** |
+| Confirm-send dismiss | **«Не отправлять»** — specific dismiss; **never** generic «Отмена» / Cancel |
 | Send success | **«Отправка записана»** (D-87) — never «отправлено N подписчикам» |
 | Already sent | **«Уже отправлено»** (D-89 / ADMIN-07) |
-| Send network failure | Banner **«Рассылка не отправлена»** + Retry; selection/decisions preserved (§2.7 / D-89) |
-| Approve/Reject failure | Toast **«Не сохранено»** + Retry; revert optimistic UI to server state (§2.7) |
+| Send network failure | Banner **«Рассылка не отправлена»** + **«Повторить»**; selection/decisions preserved (§2.7 / D-89) |
+| Approve/Reject failure | Toast **«Не сохранено»** + **«Повторить»**; revert optimistic UI to server state (§2.7) |
 | Shortlist GET failure | ServiceUnavailable / banner + **«Повторить»** (Phase 2 pattern) |
 | Digest-editor context label | **«Вводный текст»** (prototype; in-session only) |
 | Digest-editor schema label | **«Блоки выпуска»** (prototype; in-session only) |
@@ -166,7 +169,7 @@ All copy is **Russian**, calm editorial/ops tone. **Never** show HTTP codes, sta
 | Screen | Primary focal point |
 |--------|---------------------|
 | `/admin/digest` (populated) | Shortlist rank-1 row + sticky **«Отправить дайджест →»** footer |
-| `/admin/digest` (empty) | Empty heading **«Кандидатов пока нет»** + **«Обновить»** |
+| `/admin/digest` (empty) | Empty heading **«Кандидатов пока нет»** + **«Обновить список»** |
 | `/admin/digest` (403 deep-link) | **«Недостаточно прав»** + **«На выпуск»** |
 | Email preview modal | Preview title stack + approved-ready article list |
 | Confirm-send dialog | **«Подтвердить отправку»** |
@@ -182,14 +185,14 @@ All copy is **Russian**, calm editorial/ops tone. **Never** show HTTP codes, sta
 - Unauthenticated: existing RequireAuth → login + `returnUrl=/admin/digest` (Phase 1).
 
 ### Shortlist list — ADMIN-01…03, ADMIN-05, D-78…D-85
-- Render **≤5** ranked rows: checkbox · rank · title (+ optional 64×36 thumb) · ready/draft badge · decision caption · score + factors · row «Превью».
+- Render **≤5** ranked rows: checkbox · rank · title (+ optional 64×36 thumb) · ready/draft badge · decision caption · score + factors · row **«Превью материала»**.
 - **Checkboxes = batch-action targets only** (D-83). They do **not** define the send pool.
 - **Send pool = all `approved` ∩ `ready`** materials in the current batch (server re-validates).
 - Approve/Reject on checked rows **persist** `shortlist_decision` (ADMIN-02). Rejected rows use `.admin-row--excluded` + caption **«отклонён»**.
 - **«Выбрать все»** / **«Оставить топ-3»** update checkboxes only in one operation; admin must still Approve/Reject (D-84 / ADMIN-06). Manual uncheck of one row keeps other checks.
 - Draft badge visible on every draft row; **Approve allowed on drafts**; **Send blocked** if any approved item is still draft (D-85) — show draft badges in the send-hint list.
 - Score: show number when present; factors ≥2 labels or **«обоснование недоступно»** (D-79). Never invent factors.
-- Empty batch: D-80 copy + «Обновить» (re-GET). No week picker (D-81).
+- Empty batch: D-80 copy + **«Обновить список»** (re-GET). No week picker (D-81).
 - **Do not** label seed vs pipeline in UI (D-78).
 
 ### Digest editors (context + schema) — prototype carry-forward
@@ -197,17 +200,17 @@ All copy is **Russian**, calm editorial/ops tone. **Never** show HTTP codes, sta
 - No requirement to persist editors to Postgres in v1 unless planner finds an existing column — default **session-only**. **[assumption: discretion; ADMIN-\* do not require durable schema editing]**
 
 ### Email preview — ADMIN-04, D-86
-- Control: **«Предпросмотр письма»** opens a **modal** (not a separate route) — follow design-frontend. **[assumption: CONTEXT discretion → prototype modal]**
+- Control: **«Предпросмотр письма»** opens a **modal** (not a separate route) — follow design-frontend. Close control: glyph **`✕`** + **`aria-label="Закрыть"`**. **[assumption: CONTEXT discretion → prototype modal]**
 - Preview body must list the current **approved ∩ ready** set (server-built DTO). Mismatch with checkboxes is OK and expected (D-83).
 - Successful preview this session unlocks Send **for the current approved set**. Changing the approved set after preview **invalidates** the preview gate until preview succeeds again. **[assumption: aligns with D-86 «for current approved set»]**
-- Failed preview → **«Превью недоступно»**; never marks send verified (ADMIN-04).
+- Failed preview → **«Превью недоступно»** + **«Повторить»**; never marks send verified (ADMIN-04).
 
 ### Item preview modal
-- Row **«Превью»** opens lightweight modal: status overline, title, dek/caption; closing returns focus to the row. Does **not** satisfy email-preview gate.
+- Row **«Превью материала»** opens lightweight modal: status overline, title, dek/caption; close control is glyph **`✕`** with **`aria-label="Закрыть"`**; closing returns focus to the row. Does **not** satisfy email-preview gate.
 
 ### Send → success — ADMIN-07, ADMIN-08, D-87…D-90
 - Send disabled until: (≥1 approved ready) ∧ (no approved drafts) ∧ (successful email preview this session for current set) ∧ (batch not already sent).
-- Clicking enabled Send opens **confirm dialog** (copy above); confirm calls send API.
+- Clicking enabled Send opens **confirm dialog** (primary **«Подтвердить отправку»**, dismiss **«Не отправлять»**); confirm calls send API.
 - Success UI: banner/toast **«Отправка записана»** + link/CTA to the published issue (`/issues/{number}`). Archive/current update is a Phase 2 reader consequence of publish (D-88).
 - Already-sent batch: hard block UI+API **«Уже отправлено»** (D-89) — no second issue.
 - Network/send failure: **«Рассылка не отправлена»**; keep decisions/checkboxes; do not show success.
@@ -224,22 +227,22 @@ All copy is **Russian**, calm editorial/ops tone. **Never** show HTTP codes, sta
 
 ```text
 [load shortlist]
-    → empty? → EmptyState (Обновить)
+    → empty? → EmptyState (Обновить список)
     → rows → Triage
 Triage:
     checkbox ops (select-all / top-3 / manual) — local only
     Approve/Reject selected → persist decision → refresh row chrome
     Preview email → success? set emailPreviewed=true for fingerprint(approved∩ready)
-                 → fail? emailPreviewed=false; show «Превью недоступно»
+                 → fail? emailPreviewed=false; show «Превью недоступно» + «Повторить»
 Send enabled iff:
     |approved∩ready| ≥ 1
     AND |approved∩draft| = 0
     AND emailPreviewed for current fingerprint
     AND batch.sent_at IS NULL
-Send → Confirm → API
+Send → Confirm (Подтвердить отправку | Не отправлять) → API
     → 200: «Отправка записана»; lock batch «Уже отправлено»
     → 409: «Уже отправлено»
-    → network/5xx: «Рассылка не отправлена»; stay in Triage
+    → network/5xx: «Рассылка не отправлена» + «Повторить»; stay in Triage
 ```
 
 ---
@@ -248,21 +251,22 @@ Send → Confirm → API
 
 > Shape-rooted state coverage from ui-phase probe. Empty/error **copy** lives in `## Copywriting Contract`; rows reference those rows rather than restating.
 
-Applicable: **28** probe items → **20 covered** · **5 backstop** · **3 dismissed** · **0 unresolved**.
+Applicable: **29** probe items → **21 covered** · **5 backstop** · **3 dismissed** · **0 unresolved**.
 
 Surfaces: **E1** Shortlist list · **E2** Admin toolbar (batch + Approve/Reject) · **E3** Sticky send footer + hints · **E4** Email preview modal · **E5** Confirm-send dialog · **E6** Item preview modal · **E7** 403 page · **E8** AppShell «Админ» nav · **E9** Empty shortlist · **E10** Digest editors (context/schema).
 
 | Category | Element(s) | Status | Resolution / Reason |
 |----------|------------|--------|---------------------|
-| empty | E1 / E9 shortlist | ✅ covered | «Кандидатов пока нет» + «Обновить» (D-80); never pipeline wording |
+| empty | E1 / E9 shortlist | ✅ covered | «Кандидатов пока нет» + «Обновить список» (D-80); never pipeline wording |
 | empty | E4 preview with zero approved ready | ✅ covered | Preview CTA may run but server/UI shows honest empty composition / blocks unlock — send stays disabled via empty-pool hint |
 | loading | E1 shortlist GET | ✅ covered | Neutral pending until DTO or ServiceUnavailable — do not flash empty |
 | loading | E2 Approve/Reject | ✅ covered | Disable toolbar actions while in-flight; no double-submit |
 | loading | E3 / E5 send | ✅ covered | Disable confirm primary while request in flight |
 | error | E1 GET fail | ✅ covered | ServiceUnavailable / banner + «Повторить» |
-| error | E2 decision fail | ✅ covered | Toast «Не сохранено» + revert to server state (§2.7) |
-| error | E4 preview fail | ✅ covered | «Превью недоступно»; emailPreviewed stays false (ADMIN-04) |
-| error | E3 send fail | ✅ covered | «Рассылка не отправлена»; selection preserved (D-89) |
+| error | E2 decision fail | ✅ covered | Toast «Не сохранено» + «Повторить»; revert to server state (§2.7) |
+| error | E4 preview fail | ✅ covered | «Превью недоступно» + «Повторить»; emailPreviewed stays false (ADMIN-04) |
+| error | E3 send fail | ✅ covered | «Рассылка не отправлена» + «Повторить»; selection preserved (D-89) |
+| error | E5 confirm dismiss | ✅ covered | Dismiss CTA **«Не отправлять»** (not generic Cancel/«Отмена») |
 | error | E7 403 | ✅ covered | «Недостаточно прав» + «На выпуск» (D-75) — never empty shortlist |
 | populated | E1 ≤5 rows | ✅ covered | Rank, title, badges, score/factors or «обоснование недоступно» (ADMIN-01/05) |
 | populated | E4 preview | ✅ covered | Modal lists approved∩ready matching server DTO (ADMIN-04 / D-83) |
@@ -295,11 +299,11 @@ No shadcn initialization and no third-party registries declared for this phase. 
 
 ## Checker Sign-Off
 
-- [ ] Dimension 1 Copywriting: PASS
+- [ ] Dimension 1 Copywriting: PASS — revised: confirm dismiss **«Не отправлять»**; noun CTAs **«Превью материала»** / **«Обновить список»**; retries locked Russian **«Повторить»**; glyph close `aria-label="Закрыть"`
 - [ ] Dimension 2 Visuals: PASS
 - [ ] Dimension 3 Color: PASS
-- [ ] Dimension 4 Typography: PASS
-- [ ] Dimension 5 Spacing: PASS
+- [ ] Dimension 4 Typography: PASS — Caption marked inherited-meta-only (Phase 4 disposition); ≤4 primary sizes
+- [ ] Dimension 5 Spacing: PASS — `--space-3/5/10` documented as continuity exceptions (Phase 4 disposition)
 - [ ] Dimension 6 Registry Safety: PASS
 
-**Approval:** pending
+**Approval:** pending (revision 2026-09-21 — checker blocking + recommendations applied)
