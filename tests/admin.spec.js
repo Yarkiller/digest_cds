@@ -235,6 +235,61 @@ test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07
     await emailDialog.getByRole("button", { name: "Закрыть", exact: true }).click();
   });
 
+  test("Блоки выпуска: reorder + interstitial text drive preview (G-05-1)", async ({
+    page,
+  }) => {
+    const bridge = `Связка G05-1-${Date.now()}`;
+    await gotoAsRole(page, "admin", "/admin/digest");
+    await approveReadyRows(page, [0, 1]);
+
+    const blocks = page.getByTestId("admin-issue-blocks");
+    await expect(blocks).toBeVisible();
+    // Primary control is reorderable blocks — not a free-text schema textarea.
+    await expect(page.locator('textarea').filter({ has: page.getByText(/блоки выпуска/i) })).toHaveCount(0);
+    const materialBlocks = blocks.getByTestId("admin-issue-block-material");
+    await expect(materialBlocks).toHaveCount(2);
+    await expect(materialBlocks.nth(0)).toContainText(/Building Production RAG Systems/i);
+    await expect(materialBlocks.nth(1)).toContainText(/Anomaly Detection in Audit Pipelines/i);
+
+    await materialBlocks.nth(1).getByRole("button", { name: /выше|вверх|переместить вверх/i }).click();
+    await expect(materialBlocks.nth(0)).toContainText(/Anomaly Detection in Audit Pipelines/i);
+    await expect(materialBlocks.nth(1)).toContainText(/Building Production RAG Systems/i);
+
+    await page.getByRole("button", { name: /добавить текст/i }).click();
+    const textBlocks = blocks.getByTestId("admin-issue-block-text");
+    await expect(textBlocks).toHaveCount(1);
+    await textBlocks.first().getByRole("textbox").fill(bridge);
+
+    // Place text between the two materials if it landed at the end: move up once.
+    const textUp = textBlocks.first().getByRole("button", {
+      name: /выше|вверх|переместить вверх/i,
+    });
+    if (await textUp.isEnabled()) {
+      await textUp.click();
+    }
+
+    await page.getByRole("button", { name: /предпросмотр письма/i }).click();
+    const emailDialog = page.getByRole("dialog").filter({
+      has: page.getByRole("heading", { name: "Превью письма", exact: true }),
+    });
+    const previewLis = emailDialog.locator("li");
+    await expect(previewLis).toHaveCount(2);
+    await expect(previewLis.nth(0)).toContainText(/Anomaly Detection in Audit Pipelines/i);
+    await expect(previewLis.nth(1)).toContainText(/Building Production RAG Systems/i);
+
+    const body = emailDialog.getByTestId("email-preview-body");
+    await expect(body).toContainText(bridge);
+    const bodyText = await body.innerText();
+    const anomalyAt = bodyText.indexOf("Anomaly Detection");
+    const bridgeAt = bodyText.indexOf(bridge);
+    const ragAt = bodyText.indexOf("Building Production");
+    expect(anomalyAt).toBeGreaterThanOrEqual(0);
+    expect(bridgeAt).toBeGreaterThan(anomalyAt);
+    expect(ragAt).toBeGreaterThan(bridgeAt);
+
+    await emailDialog.getByRole("button", { name: "Закрыть", exact: true }).click();
+  });
+
   test("превью unlocks send; confirm records Отправка записана + issue link (D-90)", async ({
     page,
   }) => {
