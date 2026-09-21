@@ -148,6 +148,14 @@ export default function KnowledgePage() {
     void runSearch(activeQuery, { offset: nextOffset, append: true })
   }
 
+  function handleResetFilter() {
+    // D-65 / KNOW-04: clear the role chip only. Query text stays and re-runs.
+    setRole('all')
+    const validation = validateKnowledgeQuery(query)
+    if (!validation.ok) return
+    void runSearch(validation.q, { offset: 0, append: false, role: 'all' })
+  }
+
   const preSearch = activeQuery === null && !error
   const showZeroHit =
     activeQuery !== null && !searching && !error && items.length === 0
@@ -270,12 +278,20 @@ export default function KnowledgePage() {
           <p className="mt-2 text-sm text-ink-2">
             По запросу нет материалов — уточните формулировку или смените роль.
           </p>
+          <button
+            type="button"
+            onClick={handleResetFilter}
+            className="mt-4 inline-flex min-h-11 items-center text-sm text-accent"
+          >
+            Сбросить фильтр
+          </button>
         </div>
       ) : null}
 
       {items.length > 0 ? (
         <div>
           {items.map((hit) => (
+            // KNOW-03: every hit, including DS, opens /materials/{slug}.
             <MaterialListRow key={hit.slug} material={hit} />
           ))}
 
