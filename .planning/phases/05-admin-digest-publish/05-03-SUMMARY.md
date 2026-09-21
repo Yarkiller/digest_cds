@@ -172,7 +172,7 @@ status: complete
 4. **Task 3 RED: send_digest + HTTP tests** — `ad534b3` (test)
 5. **Task 3 GREEN: send_digest + preview/send routes** — `96d4a91` (feat)
 
-**Plan metadata:** (docs commit after this SUMMARY)
+**Plan metadata:** `8f5b6dc` (docs: complete plan SUMMARY); `0f32ada` (docs: STATE/ROADMAP/REQUIREMENTS)
 
 ## Files Created/Modified
 
