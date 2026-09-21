@@ -113,7 +113,7 @@ Plans:
   3. Razbor list shows name/date/status (or empty CTA); multi-section разбор has sticky TOC navigation
   4. Notebook download works when attached and is clearly disabled when missing; metrics/overview labeling is honest
 
-**Plans**: 6/9 plans executed
+**Plans**: 7/9 plans executed
 **UI hint**: yes
 
 Plans:
@@ -140,7 +140,7 @@ Plans:
 
 **Wave 6** *(blocked on Wave 5 completion)*
 
-- [ ] 04-07-PLAN.md — Notebook FileResponse dual strip (RAZB-03)
+- [x] 04-07-PLAN.md — Notebook FileResponse dual strip (RAZB-03)
 
 **Wave 7** *(blocked on Wave 6 completion)*
 
@@ -176,5 +176,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. Platform Foundation & Auth | 6/7 | Verified (PASS_WITH_GAPS) | 2026-09-19 |
 | 2. Issue, Materials & Archive | 6/6 | Complete    | 2026-09-20 |
 | 3. Voting Cycle | 6/6 | Complete    | 2026-09-20 |
-| 4. Knowledge & Razbory | 6/9 | In Progress|  |
+| 4. Knowledge & Razbory | 7/9 | In Progress|  |
 | 5. Admin Digest Publish | 0/TBD | Not started | - |

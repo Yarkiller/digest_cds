@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 11
+open_count: 12
 waived_count: 0
 fixed_count: 1
-total_count: 12
-last_updated: 2026-09-21T05:12:02.428Z
+total_count: 13
+last_updated: 2026-09-21T05:25:32.263Z
 ---
 
 # Broken Windows Ledger
@@ -27,6 +27,7 @@ last_updated: 2026-09-21T05:12:02.428Z
 | 10 | 04 | deviation | tests/web-app.spec.js |  | Retired Загрузить ещё Playwright case; mock catalog is smaller than page size 10 | open |  | 2026-09-21T05:02:21.685Z |  |
 | 11 | 04 | stub | web/src/App.jsx |  | /razbory/:id placeholder shell until 04-06 | open |  | 2026-09-21T05:12:01.843Z |  |
 | 12 | 04 | stub | tests/ |  | Playwright razbory list/empty/nav deferred to 04-09 | open |  | 2026-09-21T05:12:02.428Z |  |
+| 13 | 04 | stub | tests/web-app.spec.js |  | Playwright notebook enable/disable proofs deferred to 04-09 | open |  | 2026-09-21T05:25:32.263Z |  |
 
 ````json
 [
@@ -172,6 +173,18 @@ last_updated: 2026-09-21T05:12:02.428Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-09-21T05:12:02.428Z",
+    "resolved_at": null
+  },
+  {
+    "id": 13,
+    "kind": "stub",
+    "phase": "04",
+    "file": "tests/web-app.spec.js",
+    "line": null,
+    "description": "Playwright notebook enable/disable proofs deferred to 04-09",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-21T05:25:32.263Z",
     "resolved_at": null
   }
 ]
