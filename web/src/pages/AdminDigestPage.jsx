@@ -6,6 +6,7 @@ import { getAccessToken } from '../services/authApi.js'
 import { fetchMe } from '../services/meApi.js'
 import {
   AdminApiError,
+  DIGEST_WEEKLY_CADENCE_DAYS,
   clearFailNextPreview,
   clearFailNextShortlistFetch,
   fetchShortlist,
@@ -78,13 +79,18 @@ function approvedFingerprint(items) {
     .join(',')
 }
 
-function applyBatch(dto, setItems, setBatchMeta) {
+function applyBatch(dto, setItems, setBatchMeta, setDigestRest, setDaysUntilNext) {
   setItems(Array.isArray(dto?.items) ? dto.items : [])
   setBatchMeta({
     batch_id: dto?.batch_id ?? null,
     sent_at: dto?.sent_at ?? null,
     week_label: dto?.week_label ?? null,
   })
+  setDigestRest(Boolean(dto?.digest_rest))
+  const days = dto?.days_until_next_batch
+  setDaysUntilNext(
+    days == null || Number.isNaN(Number(days)) ? DIGEST_WEEKLY_CADENCE_DAYS : Number(days),
+  )
 }
 
 /**
@@ -115,6 +121,8 @@ export default function AdminDigestPage() {
   const [contextText, setContextText] = useState('')
   const [issueBlocks, setIssueBlocks] = useState([])
   const [batchSent, setBatchSent] = useState(false)
+  const [digestRest, setDigestRest] = useState(false)
+  const [daysUntilNextBatch, setDaysUntilNextBatch] = useState(DIGEST_WEEKLY_CADENCE_DAYS)
 
   useEffect(() => {
     let cancelled = false
@@ -147,11 +155,11 @@ export default function AdminDigestPage() {
     fetchShortlist()
       .then((dto) => {
         if (cancelled) return
-        applyBatch(dto, setItems, setBatchMeta)
+        applyBatch(dto, setItems, setBatchMeta, setDigestRest, setDaysUntilNextBatch)
         setCheckedIds(new Set())
         setEmailPreviewed(false)
         setPreviewFingerprint('')
-        setBatchSent(Boolean(dto?.sent_at))
+        setBatchSent(Boolean(dto?.sent_at) || Boolean(dto?.digest_rest))
         setBanner('')
         setIssueUrl('')
         setLoadState('ready')
@@ -260,7 +268,9 @@ export default function AdminDigestPage() {
       for (const id of ids) {
         latest = await setDecision(id, decision)
       }
-      if (latest) applyBatch(latest, setItems, setBatchMeta)
+      if (latest) {
+        applyBatch(latest, setItems, setBatchMeta, setDigestRest, setDaysUntilNextBatch)
+      }
       setCheckedIds(new Set())
     } catch {
       setToast('Не сохранено')
@@ -334,12 +344,20 @@ export default function AdminDigestPage() {
       setBanner(result.message || 'Отправка записана')
       setIssueUrl(typeof result.issue_url === 'string' ? result.issue_url : '')
       setBatchSent(true)
+      setDigestRest(true)
+      setDaysUntilNextBatch(DIGEST_WEEKLY_CADENCE_DAYS)
+      setItems([])
+      setCheckedIds(new Set())
       setConfirmOpen(false)
     } catch (err) {
       if (err instanceof AdminApiError && err.code === 'ALREADY_SENT') {
         setBanner('Уже отправлено')
         setIssueUrl('')
         setBatchSent(true)
+        setDigestRest(true)
+        setDaysUntilNextBatch(DIGEST_WEEKLY_CADENCE_DAYS)
+        setItems([])
+        setCheckedIds(new Set())
         setConfirmOpen(false)
       } else {
         setBanner('Рассылка не отправлена')
@@ -383,14 +401,30 @@ export default function AdminDigestPage() {
     )
   }
 
-  const isEmpty = items.length === 0
+  const restMode = batchSent || digestRest
+  const isEmpty = !restMode && items.length === 0
+  const showTriage = !restMode && items.length > 0
+  const restDays =
+    daysUntilNextBatch == null ? DIGEST_WEEKLY_CADENCE_DAYS : daysUntilNextBatch
 
   return (
     <section data-testid="admin-digest-page" className="pb-32">
       <p className="text-xs font-semibold uppercase tracking-wide text-muted">Админ</p>
       <h1 className="mt-2 font-sans text-3xl font-semibold text-ink">Shortlist дайджеста</h1>
-      {!isEmpty && weekDek ? (
+      {showTriage && weekDek ? (
         <p className="mt-2 text-xs text-muted">{weekDek}</p>
+      ) : null}
+
+      {restMode ? (
+        <div
+          data-testid="admin-digest-rest"
+          className="mt-8 rounded-2xl border border-rule bg-paper px-6 py-10"
+        >
+          <h2 className="font-sans text-3xl font-semibold text-ink">дайджест успешно выпущен</h2>
+          <p className="mt-3 text-sm text-ink-2">
+            Следующие материалы будут подготовлены через {restDays} дней
+          </p>
+        </div>
       ) : null}
 
       {isEmpty ? (
@@ -408,7 +442,9 @@ export default function AdminDigestPage() {
             Обновить список
           </button>
         </div>
-      ) : (
+      ) : null}
+
+      {showTriage ? (
         <>
           <div className="mt-6 flex flex-wrap gap-2">
             <button
@@ -601,9 +637,9 @@ export default function AdminDigestPage() {
             })}
           </ul>
         </>
-      )}
+      ) : null}
 
-      {!isEmpty ? (
+      {showTriage || restMode ? (
         <div
           data-testid="admin-send-footer"
           className="fixed inset-x-0 bottom-0 z-40 border-t border-rule bg-paper/95 backdrop-blur"
@@ -613,7 +649,7 @@ export default function AdminDigestPage() {
               <p className="text-sm text-ink-2 break-words" data-testid="admin-send-hint">
                 {sendHint}
               </p>
-              {approvedDrafts.length > 0 ? (
+              {!restMode && approvedDrafts.length > 0 ? (
                 <ul className="mt-1 text-xs text-muted">
                   {approvedDrafts.map((d) => (
                     <li key={d.material_id}>
@@ -640,7 +676,7 @@ export default function AdminDigestPage() {
               <button
                 type="button"
                 className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-rule px-4 text-sm font-medium sm:w-auto"
-                disabled={previewing || approvedReady.length === 0}
+                disabled={restMode || previewing || approvedReady.length === 0}
                 onClick={openEmailPreview}
               >
                 Предпросмотр письма
@@ -648,7 +684,7 @@ export default function AdminDigestPage() {
               <button
                 type="button"
                 className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-[oklch(45%_0.13_155)] px-4 text-sm font-medium text-paper disabled:cursor-not-allowed disabled:opacity-45 sm:w-auto"
-                disabled={!sendUnlocked || sending}
+                disabled={restMode || !sendUnlocked || sending}
                 onClick={() => setConfirmOpen(true)}
               >
                 Отправить дайджест →

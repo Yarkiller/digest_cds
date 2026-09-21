@@ -25,7 +25,10 @@ export class AdminApiError extends Error {
 }
 
 /** @typedef {{ material_id: number, rank: number, title: string, material_status: 'ready'|'draft', decision: 'pending'|'approved'|'rejected', score: number|null, factor_labels: string[], dek?: string }} AdminShortlistItem */
-/** @typedef {{ batch_id: number|null, sent_at: string|null, week_label: string|null, items: AdminShortlistItem[] }} AdminShortlistDto */
+/** @typedef {{ batch_id: number|null, sent_at: string|null, week_label: string|null, items: AdminShortlistItem[], digest_rest?: boolean, days_until_next_batch?: number|null }} AdminShortlistDto */
+
+/** Locked product weekly cadence days (G-05-2 / PROJECT.md weekly digest). */
+export const DIGEST_WEEKLY_CADENCE_DAYS = 7
 
 const DEFAULT_ITEMS = /** @type {AdminShortlistItem[]} */ ([
   {
@@ -115,6 +118,42 @@ function cloneBatch() {
       ...item,
       factor_labels: [...(item.factor_labels ?? [])],
     })),
+    digest_rest: false,
+    days_until_next_batch: null,
+  }
+}
+
+function restDto() {
+  return {
+    batch_id: null,
+    sent_at: mockBatch.sent_at,
+    week_label: null,
+    items: [],
+    digest_rest: true,
+    days_until_next_batch: DIGEST_WEEKLY_CADENCE_DAYS,
+  }
+}
+
+function emptyDto() {
+  return {
+    batch_id: null,
+    sent_at: null,
+    week_label: null,
+    items: [],
+    digest_rest: false,
+    days_until_next_batch: null,
+  }
+}
+
+function mapShortlistBody(body) {
+  return {
+    batch_id: body.batch_id ?? null,
+    sent_at: body.sent_at ?? null,
+    week_label: body.week_label ?? null,
+    items: Array.isArray(body.items) ? body.items : [],
+    digest_rest: Boolean(body.digest_rest),
+    days_until_next_batch:
+      body.days_until_next_batch == null ? null : Number(body.days_until_next_batch),
   }
 }
 
@@ -179,6 +218,7 @@ export function resetAdminHarness() {
   resetMockItems()
   if (typeof window !== 'undefined') {
     window.__DIGEST_ADMIN_EMPTY__ = false
+    window.__DIGEST_ADMIN_DIGEST_REST__ = false
     window.__DIGEST_ADMIN_FAIL_SHORTLIST__ = false
     window.__DIGEST_ADMIN_FAIL_PREVIEW__ = false
     window.__DIGEST_ADMIN_ALREADY_SENT__ = false
@@ -224,8 +264,14 @@ export async function fetchShortlist(accessToken) {
         retryable: true,
       })
     }
+    if (stickyFlag('__DIGEST_ADMIN_DIGEST_REST__')) {
+      return restDto()
+    }
     if (stickyFlag('__DIGEST_ADMIN_EMPTY__')) {
-      return { batch_id: null, sent_at: null, week_label: null, items: [] }
+      return emptyDto()
+    }
+    if (mockBatch.sent_at) {
+      return restDto()
     }
     return cloneBatch()
   }
@@ -252,12 +298,7 @@ export async function fetchShortlist(accessToken) {
   }
 
   const body = await response.json()
-  return {
-    batch_id: body.batch_id ?? null,
-    sent_at: body.sent_at ?? null,
-    week_label: body.week_label ?? null,
-    items: Array.isArray(body.items) ? body.items : [],
-  }
+  return mapShortlistBody(body)
 }
 
 /**
@@ -304,12 +345,7 @@ export async function setDecision(materialId, decision, accessToken) {
   }
 
   const body = await response.json()
-  return {
-    batch_id: body.batch_id ?? null,
-    sent_at: body.sent_at ?? null,
-    week_label: body.week_label ?? null,
-    items: Array.isArray(body.items) ? body.items : [],
-  }
+  return mapShortlistBody(body)
 }
 
 /**
