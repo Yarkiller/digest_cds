@@ -73,3 +73,9 @@ class AdminShortlistItem:
 class AdminShortlist:
     batch_id: int | None
     items: tuple[AdminShortlistItem, ...]
+    digest_rest: bool = False
+    days_until_next_batch: int | None = None
+
+
+# Locked product weekly cadence (PROJECT.md / ROADMAP «weekly» digest) — G-05-2.
+DIGEST_WEEKLY_CADENCE_DAYS = 7

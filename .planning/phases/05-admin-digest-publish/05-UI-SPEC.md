@@ -143,8 +143,10 @@ All copy is **Russian**, calm editorial/ops tone. **Never** show HTTP codes, sta
 | Send hint — drafts in pool | **«Уберите черновики из одобренных или дождитесь ready.»** + list draft titles/badges (§2.7 / D-85) |
 | Send hint — empty pool | **«Нет одобренных ready-материалов для отправки.»** **[assumption: replaces §2.7 «Выберите хотя бы один материал» to match D-83 send-pool ≠ checkboxes]** |
 | Send hint — ready | **«Превью просмотрено. Можно отправить.»** **[assumption]** |
-| Empty shortlist heading | **«Кандидатов пока нет»** (D-80) |
+| Empty shortlist heading | **«Кандидатов пока нет»** (D-80) — **only when** `digest_rest` is false (genuine empty / no latest sent batch) |
 | Empty shortlist body + CTA | **«Обновите список позже.»** · secondary **«Обновить список»** — **no** «пайплайн не вернул» (D-80) |
+| Post-send rest heading | **«дайджест успешно выпущен»** (G-05-2) — calm success after stub send; triage shortlist hidden |
+| Post-send rest body | **«Следующие материалы будут подготовлены через {days_until_next_batch} дней»** — `days_until_next_batch` from API (weekly cadence constant **7**; not voting-cycle math) |
 | 403 heading | **«Недостаточно прав»** (D-75) |
 | 403 body + CTA | **«Этот раздел доступен только администраторам Digest CDS.»** · **«На выпуск»** → `/` or current issue route (D-75) |
 | Email preview modal title | **«Превью письма»** |
@@ -170,7 +172,8 @@ All copy is **Russian**, calm editorial/ops tone. **Never** show HTTP codes, sta
 | Screen | Primary focal point |
 |--------|---------------------|
 | `/admin/digest` (populated) | Shortlist rank-1 row + sticky **«Отправить дайджест →»** footer |
-| `/admin/digest` (empty) | Empty heading **«Кандидатов пока нет»** + **«Обновить список»** |
+| `/admin/digest` (empty) | Empty heading **«Кандидатов пока нет»** + **«Обновить список»** (D-80; `digest_rest=false`) |
+| `/admin/digest` (post-send rest) | Rest heading **«дайджест успешно выпущен»** + countdown through **7** days; no shortlist rows/checkboxes (G-05-2) |
 | `/admin/digest` (403 deep-link) | **«Недостаточно прав»** + **«На выпуск»** |
 | Email preview modal | Preview title stack + approved-ready article list |
 | Confirm-send dialog | **«Подтвердить отправку»** |
@@ -193,7 +196,7 @@ All copy is **Russian**, calm editorial/ops tone. **Never** show HTTP codes, sta
 - **«Выбрать все»** / **«Оставить топ-3»** update checkboxes only in one operation; admin must still Approve/Reject (D-84 / ADMIN-06). Manual uncheck of one row keeps other checks.
 - Draft badge visible on every draft row; **Approve allowed on drafts**; **Send blocked** if any approved item is still draft (D-85) — show draft badges in the send-hint list.
 - Score: show number when present; factors ≥2 labels or **«обоснование недоступно»** (D-79). Never invent factors.
-- Empty batch: D-80 copy + **«Обновить список»** (re-GET). No week picker (D-81).
+- Empty batch: D-80 copy + **«Обновить список»** (re-GET). No week picker (D-81). **D-80 applies only when `digest_rest` is false** — after a recorded send (`digest_rest=true`), show the post-send rest surface instead (G-05-2).
 - **Do not** label seed vs pipeline in UI (D-78).
 
 ### Digest editors (context + schema) — prototype carry-forward
@@ -213,7 +216,8 @@ All copy is **Russian**, calm editorial/ops tone. **Never** show HTTP codes, sta
 - Send disabled until: (≥1 approved ready) ∧ (no approved drafts) ∧ (successful email preview this session for current set) ∧ (batch not already sent).
 - Clicking enabled Send opens **confirm dialog** (primary **«Подтвердить отправку»**, dismiss **«Не отправлять»**); confirm calls send API.
 - Success UI: banner/toast **«Отправка записана»** + link/CTA to the published issue (`/issues/{number}`). Archive/current update is a Phase 2 reader consequence of publish (D-88).
-- Already-sent batch: hard block UI+API **«Уже отправлено»** (D-89) — no second issue.
+- **Post-send rest (G-05-2):** after success (or cold load with `digest_rest=true`), **hide** triage shortlist rows, checkboxes, toolbar, and digest editors. Keep locked **«Отправка записана»** / **«Уже отправлено»** (D-87 / D-89). Show rest copy **«дайджест успешно выпущен»** and **«Следующие материалы будут подготовлены через {N} дней»** (`N` = `days_until_next_batch`, weekly cadence **7**). When a later GET returns items, triage UI returns.
+- Already-sent batch: hard block UI+API **«Уже отправлено»** (D-89) — no second issue; same rest hide as success (no inactive checkboxes).
 - Network/send failure: **«Рассылка не отправлена»**; keep decisions/checkboxes; do not show success.
 - Stub email body (ops/logs, not a user mailbox UI) contains issue link; unauth open → login → `returnUrl` (ADMIN-08). No in-app “inbox” screen this phase.
 
@@ -228,7 +232,8 @@ All copy is **Russian**, calm editorial/ops tone. **Never** show HTTP codes, sta
 
 ```text
 [load shortlist]
-    → empty? → EmptyState (Обновить список)
+    → digest_rest? → RestState («дайджест успешно выпущен» + countdown; hide triage)
+    → empty (digest_rest=false)? → EmptyState (Обновить список)  // D-80 only
     → rows → Triage
 Triage:
     checkbox ops (select-all / top-3 / manual) — local only
@@ -241,8 +246,8 @@ Send enabled iff:
     AND emailPreviewed for current fingerprint
     AND batch.sent_at IS NULL
 Send → Confirm (Подтвердить отправку | Не отправлять) → API
-    → 200: «Отправка записана»; lock batch «Уже отправлено»
-    → 409: «Уже отправлено»
+    → 200: «Отправка записана»; enter RestState (hide shortlist; keep D-87/D-89 copy)
+    → 409: «Уже отправлено»; enter RestState (no inactive checkboxes)
     → network/5xx: «Рассылка не отправлена» + «Повторить»; stay in Triage
 ```
 

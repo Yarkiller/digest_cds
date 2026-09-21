@@ -47,6 +47,8 @@ class AdminShortlistResponse(BaseModel):
 
     batch_id: int | None = None
     items: list[AdminShortlistItemResponse] = []
+    digest_rest: bool = False
+    days_until_next_batch: int | None = None
 
 
 class SetShortlistDecisionRequest(BaseModel):
@@ -149,6 +151,8 @@ def _to_response(dto: AdminShortlist) -> AdminShortlistResponse:
             )
             for item in dto.items
         ],
+        digest_rest=dto.digest_rest,
+        days_until_next_batch=dto.days_until_next_batch,
     )
 
 
