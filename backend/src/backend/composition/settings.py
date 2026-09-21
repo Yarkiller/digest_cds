@@ -23,6 +23,8 @@ class Settings:
     app_container: str = "memory"
     # Local filesystem root for authenticated .ipynb FileResponse (RAZB-03 / A5)
     notebook_root: str = ""
+    # stub (default, D-87) | smtp (fail-fast at resolve — not implemented)
+    mailer: str = "stub"
 
     @property
     def cors_origins(self) -> tuple[str, ...]:
@@ -38,6 +40,7 @@ class Settings:
         mode = (env.get("APP_CONTAINER") or "memory").strip().lower() or "memory"
         if mode not in ("memory", "live"):
             mode = "memory"
+        mailer = (env.get("MAILER") or "stub").strip().lower() or "stub"
         return cls(
             api_cors_origins=env.get("API_CORS_ORIGINS", ""),
             allowed_email_domains=env.get("ALLOWED_EMAIL_DOMAINS", ""),
@@ -48,4 +51,5 @@ class Settings:
             supabase_jwt_issuer=env.get("SUPABASE_JWT_ISSUER", ""),
             app_container=mode,
             notebook_root=env.get("NOTEBOOK_ROOT", ""),
+            mailer=mailer,
         )

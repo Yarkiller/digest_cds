@@ -6,6 +6,7 @@ from backend.composition.container import AppContainer
 from backend.composition.settings import Settings
 from backend.application.ports.query_embedder import StubQueryEmbedder
 from backend.infrastructure.local_notebook_storage import LocalNotebookStorage
+from backend.infrastructure.stub_mailer import resolve_mailer
 from backend.tests_support.in_memory import InMemoryShortlistRepository
 from supabase_integration import (
     SupabaseIssueRepository,
@@ -54,4 +55,5 @@ def build_live_container(settings: Settings) -> AppContainer:
         notebook_storage=LocalNotebookStorage(settings.notebook_root or "."),
         # Live shortlist adapter lands in plan 05-05; empty in-memory until then.
         shortlist=InMemoryShortlistRepository(),
+        mailer=resolve_mailer(settings),
     )

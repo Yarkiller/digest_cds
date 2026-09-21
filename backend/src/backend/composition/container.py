@@ -7,6 +7,7 @@ from pathlib import Path
 
 from backend.application.ports.issue_repository import IssueRepository
 from backend.application.ports.knowledge_chunk_repository import KnowledgeChunkRepository
+from backend.application.ports.mailer import Mailer
 from backend.application.ports.material_repository import MaterialRepository
 from backend.application.ports.notebook_storage import NotebookStorage
 from backend.application.ports.ping_recorder import PingRecorder
@@ -24,6 +25,7 @@ from backend.domain.knowledge import KnowledgeHit
 from backend.domain.material import Material
 from backend.domain.voting_cycle import VotingCycle
 from backend.infrastructure.local_notebook_storage import LocalNotebookStorage
+from backend.infrastructure.stub_mailer import StubMailer
 from backend.tests_support.in_memory import (
     InMemoryIssueRepository,
     InMemoryKnowledgeChunkRepository,
@@ -50,6 +52,7 @@ class AppContainer:
     razbors: RazborRepository
     notebook_storage: NotebookStorage
     shortlist: ShortlistRepository
+    mailer: Mailer
 
     def publish(self, material_id: int) -> Material:
         return publish_material(self.materials, material_id)
@@ -105,4 +108,5 @@ def build_in_memory_container(
         razbors=InMemoryRazborRepository(),
         notebook_storage=LocalNotebookStorage(root),
         shortlist=InMemoryShortlistRepository(),
+        mailer=StubMailer(),
     )

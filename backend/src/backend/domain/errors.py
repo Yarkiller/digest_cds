@@ -116,3 +116,13 @@ class InvalidShortlistDecisionError(DomainError):
     def __init__(self, decision: str) -> None:
         super().__init__(f"invalid shortlist decision: {decision!r}")
         self.decision = decision
+
+
+class EmptySendPoolError(DomainError):
+    """Raised when approved∩ready send/preview pool is empty (ADMIN-04/07)."""
+
+    def __init__(self, batch_id: int | None = None) -> None:
+        super().__init__(
+            f"empty send pool for batch {batch_id}" if batch_id is not None else "empty send pool"
+        )
+        self.batch_id = batch_id
