@@ -13,6 +13,10 @@ class ShortlistRepository(Protocol):
         """Latest unsent batch (sent_at IS NULL), or None when empty (D-80/D-81)."""
         ...
 
+    def get_latest_batch(self) -> ShortlistBatch | None:
+        """Most recent batch regardless of sent_at, or None (D-89 already-sent signal, WR-03)."""
+        ...
+
     def set_decision(
         self,
         *,

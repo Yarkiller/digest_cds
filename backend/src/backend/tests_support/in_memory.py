@@ -81,6 +81,14 @@ class InMemoryShortlistRepository:
         self._batch = batch
 
     def get_current_batch(self) -> ShortlistBatch | None:
+        # WR-03: match the live `sent_at IS NULL` contract — a claimed batch is no longer
+        # "current" (mirrors SupabaseShortlistRepository.get_current_batch).
+        if self._batch is None or self._batch.sent_at is not None:
+            return None
+        return self._batch
+
+    def get_latest_batch(self) -> ShortlistBatch | None:
+        """Most recent batch regardless of sent_at (D-89 already-sent signal)."""
         return self._batch
 
     def seed(self, batch: ShortlistBatch | None) -> None:

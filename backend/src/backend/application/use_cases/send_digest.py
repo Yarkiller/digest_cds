@@ -64,10 +64,13 @@ def send_digest(
     clock = now or datetime.now(timezone.utc)
     batch = shortlist.get_current_batch()
     if batch is None:
+        # No unsent batch. Distinguish "already sent this week" (D-89 → AlreadySentError/409,
+        # «Уже отправлено») from a genuinely empty pool (→ EmptySendPoolError/400). WR-03: both
+        # live and in-memory hide sent batches from get_current_batch, so consult the latest.
+        latest = shortlist.get_latest_batch()
+        if latest is not None and latest.sent_at is not None:
+            raise AlreadySentError(latest.id)
         raise EmptySendPoolError()
-
-    if batch.sent_at is not None:
-        raise AlreadySentError(batch.id)
 
     drafts = _approved_drafts(batch.items)
     if drafts:

@@ -504,7 +504,9 @@ def test_admin_send_happy_path_publishes_and_returns_issue_link() -> None:
     assert body["message"] == "Отправка записана"
     assert body["delivery_status"] == "stubbed"
     assert body["issue_url"].startswith("/issues/")
-    assert container.shortlist.get_current_batch().sent_at is not None
+    # WR-03: sent batch leaves the unsent pool; sent_at is visible via get_latest_batch.
+    assert container.shortlist.get_current_batch() is None
+    assert container.shortlist.get_latest_batch().sent_at is not None
     assert container.issues.get_by_number(body["issue_number"]) is not None
 
 

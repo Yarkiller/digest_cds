@@ -82,6 +82,32 @@ class SupabaseShortlistRepository:
             return None
         return self._batch_with_items(rows[0])
 
+    def get_latest_batch(self) -> ShortlistBatch | None:
+        """Most recent batch regardless of sent_at (D-89 already-sent signal, WR-03).
+
+        Same ordering as get_current_batch but WITHOUT the `sent_at IS NULL` filter, so
+        send_digest can distinguish an already-sent latest batch (→ AlreadySentError / 409)
+        from a genuinely empty pool (→ EmptySendPoolError / 400).
+        """
+        try:
+            result = (
+                self._client.table("digest_shortlist_batches")
+                .select("*")
+                .order("week_start", desc=True)
+                .order("created_at", desc=True)
+                .limit(1)
+                .execute()
+            )
+        except PersistenceError:
+            raise
+        except Exception as exc:  # noqa: BLE001 — map SDK failures at boundary
+            raise PersistenceError(f"shortlist get_latest_batch failed: {exc}") from exc
+
+        rows = getattr(result, "data", None) or []
+        if not rows:
+            return None
+        return self._batch_with_items(rows[0])
+
     def set_decision(
         self,
         *,

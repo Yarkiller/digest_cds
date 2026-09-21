@@ -51,14 +51,14 @@ resolved:
   - CR-01
   - WR-01
   - WR-02
-open:
   - WR-03
+open:
   - WR-04
   - WR-05
   - IN-01
   - IN-02
 status: issues_found
-fix_applied: 2026-09-21T16:40:00Z
+fix_applied: 2026-09-21T16:55:00Z
 ---
 
 # Phase 05: Code Review Report
@@ -245,13 +245,24 @@ Reviewed each open warning for validity, severity, and fix risk. Verdicts:
 | ID | Verdict | Recommended action | Risk / why deferred |
 |----|---------|--------------------|---------------------|
 | **WR-01** | ✅ **RESOLVED (2026-09-21)** — routed send through `claim_and_publish_digest` RPC (`DigestPublisher` port + `SupabaseDigestPublisher`), which stamps `delivery_status`, `recipient_count`, `published_issue_id`, `issue_url` in the same transaction as the publish. | — | Closed together with CR-01. Requires migration 005 applied on the shared DB (see deploy note). |
-| **WR-03** | **Valid** — in-memory `get_current_batch` ignores `sent_at`, drifting from the live `sent_at IS NULL` contract. | Return `None` when `_batch.sent_at is not None`. | ⚠️ Conflicts with 3 existing `send_digest` tests that assert `get_current_batch().sent_at == now` post-send. Fixing correctly also means giving those tests a sent-batch accessor. Small but touches test expectations — recommend a dedicated pass so the intent stays clear. |
+| **WR-03** | ✅ **RESOLVED (2026-09-21)** — in-memory `get_current_batch` now returns `None` when `sent_at` is set, matching the live `sent_at IS NULL` contract. | — | See resolution note below. |
 | **WR-04** | **Valid (defense-in-depth)** — SPA renders `result.issue_url` as a Router `to` without same-origin sanitization; backend value is currently safe (`/issues/{n}`). | Pass `issue_url` through `sanitizeReturnUrl` / gate on `/^\/issues\/\d+$/` before `<Link>`. | Frontend change → requires a Playwright/unit test per repo TDD. Deferred to a UI-scoped fix session. |
 | **WR-05** | **Valid** — batch Approve/Reject stops mid-loop; partial persist with a generic toast. | Collect failed IDs, continue, and report which IDs failed (or add a bulk endpoint). | Frontend + UX decision (all-or-nothing vs best-effort). Needs Playwright coverage. Deferred to UI session. |
 | IN-01 / IN-02 | Info only | As noted in each finding. | Non-blocking. |
 
-**Applied:** CR-01 (now fully atomic via RPC), WR-01 (delivery stamping via RPC), WR-02 (honesty fallback) — all TDD, full suite green (234 passed).
-**Recommended next:** WR-03 (in-memory contract drift); WR-04/WR-05 in a UI-scoped session.
+**Applied:** CR-01 (now fully atomic via RPC), WR-01 (delivery stamping via RPC), WR-02 (honesty fallback), WR-03 (in-memory contract drift + preserved 409) — all TDD, full suite green (236 passed).
+**Recommended next:** WR-04 / WR-05 in a UI-scoped session.
+
+### WR-03 resolution note (2026-09-21)
+
+Fixing the drift surfaced a latent contract question: `send_digest`'s early `if batch.sent_at is not None` branch was only reachable via the in-memory fake — on live, `get_current_batch` filters `sent_at IS NULL`, so a **sequential** repeat-send would have fallen through to `EmptySendPoolError` (400), not the D-89 `AlreadySentError` («Уже отправлено», 409).
+
+Chosen fix (Option B — preserve the 409 contract):
+1. In-memory `get_current_batch` now returns `None` for a sent batch (faithful to live).
+2. New `ShortlistRepository.get_latest_batch()` (in-memory + `SupabaseShortlistRepository`) returns the most recent batch **regardless of `sent_at`**.
+3. `send_digest`: when `get_current_batch()` is `None`, it consults `get_latest_batch()` — if the latest batch is already sent → `AlreadySentError` (409); otherwise → `EmptySendPoolError` (400). The concurrency-race 409 (RPC `P0001`) is unchanged.
+
+Covered by `test_in_memory_get_current_batch_hides_sent_and_latest_exposes_it`, `test_get_latest_batch_returns_latest_regardless_of_sent_at`, and the updated send/HTTP suites. Residual minor drift (in-memory `set_decision` can still mutate a claimed batch) is live-safe: live `set_decision` re-reads via `get_current_batch`, which now returns `None` → `ShortlistNotFoundError`; left as-is to keep this change scoped.
 
 ---
 

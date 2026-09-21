@@ -59,6 +59,25 @@ def _publisher(
     return InMemoryDigestPublisher(lambda: shortlist, lambda: issues)
 
 
+def test_in_memory_get_current_batch_hides_sent_and_latest_exposes_it() -> None:
+    """WR-03: in-memory must match the live `sent_at IS NULL` contract for get_current_batch;
+    get_latest_batch still exposes the sent batch (used for the D-89 already-sent signal)."""
+    now = datetime(2026, 9, 21, 15, 0, tzinfo=timezone.utc)
+    shortlist = InMemoryShortlistRepository(batch=_batch(_item(material_id=101)))
+
+    # Before claim: current batch is the unsent one.
+    assert shortlist.get_current_batch() is not None
+
+    shortlist.claim_sent(batch_id=42, sent_at=now)
+
+    # After claim: current batch is hidden (sent_at set), but latest still exposes it.
+    assert shortlist.get_current_batch() is None
+    latest = shortlist.get_latest_batch()
+    assert latest is not None
+    assert latest.id == 42
+    assert latest.sent_at == now
+
+
 def test_send_happy_path_publishes_issue_claims_sent_and_stubs_mail() -> None:
     """ADMIN-07/08 / D-88/D-90: publish + claim + stub body with /issues/{n}."""
     shortlist = InMemoryShortlistRepository(
@@ -92,9 +111,12 @@ def test_send_happy_path_publishes_issue_claims_sent_and_stubs_mail() -> None:
     assert result.delivery_status == "stubbed"
     assert result.message == "Отправка записана"
 
-    batch = shortlist.get_current_batch()
-    assert batch is not None
-    assert batch.sent_at == now
+    # WR-03: the claimed batch leaves the unsent pool (matches live `sent_at IS NULL`);
+    # get_latest_batch still exposes it with the stamped sent_at.
+    assert shortlist.get_current_batch() is None
+    latest = shortlist.get_latest_batch()
+    assert latest is not None
+    assert latest.sent_at == now
 
     published = issues.get_by_number(result.issue_number)
     assert published is not None
@@ -189,7 +211,9 @@ def test_send_already_sent_raises_and_does_not_republish() -> None:
 
     assert issues.get_latest_published() is None
     assert mailer.last_body_text is None
-    assert shortlist.get_current_batch().sent_at == sent_at
+    # Sent batch stays hidden from the unsent pool; still visible via get_latest_batch (D-89).
+    assert shortlist.get_current_batch() is None
+    assert shortlist.get_latest_batch().sent_at == sent_at
 
 
 class _FailingIssueRepository(InMemoryIssueRepository):

@@ -299,6 +299,24 @@ def test_claim_sent_sets_sent_at_when_null() -> None:
     assert client.tables["digest_shortlist_batches"].rows[0]["sent_at"] is not None
 
 
+def test_get_latest_batch_returns_latest_regardless_of_sent_at() -> None:
+    """WR-03 / D-89: get_latest_batch ignores the sent_at filter so send_digest can raise
+    AlreadySentError when the most recent batch was already sent (sequential repeat send)."""
+    from supabase_integration.shortlist_repository import SupabaseShortlistRepository
+
+    client = FakeSupabaseClient()
+    _seed_shortlist(client)
+    # Mark the latest (week 09-15) batch as sent — get_current_batch would now return None.
+    client.tables["digest_shortlist_batches"].rows[0]["sent_at"] = "2026-09-16T12:00:00+00:00"
+    repo = SupabaseShortlistRepository(client)
+
+    assert repo.get_current_batch() is None
+    latest = repo.get_latest_batch()
+    assert latest is not None
+    assert latest.id == 42
+    assert latest.sent_at is not None
+
+
 def test_release_claim_clears_sent_at_for_retry() -> None:
     """CR-01 compensation: release_claim resets sent_at to NULL so a failed publish can retry."""
     from supabase_integration.shortlist_repository import SupabaseShortlistRepository
