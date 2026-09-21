@@ -1,12 +1,26 @@
-"""Build digest email preview for approved∩ready materials (ADMIN-04, D-86)."""
+"""Build digest email preview for approved∩ready materials (ADMIN-04, D-86, G-05-1)."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Sequence
 
 from backend.application.ports.shortlist_repository import ShortlistRepository
-from backend.domain.errors import EmptySendPoolError
+from backend.domain.errors import EmptySendPoolError, InvalidPreviewCompositionError
 from backend.domain.shortlist import ShortlistItem
+
+
+@dataclass(frozen=True)
+class PreviewMaterialBlock:
+    material_id: int
+
+
+@dataclass(frozen=True)
+class PreviewTextBlock:
+    text: str
+
+
+PreviewBlock = PreviewMaterialBlock | PreviewTextBlock
 
 
 @dataclass(frozen=True)
@@ -35,8 +49,26 @@ def _approved_ready(items: tuple[ShortlistItem, ...]) -> list[ShortlistItem]:
     )
 
 
-def preview_digest_email(shortlist: ShortlistRepository) -> DigestEmailPreview:
-    """Return subject/body/items for approved∩ready only; never marks sent_at."""
+def _compose_body(*, intro: str, segments: list[str]) -> str:
+    parts: list[str] = []
+    trimmed = intro.strip()
+    if trimmed:
+        parts.append(trimmed)
+    parts.extend(segments)
+    return "\n".join(parts) + ("\n" if parts else "")
+
+
+def preview_digest_email(
+    shortlist: ShortlistRepository,
+    *,
+    intro: str = "",
+    blocks: Sequence[PreviewBlock] | None = None,
+) -> DigestEmailPreview:
+    """Return subject/body/items for approved∩ready; never marks sent_at.
+
+    When ``blocks`` is None or empty, materials default to approved∩ready by rank.
+    Explicit material blocks must all be in that pool; text blocks are interstitial copy.
+    """
     batch = shortlist.get_current_batch()
     if batch is None:
         raise EmptySendPoolError()
@@ -45,20 +77,40 @@ def preview_digest_email(shortlist: ShortlistRepository) -> DigestEmailPreview:
     if not pool:
         raise EmptySendPoolError(batch_id=batch.id)
 
+    by_id = {item.material_id: item for item in pool}
+
+    if blocks is None or len(blocks) == 0:
+        ordered_materials = pool
+        body_segments = [f"- {item.title}" for item in ordered_materials]
+    else:
+        ordered_materials = []
+        body_segments = []
+        for block in blocks:
+            if isinstance(block, PreviewTextBlock):
+                text = block.text.strip()
+                if text:
+                    body_segments.append(text)
+                continue
+            if not isinstance(block, PreviewMaterialBlock):
+                raise InvalidPreviewCompositionError()
+            item = by_id.get(block.material_id)
+            if item is None:
+                raise InvalidPreviewCompositionError(material_id=block.material_id)
+            ordered_materials.append(item)
+            body_segments.append(f"- {item.title}")
+        if not ordered_materials:
+            raise EmptySendPoolError(batch_id=batch.id)
+
     preview_items = tuple(
         DigestPreviewItem(
             material_id=item.material_id,
-            rank=item.rank,
+            rank=position,
             title=item.title,
         )
-        for item in pool
+        for position, item in enumerate(ordered_materials, start=1)
     )
-    titles = "\n".join(f"- {item.title}" for item in preview_items)
     subject = f"Digest CDS — превью ({batch.week_start.isoformat()})"
-    body = (
-        f"Превью письма для партии {batch.id} ({batch.week_start.isoformat()}).\n"
-        f"Материалы (только approved ready):\n{titles}\n"
-    )
+    body = _compose_body(intro=intro, segments=body_segments)
     return DigestEmailPreview(
         batch_id=batch.id,
         subject=subject,

@@ -6,7 +6,11 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, ConfigDict, Field
 
 from backend.application.use_cases.get_admin_shortlist import get_admin_shortlist
-from backend.application.use_cases.preview_digest_email import preview_digest_email
+from backend.application.use_cases.preview_digest_email import (
+    PreviewMaterialBlock,
+    PreviewTextBlock,
+    preview_digest_email,
+)
 from backend.application.use_cases.send_digest import send_digest
 from backend.application.use_cases.set_shortlist_decision import set_shortlist_decision
 from backend.domain.current_user import CurrentUser
@@ -14,6 +18,7 @@ from backend.domain.errors import (
     AlreadySentError,
     DraftInSendPoolError,
     EmptySendPoolError,
+    InvalidPreviewCompositionError,
     InvalidShortlistDecisionError,
     PersistenceError,
     ShortlistNotFoundError,
@@ -68,6 +73,27 @@ class DigestPreviewResponse(BaseModel):
     subject: str
     body: str
     items: list[DigestPreviewItemResponse] = []
+
+
+class DigestPreviewMaterialBlockRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    kind: str = Field(..., pattern="^material$")
+    material_id: int
+
+
+class DigestPreviewTextBlockRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    kind: str = Field(..., pattern="^text$")
+    text: str
+
+
+class DigestPreviewRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    intro: str = ""
+    blocks: list[DigestPreviewMaterialBlockRequest | DigestPreviewTextBlockRequest] | None = None
 
 
 class SendDigestResponse(BaseModel):
@@ -191,21 +217,41 @@ def post_shortlist_decision(
     response_model=DigestPreviewResponse,
     summary="Preview digest email for approved∩ready pool",
     description=(
-        "Returns subject/body/items for approved ready materials only (ADMIN-04, D-86). "
-        "Never marks batch sent. Empty pool → 400. Requires admin."
+        "Returns subject/body/items for approved ready materials only (ADMIN-04, D-86, G-05-1). "
+        "Optional intro + ordered blocks compose the body. Never marks batch sent. "
+        "Empty pool → 400; invalid composition → 400. Requires admin."
     ),
 )
 def post_shortlist_preview(
     request: Request,
+    body: DigestPreviewRequest | None = None,
     _admin: CurrentUser = Depends(require_admin),
 ) -> DigestPreviewResponse:
     shortlist = _require_shortlist(request)
+    payload = body or DigestPreviewRequest()
+    uc_blocks: list[PreviewMaterialBlock | PreviewTextBlock] | None = None
+    if payload.blocks is not None:
+        uc_blocks = []
+        for block in payload.blocks:
+            if isinstance(block, DigestPreviewMaterialBlockRequest):
+                uc_blocks.append(PreviewMaterialBlock(material_id=block.material_id))
+            else:
+                uc_blocks.append(PreviewTextBlock(text=block.text))
     try:
-        preview = preview_digest_email(shortlist)
+        preview = preview_digest_email(
+            shortlist,
+            intro=payload.intro,
+            blocks=uc_blocks,
+        )
     except EmptySendPoolError as exc:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="empty_send_pool",
+        ) from exc
+    except InvalidPreviewCompositionError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="invalid_preview_composition",
         ) from exc
     except PersistenceError as exc:
         raise HTTPException(

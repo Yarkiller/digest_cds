@@ -128,6 +128,18 @@ class EmptySendPoolError(DomainError):
         self.batch_id = batch_id
 
 
+class InvalidPreviewCompositionError(DomainError):
+    """Raised when preview blocks reference material outside approved∩ready (G-05-1)."""
+
+    def __init__(self, material_id: int | None = None) -> None:
+        if material_id is not None:
+            msg = f"invalid preview composition: material {material_id} not in approved ready pool"
+        else:
+            msg = "invalid preview composition"
+        super().__init__(msg)
+        self.material_id = material_id
+
+
 class DraftInSendPoolError(DomainError):
     """Raised when any approved shortlist item is still draft (ADMIN-03, D-85)."""
 
