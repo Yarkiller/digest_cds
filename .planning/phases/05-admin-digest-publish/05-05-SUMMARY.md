@@ -125,7 +125,7 @@ Each task was committed atomically:
 2. **Task 2: SupabaseShortlistRepository + issue publish + live.py wiring** - `49aacbb` (test), `c512101` (feat)
 3. **Task 3: [BLOCKING] Apply Phase 5 migration** - human gate; operator signal `applied` (method not specified) — recorded in runbook §4e + this SUMMARY
 
-**Plan metadata:** (docs commit after SUMMARY)
+**Plan metadata:** `93447bc` (docs: complete plan)
 
 _Note: TDD tasks used RED→GREEN commits (test → feat)._
 
