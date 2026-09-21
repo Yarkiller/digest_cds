@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 11
+open_count: 12
 waived_count: 0
 fixed_count: 3
-total_count: 14
-last_updated: 2026-09-21T09:25:10.848Z
+total_count: 15
+last_updated: 2026-09-21T18:31:58.934Z
 ---
 
 # Broken Windows Ledger
@@ -29,6 +29,7 @@ last_updated: 2026-09-21T09:25:10.848Z
 | 12 | 04 | stub | tests/ |  | Playwright razbory list/empty/nav deferred to 04-09 | fixed |  | 2026-09-21T05:12:02.428Z | 2026-09-21T09:25:00.909Z |
 | 13 | 04 | stub | tests/web-app.spec.js |  | Playwright notebook enable/disable proofs deferred to 04-09 | fixed |  | 2026-09-21T05:25:32.263Z | 2026-09-21T09:25:01.654Z |
 | 14 | 04 | unmet-truth | .planning/phases/04-knowledge-razbory/04-VALIDATION.md |  | UI-SPEC overflow/long-text backstops held for verify-work (pagination has_more, many chronology, visual wrap) | open |  | 2026-09-21T09:25:10.848Z |  |
+| 15 | 05 | deviation | web/src/services/adminPreviewComposition.js |  | Extracted pure composition helpers for node --test (Vite import.meta boundary) | open |  | 2026-09-21T18:31:58.934Z |  |
 
 ````json
 [
@@ -198,6 +199,18 @@ last_updated: 2026-09-21T09:25:10.848Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-09-21T09:25:10.848Z",
+    "resolved_at": null
+  },
+  {
+    "id": 15,
+    "kind": "deviation",
+    "phase": "05",
+    "file": "web/src/services/adminPreviewComposition.js",
+    "line": null,
+    "description": "Extracted pure composition helpers for node --test (Vite import.meta boundary)",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-21T18:31:58.934Z",
     "resolved_at": null
   }
 ]

@@ -3,16 +3,16 @@ gsd_state_version: 1.0
 current_phase: 05
 current_phase_name: Admin Digest Publish
 status: executing
-stopped_at: Completed 05-06-PLAN.md
-last_updated: "2026-09-21T18:18:13.246Z"
+stopped_at: Completed 05-07-PLAN.md
+last_updated: "2026-09-21T18:31:43.397Z"
 last_activity: 2026-09-21
 last_activity_desc: Phase 05 execution started
-state_head: 700fd6d1f3d137a30f5bb54a67635ad718f65c78
+state_head: 737920bf1649a80347404f38017f1a885b8e96c1
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 40
-  completed_plans: 36
+  completed_plans: 37
   percent: 80
 ---
 
@@ -28,11 +28,11 @@ See: .planning/PROJECT.md (updated 2026-09-20)
 ## Current Position
 
 Phase: 05 (Admin Digest Publish) — EXECUTING
-Plan: 1 of 9
-Status: Executing Phase 05
-Last activity: 2026-09-21 — Phase 05 execution started
+Plan: 8 of 9
+Status: Ready to execute
+Last activity: 2026-09-21 — Completed 05-07 preview composition spine (G-05-1)
 
-Progress: [███████████████████░] 30/31 plans ([████████░░] 80%)
+Progress: [████████░░] 80% (37/40 plans)
 
 ## Performance Metrics
 
@@ -90,6 +90,7 @@ Progress: [███████████████████░] 30/31 p
 | Phase 05-admin-digest-publish P04 | 15min | 3 tasks | 10 files |
 | Phase 05-admin-digest-publish P05 | continuation-closeout | 3 tasks | 9 files |
 | Phase 05-admin-digest-publish P06 | 12min | 2 tasks | 6 files |
+| Phase 05-admin-digest-publish P07 | 25min | 3 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -182,6 +183,8 @@ Decisions are logged in PROJECT.md Key Decisions and `<decisions>` blocks.
 - [Phase 05]: Prefer claim_and_publish_digest RPC for atomic claim+publish; StubMailer stays on live (D-87)
 - [Phase 05]: D-90 SPA: surface sendDigest.issue_url as К выпуску CTA after Отправка записана
 - [Phase 05]: ADMIN-08 e2e via auth.spec returnUrl=/issues/{n}; open-redirect // rejected
+- [Phase 05]: Default preview blocks = approved∩ready by rank until 05-08 reorder UI
+- [Phase 05]: Pure adminPreviewComposition.js for node --test without Vite import.meta
 
 ### Pending Todos
 
@@ -204,7 +207,7 @@ None. Live FE↔BE proof approved 2026-09-19.
 
 ## Session Continuity
 
-Last session: 2026-09-21T15:49:14.438Z
-Stopped at: Completed 05-06-PLAN.md
+Last session: 2026-09-21T18:31:42.661Z
+Stopped at: Completed 05-07-PLAN.md
 Resume file: None
 Verification: `.planning/phases/01-platform-foundation-auth/01-VERIFICATION.md`

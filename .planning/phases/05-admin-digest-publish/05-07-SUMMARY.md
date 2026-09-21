@@ -113,7 +113,7 @@ Each task was committed atomically:
 2. **Task 2: adminApi + AdminDigestPage pass intro/blocks** — `a34d5bd` (test) → `cee255d` (feat)
 3. **Task 3: Playwright — intro appears in letter preview** — `145ddf3` (test)
 
-**Plan metadata:** _(pending docs commit)_
+**Plan metadata:** `737920b` (docs: complete plan)
 
 ## Files Created/Modified
 
