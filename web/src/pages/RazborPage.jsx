@@ -58,7 +58,7 @@ function SectionToc({ headings }) {
 
 /**
  * Razbor detail — published longread + TOC, announcement stub, soft 404 (RAZB-02 / D-68).
- * Notebook download strip lands in 04-07; content_kind / Обзор in same phase plan task 2.
+ * Notebook download strip lands in 04-07.
  */
 export default function RazborPage() {
   const { id } = useParams()
@@ -138,7 +138,9 @@ export default function RazborPage() {
   const dateLabel = formatMeetingLabel(razbor.meeting_at)
   const statusLabel = razborStatusLabel(razbor.status)
   const isAnnouncement = razbor.status === 'announcement'
-  const typeBadge = isAnnouncement ? 'Анонс' : 'Разбор'
+  const isOverview = !isAnnouncement && razbor.content_kind === 'overview'
+  const isQuality = !isAnnouncement && razbor.content_kind === 'quality'
+  const typeBadge = isAnnouncement ? 'Анонс' : isOverview ? 'Обзор' : 'Разбор'
   const overline = [dateLabel, statusLabel].filter(Boolean).join(' · ')
 
   if (isAnnouncement) {
@@ -184,7 +186,7 @@ export default function RazborPage() {
 
       <div className="flex flex-wrap items-center gap-2">
         <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-          {overline || 'Разбор'}
+          {overline || (isOverview ? 'Обзор' : 'Разбор')}
         </p>
         <span
           data-testid="razbor-type-badge"
@@ -198,6 +200,12 @@ export default function RazborPage() {
         {razbor.title}
       </h1>
       <p className="mt-3 text-sm text-ink-2">{razbor.editor ?? RAZBOR_EDITOR_BYLINE}</p>
+
+      {isQuality ? (
+        <p data-testid="razbor-quality-label" className="mt-4 text-sm font-semibold text-ink">
+          Качество
+        </p>
+      ) : null}
 
       <hr className="my-8 border-rule" />
 

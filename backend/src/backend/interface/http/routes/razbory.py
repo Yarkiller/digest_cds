@@ -7,7 +7,7 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Path, Request, status
 from pydantic import BaseModel, ConfigDict
 
-from backend.application.use_cases.get_razbor import get_razbor
+from backend.application.use_cases.get_razbor import RazborDetail, get_razbor
 from backend.application.use_cases.list_razbors import list_razbors
 from backend.domain.auth_claims import AccessTokenClaims
 from backend.domain.errors import PersistenceError, RazborNotFoundError
@@ -43,6 +43,7 @@ class RazborDetailResponse(BaseModel):
     status: str
     body_markdown: str
     notebook_available: bool
+    content_kind: str
     editor: str = EDITOR_BYLINE
 
 
@@ -65,14 +66,15 @@ def _to_item(razbor: Razbor) -> RazborListItemResponse:
     )
 
 
-def _to_detail(razbor: Razbor) -> RazborDetailResponse:
+def _to_detail(detail: RazborDetail) -> RazborDetailResponse:
     return RazborDetailResponse(
-        id=razbor.id,
-        title=razbor.title,
-        meeting_at=razbor.meeting_at,
-        status=razbor.status.value,
-        body_markdown=razbor.body_markdown,
-        notebook_available=bool(razbor.notebook_path),
+        id=detail.id,
+        title=detail.title,
+        meeting_at=detail.meeting_at,
+        status=detail.status.value,
+        body_markdown=detail.body_markdown,
+        notebook_available=bool(detail.notebook_path),
+        content_kind=detail.content_kind,
         editor=EDITOR_BYLINE,
     )
 

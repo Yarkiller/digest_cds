@@ -93,17 +93,26 @@ export function mockListRazbory(catalog) {
 
 /**
  * Pure mock detail → HTTP DTO. Announcement body always empty (D-68).
- * @param {{ id: number, title: string, meeting_at?: string | null, status: string, body_markdown?: string, notebook_path?: string | null }} row
+ * content_kind seeded or inferred (RAZB-04 / D-73).
+ * @param {{ id: number, title: string, meeting_at?: string | null, status: string, body_markdown?: string, notebook_path?: string | null, content_kind?: string }} row
  */
 export function mockRazborDetail(row) {
   const isAnnouncement = row.status === 'announcement'
+  const body = isAnnouncement ? '' : (row.body_markdown ?? '')
+  let contentKind = row.content_kind
+  if (!contentKind) {
+    const hasQualityHeading = /^##\s+(Качество|Оценка качества)\s*$/m.test(body)
+    const hasNumericTable = /\|[^|\n]*\d/.test(body)
+    contentKind = hasQualityHeading && hasNumericTable ? 'quality' : 'overview'
+  }
   return {
     id: row.id,
     title: row.title,
     meeting_at: row.meeting_at ?? null,
     status: row.status,
-    body_markdown: isAnnouncement ? '' : (row.body_markdown ?? ''),
+    body_markdown: body,
     notebook_available: !isAnnouncement && Boolean(row.notebook_path),
+    content_kind: isAnnouncement ? 'overview' : contentKind,
     editor: RAZBOR_EDITOR_BYLINE,
   }
 }
@@ -249,6 +258,7 @@ export async function fetchRazbor(id, accessToken = null) {
     status: body.status,
     body_markdown: body.body_markdown ?? '',
     notebook_available: Boolean(body.notebook_available),
+    content_kind: body.content_kind === 'quality' ? 'quality' : 'overview',
     editor: body.editor ?? RAZBOR_EDITOR_BYLINE,
   }
 }
