@@ -175,3 +175,35 @@ def test_razbory_list_orders_null_meeting_at_last() -> None:
     assert response.status_code == 200
     ids = [item["id"] for item in response.json()["items"]]
     assert ids == [11, 10, 12]
+
+
+def test_razbory_list_empty_returns_200_with_empty_items() -> None:
+    """RAZB-01 empty ASSUMPTION / D-69 backend: empty repo → 200 items=[]."""
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    client = _client(jwk, build_in_memory_container())
+    token = _mint(private_key, email="alice@sberbank.ru")
+    response = client.get("/razbory", headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 200
+    assert response.json()["items"] == []
+
+
+class _UnavailableRazbors:
+    def list_for_reader(self) -> list[Razbor]:
+        raise PersistenceError("razbors down")
+
+    def get(self, razbor_id: int) -> Razbor | None:
+        raise PersistenceError("razbors down")
+
+
+def test_razbory_list_persistence_error_returns_503_unavailable() -> None:
+    """D-69 / RAZB-01: PersistenceError → 503 razbory_unavailable."""
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    container = build_in_memory_container()
+    container.razbors = _UnavailableRazbors()  # type: ignore[assignment]
+    client = _client(jwk, container)
+    token = _mint(private_key, email="alice@sberbank.ru")
+    response = client.get("/razbory", headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 503
+    assert response.json()["detail"] == "razbory_unavailable"

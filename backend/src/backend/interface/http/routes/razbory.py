@@ -9,7 +9,6 @@ from pydantic import BaseModel, ConfigDict
 
 from backend.application.use_cases.list_razbors import list_razbors
 from backend.domain.auth_claims import AccessTokenClaims
-from backend.domain.errors import PersistenceError
 from backend.domain.razbor import Razbor
 from backend.interface.http.deps import get_principal
 
@@ -65,11 +64,5 @@ def read_razbory(
 ) -> RazborListResponse:
     del claims
     razbors = _require_razbors(request)
-    try:
-        rows = list_razbors(razbors)
-    except PersistenceError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="razbory_unavailable",
-        ) from exc
+    rows = list_razbors(razbors)
     return RazborListResponse(items=[_to_item(row) for row in rows])
