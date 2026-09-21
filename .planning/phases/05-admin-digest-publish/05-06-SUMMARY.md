@@ -147,7 +147,7 @@ Each task was committed atomically (TDD RED → GREEN for Task 1):
 2. **Task 1 GREEN:** `a090e52` — feat(05-06): surface issue link after stub send
 3. **Task 2:** `21f778b` — chore(05-06): refresh VALIDATION map and phase gate
 
-**Plan metadata:** (docs commit after this SUMMARY)
+**Plan metadata:** `44d2d6b` (docs: complete honesty e2e gate plan)
 
 ## Files Created/Modified
 - `tests/admin.spec.js` — full Phase 5 honesty e2e suite under mocks
