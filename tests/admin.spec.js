@@ -244,8 +244,11 @@ test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07
 
     const blocks = page.getByTestId("admin-issue-blocks");
     await expect(blocks).toBeVisible();
-    // Primary control is reorderable blocks — not a free-text schema textarea.
-    await expect(page.locator('textarea').filter({ has: page.getByText(/блоки выпуска/i) })).toHaveCount(0);
+    // Primary control is reorderable blocks — schema free-text textarea is gone.
+    await expect(page.getByLabel(/^блоки выпуска$/i)).toBeVisible();
+    await expect(
+      page.locator('section').filter({ hasText: 'Схема дайджеста' }).locator('textarea.font-mono'),
+    ).toHaveCount(0);
     const materialBlocks = blocks.getByTestId("admin-issue-block-material");
     await expect(materialBlocks).toHaveCount(2);
     await expect(materialBlocks.nth(0)).toContainText(/Building Production RAG Systems/i);

@@ -13,10 +13,50 @@ import {
   sendDigest,
   setDecision,
 } from '../services/adminApi.js'
-import { buildDefaultMaterialBlocks } from '../services/adminPreviewComposition.js'
 
 const TOAST_DISMISS_MS = 4000
 const TOP_N = 3
+
+let issueBlockSeq = 0
+function nextIssueBlockId(prefix) {
+  issueBlockSeq += 1
+  return `${prefix}-${issueBlockSeq}`
+}
+
+/**
+ * Sync material blocks to approved∩ready; preserve order + interstitial text.
+ * @param {Array<{ id: string, kind: 'material', material_id: number } | { id: string, kind: 'text', text: string }>} prev
+ * @param {Array<{ material_id: number, rank: number }>} approvedReady
+ */
+function syncIssueBlocks(prev, approvedReady) {
+  const readyIds = new Set((approvedReady ?? []).map((item) => item.material_id))
+  const kept = []
+  const seen = new Set()
+  for (const block of prev ?? []) {
+    if (!block || typeof block !== 'object') continue
+    if (block.kind === 'material') {
+      if (readyIds.has(block.material_id) && !seen.has(block.material_id)) {
+        kept.push(block)
+        seen.add(block.material_id)
+      }
+      continue
+    }
+    if (block.kind === 'text') {
+      kept.push(block)
+    }
+  }
+  const missing = [...(approvedReady ?? [])]
+    .sort((a, b) => a.rank - b.rank)
+    .filter((item) => !seen.has(item.material_id))
+  for (const item of missing) {
+    kept.push({
+      id: nextIssueBlockId(`m-${item.material_id}`),
+      kind: 'material',
+      material_id: item.material_id,
+    })
+  }
+  return kept
+}
 
 function decisionCaption(decision) {
   if (decision === 'approved') return 'одобрен'
@@ -73,7 +113,7 @@ export default function AdminDigestPage() {
   const [emailPreviewed, setEmailPreviewed] = useState(false)
   const [previewFingerprint, setPreviewFingerprint] = useState('')
   const [contextText, setContextText] = useState('')
-  const [schemaText, setSchemaText] = useState('')
+  const [issueBlocks, setIssueBlocks] = useState([])
   const [batchSent, setBatchSent] = useState(false)
 
   useEffect(() => {
@@ -149,6 +189,18 @@ export default function AdminDigestPage() {
     [items],
   )
 
+  useEffect(() => {
+    setIssueBlocks((prev) => syncIssueBlocks(prev, approvedReady))
+  }, [approvedReady])
+
+  const titleByMaterialId = useMemo(() => {
+    const map = new Map()
+    for (const item of items) {
+      map.set(item.material_id, item.title)
+    }
+    return map
+  }, [items])
+
   const previewOk =
     emailPreviewed && previewFingerprint === fingerprint && fingerprint.length > 0
   const sendUnlocked =
@@ -217,12 +269,44 @@ export default function AdminDigestPage() {
     }
   }
 
+  function moveIssueBlock(index, delta) {
+    setIssueBlocks((prev) => {
+      const nextIndex = index + delta
+      if (nextIndex < 0 || nextIndex >= prev.length) return prev
+      const next = [...prev]
+      const [block] = next.splice(index, 1)
+      next.splice(nextIndex, 0, block)
+      return next
+    })
+  }
+
+  function addTextBlock() {
+    setIssueBlocks((prev) => [
+      ...prev,
+      { id: nextIssueBlockId('t'), kind: 'text', text: '' },
+    ])
+  }
+
+  function updateTextBlock(id, text) {
+    setIssueBlocks((prev) =>
+      prev.map((block) => (block.id === id && block.kind === 'text' ? { ...block, text } : block)),
+    )
+  }
+
+  function removeTextBlock(id) {
+    setIssueBlocks((prev) => prev.filter((block) => !(block.kind === 'text' && block.id === id)))
+  }
+
   async function openEmailPreview() {
     setPreviewing(true)
     setEmailModal('loading')
     setBanner('')
     try {
-      const blocks = buildDefaultMaterialBlocks(approvedReady)
+      const blocks = issueBlocks.map((block) =>
+        block.kind === 'material'
+          ? { kind: 'material', material_id: block.material_id }
+          : { kind: 'text', text: block.text ?? '' },
+      )
       const preview = await previewEmail(undefined, { intro: contextText, blocks })
       const fp = approvedFingerprint(items)
       setEmailPreviewed(true)
@@ -371,15 +455,88 @@ export default function AdminDigestPage() {
             </section>
             <section className="rounded-2xl border border-rule bg-paper-2/40 p-5">
               <h2 className="text-2xl font-semibold text-ink">Схема дайджеста</h2>
-              <label className="mt-4 block text-sm">
-                <span className="font-medium text-ink-2">Блоки выпуска</span>
-                <textarea
-                  className="mt-2 min-h-28 w-full rounded-xl border border-rule bg-paper p-3 font-mono text-sm"
-                  value={schemaText}
-                  onChange={(e) => setSchemaText(e.target.value)}
-                  rows={7}
-                />
-              </label>
+              <div className="mt-4">
+                <span className="block text-sm font-medium text-ink-2">Блоки выпуска</span>
+                <ul
+                  data-testid="admin-issue-blocks"
+                  className="mt-2 space-y-2"
+                  aria-label="Блоки выпуска"
+                >
+                  {issueBlocks.length === 0 ? (
+                    <li className="rounded-xl border border-dashed border-rule bg-paper p-3 text-sm text-muted">
+                      Одобрите ready-материалы — они появятся здесь как блоки выпуска.
+                    </li>
+                  ) : null}
+                  {issueBlocks.map((block, index) => {
+                    const isMaterial = block.kind === 'material'
+                    return (
+                      <li
+                        key={block.id}
+                        data-testid={
+                          isMaterial ? 'admin-issue-block-material' : 'admin-issue-block-text'
+                        }
+                        className="flex flex-col gap-2 rounded-xl border border-rule bg-paper p-3 sm:flex-row sm:items-start"
+                      >
+                        <div className="min-w-0 flex-1">
+                          {isMaterial ? (
+                            <p className="break-words text-sm font-medium text-ink">
+                              {titleByMaterialId.get(block.material_id) ??
+                                `Материал ${block.material_id}`}
+                            </p>
+                          ) : (
+                            <label className="block text-sm">
+                              <span className="sr-only">Связующий текст</span>
+                              <textarea
+                                className="min-h-20 w-full rounded-lg border border-rule bg-paper p-2 text-sm"
+                                value={block.text}
+                                onChange={(e) => updateTextBlock(block.id, e.target.value)}
+                                rows={3}
+                                placeholder="Необязательный связующий текст"
+                              />
+                            </label>
+                          )}
+                        </div>
+                        <div className="flex shrink-0 flex-wrap gap-1">
+                          <button
+                            type="button"
+                            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-rule text-sm disabled:cursor-not-allowed disabled:opacity-45"
+                            aria-label="Переместить вверх"
+                            disabled={index === 0}
+                            onClick={() => moveIssueBlock(index, -1)}
+                          >
+                            ↑
+                          </button>
+                          <button
+                            type="button"
+                            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-rule text-sm disabled:cursor-not-allowed disabled:opacity-45"
+                            aria-label="Переместить вниз"
+                            disabled={index === issueBlocks.length - 1}
+                            onClick={() => moveIssueBlock(index, 1)}
+                          >
+                            ↓
+                          </button>
+                          {!isMaterial ? (
+                            <button
+                              type="button"
+                              className="inline-flex min-h-11 items-center rounded-full border border-rule px-3 text-sm"
+                              onClick={() => removeTextBlock(block.id)}
+                            >
+                              Удалить
+                            </button>
+                          ) : null}
+                        </div>
+                      </li>
+                    )
+                  })}
+                </ul>
+                <button
+                  type="button"
+                  className="mt-3 inline-flex min-h-11 items-center rounded-full border border-rule px-4 text-sm font-medium text-ink"
+                  onClick={addTextBlock}
+                >
+                  Добавить текст
+                </button>
+              </div>
             </section>
           </div>
 
