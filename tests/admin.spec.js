@@ -383,6 +383,66 @@ test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07
     await expect(sendBtn).toBeDisabled();
   });
 
+  test("G-05-2: after Отправка записана shortlist hides; rest copy shown", async ({ page }) => {
+    await gotoAsRole(page, "admin", "/admin/digest");
+    await approveReadyRows(page, [0, 1]);
+    await page.getByRole("button", { name: /предпросмотр письма/i }).click();
+    const emailDialog = page.getByRole("dialog").filter({
+      has: page.getByRole("heading", { name: "Превью письма", exact: true }),
+    });
+    await emailDialog.getByRole("button", { name: "Закрыть", exact: true }).click();
+
+    await page.getByRole("button", { name: /отправить дайджест/i }).click();
+    await page.getByRole("button", { name: /подтвердить отправку/i }).click();
+
+    await expect(page.getByText("Отправка записана", { exact: true })).toBeVisible();
+    await expect(page.getByText(/дайджест успешно выпущен/i)).toBeVisible();
+    await expect(
+      page.getByText(/Следующие материалы будут подготовлены через 7 дней/i),
+    ).toBeVisible();
+    await expect(page.getByTestId("admin-shortlist")).toHaveCount(0);
+    await expect(page.getByTestId("admin-shortlist-row")).toHaveCount(0);
+    await expect(page.getByRole("checkbox")).toHaveCount(0);
+    await expect(page.getByText("Кандидатов пока нет", { exact: true })).toHaveCount(0);
+    await expect(page.getByTestId("admin-send-hint")).toContainText(/уже отправлено/i);
+  });
+
+  test("G-05-2: Уже отправлено enters rest hide without inactive checkboxes", async ({
+    page,
+  }) => {
+    await gotoAsRole(page, "admin", "/admin/digest", {
+      __DIGEST_ADMIN_ALREADY_SENT__: true,
+    });
+    await approveReadyRows(page, [0]);
+    await page.getByRole("button", { name: /предпросмотр письма/i }).click();
+    const emailDialog = page.getByRole("dialog").filter({
+      has: page.getByRole("heading", { name: "Превью письма", exact: true }),
+    });
+    await emailDialog.getByRole("button", { name: "Закрыть", exact: true }).click();
+    await page.getByRole("button", { name: /отправить дайджест/i }).click();
+    await page.getByRole("button", { name: /подтвердить отправку/i }).click();
+
+    await expect(page.getByRole("status").filter({ hasText: "Уже отправлено" })).toBeVisible();
+    await expect(page.getByText(/дайджест успешно выпущен/i)).toBeVisible();
+    await expect(page.getByTestId("admin-shortlist")).toHaveCount(0);
+    await expect(page.getByRole("checkbox")).toHaveCount(0);
+  });
+
+  test("G-05-2: cold load digest_rest shows rest instead of Кандидатов пока нет", async ({
+    page,
+  }) => {
+    await gotoAsRole(page, "admin", "/admin/digest", {
+      __DIGEST_ADMIN_DIGEST_REST__: true,
+    });
+    await expect(page.getByText(/дайджест успешно выпущен/i)).toBeVisible();
+    await expect(
+      page.getByText(/Следующие материалы будут подготовлены через 7 дней/i),
+    ).toBeVisible();
+    await expect(page.getByText("Кандидатов пока нет", { exact: true })).toHaveCount(0);
+    await expect(page.getByTestId("admin-shortlist")).toHaveCount(0);
+    await expect(page.getByRole("checkbox")).toHaveCount(0);
+  });
+
   test("Уже отправлено when batch already sent", async ({ page }) => {
     await gotoAsRole(page, "admin", "/admin/digest", {
       __DIGEST_ADMIN_ALREADY_SENT__: true,
