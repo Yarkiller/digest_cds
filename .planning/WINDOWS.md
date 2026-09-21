@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 12
+open_count: 11
 waived_count: 0
-fixed_count: 1
-total_count: 13
-last_updated: 2026-09-21T05:25:32.263Z
+fixed_count: 3
+total_count: 14
+last_updated: 2026-09-21T09:25:10.848Z
 ---
 
 # Broken Windows Ledger
@@ -26,8 +26,9 @@ last_updated: 2026-09-21T05:25:32.263Z
 | 9 | 04 | stub | backend/src/backend/composition/live.py |  | live.py razbors still InMemoryRazborRepository until adapter | open |  | 2026-09-21T04:45:40.363Z |  |
 | 10 | 04 | deviation | tests/web-app.spec.js |  | Retired Загрузить ещё Playwright case; mock catalog is smaller than page size 10 | open |  | 2026-09-21T05:02:21.685Z |  |
 | 11 | 04 | stub | web/src/App.jsx |  | /razbory/:id placeholder shell until 04-06 | open |  | 2026-09-21T05:12:01.843Z |  |
-| 12 | 04 | stub | tests/ |  | Playwright razbory list/empty/nav deferred to 04-09 | open |  | 2026-09-21T05:12:02.428Z |  |
-| 13 | 04 | stub | tests/web-app.spec.js |  | Playwright notebook enable/disable proofs deferred to 04-09 | open |  | 2026-09-21T05:25:32.263Z |  |
+| 12 | 04 | stub | tests/ |  | Playwright razbory list/empty/nav deferred to 04-09 | fixed |  | 2026-09-21T05:12:02.428Z | 2026-09-21T09:25:00.909Z |
+| 13 | 04 | stub | tests/web-app.spec.js |  | Playwright notebook enable/disable proofs deferred to 04-09 | fixed |  | 2026-09-21T05:25:32.263Z | 2026-09-21T09:25:01.654Z |
+| 14 | 04 | unmet-truth | .planning/phases/04-knowledge-razbory/04-VALIDATION.md |  | UI-SPEC overflow/long-text backstops held for verify-work (pagination has_more, many chronology, visual wrap) | open |  | 2026-09-21T09:25:10.848Z |  |
 
 ````json
 [
@@ -170,10 +171,10 @@ last_updated: 2026-09-21T05:25:32.263Z
     "file": "tests/",
     "line": null,
     "description": "Playwright razbory list/empty/nav deferred to 04-09",
-    "status": "open",
+    "status": "fixed",
     "reason": "",
     "recorded_at": "2026-09-21T05:12:02.428Z",
-    "resolved_at": null
+    "resolved_at": "2026-09-21T09:25:00.909Z"
   },
   {
     "id": 13,
@@ -182,9 +183,21 @@ last_updated: 2026-09-21T05:25:32.263Z
     "file": "tests/web-app.spec.js",
     "line": null,
     "description": "Playwright notebook enable/disable proofs deferred to 04-09",
-    "status": "open",
+    "status": "fixed",
     "reason": "",
     "recorded_at": "2026-09-21T05:25:32.263Z",
+    "resolved_at": "2026-09-21T09:25:01.654Z"
+  },
+  {
+    "id": 14,
+    "kind": "unmet-truth",
+    "phase": "04",
+    "file": ".planning/phases/04-knowledge-razbory/04-VALIDATION.md",
+    "line": null,
+    "description": "UI-SPEC overflow/long-text backstops held for verify-work (pagination has_more, many chronology, visual wrap)",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-21T09:25:10.848Z",
     "resolved_at": null
   }
 ]

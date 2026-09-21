@@ -233,3 +233,18 @@ With API on `:8000`, Vite on `:5173`, `APP_CONTAINER=live`, and `VITE_USE_MOCKS=
 7. In API stdout, confirm structured logs include `request_id` for the `/me` and `/me/ping` calls.
 
 Phase 1 platform proof is this checklist. Issue/vote content may still be mock until later phases (D-12).
+
+---
+
+## 5b. Phase 4 optional live FE↔BE proof (KNOW-*/RAZB-*)
+
+CI / Playwright honesty suites use **mocks** (`VITE_USE_MOCKS=true`). After **04-08** seed + `NOTEBOOK_ROOT` (see §4d), optional human proof against live API:
+
+**Prerequisites:** API on `:8000` with `APP_CONTAINER=live`, Vite on `:5173` with `VITE_USE_MOCKS=false`, corporate JWT session, migration `004` applied, notebook file under `NOTEBOOK_ROOT`.
+
+1. **Knowledge:** `/knowledge` — Submit/Enter a real query; whitespace shows «Введите запрос» without a network search; Analyst/DS chips filter; Analyst empty never substitutes DS tops; «Сбросить фильтр» keeps `q`; DS hit opens `/materials/{slug}`; no score badges on rows.
+2. **Razbory list:** `/razbory` shows chronology (date/status) or empty CTA → `/voting`.
+3. **Razbor detail:** multi-section published longread — sticky TOC jumps; «Качество» vs «Обзор» labeling honest; soft 404 for unknown id.
+4. **Notebook:** published with `notebook_path` — dual strip, download works; missing notebook — strip stays, download disabled, «Notebook скоро будет».
+
+Record pass/fail in the verify-work session notes. This path is **not** required for CI green.
