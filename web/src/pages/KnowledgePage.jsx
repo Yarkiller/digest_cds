@@ -5,6 +5,7 @@ import {
   KnowledgeApiError,
   clearFailNextKnowledgeSearch,
   searchKnowledge,
+  validateKnowledgeQuery,
 } from '../services/knowledgeApi.js'
 import MaterialListRow from '../components/MaterialListRow.jsx'
 import ActionButton from '../components/ActionButton.jsx'
@@ -15,7 +16,7 @@ const HINT_CHIPS = ['RAG', 'SQL', 'качество данных', 'pgvector']
 
 /**
  * Knowledge SPA — Submit/Enter «Найти» → knowledgeApi (D-57, D-59, D-60, D-61 / KNOW-01).
- * Role chips deferred to 04-03; blank/overlong guards in plan task 2.
+ * Role chips deferred to 04-03.
  */
 export default function KnowledgePage() {
   const [searchParams] = useSearchParams()
@@ -28,6 +29,8 @@ export default function KnowledgePage() {
   const [searching, setSearching] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState(null)
+  /** Inline validation — blank/overlong; never hits knowledgeApi (KNOW-01). */
+  const [inlineError, setInlineError] = useState(null)
 
   async function runSearch(q, { offset = 0, append = false } = {}) {
     if (append) {
@@ -35,6 +38,7 @@ export default function KnowledgePage() {
     } else {
       setSearching(true)
       setError(null)
+      setInlineError(null)
     }
 
     try {
@@ -68,13 +72,28 @@ export default function KnowledgePage() {
 
   function handleSubmit(event) {
     event.preventDefault()
-    void runSearch(query, { offset: 0, append: false })
+    const validation = validateKnowledgeQuery(query)
+    if (!validation.ok) {
+      // Inline copy locked to UI-SPEC (must appear in this source for honesty/verify).
+      setInlineError(
+        validation.code === 'QUERY_TOO_LONG' ? 'Сократите запрос' : 'Введите запрос',
+      )
+      setError(null)
+      // Do not call searchKnowledge (KNOW-01 / D-57).
+      return
+    }
+    setInlineError(null)
+    void runSearch(validation.q, { offset: 0, append: false })
   }
 
   function handleRetry() {
     clearFailNextKnowledgeSearch()
-    const q = activeQuery ?? query
-    void runSearch(q, { offset: 0, append: false })
+    const validation = validateKnowledgeQuery(activeQuery ?? query)
+    if (!validation.ok) {
+      setInlineError(validation.message)
+      return
+    }
+    void runSearch(validation.q, { offset: 0, append: false })
   }
 
   function handleLoadMore() {
@@ -99,10 +118,15 @@ export default function KnowledgePage() {
             id="kb-search"
             type="search"
             value={query}
-            onChange={(event) => setQuery(event.target.value)}
+            onChange={(event) => {
+              setQuery(event.target.value)
+              if (inlineError) setInlineError(null)
+            }}
             placeholder="Спросите своими словами: SQL, дашборды, RAG…"
             disabled={searching}
-            className="min-w-0 flex-1 rounded-xl border border-rule bg-[oklch(98%_0.009_95)] px-4 py-3 text-sm outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+            aria-invalid={inlineError ? true : undefined}
+            aria-describedby={inlineError ? 'kb-search-inline-error' : undefined}
+            className="min-w-0 flex-1 break-words rounded-xl border border-rule bg-[oklch(98%_0.009_95)] px-4 py-3 text-sm outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
           />
           <ActionButton
             type="submit"
@@ -114,6 +138,16 @@ export default function KnowledgePage() {
             Найти
           </ActionButton>
         </div>
+        {inlineError ? (
+          <p
+            id="kb-search-inline-error"
+            role="alert"
+            className="mt-2 text-sm text-[oklch(35%_0.12_25)]"
+            data-testid="kb-inline-error"
+          >
+            {inlineError}
+          </p>
+        ) : null}
       </form>
 
       {preSearch ? (

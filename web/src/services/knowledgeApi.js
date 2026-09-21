@@ -9,6 +9,25 @@ import { materials } from '../data/mock.js'
 
 export const DEFAULT_SEARCH_LIMIT = 10
 
+/** Max Unicode code points for q (matches backend / KNOW-01). */
+export const MAX_QUERY_CODE_POINTS = 500
+
+/**
+ * Client-side blank/overlong guards before calling search (KNOW-01 / D-57).
+ * @param {string} raw
+ * @returns {{ ok: true, q: string } | { ok: false, code: string, message: string }}
+ */
+export function validateKnowledgeQuery(raw) {
+  const trimmed = String(raw ?? '').trim()
+  if (!trimmed) {
+    return { ok: false, code: 'EMPTY_QUERY', message: 'Введите запрос' }
+  }
+  if ([...trimmed].length > MAX_QUERY_CODE_POINTS) {
+    return { ok: false, code: 'QUERY_TOO_LONG', message: 'Сократите запрос' }
+  }
+  return { ok: true, q: trimmed }
+}
+
 export class KnowledgeApiError extends Error {
   constructor(message, { code = 'KNOWLEDGE_FAILED', retryable = true } = {}) {
     super(message)
