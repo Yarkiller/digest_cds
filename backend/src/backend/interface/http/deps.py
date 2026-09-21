@@ -1,4 +1,4 @@
-"""HTTP dependencies: Bearer JWT verify + corporate email gate."""
+"""HTTP dependencies: Bearer JWT verify + corporate email gate + admin role gate."""
 
 from __future__ import annotations
 
@@ -9,8 +9,10 @@ from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jwt import PyJWK
 
+from backend.application.use_cases.get_current_user import get_current_user
 from backend.domain.auth_claims import AccessTokenClaims
 from backend.domain.auth_email import DEFAULT_ALLOWED_EMAIL_DOMAINS, is_allowed_corporate_email
+from backend.domain.current_user import CurrentUser
 from backend.infrastructure.auth_jwt import TokenVerificationError, verify_access_token
 
 _bearer = HTTPBearer(auto_error=True)
@@ -46,3 +48,23 @@ def get_principal(
             detail="domain_not_allowed",
         )
     return claims
+
+
+def require_admin(
+    request: Request,
+    claims: AccessTokenClaims = Depends(get_principal),
+) -> CurrentUser:
+    """Authorize admin from profiles.role only — never JWT role claim (D-74 / AUTH-03)."""
+    container = request.app.state.container
+    if container is None or getattr(container, "profiles", None) is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="profiles_not_configured",
+        )
+    user = get_current_user(container.profiles, claims)
+    if user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="forbidden",
+        )
+    return user

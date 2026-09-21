@@ -25,6 +25,7 @@ from backend.tests_support.in_memory import (
     InMemoryPingRecorder,
     InMemoryProfileRepository,
     InMemoryRazborRepository,
+    InMemoryShortlistRepository,
     InMemoryVoteRepository,
     InMemoryVotingCycleReader,
 )
@@ -103,6 +104,7 @@ def _seeded_container(materials: list[Material], chunks_by_material: dict[int, l
         embedder=StubQueryEmbedder(),
         razbors=InMemoryRazborRepository(),
         notebook_storage=LocalNotebookStorage("."),
+        shortlist=InMemoryShortlistRepository(),
     )
 
 

@@ -12,6 +12,7 @@ from backend.domain.issue import Issue
 from backend.domain.knowledge import KnowledgeChunk, KnowledgeHit
 from backend.domain.material import Material, MaterialStatus
 from backend.domain.razbor import Razbor
+from backend.domain.shortlist import ShortlistBatch
 from backend.domain.vote import BallotTopic, PersonalVote
 from backend.domain.voting_cycle import VotingCycle
 
@@ -65,6 +66,19 @@ class InMemoryPingRecorder:
     @property
     def entries(self) -> list[InMemoryPingEntry]:
         return list(self._entries)
+
+
+class InMemoryShortlistRepository:
+    """In-memory ShortlistRepository — empty by default (D-80)."""
+
+    def __init__(self, batch: ShortlistBatch | None = None) -> None:
+        self._batch = batch
+
+    def get_current_batch(self) -> ShortlistBatch | None:
+        return self._batch
+
+    def seed(self, batch: ShortlistBatch | None) -> None:
+        self._batch = batch
 
 
 class InMemoryProfileRepository:
