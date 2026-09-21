@@ -87,7 +87,7 @@ Each task was committed atomically:
 1. **Task 1 (RED): Failing Playwright coverage for announcement placeholder vs published CTA** - `f8ada73` (test)
 2. **Task 2 (GREEN): Conditional CTA-vs-placeholder in ChronologyItem** - `501c942` (feat)
 
-**Plan metadata:** (pending docs commit)
+**Plan metadata:** `c819ac1` (docs: complete plan)
 
 ## Files Created/Modified
 
