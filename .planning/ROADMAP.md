@@ -167,14 +167,14 @@ Plans:
   4. Successful send updates archive and success UI without uncontrolled duplicates; failure leaves selection and not-sent state
   5. Digest email link reaches issue after login via returnUrl when needed
 
-**Plans**: 6 plans
+**Plans**: 1/6 plans executed
 **UI hint**: yes
 
 Plans:
 
 **Wave 1**
 
-- [ ] 05-01-PLAN.md — Tracer: require_admin + GET /admin/shortlist + /me app_role (ADMIN-01, ADMIN-05)
+- [x] 05-01-PLAN.md — Tracer: require_admin + GET /admin/shortlist + /me app_role (ADMIN-01, ADMIN-05)
 
 **Wave 2** *(blocked on Wave 1)*
 
@@ -204,4 +204,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 2. Issue, Materials & Archive | 6/6 | Complete    | 2026-09-20 |
 | 3. Voting Cycle | 6/6 | Complete    | 2026-09-20 |
 | 4. Knowledge & Razbory | 10/10 | Complete    | 2026-09-21 |
-| 5. Admin Digest Publish | 0/6 | Planned | - |
+| 5. Admin Digest Publish | 1/6 | In Progress|  |

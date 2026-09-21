@@ -1,18 +1,18 @@
 ---
 gsd_state_version: 1.0
-current_phase: 5
+current_phase: 05
 current_phase_name: Admin Digest Publish
 status: executing
-stopped_at: Phase 5 UI-SPEC approved
-last_updated: "2026-09-21T13:47:20.957Z"
+stopped_at: Completed 05-01-PLAN.md
+last_updated: "2026-09-21T14:35:31.551Z"
 last_activity: 2026-09-21
-last_activity_desc: Phase 04 complete, transitioned to Phase 5
-state_head: de0613058d420b45b651c1f6ea4fb58989f20b9d
+last_activity_desc: Phase 05 execution started
+state_head: c927aa06632fdbcafd38f16cc831c3d698ccc84c
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 37
-  completed_plans: 30
+  completed_plans: 31
   percent: 80
 ---
 
@@ -23,16 +23,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-09-20)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Phase 5 — Admin Digest Publish
+**Current focus:** Phase 05 — Admin Digest Publish
 
 ## Current Position
 
-Phase: 5 (Admin Digest Publish) — READY TO EXECUTE
-Plan: Not started
+Phase: 05 (Admin Digest Publish) — EXECUTING
+Plan: 2 of 6
 Status: Ready to execute
-Last activity: 2026-09-21 — Phase 04 complete, transitioned to Phase 5
+Last activity: 2026-09-21 — Phase 05 execution started
 
-Progress: [███████████████████░] 30/31 plans ([██████░░░░] 60%)
+Progress: [███████████████████░] 30/31 plans ([████████░░] 80%)
 
 ## Performance Metrics
 
@@ -84,6 +84,7 @@ Progress: [███████████████████░] 30/31 p
 | Phase 04-knowledge-razbory P08 | continuation-closeout | 3 tasks | 9 files |
 | Phase 04-knowledge-razbory P09 | 9min | 2 tasks | 9 files |
 | Phase 04-knowledge-razbory P10 | 2min | 2 tasks | 2 files |
+| Phase 05-admin-digest-publish P01 | 20min | 2 tasks | 18 files |
 
 ## Accumulated Context
 
@@ -160,6 +161,9 @@ Decisions are logged in PROJECT.md Key Decisions and `<decisions>` blocks.
 - [Phase 04]: [Phase 04]: Playwright honesty suites in knowledge.spec.js/razbory.spec.js; mocks CI default
 - [Phase 04]: [Phase 04]: TOC ids use user-content- prefix to match rehype-sanitize clobber
 - [Phase 04]: Branch ChronologyItem on item.status === announcement for G-04-2 placeholder vs Читать разбор CTA
+- [Phase 05]: Authorize admin only via profiles.role through require_admin — never JWT role claim (D-74)
+- [Phase 05]: Default app_role employee on CurrentUser / in-memory / meApi to match live adapter (D-76)
+- [Phase 05]: Empty shortlist batch returns 200 items=[] for D-80 SPA empty state
 
 ### Pending Todos
 
@@ -182,7 +186,7 @@ None. Live FE↔BE proof approved 2026-09-19.
 
 ## Session Continuity
 
-Last session: 2026-09-21T13:23:01.954Z
-Stopped at: Phase 5 UI-SPEC approved
-Resume file: C:/Users/Yarkiller/PycharmPET-Projects/Digital_CDS/.planning/phases/05-admin-digest-publish/05-UI-SPEC.md
+Last session: 2026-09-21T14:35:30.937Z
+Stopped at: Completed 05-01-PLAN.md
+Resume file: None
 Verification: `.planning/phases/01-platform-foundation-auth/01-VERIFICATION.md`
