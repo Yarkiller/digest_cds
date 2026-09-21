@@ -23,7 +23,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-09-20)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Phase 04 — Knowledge & Razbory
+**Current focus:** Phase 5 — Admin Digest Publish
 
 ## Current Position
 

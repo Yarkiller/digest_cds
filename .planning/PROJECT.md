@@ -37,12 +37,12 @@ v1 is done only when **all** of the following hold:
 - ✓ Corporate auth + session redirect (AUTH-*) — Phase 1
 - ✓ Current issue, materials (prepared article only), archive (ISSUE-*, MAT-*) — Phase 2
 - ✓ Voting cycle: one vote, change while open, audit-language ballot (VOTE-*) — Phase 3
+- ✓ Knowledge semantic search + role filters; разборы list/longread/notebook (KNOW-*, RAZB-*) — Phase 4
 
 ### Active
 
 <!-- Current v1 scope — see REQUIREMENTS.md for IDs and acceptance. -->
 
-- [ ] Knowledge semantic search + role filters; разборы list/longread/notebook (KNOW-*, RAZB-*)
 - [ ] Admin shortlist → approve/reject → preview → send → archive (ADMIN-*)
 - [ ] Platform: live DB, FastAPI, FE↔BE, security, errors, docs (PLAT-*)
 
@@ -60,7 +60,7 @@ v1 is done only when **all** of the following hold:
 ## Context
 
 - **Product framing:** Concept 3 Editorial UI («Digest CDS: издание»); personas and journeys J1–J6 in ingest context.
-- **Brownfield:** Frontend mostly mock-backed; FastAPI HTTP layer and live Supabase adapters not wired yet; schema/RLS migration exists.
+- **Brownfield → live path:** Phases 1–4 shipped auth, issue/materials/archive, voting, knowledge search, and разборы (in-memory + live adapters/migration 004); Phase 5 is admin digest publish.
 - **Domain language:** `CONTEXT.md` + `docs/adr/` are canonical for agents.
 - **Intel source:** `.planning/intel/` (ingest MODE=new, READY, 0 blockers).
 - **Preserve:** `.planning/codebase/` brownfield map — do not delete.
@@ -85,6 +85,7 @@ v1 is done only when **all** of the following hold:
 | Self-hosted Supabase on separate VM (ADR-0004) | Own Postgres+pgvector+Auth; reject managed Cloud | — Pending (proposed) |
 | Material = prepared article only | Editorial trust; no media-as-material | ✓ Locked (SPEC/content) |
 | Ports & Adapters + TDD | Architecture & AGENTS rules | ✓ Locked |
+| Announcement разборы suppress read CTA (G-04-2) | Visual honesty: unpublished status must not look readable | ✓ Phase 4 |
 
 <decisions>
 ## Locked decisions (from ADRs / ingest)
@@ -125,4 +126,4 @@ After each phase transition: move validated/invalidated requirements; log decisi
 After milestone: full review of Core Value, Out of Scope, and Context against shipped reality.
 
 ---
-*Last updated: 2026-09-20 after Phase 3*
+*Last updated: 2026-09-21 after Phase 4*
