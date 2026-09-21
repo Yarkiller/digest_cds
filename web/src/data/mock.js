@@ -187,6 +187,25 @@ export const materials = [
     summary: 'Гайд для Data Analyst: витрины, KPI и контроль сроков отчётности.',
     body: ['Содержит примеры SQL и структуру дашборда цикла аудита.'],
   },
+  {
+    id: 'analyst-sql-notes',
+    title: 'Заметки аналитика по SQL-проверкам',
+    dek: 'Короткий материал только для роли Analyst.',
+    format: 'Статья',
+    readingMinutes: 4,
+    date: '14 марта 2026',
+    provenance: 'внутренний гайд',
+    cover: null,
+    roles: ['analyst'],
+    tags: ['SQL'],
+    topic: 'reporting',
+    keywords: 'analyst-only-sql проверки',
+    snippet: 'Чек-лист SQL-проверок для роли Analyst без DS-материалов…',
+    inIssue: false,
+    issuePosition: null,
+    summary: 'Fixture: membership role analyst, not ds (KNOW-02).',
+    body: ['Только роль analyst.'],
+  },
 ]
 
 export const votingCycle = {

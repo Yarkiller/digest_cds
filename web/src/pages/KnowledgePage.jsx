@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
   DEFAULT_SEARCH_LIMIT,
@@ -14,13 +14,24 @@ import ErrorPanel from '../components/ErrorPanel.jsx'
 /** Topic hint chips fill the query only — do not execute search (D-60). */
 const HINT_CHIPS = ['RAG', 'SQL', 'качество данных', 'pgvector']
 
+/** Role chips replace the role select; values sent are analyst | ds | omit (D-62, D-63). */
+const ROLE_CHIPS = [
+  { value: 'analyst', label: 'Analyst' },
+  { value: 'ds', label: 'DS' },
+  { value: 'all', label: 'Все' },
+]
+
+const FILTER_TOAST_MS = 4000
+
 /**
  * Knowledge SPA — Submit/Enter «Найти» → knowledgeApi (D-57, D-59, D-60, D-61 / KNOW-01).
- * Role chips deferred to 04-03.
+ * Role chips re-run search when the trimmed query is non-empty (D-62, D-64 / KNOW-02).
  */
 export default function KnowledgePage() {
   const [searchParams] = useSearchParams()
   const [query, setQuery] = useState(() => searchParams.get('q') ?? '')
+  /** 'all' omits role; analyst | ds are the only filters sent (D-62). */
+  const [role, setRole] = useState('all')
   /** null = pre-search landing; string = last successful/attempted submitted q */
   const [activeQuery, setActiveQuery] = useState(null)
   const [items, setItems] = useState([])
@@ -31,8 +42,15 @@ export default function KnowledgePage() {
   const [error, setError] = useState(null)
   /** Inline validation — blank/overlong; never hits knowledgeApi (KNOW-01). */
   const [inlineError, setInlineError] = useState(null)
+  const [toast, setToast] = useState('')
 
-  async function runSearch(q, { offset = 0, append = false } = {}) {
+  useEffect(() => {
+    if (!toast) return undefined
+    const timer = window.setTimeout(() => setToast(''), FILTER_TOAST_MS)
+    return () => window.clearTimeout(timer)
+  }, [toast])
+
+  async function runSearch(q, { offset = 0, append = false, role: roleValue = role } = {}) {
     if (append) {
       setLoadingMore(true)
     } else {
@@ -41,9 +59,11 @@ export default function KnowledgePage() {
       setInlineError(null)
     }
 
+    let resetInvalidRole = false
     try {
       const dto = await searchKnowledge({
         q,
+        role: roleValue === 'all' ? null : roleValue,
         limit: DEFAULT_SEARCH_LIMIT,
         offset,
       })
@@ -53,20 +73,32 @@ export default function KnowledgePage() {
       setNextOffset(offset + (dto.items?.length ?? 0))
       setError(null)
     } catch (err) {
-      const message =
-        err instanceof KnowledgeApiError
-          ? err.message
-          : 'Не удалось выполнить поиск. Проверьте сеть.'
-      const retryable = err instanceof KnowledgeApiError ? err.retryable : true
-      setError({ message, retryable })
-      if (!append) {
-        setItems([])
-        setHasMore(false)
-        setActiveQuery(q)
+      if (err instanceof KnowledgeApiError && err.code === 'INVALID_ROLE' && roleValue !== 'all') {
+        // Tampered role: toast and fall back to «Все» without clearing q (D-62).
+        resetInvalidRole = true
+        setError(null)
+      } else {
+        const message =
+          err instanceof KnowledgeApiError
+            ? err.message
+            : 'Не удалось выполнить поиск. Проверьте сеть.'
+        const retryable = err instanceof KnowledgeApiError ? err.retryable : true
+        setError({ message, retryable })
+        if (!append) {
+          setItems([])
+          setHasMore(false)
+          setActiveQuery(q)
+        }
       }
     } finally {
       setSearching(false)
       setLoadingMore(false)
+    }
+
+    if (resetInvalidRole) {
+      setRole('all')
+      setToast('Фильтр недоступен')
+      void runSearch(q, { offset: 0, append: false, role: 'all' })
     }
   }
 
@@ -83,7 +115,22 @@ export default function KnowledgePage() {
       return
     }
     setInlineError(null)
-    void runSearch(validation.q, { offset: 0, append: false })
+    void runSearch(validation.q, { offset: 0, append: false, role })
+  }
+
+  function handleRoleChange(nextRole) {
+    setRole(nextRole)
+    const validation = validateKnowledgeQuery(query)
+    if (!validation.ok) {
+      // Empty query: chip state only, no request (D-64). Overlong stays inline.
+      if (validation.code === 'QUERY_TOO_LONG') {
+        setInlineError('Сократите запрос')
+        setError(null)
+      }
+      return
+    }
+    setInlineError(null)
+    void runSearch(validation.q, { offset: 0, append: false, role: nextRole })
   }
 
   function handleRetry() {
@@ -149,6 +196,34 @@ export default function KnowledgePage() {
           </p>
         ) : null}
       </form>
+
+      <div className="mb-6 flex flex-wrap gap-2" role="group" aria-label="Роль" data-testid="kb-role-chips">
+        {ROLE_CHIPS.map((chip) => {
+          const selected = role === chip.value
+          return (
+            <button
+              key={chip.value}
+              type="button"
+              aria-pressed={selected}
+              disabled={searching}
+              onClick={() => handleRoleChange(chip.value)}
+              className={
+                selected
+                  ? 'min-h-11 rounded-full bg-accent px-3 text-sm text-accent-ink'
+                  : 'min-h-11 rounded-full border border-rule bg-paper-2 px-3 text-sm text-ink hover:bg-paper'
+              }
+            >
+              {chip.label}
+            </button>
+          )
+        })}
+      </div>
+
+      {toast ? (
+        <p className="mb-4 text-sm text-ink-2" role="status" data-testid="kb-filter-toast">
+          {toast}
+        </p>
+      ) : null}
 
       {preSearch ? (
         <div className="mb-8" data-testid="kb-hint-chips">

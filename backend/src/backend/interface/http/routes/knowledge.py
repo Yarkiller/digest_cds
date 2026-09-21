@@ -70,7 +70,9 @@ def _to_item(material: Material | None, hit: KnowledgeHit) -> KnowledgeHitRespon
     summary="Semantic knowledge search",
     description=(
         "Hybrid search over ready materials. Requires Bearer JWT. "
-        "Omits relevance scores from JSON (D-59). Default limit=10 with has_more (D-61)."
+        "Omits relevance scores from JSON (D-59). Default limit=10 with has_more (D-61). "
+        "role allowlist: analyst | ds; omit or empty is unrestricted (KNOW-02 / D-62). "
+        "Any other role is 400 invalid_role (T-04-05)."
     ),
 )
 def search_knowledge_http(

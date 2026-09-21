@@ -1,5 +1,6 @@
 /**
- * Knowledge search API — GET /knowledge/search (KNOW-01 / D-57 / D-59 / D-61).
+ * Knowledge search API — GET /knowledge/search (KNOW-01 / D-57 / D-59 / D-61 / D-62).
+ * role is analyst | ds or omitted («Все»). invalid_role → «Фильтр недоступен».
  * Mock/live cutover via isMocksEnabled(); never silent mock fallback after live failure.
  *
  * Auth/env imports are dynamic so pure mockSearchKnowledge stays node:test-friendly.
@@ -163,6 +164,12 @@ export async function searchKnowledge(
       detail = body?.detail ?? detail
     } catch {
       /* keep default */
+    }
+    if (detail === 'invalid_role') {
+      throw new KnowledgeApiError('Фильтр недоступен', {
+        code: 'INVALID_ROLE',
+        retryable: false,
+      })
     }
     throw new KnowledgeApiError('Некорректный запрос.', {
       code: detail === 'query_too_long' ? 'QUERY_TOO_LONG' : 'EMPTY_QUERY',
