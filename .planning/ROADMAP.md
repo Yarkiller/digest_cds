@@ -113,7 +113,7 @@ Plans:
   3. Razbor list shows name/date/status (or empty CTA); multi-section разбор has sticky TOC navigation
   4. Notebook download works when attached and is clearly disabled when missing; metrics/overview labeling is honest
 
-**Plans**: 1/9 plans executed
+**Plans**: 2/9 plans executed
 **UI hint**: yes
 
 Plans:
@@ -123,7 +123,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 04-02-PLAN.md — Knowledge SPA Submit/Enter + blank guards (KNOW-01)
+- [x] 04-02-PLAN.md — Knowledge SPA Submit/Enter + blank guards (KNOW-01)
 - [ ] 04-04-PLAN.md — Razbor backend list tracer: domain → GET /razbory (RAZB-01)
 
 **Wave 3** *(blocked on Wave 2 completion)*
@@ -176,5 +176,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. Platform Foundation & Auth | 6/7 | Verified (PASS_WITH_GAPS) | 2026-09-19 |
 | 2. Issue, Materials & Archive | 6/6 | Complete    | 2026-09-20 |
 | 3. Voting Cycle | 6/6 | Complete    | 2026-09-20 |
-| 4. Knowledge & Razbory | 1/9 | In Progress|  |
+| 4. Knowledge & Razbory | 2/9 | In Progress|  |
 | 5. Admin Digest Publish | 0/TBD | Not started | - |

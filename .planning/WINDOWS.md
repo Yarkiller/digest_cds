@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 5
+open_count: 7
 waived_count: 0
 fixed_count: 0
-total_count: 5
-last_updated: 2026-09-21T04:34:37.841Z
+total_count: 7
+last_updated: 2026-09-21T04:40:59.943Z
 ---
 
 # Broken Windows Ledger
@@ -20,6 +20,8 @@ last_updated: 2026-09-21T04:34:37.841Z
 | 3 | 02 | skipped-test | tests/web-app.spec.js | 406 | UI-SPEC visual backstops describe.skip held for /gsd-verify-work | open |  | 2026-09-20T11:09:43.276Z |  |
 | 4 | 04 | stub | backend/src/backend/application/ports/query_embedder.py |  | StubQueryEmbedder deterministic hash embedder, not Foundry HTTP (Phase 4 OPT-OUT) | open |  | 2026-09-21T04:34:37.222Z |  |
 | 5 | 04 | stub | backend/src/backend/composition/live.py |  | live.py chunks still InMemoryKnowledgeChunkRepository until 04-08 | open |  | 2026-09-21T04:34:37.841Z |  |
+| 6 | 04 | skipped-test | tests/web-app.spec.js |  | Knowledge Playwright tests still assert client filterMaterials/tag facets; rewrite deferred to 04-09 | open |  | 2026-09-21T04:40:59.311Z |  |
+| 7 | 04 | deviation | web/src/services/knowledgeApi.js |  | Dynamic import of authEnv/authApi so mockSearchKnowledge stays node:test-friendly without Vite env | open |  | 2026-09-21T04:40:59.943Z |  |
 
 ````json
 [
@@ -81,6 +83,30 @@ last_updated: 2026-09-21T04:34:37.841Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-09-21T04:34:37.841Z",
+    "resolved_at": null
+  },
+  {
+    "id": 6,
+    "kind": "skipped-test",
+    "phase": "04",
+    "file": "tests/web-app.spec.js",
+    "line": null,
+    "description": "Knowledge Playwright tests still assert client filterMaterials/tag facets; rewrite deferred to 04-09",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-21T04:40:59.311Z",
+    "resolved_at": null
+  },
+  {
+    "id": 7,
+    "kind": "deviation",
+    "phase": "04",
+    "file": "web/src/services/knowledgeApi.js",
+    "line": null,
+    "description": "Dynamic import of authEnv/authApi so mockSearchKnowledge stays node:test-friendly without Vite env",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-21T04:40:59.943Z",
     "resolved_at": null
   }
 ]
