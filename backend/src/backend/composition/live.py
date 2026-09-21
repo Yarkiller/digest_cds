@@ -55,5 +55,5 @@ def build_live_container(settings: Settings) -> AppContainer:
         notebook_storage=LocalNotebookStorage(settings.notebook_root or "."),
         # Live shortlist adapter lands in plan 05-05; empty in-memory until then.
         shortlist=InMemoryShortlistRepository(),
-        mailer=resolve_mailer(settings),
+        mailer=resolve_mailer(settings.mailer),
     )

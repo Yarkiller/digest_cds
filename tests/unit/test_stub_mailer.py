@@ -53,4 +53,4 @@ def test_resolve_mailer_smtp_fails_fast_at_startup() -> None:
     settings = Settings.from_env({"MAILER": "smtp"})
     assert settings.mailer == "smtp"
     with pytest.raises(RuntimeError, match="SMTP не настроен"):
-        resolve_mailer(settings)
+        resolve_mailer(settings.mailer)

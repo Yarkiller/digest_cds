@@ -24,3 +24,12 @@ class ShortlistRepository(Protocol):
     ) -> ShortlistBatch:
         """Persist shortlist_decision for one material; return updated batch (D-82)."""
         ...
+
+    def claim_sent(
+        self,
+        *,
+        batch_id: int,
+        sent_at: datetime,
+    ) -> ShortlistBatch:
+        """Atomic claim: set sent_at only when currently NULL (ADMIN-07, D-89)."""
+        ...

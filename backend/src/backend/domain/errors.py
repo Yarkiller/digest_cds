@@ -126,3 +126,24 @@ class EmptySendPoolError(DomainError):
             f"empty send pool for batch {batch_id}" if batch_id is not None else "empty send pool"
         )
         self.batch_id = batch_id
+
+
+class DraftInSendPoolError(DomainError):
+    """Raised when any approved shortlist item is still draft (ADMIN-03, D-85)."""
+
+    def __init__(self, draft_material_ids: list[int], *, batch_id: int | None = None) -> None:
+        ids = list(draft_material_ids)
+        super().__init__(f"approved drafts in send pool: {ids}")
+        self.draft_material_ids = ids
+        self.batch_id = batch_id
+
+
+class AlreadySentError(DomainError):
+    """Raised when batch sent_at is set or claim loses the race (ADMIN-07, D-89)."""
+
+    def __init__(self, batch_id: int | None = None) -> None:
+        super().__init__(
+            f"batch {batch_id} already sent" if batch_id is not None else "batch already sent"
+        )
+        self.batch_id = batch_id
+        self.message_ru = "Уже отправлено"

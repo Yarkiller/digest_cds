@@ -1,4 +1,4 @@
-"""Admin shortlist endpoints — GET + decision mutation behind require_admin (ADMIN-01…03/05)."""
+"""Admin shortlist endpoints — GET/decision/preview/send behind require_admin (ADMIN-01…08)."""
 
 from __future__ import annotations
 
@@ -6,9 +6,14 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, ConfigDict, Field
 
 from backend.application.use_cases.get_admin_shortlist import get_admin_shortlist
+from backend.application.use_cases.preview_digest_email import preview_digest_email
+from backend.application.use_cases.send_digest import send_digest
 from backend.application.use_cases.set_shortlist_decision import set_shortlist_decision
 from backend.domain.current_user import CurrentUser
 from backend.domain.errors import (
+    AlreadySentError,
+    DraftInSendPoolError,
+    EmptySendPoolError,
     InvalidShortlistDecisionError,
     PersistenceError,
     ShortlistNotFoundError,
@@ -48,6 +53,34 @@ class SetShortlistDecisionRequest(BaseModel):
     )
 
 
+class DigestPreviewItemResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    material_id: int
+    rank: int
+    title: str
+
+
+class DigestPreviewResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    batch_id: int
+    subject: str
+    body: str
+    items: list[DigestPreviewItemResponse] = []
+
+
+class SendDigestResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    batch_id: int
+    issue_number: int
+    issue_url: str
+    delivery_status: str
+    recipient_count: int = 0
+    message: str
+
+
 def _require_shortlist(request: Request):
     container = request.app.state.container
     if container is None or getattr(container, "shortlist", None) is None:
@@ -56,6 +89,16 @@ def _require_shortlist(request: Request):
             detail="shortlist_not_configured",
         )
     return container.shortlist
+
+
+def _require_container(request: Request):
+    container = request.app.state.container
+    if container is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="container_not_configured",
+        )
+    return container
 
 
 def _to_response(dto: AdminShortlist) -> AdminShortlistResponse:
@@ -141,3 +184,100 @@ def post_shortlist_decision(
             detail="shortlist_unavailable",
         ) from exc
     return _to_response(dto)
+
+
+@router.post(
+    "/shortlist/preview",
+    response_model=DigestPreviewResponse,
+    summary="Preview digest email for approved∩ready pool",
+    description=(
+        "Returns subject/body/items for approved ready materials only (ADMIN-04, D-86). "
+        "Never marks batch sent. Empty pool → 400. Requires admin."
+    ),
+)
+def post_shortlist_preview(
+    request: Request,
+    _admin: CurrentUser = Depends(require_admin),
+) -> DigestPreviewResponse:
+    shortlist = _require_shortlist(request)
+    try:
+        preview = preview_digest_email(shortlist)
+    except EmptySendPoolError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="empty_send_pool",
+        ) from exc
+    except PersistenceError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="shortlist_unavailable",
+        ) from exc
+    return DigestPreviewResponse(
+        batch_id=preview.batch_id,
+        subject=preview.subject,
+        body=preview.body,
+        items=[
+            DigestPreviewItemResponse(
+                material_id=item.material_id,
+                rank=item.rank,
+                title=item.title,
+            )
+            for item in preview.items
+        ],
+    )
+
+
+@router.post(
+    "/shortlist/send",
+    response_model=SendDigestResponse,
+    summary="Send digest: claim, publish issue, stub mail",
+    description=(
+        "Publish-on-send (D-88): claim batch, publish digest_issues, StubMailer. "
+        "Draft in pool → 400; empty → 400; already sent → 409. Success: «Отправка записана»."
+    ),
+)
+def post_shortlist_send(
+    request: Request,
+    admin: CurrentUser = Depends(require_admin),
+) -> SendDigestResponse:
+    container = _require_container(request)
+    shortlist = _require_shortlist(request)
+    try:
+        result = send_digest(
+            shortlist,
+            container.issues,
+            container.mailer,
+            container.pings,
+            actor_user_id=admin.id,
+        )
+    except DraftInSendPoolError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "code": "draft_in_send_pool",
+                "draft_material_ids": exc.draft_material_ids,
+            },
+        ) from exc
+    except EmptySendPoolError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="empty_send_pool",
+        ) from exc
+    except AlreadySentError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="already_sent",
+        ) from exc
+    except PersistenceError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="shortlist_unavailable",
+        ) from exc
+    return SendDigestResponse(
+        batch_id=result.batch_id,
+        issue_number=result.issue_number,
+        issue_url=result.issue_url,
+        delivery_status=result.delivery_status,
+        recipient_count=result.recipient_count,
+        message=result.message,
+    )

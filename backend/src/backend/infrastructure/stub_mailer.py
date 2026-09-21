@@ -4,8 +4,6 @@ from __future__ import annotations
 
 import logging
 
-from backend.composition.settings import Settings
-
 logger = logging.getLogger(__name__)
 
 
@@ -62,9 +60,9 @@ class SmtpMailer:
         raise NotImplementedError("SmtpMailer is not implemented; use MAILER=stub")
 
 
-def resolve_mailer(settings: Settings) -> StubMailer:
-    """Wire mailer from settings; MAILER=smtp fails fast at startup (D-87)."""
-    mode = (settings.mailer or "stub").strip().lower() or "stub"
+def resolve_mailer(mailer_mode: str) -> StubMailer:
+    """Wire mailer from MAILER mode; smtp fails fast at startup (D-87)."""
+    mode = (mailer_mode or "stub").strip().lower() or "stub"
     if mode == "stub":
         return StubMailer()
     if mode == "smtp":

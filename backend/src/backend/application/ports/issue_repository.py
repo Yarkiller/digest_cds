@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from typing import Protocol
+from datetime import datetime
+from typing import Protocol, Sequence
 
-from backend.domain.issue import Issue
+from backend.domain.issue import Issue, IssueItem
 
 
 class IssueRepository(Protocol):
@@ -18,4 +19,16 @@ class IssueRepository(Protocol):
 
     def list_past_published(self) -> list[Issue]:
         """Published issues excluding the current (latest published_at) — D-31 readiness."""
+        ...
+
+    def publish(
+        self,
+        *,
+        period_label: str,
+        title: str,
+        editor: str | None,
+        published_at: datetime,
+        items: Sequence[IssueItem],
+    ) -> Issue:
+        """Create a new published digest_issues row with attached items (D-88)."""
         ...

@@ -7,8 +7,8 @@ from datetime import datetime, timezone
 from typing import Any
 
 from backend.domain.current_user import CurrentUser
-from backend.domain.errors import ShortlistNotFoundError, VoteConflictError
-from backend.domain.issue import Issue
+from backend.domain.errors import AlreadySentError, ShortlistNotFoundError, VoteConflictError
+from backend.domain.issue import Issue, IssueItem
 from backend.domain.knowledge import KnowledgeChunk, KnowledgeHit
 from backend.domain.material import Material, MaterialStatus
 from backend.domain.razbor import Razbor
@@ -118,6 +118,24 @@ class InMemoryShortlistRepository:
             week_start=self._batch.week_start,
             sent_at=self._batch.sent_at,
             items=tuple(updated),
+        )
+        return self._batch
+
+    def claim_sent(
+        self,
+        *,
+        batch_id: int,
+        sent_at: datetime,
+    ) -> ShortlistBatch:
+        if self._batch is None or self._batch.id != batch_id:
+            raise ShortlistNotFoundError(batch_id=batch_id)
+        if self._batch.sent_at is not None:
+            raise AlreadySentError(batch_id)
+        self._batch = ShortlistBatch(
+            id=self._batch.id,
+            week_start=self._batch.week_start,
+            sent_at=sent_at,
+            items=self._batch.items,
         )
         return self._batch
 
@@ -340,6 +358,7 @@ class InMemoryIssueRepository:
 
     def __init__(self, issues: list[Issue] | None = None) -> None:
         self._issues: list[Issue] = list(issues or [])
+        self._next_id = 1
 
     def seed(self, issues: list[Issue]) -> None:
         self._issues = list(issues)
@@ -366,6 +385,31 @@ class InMemoryIssueRepository:
             key=lambda i: i.published_at,
             reverse=True,
         )
+
+    def publish(
+        self,
+        *,
+        period_label: str,
+        title: str,
+        editor: str | None,
+        published_at: datetime,
+        items: list[IssueItem] | tuple[IssueItem, ...],
+    ) -> Issue:
+        numbers = [i.number for i in self._issues]
+        number = (max(numbers) + 1) if numbers else 1
+        issue_id = f"issue-{self._next_id}"
+        self._next_id += 1
+        issue = Issue(
+            id=issue_id,
+            number=number,
+            period_label=period_label,
+            title=title,
+            editor=editor,
+            published_at=published_at,
+            items=tuple(items),
+        )
+        self._issues.append(issue)
+        return issue
 
 
 class InMemoryRazborRepository:
