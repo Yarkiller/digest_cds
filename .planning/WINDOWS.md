@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 7
+open_count: 9
 waived_count: 0
 fixed_count: 0
-total_count: 7
-last_updated: 2026-09-21T04:40:59.943Z
+total_count: 9
+last_updated: 2026-09-21T04:45:40.363Z
 ---
 
 # Broken Windows Ledger
@@ -22,6 +22,8 @@ last_updated: 2026-09-21T04:40:59.943Z
 | 5 | 04 | stub | backend/src/backend/composition/live.py |  | live.py chunks still InMemoryKnowledgeChunkRepository until 04-08 | open |  | 2026-09-21T04:34:37.841Z |  |
 | 6 | 04 | skipped-test | tests/web-app.spec.js |  | Knowledge Playwright tests still assert client filterMaterials/tag facets; rewrite deferred to 04-09 | open |  | 2026-09-21T04:40:59.311Z |  |
 | 7 | 04 | deviation | web/src/services/knowledgeApi.js |  | Dynamic import of authEnv/authApi so mockSearchKnowledge stays node:test-friendly without Vite env | open |  | 2026-09-21T04:40:59.943Z |  |
+| 8 | 04 | stub | backend/src/backend/application/use_cases/get_razbor.py |  | get_razbor NotFound only; detail HTTP deferred to 04-06 | open |  | 2026-09-21T04:45:39.748Z |  |
+| 9 | 04 | stub | backend/src/backend/composition/live.py |  | live.py razbors still InMemoryRazborRepository until adapter | open |  | 2026-09-21T04:45:40.363Z |  |
 
 ````json
 [
@@ -107,6 +109,30 @@ last_updated: 2026-09-21T04:40:59.943Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-09-21T04:40:59.943Z",
+    "resolved_at": null
+  },
+  {
+    "id": 8,
+    "kind": "stub",
+    "phase": "04",
+    "file": "backend/src/backend/application/use_cases/get_razbor.py",
+    "line": null,
+    "description": "get_razbor NotFound only; detail HTTP deferred to 04-06",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-21T04:45:39.748Z",
+    "resolved_at": null
+  },
+  {
+    "id": 9,
+    "kind": "stub",
+    "phase": "04",
+    "file": "backend/src/backend/composition/live.py",
+    "line": null,
+    "description": "live.py razbors still InMemoryRazborRepository until adapter",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-21T04:45:40.363Z",
     "resolved_at": null
   }
 ]

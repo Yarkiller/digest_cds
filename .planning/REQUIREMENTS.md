@@ -53,7 +53,7 @@ Requirements for initial release. Each maps to exactly one roadmap phase. Tracea
 
 ### Razbory
 
-- [ ] **RAZB-01**: Razbor list shows name, date, status; empty list shows empty state with CTA (e.g. to voting) (REQ-US-18)
+- [x] **RAZB-01**: Razbor list shows name, date, status; empty list shows empty state with CTA (e.g. to voting) (REQ-US-18)
 - [ ] **RAZB-02**: Published multi-section razbor renders longread with sticky TOC section jump on supported widths (REQ-US-19)
 - [ ] **RAZB-03**: Attached `.ipynb` can be downloaded/opened; missing notebook disables download with clear caption (REQ-US-20)
 - [ ] **RAZB-04**: Razbor with metrics shows quality block; overview without metrics is labeled «обзор» (REQ-US-21)
@@ -120,7 +120,7 @@ Deferred past v1. Tracked but not in current roadmap phases.
 | KNOW-02 | Phase 4 | Pending |
 | KNOW-03 | Phase 4 | Pending |
 | KNOW-04 | Phase 4 | Pending |
-| RAZB-01 | Phase 4 | Pending |
+| RAZB-01 | Phase 4 | Complete |
 | RAZB-02 | Phase 4 | Pending |
 | RAZB-03 | Phase 4 | Pending |
 | RAZB-04 | Phase 4 | Pending |

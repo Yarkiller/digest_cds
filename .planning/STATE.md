@@ -3,16 +3,16 @@ gsd_state_version: 1.0
 current_phase: 04
 current_phase_name: Knowledge & Razbory
 status: executing
-stopped_at: Completed 04-02-PLAN.md
-last_updated: "2026-09-21T04:41:35.365Z"
+stopped_at: Completed 04-04-PLAN.md
+last_updated: "2026-09-21T04:45:47.572Z"
 last_activity: 2026-09-21
 last_activity_desc: Phase 04 execution started
-state_head: 78c9a4a801e75e9927e7f6228d0bfe4830f0d110
+state_head: 1b07b44864a2d18cc3de9ef068c70dcfeb8e77ab
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 30
-  completed_plans: 22
+  completed_plans: 23
   percent: 60
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-09-20)
 ## Current Position
 
 Phase: 04 (Knowledge & Razbory) — EXECUTING
-Plan: 3 of 9
+Plan: 4 of 9
 Status: Ready to execute
 Last activity: 2026-09-21 — Phase 04 execution started
 
@@ -75,6 +75,7 @@ Progress: [███████████████████░] 20/21 p
 | Phase 03 P04 | 12min | 3 tasks | 8 files |
 | Phase 04 P01 | 7min | 2 tasks | 11 files |
 | Phase 04-knowledge-razbory P02 | 5min | 2 tasks | 5 files |
+| Phase 04-knowledge-razbory P04 | 3min | 2 tasks | 13 files |
 
 ## Accumulated Context
 
@@ -133,6 +134,8 @@ Decisions are logged in PROJECT.md Key Decisions and `<decisions>` blocks.
 - [Phase 04]: [Phase 04]: Default knowledge search limit=10 with has_more via limit+1 (D-61)
 - [Phase 04]: [Phase 04]: StubQueryEmbedder 1024-d; Foundry HTTP deferred; max q 500 code points
 - [Phase 04]: [Phase 04]: Knowledge SPA Submit/Enter via knowledgeApi; blank/overlong client guards (500 code points); role chips deferred to 04-03
+- [Phase 04]: [Phase 04]: GET /razbory items[] chronology DTO; announcement|published status strings; empty 200; PersistenceError→503
+- [Phase 04]: [Phase 04]: live.py keeps InMemoryRazborRepository until Supabase razbor adapter
 
 ### Pending Todos
 
@@ -155,7 +158,7 @@ None. Live FE↔BE proof approved 2026-09-19.
 
 ## Session Continuity
 
-Last session: 2026-09-21T04:41:34.882Z
-Stopped at: Completed 04-02-PLAN.md
+Last session: 2026-09-21T04:45:47.090Z
+Stopped at: Completed 04-04-PLAN.md
 Resume file: None
 Verification: `.planning/phases/01-platform-foundation-auth/01-VERIFICATION.md`
