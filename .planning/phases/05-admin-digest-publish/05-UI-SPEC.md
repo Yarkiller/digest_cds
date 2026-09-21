@@ -1,10 +1,11 @@
 ---
 phase: 5
 slug: admin-digest-publish
-status: draft
+status: approved
 shadcn_initialized: false
 preset: none
 created: 2026-09-21
+reviewed_at: 2026-09-21T16:13:00+03:00
 ---
 
 # Phase 5 — UI Design Contract
@@ -249,41 +250,56 @@ Send → Confirm (Подтвердить отправку | Не отправл�
 
 ## UI Considerations
 
-> Shape-rooted state coverage from ui-phase probe. Empty/error **copy** lives in `## Copywriting Contract`; rows reference those rows rather than restating.
+> Shape-rooted state coverage from ui-phase probe (post-verification). Empty/error **copy** lives in `## Copywriting Contract`; rows reference those rows rather than restating.
 
-Applicable: **29** probe items → **21 covered** · **5 backstop** · **3 dismissed** · **0 unresolved**.
+Applicable: **53** probe items → **22 covered** · **10 backstop** · **21 dismissed** · **0 unresolved**.
 
-Surfaces: **E1** Shortlist list · **E2** Admin toolbar (batch + Approve/Reject) · **E3** Sticky send footer + hints · **E4** Email preview modal · **E5** Confirm-send dialog · **E6** Item preview modal · **E7** 403 page · **E8** AppShell «Админ» nav · **E9** Empty shortlist · **E10** Digest editors (context/schema).
+Surfaces: **E1** Shortlist list · **E2** Admin toolbar · **E3** Sticky send footer + hints · **E4** Email preview modal · **E5** Confirm-send dialog · **E6** Item preview modal · **E7** 403 page · **E8** AppShell «Админ» nav · **E9** Empty shortlist · **E10** Digest editors (context/schema).
+
+Kind overrides (user-confirmed): E3=`interactive-control`+`static-content`; E4+=`list-collection`+`static-content`; E6=`static-content`+`interactive-control`; E8=`nav` only.
 
 | Category | Element(s) | Status | Resolution / Reason |
 |----------|------------|--------|---------------------|
 | empty | E1 / E9 shortlist | ✅ covered | «Кандидатов пока нет» + «Обновить список» (D-80); never pipeline wording |
-| empty | E4 preview with zero approved ready | ✅ covered | Preview CTA may run but server/UI shows honest empty composition / blocks unlock — send stays disabled via empty-pool hint |
+| empty | E2 checkbox selection | ✅ covered | 0 checked → Approve/Reject disabled or no-op |
+| empty | E4 preview zero approved ready | ✅ covered | Honest empty composition / unlock blocked; send stays disabled via empty-pool hint |
+| empty | E10 editors | ✅ covered | Context/schema textareas start empty (session-only); valid initial state |
 | loading | E1 shortlist GET | ✅ covered | Neutral pending until DTO or ServiceUnavailable — do not flash empty |
 | loading | E2 Approve/Reject | ✅ covered | Disable toolbar actions while in-flight; no double-submit |
-| loading | E3 / E5 send | ✅ covered | Disable confirm primary while request in flight |
+| loading | E3 / E5 send | ✅ covered | Disable send/confirm primary while request in flight |
+| loading | E4 email preview | ✅ covered | Modal pending until preview DTO returns |
 | error | E1 GET fail | ✅ covered | ServiceUnavailable / banner + «Повторить» |
 | error | E2 decision fail | ✅ covered | Toast «Не сохранено» + «Повторить»; revert to server state (§2.7) |
-| error | E4 preview fail | ✅ covered | «Превью недоступно» + «Повторить»; emailPreviewed stays false (ADMIN-04) |
 | error | E3 send fail | ✅ covered | «Рассылка не отправлена» + «Повторить»; selection preserved (D-89) |
+| error | E4 preview fail | ✅ covered | «Превью недоступно» + «Повторить»; emailPreviewed stays false (ADMIN-04) |
 | error | E5 confirm dismiss | ✅ covered | Dismiss CTA **«Не отправлять»** (not generic Cancel/«Отмена») |
-| error | E7 403 | ✅ covered | «Недостаточно прав» + «На выпуск» (D-75) — never empty shortlist |
 | populated | E1 ≤5 rows | ✅ covered | Rank, title, badges, score/factors or «обоснование недоступно» (ADMIN-01/05) |
 | populated | E4 preview | ✅ covered | Modal lists approved∩ready matching server DTO (ADMIN-04 / D-83) |
-| partial | E1 missing factors | ✅ covered | «обоснование недоступно» (D-79) |
-| partial | E1 missing thumb | ✅ covered | Row degrades without thumbnail when cover absent |
-| partial | E1 draft in approved pool | ✅ covered | Send blocked + draft badges listed in hint (D-85) |
+| partial | E1 row data | ✅ covered | Missing factors → «обоснование недоступно»; missing thumb degrades; draft-in-pool blocks send + draft badges in hint (D-79/D-85) |
+| partial | E4 approved-set change | ✅ covered | Changing approved set after preview invalidates gate until preview succeeds again (D-86) |
 | zero-one-many | E1 rows | ✅ covered | 0 → empty; 1 → single row; many → ≤5 stacked rows |
-| zero-one-many | E2 checkbox selection | ✅ covered | 0 checked → Approve/Reject no-op or disabled; 1…N checked → batch decision |
+| zero-one-many | E4 preview articles | ✅ covered | 0…N approved-ready articles listed in modal |
+| zero-one-many | E9 empty surface | ✅ covered | Zero-item path is the empty shortlist contract (D-80) |
 | overflow | E1 row title / factors | 🧪 backstop | { statement: "Long titles and factor strings wrap within admin-row without horizontal page scroll; 44px targets remain usable", verification: backstop } |
-| overflow | E4 email preview body | 🧪 backstop | { statement: "Email preview modal scrolls long article lists inside dialog without clipping close control", verification: backstop } |
 | overflow | E3 sticky footer mobile | 🧪 backstop | { statement: "Sticky footer stacks full-width buttons at narrow widths without covering row checkboxes permanently", verification: backstop } |
-| long-text | E10 context/schema textareas | 🧪 backstop | { statement: "Long context/schema text wraps/scrolls in textareas without breaking the admin layout", verification: backstop } |
+| overflow | E4 email preview body | 🧪 backstop | { statement: "Email preview modal scrolls long article lists inside dialog without clipping close control", verification: backstop } |
+| overflow | E6 item preview | 🧪 backstop | { statement: "Item preview body wraps/scrolls without clipping close control (aria-label Закрыть)", verification: backstop } |
+| overflow | E7 403 panel | 🧪 backstop | { statement: "403 panel wraps cleanly at 320px without horizontal overflow", verification: backstop } |
+| long-text | E1 titles / factors | 🧪 backstop | { statement: "Long titles and factor strings wrap within the admin row without breaking layout", verification: backstop } |
+| long-text | E3 send hints | 🧪 backstop | { statement: "Send hint copy wraps in the sticky footer without layout break", verification: backstop } |
+| long-text | E4 preview titles / body | 🧪 backstop | { statement: "Long preview titles and body wrap inside the email modal", verification: backstop } |
 | long-text | E7 403 copy | 🧪 backstop | { statement: "403 heading/body wrap cleanly on 320px width", verification: backstop } |
+| long-text | E10 context/schema textareas | 🧪 backstop | { statement: "Long context/schema text wraps/scrolls in textareas without breaking the admin layout", verification: backstop } |
 
-**Dismissed as N/A (audit trail):** E8 loading/error (static nav chrome once `/me` resolved — `/me` failure uses existing shell patterns); E6 loading (sync open of local row data); E5 empty (confirm only opens when send enabled).
+**Dismissed as N/A (audit trail):**
+- **E2** partial, long-text — toolbar has no partial fields; RU CTA labels are fixed short strings
+- **E5** empty, partial, long-text — confirm opens only when send enabled; no partial form fields; dialog copy is fixed short RU
+- **E6** loading, error, long-text — sync open of local row data (no fetch); long-text covered by overflow backstop
+- **E8** loading, error, overflow, long-text — static «Админ» chrome once `/me` resolved; `/me` failure uses existing shell patterns; fixed short label
+- **E9** loading, error, populated, partial, overflow, long-text — GET load/error owned by E1; empty surface is not populated/partial; copy is short fixed RU
+- **E10** loading, error, partial — session-only editors; no load/persist in v1; fields optional (empty is valid)
 
-> **Planner note:** the 5 `backstop` rows lift into `must_haves.truths` as `{ statement, verification: backstop }` — at verify time each needs an explicit visual/held-out check or routes to `insufficient_spec → human_needed`; never a silent pass.
+> **Planner note:** the 10 `backstop` rows lift into `must_haves.truths` as `{ statement, verification: backstop }` — at verify time each needs an explicit visual/held-out check or routes to `insufficient_spec → human_needed`; never a silent pass.
 
 ---
 
@@ -299,11 +315,11 @@ No shadcn initialization and no third-party registries declared for this phase. 
 
 ## Checker Sign-Off
 
-- [ ] Dimension 1 Copywriting: PASS — revised: confirm dismiss **«Не отправлять»**; noun CTAs **«Превью материала»** / **«Обновить список»**; retries locked Russian **«Повторить»**; glyph close `aria-label="Закрыть"`
-- [ ] Dimension 2 Visuals: PASS
-- [ ] Dimension 3 Color: PASS
-- [ ] Dimension 4 Typography: PASS — Caption marked inherited-meta-only (Phase 4 disposition); ≤4 primary sizes
-- [ ] Dimension 5 Spacing: PASS — `--space-3/5/10` documented as continuity exceptions (Phase 4 disposition)
-- [ ] Dimension 6 Registry Safety: PASS
+- [x] Dimension 1 Copywriting: PASS — revised: confirm dismiss **«Не отправлять»**; noun CTAs **«Превью материала»** / **«Обновить список»**; retries locked Russian **«Повторить»**; glyph close `aria-label="Закрыть"`
+- [x] Dimension 2 Visuals: PASS
+- [x] Dimension 3 Color: PASS
+- [x] Dimension 4 Typography: PASS — Caption marked inherited-meta-only (Phase 4 disposition); ≤4 primary sizes
+- [x] Dimension 5 Spacing: PASS — `--space-3/5/10` documented as continuity exceptions (Phase 4 disposition)
+- [x] Dimension 6 Registry Safety: PASS
 
-**Approval:** pending (revision 2026-09-21 — checker blocking + recommendations applied)
+**Approval:** approved 2026-09-21T16:13:00+03:00 (checker VERIFIED after revision)
