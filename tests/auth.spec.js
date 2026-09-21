@@ -57,6 +57,36 @@ test.describe("SPA auth contracts", () => {
     await expect(page.getByTestId("confirm-vote")).toBeVisible();
   });
 
+  test("ADMIN-08 / D-90: returnUrl /issues/{n} lands on published issue after login", async ({
+    page,
+  }) => {
+    // Stub email link path → login?returnUrl=/issues/{n} → same-origin issue (sanitizeReturnUrl)
+    await page.goto("/login?returnUrl=/issues/13");
+
+    await page.getByLabel(/^email$/i).fill("analyst@sberbank.ru");
+    await page.getByLabel(/^пароль$/i).fill("correct-horse");
+    await page.getByRole("button", { name: /войти/i }).click();
+
+    await expect(page).toHaveURL(/\/issues\/13$/);
+    await expect(
+      page.getByRole("heading", { name: /прошлый выпуск/i }),
+    ).toBeVisible();
+  });
+
+  test("sanitizeReturnUrl rejects protocol-relative open redirects", async ({ page }) => {
+    // T-05-20 — only same-origin relative paths; // and :// fall back to /
+    await page.goto("/login?returnUrl=//evil.example/phish");
+
+    await page.getByLabel(/^email$/i).fill("analyst@sberbank.ru");
+    await page.getByLabel(/^пароль$/i).fill("correct-horse");
+    await page.getByRole("button", { name: /войти/i }).click();
+
+    await expect(page).toHaveURL(/\/$/);
+    await expect(
+      page.getByRole("heading", { name: /новости ds для сва/i }),
+    ).toBeVisible();
+  });
+
   test("shows retryable network banner when sign-in fails", async ({ page }) => {
     await page.goto("/login");
     await page.waitForFunction(() => Boolean(window.__DIGEST_AUTH_HARNESS__));
@@ -71,18 +101,51 @@ test.describe("SPA auth contracts", () => {
     await expect(page).toHaveURL(/\/login/);
   });
 
-  test("shows mock CurrentUser identity and accepts platform ping", async ({ page }) => {
-    await page.goto("/login");
+  test("shows welcome toast after login then dismisses; no ping button", async ({ page }) => {
+    await page.clock.install();
 
+    await page.goto("/login");
     await page.getByLabel(/^email$/i).fill("analyst@sberbank.ru");
     await page.getByLabel(/^пароль$/i).fill("correct-horse");
     await page.getByRole("button", { name: /войти/i }).click();
 
     await expect(page).toHaveURL(/\/$/);
-    await expect(page.getByTestId("platform-me")).toContainText(/analyst@sberbank\.ru/i);
+    const toast = page.getByTestId("welcome-toast");
+    await expect(toast).toBeVisible();
+    await expect(toast).toContainText(/analyst@sberbank\.ru/i);
+    // Neater: no raw role paren like (employee)
+    await expect(toast).not.toContainText(/\(employee\)/i);
+    await expect(page.getByRole("button", { name: /проверить ping/i })).toHaveCount(0);
+    await expect(page.getByTestId("platform-ping")).toHaveCount(0);
+    // Overlay: must not participate in document flow (no layout shift on dismiss)
+    await expect(toast).toHaveCSS("position", "fixed");
 
-    await page.getByRole("button", { name: /проверить ping/i }).click();
-    await expect(page.getByTestId("platform-ping")).toContainText(/ok/i);
+    await page.clock.fastForward(5500);
+    await expect(toast).toHaveCount(0);
+
+    // Once per auth session — revisiting Выпуск must not show the toast again
+    await page.getByRole("link", { name: /^Архив$/i }).click();
+    await expect(page).toHaveURL(/\/archive/);
+    await page.getByRole("link", { name: /^Выпуск$/i }).click();
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.getByTestId("welcome-toast")).toHaveCount(0);
+  });
+
+  test("shows profile stub link with display name on mobile and desktop", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/login");
+    await page.getByLabel(/^email$/i).fill("analyst@sberbank.ru");
+    await page.getByLabel(/^пароль$/i).fill("correct-horse");
+    await page.getByRole("button", { name: /войти/i }).click();
+    await expect(page).toHaveURL(/\/$/);
+
+    const profile = page.getByTestId("shell-identity");
+    await expect(profile).toBeVisible();
+    await expect(profile).toHaveAttribute("href", "/profile");
+    await profile.click();
+    await expect(page).toHaveURL(/\/profile$/);
+    await expect(page.getByTestId("profile-stub")).toBeVisible();
+    await expect(page.getByText(/профиль.*позже|скоро|в следующих фазах/i)).toBeVisible();
   });
 
   test("Регистрация on login navigates to /register", async ({ page }) => {

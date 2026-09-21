@@ -1,7 +1,8 @@
 const { expect, test } = require("@playwright/test");
 
 /**
- * Admin Digest SPA contracts (D-75, D-76, ADMIN-01…07).
+ * Admin Digest SPA honesty gate (ADMIN-01, ADMIN-04, ADMIN-06, ADMIN-07, ADMIN-08;
+ * D-77, D-80, D-85, D-86, D-87, D-90).
  * Role harness: sticky window.__DIGEST_MOCK_ME_ROLE__ (employee default).
  */
 
@@ -33,7 +34,16 @@ async function gotoAsRole(page, role, path = "/", extraInit) {
   }
 }
 
-test.describe("Admin Digest — role gate (D-75, D-76, ADMIN-01)", () => {
+async function approveReadyRows(page, indices) {
+  const rows = page.getByTestId("admin-shortlist-row");
+  for (const i of indices) {
+    await rows.nth(i).getByRole("checkbox").check();
+  }
+  await page.getByRole("button", { name: /одобрить выбранные/i }).click();
+  await expect(rows.nth(indices[0]).getByText("одобрен")).toBeVisible();
+}
+
+test.describe("Admin Digest — role gate (D-75, D-76, D-77, ADMIN-01)", () => {
   test("employee never sees Админ nav link", async ({ page }) => {
     await gotoAsRole(page, "employee", "/");
     await expect(page.getByRole("navigation", { name: /основная навигация/i })).toBeVisible();
@@ -50,9 +60,10 @@ test.describe("Admin Digest — role gate (D-75, D-76, ADMIN-01)", () => {
   test("employee deep-link /admin/digest shows 403 Недостаточно прав", async ({
     page,
   }) => {
+    // D-77 / AUTH-03 remainder — Playwright employee deep-link proof
     await gotoAsRole(page, "employee", "/admin/digest");
     await expect(
-      page.getByRole("heading", { name: "Недостаточно прав" }),
+      page.getByRole("heading", { name: "Недостаточно прав", exact: true }),
     ).toBeVisible();
     await expect(
       page.getByText(/этот раздел доступен только администраторам digest cds/i),
@@ -71,7 +82,7 @@ test.describe("Admin Digest — shortlist triage (ADMIN-01…03, ADMIN-05, D-79,
   }) => {
     await gotoAsRole(page, "admin", "/admin/digest");
     await expect(
-      page.getByRole("heading", { name: "Shortlist дайджеста" }),
+      page.getByRole("heading", { name: "Shortlist дайджеста", exact: true }),
     ).toBeVisible();
     const list = page.getByTestId("admin-shortlist");
     await expect(list).toBeVisible();
@@ -89,11 +100,21 @@ test.describe("Admin Digest — shortlist triage (ADMIN-01…03, ADMIN-05, D-79,
       __DIGEST_ADMIN_EMPTY__: true,
     });
     await expect(
-      page.getByRole("heading", { name: "Кандидатов пока нет" }),
+      page.getByRole("heading", { name: "Кандидатов пока нет", exact: true }),
     ).toBeVisible();
     await expect(page.getByRole("button", { name: /обновить список/i })).toBeVisible();
     await expect(page.getByText(/пайплайн/i)).toHaveCount(0);
     await expect(page.getByTestId("admin-shortlist-row")).toHaveCount(0);
+  });
+
+  test("loading shortlist does not flash empty success", async ({ page }) => {
+    await gotoAsRole(page, "admin", "/admin/digest");
+    // After harness reset+reload, assert we never land on empty copy while rows exist.
+    await expect(page.getByTestId("admin-digest-page")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Кандидатов пока нет", exact: true }),
+    ).toHaveCount(0);
+    await expect(page.getByTestId("admin-shortlist-row")).toHaveCount(5);
   });
 
   test("Одобрить выбранные persists and shows одобрен caption", async ({ page }) => {
@@ -103,9 +124,20 @@ test.describe("Admin Digest — shortlist triage (ADMIN-01…03, ADMIN-05, D-79,
     await page.getByRole("button", { name: /одобрить выбранные/i }).click();
     await expect(firstRow.getByText("одобрен")).toBeVisible();
   });
+
+  test("Approve in-flight disables toolbar actions", async ({ page }) => {
+    await gotoAsRole(page, "admin", "/admin/digest");
+    const firstRow = page.getByTestId("admin-shortlist-row").first();
+    await firstRow.getByRole("checkbox").check();
+    const approveBtn = page.getByRole("button", { name: /одобрить выбранные/i });
+    await approveBtn.click();
+    // While request is in flight (mock delay), primary decision actions stay disabled.
+    await expect(approveBtn).toBeDisabled();
+    await expect(firstRow.getByText("одобрен")).toBeVisible();
+  });
 });
 
-test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07)", () => {
+test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07, D-85, D-86)", () => {
   test("Выбрать все and Оставить топ-3 update checkboxes", async ({ page }) => {
     await gotoAsRole(page, "admin", "/admin/digest");
     const rows = page.getByTestId("admin-shortlist-row");
@@ -129,14 +161,66 @@ test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07
     await expect(rows.nth(2).getByRole("checkbox")).toBeChecked();
   });
 
-  test("превью unlocks send; confirm records Отправка записана", async ({ page }) => {
+  test("preview failure keeps send locked", async ({ page }) => {
+    await gotoAsRole(page, "admin", "/admin/digest", {
+      __DIGEST_ADMIN_FAIL_PREVIEW__: true,
+    });
+    await approveReadyRows(page, [0, 1]);
+
+    const sendBtn = page.getByRole("button", { name: /отправить дайджест/i });
+    await expect(sendBtn).toBeDisabled();
+
+    await page.getByRole("button", { name: /предпросмотр письма/i }).click();
+    const emailDialog = page.getByRole("dialog").filter({
+      has: page.getByRole("heading", { name: "Превью письма", exact: true }),
+    });
+    await expect(emailDialog.getByText("Превью недоступно", { exact: true })).toBeVisible();
+    await emailDialog.getByRole("button", { name: "Закрыть", exact: true }).click();
+    await expect(emailDialog).toHaveCount(0);
+
+    await expect(page.getByText(/сначала откройте превью письма/i)).toBeVisible();
+    await expect(sendBtn).toBeDisabled();
+  });
+
+  test("approved draft blocks send with draft hint (ADMIN-03/07, D-85)", async ({
+    page,
+  }) => {
     await gotoAsRole(page, "admin", "/admin/digest");
     const rows = page.getByTestId("admin-shortlist-row");
-    // Approve two ready rows (ranks 1 and 2)
-    await rows.nth(0).getByRole("checkbox").check();
-    await rows.nth(1).getByRole("checkbox").check();
+    // Rank 4 is draft in default mock batch
+    await rows.nth(3).getByRole("checkbox").check();
     await page.getByRole("button", { name: /одобрить выбранные/i }).click();
-    await expect(rows.nth(0).getByText("одобрен")).toBeVisible();
+    await expect(rows.nth(3).getByText("одобрен")).toBeVisible();
+
+    await expect(
+      page.getByTestId("admin-send-hint"),
+    ).toContainText(/уберите черновики из одобренных или дождитесь ready/i);
+    await expect(page.getByText(/· draft/i)).toBeVisible();
+    await expect(page.getByRole("button", { name: /отправить дайджест/i })).toBeDisabled();
+    // Preview stays locked until there is ≥1 approved ready
+    await expect(page.getByRole("button", { name: /предпросмотр письма/i })).toBeDisabled();
+  });
+
+  test("preview lists one approved-ready article (zero-one-many E4)", async ({
+    page,
+  }) => {
+    await gotoAsRole(page, "admin", "/admin/digest");
+    await approveReadyRows(page, [0]);
+
+    await page.getByRole("button", { name: /предпросмотр письма/i }).click();
+    const emailDialog = page.getByRole("dialog").filter({
+      has: page.getByRole("heading", { name: "Превью письма", exact: true }),
+    });
+    await expect(emailDialog.getByText(/только одобренные ready/i)).toBeVisible();
+    await expect(emailDialog.locator("li")).toHaveCount(1);
+    await emailDialog.getByRole("button", { name: "Закрыть", exact: true }).click();
+  });
+
+  test("превью unlocks send; confirm records Отправка записана + issue link (D-90)", async ({
+    page,
+  }) => {
+    await gotoAsRole(page, "admin", "/admin/digest");
+    await approveReadyRows(page, [0, 1]);
 
     const sendBtn = page.getByRole("button", { name: /отправить дайджест/i });
     await expect(sendBtn).toBeDisabled();
@@ -144,35 +228,43 @@ test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07
 
     await page.getByRole("button", { name: /предпросмотр письма/i }).click();
     const emailDialog = page.getByRole("dialog").filter({
-      has: page.getByRole("heading", { name: "Превью письма" }),
+      has: page.getByRole("heading", { name: "Превью письма", exact: true }),
     });
     await expect(emailDialog.getByText(/только одобренные ready/i)).toBeVisible();
-    await emailDialog.getByRole("button", { name: "Закрыть" }).click();
+    await expect(emailDialog.locator("li")).toHaveCount(2);
+    await emailDialog.getByRole("button", { name: "Закрыть", exact: true }).click();
     await expect(emailDialog).toHaveCount(0);
 
     await expect(page.getByText(/превью просмотрено\. можно отправить/i)).toBeVisible();
     await expect(sendBtn).toBeEnabled();
 
     await sendBtn.click();
-    await expect(page.getByRole("heading", { name: "Подтвердите отправку" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Подтвердите отправку", exact: true }),
+    ).toBeVisible();
     await page.getByRole("button", { name: /подтвердить отправку/i }).click();
-    await expect(page.getByText("Отправка записана")).toBeVisible();
+    await expect(page.getByText("Отправка записана", { exact: true })).toBeVisible();
+    // D-90 / ADMIN-08 — success surfaces same-origin issue path for returnUrl integrity
+    const issueLink = page.getByRole("link", { name: /к выпуску/i });
+    await expect(issueLink).toBeVisible();
+    await expect(issueLink).toHaveAttribute("href", "/issues/15");
+
+    // Second attempt locked — already sent
+    await expect(page.getByTestId("admin-send-hint")).toContainText(/уже отправлено/i);
+    await expect(sendBtn).toBeDisabled();
   });
 
   test("Уже отправлено when batch already sent", async ({ page }) => {
     await gotoAsRole(page, "admin", "/admin/digest", {
       __DIGEST_ADMIN_ALREADY_SENT__: true,
     });
-    const rows = page.getByTestId("admin-shortlist-row");
-    await rows.nth(0).getByRole("checkbox").check();
-    await page.getByRole("button", { name: /одобрить выбранные/i }).click();
-    await expect(rows.nth(0).getByText("одобрен")).toBeVisible();
+    await approveReadyRows(page, [0]);
     await page.getByRole("button", { name: /предпросмотр письма/i }).click();
     const emailDialog = page.getByRole("dialog").filter({
-      has: page.getByRole("heading", { name: "Превью письма" }),
+      has: page.getByRole("heading", { name: "Превью письма", exact: true }),
     });
     await expect(emailDialog.getByText(/только одобренные ready/i)).toBeVisible();
-    await emailDialog.getByRole("button", { name: "Закрыть" }).click();
+    await emailDialog.getByRole("button", { name: "Закрыть", exact: true }).click();
     await expect(emailDialog).toHaveCount(0);
 
     await page.getByRole("button", { name: /отправить дайджест/i }).click();
