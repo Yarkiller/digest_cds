@@ -225,22 +225,6 @@ test.describe("web app main flows", () => {
     await expect(confirm).toBeEnabled();
   });
 
-  test("filters knowledge by the Analyst chip and opens a DS hit", async ({ page }) => {
-    await page.goto("/knowledge");
-
-    await expect(page.locator("select")).toHaveCount(0);
-    await expect(page.getByLabel(/теги|формат|тема/i)).toHaveCount(0);
-
-    const search = page.getByRole("searchbox", { name: /поиск по базе знаний/i });
-    await search.fill("RAG");
-    // D-64: chip change re-runs search without «Найти».
-    await page.getByRole("button", { name: "DS", exact: true }).click();
-    const rag = page.getByRole("link", { name: /building production rag systems/i });
-    await expect(rag).toBeVisible();
-    await rag.click();
-    // KNOW-03: DS hit opens the material page by slug.
-    await expect(page).toHaveURL(/\/materials\/rag-systems/);
-  });
 });
 
 test.describe("web app UI states", () => {
@@ -258,32 +242,7 @@ test.describe("web app UI states", () => {
     await expect(confirm).toBeDisabled();
   });
 
-  test("keeps the query when resetting a role filter that found nothing", async ({ page }) => {
-    await page.goto("/knowledge");
-
-    const search = page.getByRole("searchbox", { name: /поиск по базе знаний/i });
-    await search.fill("RAG");
-    await page.getByRole("button", { name: "Analyst", exact: true }).click();
-    await expect(page.getByRole("heading", { name: /ничего не нашли/i })).toBeVisible();
-    await expect(page.getByRole("link", { name: /building production rag systems/i })).toHaveCount(0);
-    await expect(search).toHaveValue("RAG");
-
-    // D-65 / KNOW-04: clear role only, keep query, re-run.
-    await page.getByRole("button", { name: "Сбросить фильтр", exact: true }).click();
-    await expect(search).toHaveValue("RAG");
-    await expect(page.getByRole("link", { name: /building production rag systems/i })).toBeVisible();
-    await expect(page.getByRole("heading", { name: /ничего не нашли/i })).toHaveCount(0);
-  });
-
-  test("loads knowledge hits without the retired load-more label", async ({ page }) => {
-    await page.goto("/knowledge");
-
-    await page.getByRole("searchbox", { name: /поиск по базе знаний/i }).fill("RAG");
-    await page.getByRole("button", { name: "Найти", exact: true }).click();
-    await expect(page.getByRole("link", { name: /building production rag systems/i })).toBeVisible();
-    await expect(page.getByRole("button", { name: /загрузить ещё/i })).toHaveCount(0);
-  });
-
+  // KNOW-* honesty cases live in tests/knowledge.spec.js (04-09).
   test("keeps header search as an enlarged inline field without a modal", async ({ page }) => {
     await page.goto("/");
 

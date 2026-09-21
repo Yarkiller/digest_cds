@@ -39,9 +39,12 @@ test.describe("razbory honesty (RAZB-01…04)", () => {
     const qualityLink = toc.getByRole("link", { name: "Качество", exact: true });
     await expect(qualityLink).toBeVisible();
     await qualityLink.click();
-    await expect(page).toHaveURL(/#качество/i);
-    const heading = page.locator("#качество");
+    await expect
+      .poll(async () => decodeURIComponent(new URL(page.url()).hash))
+      .toBe("#user-content-качество");
+    const heading = page.locator("#user-content-качество");
     await expect(heading).toBeVisible();
+    await expect(heading).toHaveText(/Качество/i);
   });
 
   test("dual notebook strip enabled when present and disabled when missing (RAZB-03)", async ({

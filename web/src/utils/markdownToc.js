@@ -1,7 +1,10 @@
 /**
  * Extract ATX headings from markdown for section TOC.
- * Ids match rehype-slug / github-slugger for ASCII seed headings.
+ * Ids match rehype-slug + rehype-sanitize (github-slugger + user-content- clobber).
  */
+
+/** hast-util-sanitize default clobberPrefix — must match rehypeSanitize after rehypeSlug. */
+export const HEADING_ID_PREFIX = 'user-content-'
 
 /**
  * @param {string} text
@@ -11,7 +14,8 @@ function slugify(text) {
   return text
     .toLowerCase()
     .trim()
-    .replace(/[^\w\s-]/g, '')
+    // \p{L}/\p{N}: Cyrillic headings must match rehype-slug (github-slugger).
+    .replace(/[^\p{L}\p{N}\s-]/gu, '')
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '')
@@ -42,14 +46,14 @@ export function extractMarkdownHeadings(markdown) {
     const text = match[2].replace(/\s+#+\s*$/, '').trim()
     if (!text) continue
 
-    let id = slugify(text)
-    const count = seen.get(id) ?? 0
-    seen.set(id, count + 1)
+    let bare = slugify(text)
+    const count = seen.get(bare) ?? 0
+    seen.set(bare, count + 1)
     if (count > 0) {
-      id = `${id}-${count}`
+      bare = `${bare}-${count}`
     }
 
-    headings.push({ id, text, level })
+    headings.push({ id: `${HEADING_ID_PREFIX}${bare}`, text, level })
   }
 
   return headings

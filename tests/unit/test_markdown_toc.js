@@ -31,10 +31,10 @@ describe('extractMarkdownHeadings', () => {
     ].join('\n')
 
     assert.deepEqual(extractMarkdownHeadings(markdown), [
-      { id: 'building-production-rag-systems', text: 'Building Production RAG Systems', level: 1 },
-      { id: 'hello', text: 'Hello', level: 2 },
-      { id: 'nested-detail', text: 'Nested Detail', level: 3 },
-      { id: 'retrieval-pipeline', text: 'Retrieval Pipeline', level: 2 },
+      { id: 'user-content-building-production-rag-systems', text: 'Building Production RAG Systems', level: 1 },
+      { id: 'user-content-hello', text: 'Hello', level: 2 },
+      { id: 'user-content-nested-detail', text: 'Nested Detail', level: 3 },
+      { id: 'user-content-retrieval-pipeline', text: 'Retrieval Pipeline', level: 2 },
     ])
   })
 
@@ -44,8 +44,18 @@ describe('extractMarkdownHeadings', () => {
       '\n',
     )
     assert.deepEqual(extractMarkdownHeadings(markdown), [
-      { id: 'real-heading', text: 'Real Heading', level: 2 },
-      { id: 'another', text: 'Another', level: 2 },
+      { id: 'user-content-real-heading', text: 'Real Heading', level: 2 },
+      { id: 'user-content-another', text: 'Another', level: 2 },
+    ])
+  })
+
+  it('keeps Cyrillic heading ids aligned with rehype-slug + sanitize (RAZB-02)', async () => {
+    const { extractMarkdownHeadings } = await import('../../web/src/utils/markdownToc.js')
+    const markdown = ['## Введение', '', '## Качество', '', '## Качество'].join('\n')
+    assert.deepEqual(extractMarkdownHeadings(markdown), [
+      { id: 'user-content-введение', text: 'Введение', level: 2 },
+      { id: 'user-content-качество', text: 'Качество', level: 2 },
+      { id: 'user-content-качество-1', text: 'Качество', level: 2 },
     ])
   })
 })

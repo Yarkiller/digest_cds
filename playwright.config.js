@@ -47,6 +47,11 @@ if (wantsProject("web")) {
     url: "http://127.0.0.1:5174",
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
+    // Highest priority over web/.env.local live-proof overrides (D-09 offline Playwright).
+    env: {
+      ...process.env,
+      VITE_USE_MOCKS: "true",
+    },
   });
 }
 
@@ -63,7 +68,7 @@ module.exports = defineConfig({
     },
     {
       name: "web",
-      testMatch: /(web-app|auth)\.spec\.js/,
+      testMatch: /(web-app|auth|knowledge|razbory)\.spec\.js/,
       use: { baseURL: "http://127.0.0.1:5174" },
     },
   ],
