@@ -1,10 +1,11 @@
 /**
- * Razbory list API — GET /razbory (RAZB-01 / D-66 / D-67 / D-68).
+ * Razbory list + detail API — GET /razbory, GET /razbory/{id}
+ * (RAZB-01 / RAZB-02 / D-66 / D-67 / D-68).
  * Mock/live cutover via isMocksEnabled(); never silent mock fallback after live failure.
  * JWT via existing session headers (T-04-07).
  */
 import { delay } from '../utils/delay.js'
-import { getRazboryList } from '../data/mock.js'
+import { getRazborById, getRazboryList } from '../data/mock.js'
 
 export const RAZBOR_EDITOR_BYLINE = 'Редакция Digest CDS'
 
@@ -91,6 +92,23 @@ export function mockListRazbory(catalog) {
 }
 
 /**
+ * Pure mock detail → HTTP DTO. Announcement body always empty (D-68).
+ * @param {{ id: number, title: string, meeting_at?: string | null, status: string, body_markdown?: string, notebook_path?: string | null }} row
+ */
+export function mockRazborDetail(row) {
+  const isAnnouncement = row.status === 'announcement'
+  return {
+    id: row.id,
+    title: row.title,
+    meeting_at: row.meeting_at ?? null,
+    status: row.status,
+    body_markdown: isAnnouncement ? '' : (row.body_markdown ?? ''),
+    notebook_available: !isAnnouncement && Boolean(row.notebook_path),
+    editor: RAZBOR_EDITOR_BYLINE,
+  }
+}
+
+/**
  * Authenticated razbory chronology list.
  * @param {string | null} [accessToken]
  */
@@ -153,5 +171,84 @@ export async function fetchRazbory(accessToken = null) {
       meeting_at: row.meeting_at ?? null,
       status: row.status,
     })),
+  }
+}
+
+/**
+ * Authenticated razbor detail by id (RAZB-02 / D-68).
+ * @param {number | string} id
+ * @param {string | null} [accessToken]
+ */
+export async function fetchRazbor(id, accessToken = null) {
+  if (consumeFailNext()) {
+    throw new RazboryApiError('Не удалось загрузить разбор. Проверьте сеть.', {
+      code: 'NETWORK',
+      retryable: true,
+    })
+  }
+
+  const { isMocksEnabled } = await import('./authEnv.js')
+  if (isMocksEnabled()) {
+    await delay(80)
+    const row = getRazborById(id)
+    if (!row) {
+      throw new RazboryApiError('Разбор не найден.', {
+        code: 'NOT_FOUND',
+        retryable: false,
+      })
+    }
+    return mockRazborDetail(row)
+  }
+
+  const { getAccessToken } = await import('./authApi.js')
+  const token = accessToken ?? (await getAccessToken())
+  if (!token) {
+    throw new RazboryApiError('Требуется вход.', { code: 'UNAUTHORIZED', retryable: false })
+  }
+
+  const apiBase = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/$/, '')
+
+  let response
+  try {
+    response = await fetch(`${apiBase}/razbory/${encodeURIComponent(String(id))}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+  } catch {
+    throw new RazboryApiError('Не удалось загрузить разбор. Проверьте сеть.', {
+      code: 'NETWORK',
+      retryable: true,
+    })
+  }
+
+  if (response.status === 401) {
+    throw new RazboryApiError('Сессия истекла. Войдите снова.', {
+      code: 'UNAUTHORIZED',
+      retryable: false,
+    })
+  }
+
+  if (response.status === 404) {
+    throw new RazboryApiError('Разбор не найден.', {
+      code: 'NOT_FOUND',
+      retryable: false,
+    })
+  }
+
+  if (!response.ok) {
+    throw new RazboryApiError('Не удалось загрузить разбор. Проверьте сеть.', {
+      code: 'NETWORK',
+      retryable: true,
+    })
+  }
+
+  const body = await response.json()
+  return {
+    id: body.id,
+    title: body.title,
+    meeting_at: body.meeting_at ?? null,
+    status: body.status,
+    body_markdown: body.body_markdown ?? '',
+    notebook_available: Boolean(body.notebook_available),
+    editor: body.editor ?? RAZBOR_EDITOR_BYLINE,
   }
 }

@@ -6,6 +6,7 @@ import IssuePage from './pages/IssuePage.jsx'
 import KnowledgePage from './pages/KnowledgePage.jsx'
 import LoginPage from './pages/LoginPage.jsx'
 import MaterialPage from './pages/MaterialPage.jsx'
+import RazborPage from './pages/RazborPage.jsx'
 import RazboryListPage from './pages/RazboryListPage.jsx'
 import RegisterPage from './pages/RegisterPage.jsx'
 import VotingPage from './pages/VotingPage.jsx'
@@ -30,10 +31,7 @@ export default function App() {
           <Route path="knowledge" element={<KnowledgePage />} />
           <Route path="materials/:id" element={<MaterialPage />} />
           <Route path="razbory" element={<RazboryListPage />} />
-          <Route
-            path="razbory/:id"
-            element={<p data-testid="razbor-detail-shell">Разбор</p>}
-          />
+          <Route path="razbory/:id" element={<RazborPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>

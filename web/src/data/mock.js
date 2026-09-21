@@ -250,8 +250,9 @@ export function getIssueMaterials() {
 }
 
 /**
- * Razbory chronology seed for mocks (RAZB-01 / D-67 / D-68).
+ * Razbory chronology + detail seed for mocks (RAZB-01 / RAZB-02 / D-67 / D-68).
  * Order: meeting_at DESC (newest first) — matches backend list_for_reader.
+ * Multi-section published bodies enable sticky TOC; announcement has no prose.
  */
 export const razbory = [
   {
@@ -259,30 +260,56 @@ export const razbory = [
     title: 'RAG в корпоративной среде',
     meeting_at: '2026-04-14T10:00:00.000Z',
     status: 'announcement',
+    body_markdown: '',
+    notebook_path: null,
   },
   {
     id: 3,
     title: 'LLM для анализа аудиторских данных',
     meeting_at: '2026-03-31T10:00:00.000Z',
     status: 'published',
+    body_markdown:
+      '## Контекст\n\nКак LLM помогают разбирать аудиторские выборки.\n\n## Подход\n\nЧанкинг, промпты и проверка фактов.\n\n## Итоги\n\nЧто взять в следующий цикл.',
+    notebook_path: null,
   },
   {
     id: 2,
     title: 'Anomaly Detection во внутреннем аудите',
     meeting_at: '2026-03-17T10:00:00.000Z',
     status: 'published',
+    body_markdown:
+      '## Введение\n\nАномалии в проводках и ложные срабатывания.\n\n## Модель\n\nIsolation Forest и пороги.\n\n## Качество\n\n| Метрика | Значение |\n| --- | --- |\n| Precision | 0.82 |\n| Recall | 0.71 |\n',
+    notebook_path: 'notebooks/anomaly.ipynb',
   },
   {
     id: 1,
     title: 'Vector Search с pgvector',
     meeting_at: '2026-03-03T10:00:00.000Z',
     status: 'published',
+    body_markdown:
+      '## Зачем pgvector\n\nСемантический поиск без отдельного движка.\n\n## Схема\n\nHNSW и индексы.\n\n## Практика\n\nКак мы индексируем чанки.',
+    notebook_path: null,
   },
 ]
 
-/** @returns {typeof razbory} */
+/** @returns {Array<{ id: number, title: string, meeting_at: string | null, status: string }>} */
 export function getRazboryList() {
-  return razbory.map((row) => ({ ...row }))
+  return razbory.map((row) => ({
+    id: row.id,
+    title: row.title,
+    meeting_at: row.meeting_at,
+    status: row.status,
+  }))
+}
+
+/**
+ * @param {number | string} id
+ * @returns {(typeof razbory)[number] | null}
+ */
+export function getRazborById(id) {
+  const numericId = Number(id)
+  if (!Number.isFinite(numericId)) return null
+  return razbory.find((row) => row.id === numericId) ?? null
 }
 
 /** Archive cards: past published only (excludes current — D-31). */
