@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import ServiceUnavailable from '../components/ServiceUnavailable.jsx'
 import ForbiddenPage from './ForbiddenPage.jsx'
 import { getAccessToken } from '../services/authApi.js'
@@ -46,7 +47,7 @@ function applyBatch(dto, setItems, setBatchMeta) {
 }
 
 /**
- * Admin Digest triage + preview/send gate (ADMIN-01…07 / D-75…D-89).
+ * Admin Digest triage + preview/send gate (ADMIN-01…08 / D-75…D-90).
  */
 export default function AdminDigestPage() {
   const [roleState, setRoleState] = useState('loading')
@@ -62,6 +63,7 @@ export default function AdminDigestPage() {
   const [mutating, setMutating] = useState(false)
   const [toast, setToast] = useState('')
   const [banner, setBanner] = useState('')
+  const [issueUrl, setIssueUrl] = useState('')
   const [previewItem, setPreviewItem] = useState(null)
   const [emailModal, setEmailModal] = useState(null) // null | loading | error | { preview }
   const [confirmOpen, setConfirmOpen] = useState(false)
@@ -110,6 +112,7 @@ export default function AdminDigestPage() {
         setPreviewFingerprint('')
         setBatchSent(Boolean(dto?.sent_at))
         setBanner('')
+        setIssueUrl('')
         setLoadState('ready')
       })
       .catch(() => {
@@ -240,15 +243,18 @@ export default function AdminDigestPage() {
     try {
       const result = await sendDigest()
       setBanner(result.message || 'Отправка записана')
+      setIssueUrl(typeof result.issue_url === 'string' ? result.issue_url : '')
       setBatchSent(true)
       setConfirmOpen(false)
     } catch (err) {
       if (err instanceof AdminApiError && err.code === 'ALREADY_SENT') {
         setBanner('Уже отправлено')
+        setIssueUrl('')
         setBatchSent(true)
         setConfirmOpen(false)
       } else {
         setBanner('Рассылка не отправлена')
+        setIssueUrl('')
         setConfirmOpen(false)
       }
     } finally {
@@ -456,7 +462,15 @@ export default function AdminDigestPage() {
               ) : null}
               {banner ? (
                 <p className="mt-1 text-sm font-medium text-[oklch(45%_0.13_155)]" role="status">
-                  {banner}
+                  <span>{banner}</span>
+                  {issueUrl ? (
+                    <>
+                      {' · '}
+                      <Link to={issueUrl} className="text-accent underline-offset-2 hover:underline">
+                        К выпуску →
+                      </Link>
+                    </>
+                  ) : null}
                 </p>
               ) : null}
             </div>
