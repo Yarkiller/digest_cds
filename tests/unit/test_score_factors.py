@@ -29,6 +29,18 @@ def test_honest_factor_labels_empty_when_fewer_than_two_readable() -> None:
     assert honest_factor_labels({"factors": [{"label": ""}, {"label": "  "}]}) == []
 
 
+def test_honest_factor_labels_falls_back_to_flat_keys_when_factors_list_empty() -> None:
+    """WR-02: empty ``factors: []`` must not shadow ≥2 readable flat keys (demo seed honesty)."""
+    labels = honest_factor_labels(
+        {
+            "релевантность теме недели": 0.9,
+            "качество источников": 0.85,
+            "factors": [],
+        }
+    )
+    assert labels == ["релевантность теме недели", "качество источников"]
+
+
 def test_honest_factor_labels_ignores_blank_labels_in_list() -> None:
     labels = honest_factor_labels(
         {

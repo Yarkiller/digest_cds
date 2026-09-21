@@ -33,3 +33,7 @@ class ShortlistRepository(Protocol):
     ) -> ShortlistBatch:
         """Atomic claim: set sent_at only when currently NULL (ADMIN-07, D-89)."""
         ...
+
+    def release_claim(self, *, batch_id: int) -> None:
+        """Compensating action: clear sent_at after a failed publish so retry is safe (CR-01)."""
+        ...

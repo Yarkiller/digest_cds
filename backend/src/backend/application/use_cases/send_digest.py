@@ -93,13 +93,21 @@ def send_digest(
         )
         for item in pool
     )
-    published = issues.publish(
-        period_label=claimed.week_start.isoformat(),
-        title=f"Digest CDS — {claimed.week_start.isoformat()}",
-        editor=_EDITOR_BYLINE,
-        published_at=clock,
-        items=issue_items,
-    )
+    # CR-01: claim and publish are two writes. If publish fails after the claim, the
+    # batch would stay stamped sent_at with no issue and no recoverable retry. Compensate
+    # by releasing the claim so the batch returns to the unsent pool. (The fully-atomic
+    # path is migration 005's claim_and_publish_digest RPC — see WR-01.)
+    try:
+        published = issues.publish(
+            period_label=claimed.week_start.isoformat(),
+            title=f"Digest CDS — {claimed.week_start.isoformat()}",
+            editor=_EDITOR_BYLINE,
+            published_at=clock,
+            items=issue_items,
+        )
+    except Exception:
+        shortlist.release_claim(batch_id=claimed.id)
+        raise
     issue_url = f"/issues/{published.number}"
     titles = "\n".join(f"- {item.title}" for item in pool)
     subject = f"Digest CDS — выпуск {published.number}"

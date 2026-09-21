@@ -299,6 +299,36 @@ def test_claim_sent_sets_sent_at_when_null() -> None:
     assert client.tables["digest_shortlist_batches"].rows[0]["sent_at"] is not None
 
 
+def test_release_claim_clears_sent_at_for_retry() -> None:
+    """CR-01 compensation: release_claim resets sent_at to NULL so a failed publish can retry."""
+    from supabase_integration.shortlist_repository import SupabaseShortlistRepository
+
+    client = FakeSupabaseClient()
+    _seed_shortlist(client)
+    client.tables["digest_shortlist_batches"].rows[0]["sent_at"] = "2026-09-16T12:00:00+00:00"
+    repo = SupabaseShortlistRepository(client)
+
+    repo.release_claim(batch_id=42)
+
+    assert client.tables["digest_shortlist_batches"].rows[0]["sent_at"] is None
+    # Batch is claimable again by get_current_batch (sent_at IS NULL).
+    batch = repo.get_current_batch()
+    assert batch is not None
+    assert batch.id == 42
+
+
+def test_release_claim_maps_sdk_failure_to_persistence_error() -> None:
+    from supabase_integration.shortlist_repository import SupabaseShortlistRepository
+
+    client = FakeSupabaseClient()
+    _seed_shortlist(client)
+    client.tables["digest_shortlist_batches"].fail_next = True
+    repo = SupabaseShortlistRepository(client)
+
+    with pytest.raises(PersistenceError):
+        repo.release_claim(batch_id=42)
+
+
 def test_sdk_failure_maps_to_persistence_error() -> None:
     from supabase_integration.shortlist_repository import SupabaseShortlistRepository
 

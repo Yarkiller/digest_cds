@@ -139,6 +139,17 @@ class InMemoryShortlistRepository:
         )
         return self._batch
 
+    def release_claim(self, *, batch_id: int) -> None:
+        """Reset sent_at to None (CR-01 compensation) so a failed publish can retry."""
+        if self._batch is None or self._batch.id != batch_id:
+            return
+        self._batch = ShortlistBatch(
+            id=self._batch.id,
+            week_start=self._batch.week_start,
+            sent_at=None,
+            items=self._batch.items,
+        )
+
 
 class InMemoryProfileRepository:
     def __init__(self) -> None:

@@ -47,7 +47,18 @@ findings:
   warning: 5
   info: 2
   total: 8
+resolved:
+  - CR-01
+  - WR-02
+open:
+  - WR-01
+  - WR-03
+  - WR-04
+  - WR-05
+  - IN-01
+  - IN-02
 status: issues_found
+fix_applied: 2026-09-21T16:05:00Z
 ---
 
 # Phase 05: Code Review Report
@@ -67,7 +78,11 @@ The main defect is non-atomic live send: `claim_sent` then `IssueRepository.publ
 
 ## Critical Issues
 
-### CR-01: Claim-then-publish is not atomic — stuck `sent_at` without issue
+### CR-01: Claim-then-publish is not atomic — stuck `sent_at` without issue  — ✅ RESOLVED (2026-09-21)
+
+**Resolution:** Added a `ShortlistRepository.release_claim(batch_id)` compensating action (in-memory + Supabase adapters) and wrapped `IssueRepository.publish` in `send_digest` with a `try/except` that releases the claim and re-raises on any publish failure. A failed publish now returns the batch to the unsent pool so a retry can succeed instead of wedging it as claimed-but-unpublished. Covered by `test_send_publish_failure_releases_claim_for_retry` (use case) and `test_release_claim_clears_sent_at_for_retry` / `test_release_claim_maps_sdk_failure_to_persistence_error` (adapter contract). The fully-atomic single-transaction path (migration 005 `claim_and_publish_digest` RPC) remains the recommended follow-up — tracked under WR-01.
+
+
 
 **File:** `backend/src/backend/application/use_cases/send_digest.py:79-102`
 **Also:** `supabase-integration/src/supabase_integration/shortlist_repository.py:122-151`, `supabase-integration/src/supabase_integration/issue_repository.py:174-234`, `supabase-integration/migrations/005_phase5_admin_shortlist.sql:21-96`
@@ -119,7 +134,11 @@ self._client.table("digest_shortlist_batches").update({
 
 Or route send through `claim_and_publish_digest` which already stamps these fields.
 
-### WR-02: `honest_factor_labels` treats empty `factors: []` as authoritative — demo seed shows «обоснование недоступно»
+### WR-02: `honest_factor_labels` treats empty `factors: []` as authoritative — demo seed shows «обоснование недоступно»  — ✅ RESOLVED (2026-09-21)
+
+**Resolution:** `honest_factor_labels` now takes the structured-list branch only when `factors` is a **non-empty** list (`isinstance(factors, list) and factors`); an empty `factors: []` falls through to the flat-key branch. The `rag-systems` demo row now surfaces its two flat labels. Covered by `test_honest_factor_labels_falls_back_to_flat_keys_when_factors_list_empty`. The demo seed JSON was left unchanged (behavioral fix is source of truth).
+
+
 
 **File:** `backend/src/backend/domain/shortlist.py:18-34`
 **Also:** `supabase-integration/migrations/005_phase5_admin_shortlist.sql:160-166`
@@ -211,6 +230,23 @@ if (failed.length) setToast(`Не сохранено: ${failed.length}`)
 **Issue:** SPA `applyBatch` reads `dto.sent_at` / `dto.week_label`, but live GET never returns them (`AdminShortlist` has only `batch_id` + `items`). Live week dek never shows; `sent_at` gate relies on client state / empty next batch after claim. Harmless with current empty-after-send behavior; contract mismatch with mocks.
 
 **Fix:** Extend DTO/response with `sent_at` / `week_label` from `ShortlistBatch`, or stop reading them in the SPA for live mode.
+
+---
+
+## Fix-session triage (2026-09-21) — remaining warnings
+
+Reviewed each open warning for validity, severity, and fix risk. Verdicts:
+
+| ID | Verdict | Recommended action | Risk / why deferred |
+|----|---------|--------------------|---------------------|
+| **WR-01** | **Valid** — delivery columns (`delivery_status`, `recipient_count`, `published_issue_id`, `issue_url`) stay NULL on the live Python path after a successful send. | Route send through the `claim_and_publish_digest` RPC (also closes CR-01 atomicity fully), **or** add a post-publish `update(...)` on the batch. Prefer the RPC. | Needs a new port method (e.g. `publish_digest`) or an extra adapter write + a Supabase-contract test that asserts the columns are stamped. Larger than a use-case-local change; not blindly auto-applied. Recommend doing next. |
+| **WR-03** | **Valid** — in-memory `get_current_batch` ignores `sent_at`, drifting from the live `sent_at IS NULL` contract. | Return `None` when `_batch.sent_at is not None`. | ⚠️ Conflicts with 3 existing `send_digest` tests that assert `get_current_batch().sent_at == now` post-send. Fixing correctly also means giving those tests a sent-batch accessor. Small but touches test expectations — recommend a dedicated pass so the intent stays clear. |
+| **WR-04** | **Valid (defense-in-depth)** — SPA renders `result.issue_url` as a Router `to` without same-origin sanitization; backend value is currently safe (`/issues/{n}`). | Pass `issue_url` through `sanitizeReturnUrl` / gate on `/^\/issues\/\d+$/` before `<Link>`. | Frontend change → requires a Playwright/unit test per repo TDD. Deferred to a UI-scoped fix session. |
+| **WR-05** | **Valid** — batch Approve/Reject stops mid-loop; partial persist with a generic toast. | Collect failed IDs, continue, and report which IDs failed (or add a bulk endpoint). | Frontend + UX decision (all-or-nothing vs best-effort). Needs Playwright coverage. Deferred to UI session. |
+| IN-01 / IN-02 | Info only | As noted in each finding. | Non-blocking. |
+
+**Applied this session:** CR-01 (compensation), WR-02 (honesty fallback) — both TDD, full suite green (229 passed).
+**Recommended next:** WR-01 (RPC) → then WR-03; WR-04/WR-05 in a UI-scoped session.
 
 ---
 

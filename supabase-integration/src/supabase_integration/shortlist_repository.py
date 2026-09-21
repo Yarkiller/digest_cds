@@ -150,6 +150,26 @@ class SupabaseShortlistRepository:
 
         return self._batch_with_items(rows[0])
 
+    def release_claim(self, *, batch_id: int) -> None:
+        """Clear sent_at after a failed publish (CR-01 compensation).
+
+        Called by send_digest when IssueRepository.publish fails after a claim, so the
+        batch returns to the unsent pool and a retry can succeed instead of being wedged
+        as claimed-but-unpublished. Best-effort single UPDATE; SDK errors map to
+        PersistenceError at the boundary.
+        """
+        try:
+            (
+                self._client.table("digest_shortlist_batches")
+                .update({"sent_at": None})
+                .eq("id", batch_id)
+                .execute()
+            )
+        except PersistenceError:
+            raise
+        except Exception as exc:  # noqa: BLE001 — map SDK failures at boundary
+            raise PersistenceError(f"shortlist release_claim failed: {exc}") from exc
+
     def _batch_with_items(self, row: dict[str, Any]) -> ShortlistBatch:
         batch_id = int(row["id"])
         try:

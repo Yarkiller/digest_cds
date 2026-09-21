@@ -11,6 +11,7 @@ from backend.domain.errors import (
     AlreadySentError,
     DraftInSendPoolError,
     EmptySendPoolError,
+    PersistenceError,
 )
 from backend.domain.shortlist import ShortlistBatch, ShortlistItem
 from backend.infrastructure.stub_mailer import StubMailer
@@ -179,6 +180,41 @@ def test_send_already_sent_raises_and_does_not_republish() -> None:
     assert issues.get_latest_published() is None
     assert mailer.last_body_text is None
     assert shortlist.get_current_batch().sent_at == sent_at
+
+
+class _FailingIssueRepository(InMemoryIssueRepository):
+    """IssueRepository whose publish always fails (CR-01 atomicity probe)."""
+
+    def publish(self, *args, **kwargs):  # type: ignore[override]
+        raise PersistenceError("digest_issues publish failed (simulated)")
+
+
+def test_send_publish_failure_releases_claim_for_retry() -> None:
+    """CR-01: a publish failure after claim must un-claim the batch so a retry can succeed."""
+    shortlist = InMemoryShortlistRepository(batch=_batch(_item(material_id=101)))
+    issues = _FailingIssueRepository()
+    mailer = StubMailer()
+    pings = InMemoryPingRecorder()
+
+    with pytest.raises(PersistenceError):
+        send_digest(
+            shortlist,
+            issues,
+            mailer,
+            pings,
+            actor_user_id="admin-uuid-1",
+            now=datetime(2026, 9, 21, 15, 0, tzinfo=timezone.utc),
+        )
+
+    # Claim must be rolled back — otherwise the batch is permanently stuck as "sent"
+    # with no published issue and no recoverable retry (CR-01).
+    batch = shortlist.get_current_batch()
+    assert batch is not None
+    assert batch.sent_at is None
+    # No side effects leaked from the failed send.
+    assert issues.get_latest_published() is None
+    assert mailer.last_body_text is None
+    assert pings.entries == []
 
 
 def test_send_repeat_after_success_is_idempotent_409_path() -> None:

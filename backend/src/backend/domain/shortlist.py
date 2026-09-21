@@ -16,7 +16,10 @@ def honest_factor_labels(score_factors: Mapping[str, Any] | None) -> list[str]:
     if not score_factors:
         return []
     factors = score_factors.get("factors")
-    if isinstance(factors, list):
+    # WR-02: only treat the structured ``factors`` list as authoritative when it is
+    # non-empty. An empty ``factors: []`` alongside flat human keys must fall through
+    # to the flat-key branch, not shadow it with «обоснование недоступно».
+    if isinstance(factors, list) and factors:
         labels = [
             str(f.get("label", "")).strip()
             for f in factors
