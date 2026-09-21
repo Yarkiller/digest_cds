@@ -181,6 +181,45 @@ Record the apply method in the operator resume signal (or append a one-line note
 
 ---
 
+## 4d. Phase 4 knowledge chunks + razbory seed (KNOW-01…03, RAZB-01…04)
+
+Checked-in idempotent SQL: `supabase-integration/migrations/004_phase4_knowledge_razbory.sql`.
+
+Creates / upserts (apply **after** Phase 2 materials + Phase 3 topics):
+
+- `search_knowledge_chunks(...)` RPC — hybrid vector (`<=>`) + FTS (`ts_rank_cd`), ready-only, optional `role_filter`, material dedupe; **SECURITY INVOKER**; execute granted to `service_role` only
+- ≥4 `knowledge_chunks` rows (1024-d embeddings via deterministic `StubQueryEmbedder` algorithm) spanning **ds** (`pgvector`, `rag-systems`) and **analyst** (`anomaly-detection`, `sql-dashboards`) ready materials
+- ≥1 **published** multi-section razbor with metrics table + `notebook_path = hybrid-retrieval.ipynb` (relative to `NOTEBOOK_ROOT`)
+- ≥1 **announcement** stub (empty body)
+- ≥1 **published overview** razbor without a metrics/quality table
+
+**Apply once on the shared VM** (`knowledge-db.ru`) **after** Phase 2–3 seeds (ready materials + topics must exist):
+
+1. Prefer non-interactive CLI when `SUPABASE_ACCESS_TOKEN` is set: `supabase db push` (or Cloud.ru-documented remote equivalent) from repo root.
+2. If CLI cannot reach the shared VM: apply the SQL file once via Supabase MCP / Studio SQL / `psql` — **insert/upsert + CREATE OR REPLACE function only**; do not reset DB.
+3. Re-running the file is safe (`ON CONFLICT` on `(material_id, chunk_index)`; razbor inserts use `WHERE NOT EXISTS` on `(topic_id, title)`).
+
+**Notebook file on the API host:** copy `design-frontend/assets/notebooks/hybrid-retrieval.ipynb` into the directory pointed to by `NOTEBOOK_ROOT` (env for live FastAPI). Seeded `notebook_path` is the basename `hybrid-retrieval.ipynb` — resolved under that root by `LocalNotebookStorage`.
+
+**Do not** `TRUNCATE` / `DELETE` wipe / `db reset` on the shared VM. Never expose `SUPABASE_SECRET_KEY` via `VITE_`. Live search must use this RPC/SQL path — not `list_all` + Python cosine.
+
+**Verify after apply:**
+
+```sql
+select count(*) from knowledge_chunks;  -- expect >= 1 (seed targets >= 4)
+select count(*) from razbors where status = 'published';  -- expect >= 2
+select count(*) from razbors where status = 'announcement';  -- expect >= 1
+select proname from pg_proc where proname = 'search_knowledge_chunks';  -- expect 1
+```
+
+Also confirm the notebook file exists at `$NOTEBOOK_ROOT/hybrid-retrieval.ipynb` on the API host.
+
+Record the apply method in the operator resume signal (or append a one-line note below when confirmed).
+
+**Applied:** _(pending — blocking human checkpoint 04-08)_
+
+---
+
 ## 5. Live FE↔BE proof checklist (D-10)
 
 With API on `:8000`, Vite on `:5173`, `APP_CONTAINER=live`, and `VITE_USE_MOCKS=false`:
