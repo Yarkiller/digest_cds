@@ -2,17 +2,17 @@
 gsd_state_version: 1.0
 current_phase: 05
 current_phase_name: Admin Digest Publish
-status: executing
-stopped_at: Completed 05-05-PLAN.md
-last_updated: "2026-09-21T15:37:42.459Z"
+status: verifying
+stopped_at: Completed 05-06-PLAN.md
+last_updated: "2026-09-21T15:49:15.120Z"
 last_activity: 2026-09-21
 last_activity_desc: Phase 05 execution started
-state_head: 93447bc114c9d1b0d0d0474f89f7cbbb17f71a6d
+state_head: 21f778bd6a2c844252311723f0b552df469f599d
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 37
-  completed_plans: 35
+  completed_plans: 36
   percent: 80
 ---
 
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-09-20)
 
 Phase: 05 (Admin Digest Publish) — EXECUTING
 Plan: 6 of 6
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-09-21 — Phase 05 execution started
 
 Progress: [███████████████████░] 30/31 plans ([████████░░] 80%)
@@ -89,6 +89,7 @@ Progress: [███████████████████░] 30/31 p
 | Phase 05 P03 | 18min | 3 tasks | 16 files |
 | Phase 05-admin-digest-publish P04 | 15min | 3 tasks | 10 files |
 | Phase 05-admin-digest-publish P05 | continuation-closeout | 3 tasks | 9 files |
+| Phase 05-admin-digest-publish P06 | 12min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -179,6 +180,8 @@ Decisions are logged in PROJECT.md Key Decisions and `<decisions>` blocks.
 - [Phase 05]: Playwright resets adminApi harness between /admin navigations to clear Vite singleton mock state
 - [Phase 05]: Blocking apply: operator confirmed 005 applied on shared VM (method not specified)
 - [Phase 05]: Prefer claim_and_publish_digest RPC for atomic claim+publish; StubMailer stays on live (D-87)
+- [Phase 05]: D-90 SPA: surface sendDigest.issue_url as К выпуску CTA after Отправка записана
+- [Phase 05]: ADMIN-08 e2e via auth.spec returnUrl=/issues/{n}; open-redirect // rejected
 
 ### Pending Todos
 
@@ -201,7 +204,7 @@ None. Live FE↔BE proof approved 2026-09-19.
 
 ## Session Continuity
 
-Last session: 2026-09-21T15:37:41.804Z
-Stopped at: Completed 05-05-PLAN.md
+Last session: 2026-09-21T15:49:14.438Z
+Stopped at: Completed 05-06-PLAN.md
 Resume file: None
 Verification: `.planning/phases/01-platform-foundation-auth/01-VERIFICATION.md`

@@ -167,7 +167,7 @@ Plans:
   4. Successful send updates archive and success UI without uncontrolled duplicates; failure leaves selection and not-sent state
   5. Digest email link reaches issue after login via returnUrl when needed
 
-**Plans**: 5/6 plans executed
+**Plans**: 6/6 plans executed
 **UI hint**: yes
 
 Plans:
@@ -191,7 +191,7 @@ Plans:
 
 **Wave 5** *(blocked on Wave 4)*
 
-- [ ] 05-06-PLAN.md — Playwright honesty gate + VALIDATION refresh (ADMIN-01/04/06/07/08, AUTH-03 UI)
+- [x] 05-06-PLAN.md — Playwright honesty gate + VALIDATION refresh (ADMIN-01/04/06/07/08, AUTH-03 UI)
 
 ## Progress
 
@@ -204,4 +204,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 2. Issue, Materials & Archive | 6/6 | Complete    | 2026-09-20 |
 | 3. Voting Cycle | 6/6 | Complete    | 2026-09-20 |
 | 4. Knowledge & Razbory | 10/10 | Complete    | 2026-09-21 |
-| 5. Admin Digest Publish | 5/6 | In Progress|  |
+| 5. Admin Digest Publish | 6/6 | In Progress|  |
