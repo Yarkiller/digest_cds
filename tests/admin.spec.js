@@ -293,6 +293,58 @@ test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07
     await emailDialog.getByRole("button", { name: "Закрыть", exact: true }).click();
   });
 
+  test("G-05-1: intro + interstitial in Превью письма; send records Отправка записана", async ({
+    page,
+  }) => {
+    const introPhrase = `Привет! G05-1-${Date.now()}`;
+    const bridge = `Связка между статьями G05-1-${Date.now()}`;
+    await gotoAsRole(page, "admin", "/admin/digest");
+    await page.getByLabel(/вводный текст/i).fill(introPhrase);
+    await approveReadyRows(page, [0, 1]);
+
+    const blocks = page.getByTestId("admin-issue-blocks");
+    const materialBlocks = blocks.getByTestId("admin-issue-block-material");
+    await expect(materialBlocks).toHaveCount(2);
+    await materialBlocks.nth(1).getByRole("button", { name: /выше|вверх|переместить вверх/i }).click();
+
+    await page.getByRole("button", { name: /добавить текст/i }).click();
+    const textBlocks = blocks.getByTestId("admin-issue-block-text");
+    await textBlocks.first().getByRole("textbox").fill(bridge);
+    const textUp = textBlocks.first().getByRole("button", {
+      name: /выше|вверх|переместить вверх/i,
+    });
+    if (await textUp.isEnabled()) {
+      await textUp.click();
+    }
+
+    await page.getByRole("button", { name: /предпросмотр письма/i }).click();
+    const emailDialog = page.getByRole("dialog").filter({
+      has: page.getByRole("heading", { name: "Превью письма", exact: true }),
+    });
+    const body = emailDialog.getByTestId("email-preview-body");
+    await expect(body).toContainText(introPhrase);
+    await expect(body).toContainText(bridge);
+    const bodyText = await body.innerText();
+    const introAt = bodyText.indexOf(introPhrase);
+    const anomalyAt = bodyText.indexOf("Anomaly Detection");
+    const bridgeAt = bodyText.indexOf(bridge);
+    const ragAt = bodyText.indexOf("Building Production");
+    expect(introAt).toBeGreaterThanOrEqual(0);
+    expect(anomalyAt).toBeGreaterThan(introAt);
+    expect(bridgeAt).toBeGreaterThan(anomalyAt);
+    expect(ragAt).toBeGreaterThan(bridgeAt);
+    await emailDialog.getByRole("button", { name: "Закрыть", exact: true }).click();
+
+    const sendBtn = page.getByRole("button", { name: /отправить дайджест/i });
+    await expect(sendBtn).toBeEnabled();
+    await sendBtn.click();
+    await page.getByRole("button", { name: /подтвердить отправку/i }).click();
+    await expect(page.getByText("Отправка записана", { exact: true })).toBeVisible();
+    const issueLink = page.getByRole("link", { name: /к выпуску/i });
+    await expect(issueLink).toBeVisible();
+    await expect(issueLink).toHaveAttribute("href", "/issues/15");
+  });
+
   test("превью unlocks send; confirm records Отправка записана + issue link (D-90)", async ({
     page,
   }) => {
