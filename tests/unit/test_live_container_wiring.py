@@ -62,6 +62,20 @@ def test_build_live_container_wires_supabase_adapters(monkeypatch: pytest.Monkey
     assert not isinstance(container.votes, InMemoryVoteRepository)
     assert not isinstance(container.materials, InMemoryMaterialRepository)
     assert not isinstance(container.issues, InMemoryIssueRepository)
+
+    from backend.tests_support.in_memory import (
+        InMemoryKnowledgeChunkRepository,
+        InMemoryRazborRepository,
+    )
+    from supabase_integration import (
+        SupabaseKnowledgeChunkRepository,
+        SupabaseRazborRepository,
+    )
+
+    assert isinstance(container.chunks, SupabaseKnowledgeChunkRepository)
+    assert isinstance(container.razbors, SupabaseRazborRepository)
+    assert not isinstance(container.chunks, InMemoryKnowledgeChunkRepository)
+    assert not isinstance(container.razbors, InMemoryRazborRepository)
     create_service.assert_called_once_with(
         "https://example.test",
         "secret-key",
