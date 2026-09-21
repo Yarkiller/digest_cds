@@ -4,7 +4,7 @@ from backend.application.ports.knowledge_chunk_repository import KnowledgeChunkR
 from backend.domain.errors import KnowledgeQueryValidationError
 from backend.domain.knowledge import KnowledgeHit
 
-MAX_QUERY_CODE_POINTS = 500
+MAX_QUERY_CODE_POINTS = 500  # Unicode code points; HTTP 400 query_too_long when exceeded
 DEFAULT_SEARCH_LIMIT = 10
 
 
