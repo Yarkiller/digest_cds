@@ -1,4 +1,4 @@
-"""Authenticated GET /admin/shortlist — AUTH-03 / ADMIN-01/05, D-74, D-77…D-81."""
+"""Authenticated /admin shortlist — AUTH-03 / ADMIN-01…03/05, D-74, D-77…D-85."""
 
 from __future__ import annotations
 
@@ -229,6 +229,178 @@ def test_admin_shortlist_persistence_error_returns_503() -> None:
     response = client.get(
         "/admin/shortlist",
         headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 503
+    assert response.json()["detail"] == "shortlist_unavailable"
+
+
+def _decision_url(material_id: int) -> str:
+    return f"/admin/shortlist/items/{material_id}/decision"
+
+
+def test_admin_decision_employee_returns_403() -> None:
+    """D-77: non-admin cannot PATCH/POST decision — HTTP 403."""
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    container = build_in_memory_container()
+    container.shortlist = InMemoryShortlistRepository(batch=_seeded_shortlist())
+    _seed_profile(
+        container,
+        user_id="user-uuid-1",
+        email="alice@sberbank.ru",
+        role="employee",
+    )
+    client = _client(jwk, container)
+    token = _mint(private_key, email="alice@sberbank.ru")
+
+    response = client.post(
+        _decision_url(101),
+        headers={"Authorization": f"Bearer {token}"},
+        json={"decision": "approved"},
+    )
+
+    assert response.status_code == 403
+    assert response.json()["detail"] == "forbidden"
+
+
+def test_admin_decision_approve_returns_updated_shortlist_with_status() -> None:
+    """ADMIN-02 / ADMIN-03 / D-85: admin approve → 200 snapshot; draft|ready on items."""
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    container = build_in_memory_container()
+    container.shortlist = InMemoryShortlistRepository(batch=_seeded_shortlist())
+    _seed_profile(
+        container,
+        user_id="admin-uuid-1",
+        email="admin@sberbank.ru",
+        role="admin",
+    )
+    client = _client(jwk, container)
+    token = _mint(private_key, email="admin@sberbank.ru", sub="admin-uuid-1")
+    headers = {"Authorization": f"Bearer {token}"}
+
+    response = client.post(
+        _decision_url(102),
+        headers=headers,
+        json={"decision": "approved"},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["batch_id"] == 42
+    draft = next(i for i in body["items"] if i["material_id"] == 102)
+    assert draft["decision"] == "approved"
+    assert draft["material_status"] == "draft"
+    ready = next(i for i in body["items"] if i["material_id"] == 101)
+    assert ready["material_status"] == "ready"
+
+    get_body = client.get("/admin/shortlist", headers=headers).json()
+    assert next(i for i in get_body["items"] if i["material_id"] == 102)["decision"] == "approved"
+
+
+def test_admin_decision_reject_persists_on_get() -> None:
+    """ADMIN-02 / D-82: reject persists and is reflected on subsequent GET."""
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    container = build_in_memory_container()
+    container.shortlist = InMemoryShortlistRepository(batch=_seeded_shortlist())
+    _seed_profile(
+        container,
+        user_id="admin-uuid-1",
+        email="admin@sberbank.ru",
+        role="admin",
+    )
+    client = _client(jwk, container)
+    token = _mint(private_key, email="admin@sberbank.ru", sub="admin-uuid-1")
+    headers = {"Authorization": f"Bearer {token}"}
+
+    response = client.post(
+        _decision_url(101),
+        headers=headers,
+        json={"decision": "rejected"},
+    )
+
+    assert response.status_code == 200
+    assert next(i for i in response.json()["items"] if i["material_id"] == 101)["decision"] == (
+        "rejected"
+    )
+    get_body = client.get("/admin/shortlist", headers=headers).json()
+    assert next(i for i in get_body["items"] if i["material_id"] == 101)["decision"] == "rejected"
+
+
+def test_admin_decision_invalid_body_returns_400() -> None:
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    container = build_in_memory_container()
+    container.shortlist = InMemoryShortlistRepository(batch=_seeded_shortlist())
+    _seed_profile(
+        container,
+        user_id="admin-uuid-1",
+        email="admin@sberbank.ru",
+        role="admin",
+    )
+    client = _client(jwk, container)
+    token = _mint(private_key, email="admin@sberbank.ru", sub="admin-uuid-1")
+
+    response = client.post(
+        _decision_url(101),
+        headers={"Authorization": f"Bearer {token}"},
+        json={"decision": "include"},
+    )
+
+    assert response.status_code == 400
+
+
+def test_admin_decision_unknown_material_returns_404() -> None:
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    container = build_in_memory_container()
+    container.shortlist = InMemoryShortlistRepository(batch=_seeded_shortlist())
+    _seed_profile(
+        container,
+        user_id="admin-uuid-1",
+        email="admin@sberbank.ru",
+        role="admin",
+    )
+    client = _client(jwk, container)
+    token = _mint(private_key, email="admin@sberbank.ru", sub="admin-uuid-1")
+
+    response = client.post(
+        _decision_url(999),
+        headers={"Authorization": f"Bearer {token}"},
+        json={"decision": "approved"},
+    )
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "shortlist_item_not_found"
+
+
+def test_admin_decision_persistence_error_returns_503() -> None:
+    class _FailingShortlist:
+        def get_current_batch(self):
+            raise PersistenceError("db down")
+
+        def set_decision(self, **_kwargs):
+            raise PersistenceError("db down")
+
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    container = build_in_memory_container()
+    container.shortlist = _FailingShortlist()  # type: ignore[assignment]
+    _seed_profile(
+        container,
+        user_id="admin-uuid-1",
+        email="admin@sberbank.ru",
+        role="admin",
+    )
+    client = _client(jwk, container)
+    token = _mint(private_key, email="admin@sberbank.ru", sub="admin-uuid-1")
+
+    response = client.post(
+        _decision_url(101),
+        headers={"Authorization": f"Bearer {token}"},
+        json={"decision": "approved"},
     )
 
     assert response.status_code == 503
