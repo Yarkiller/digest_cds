@@ -470,6 +470,74 @@ def test_admin_preview_returns_approved_ready_only_without_sent_at() -> None:
     assert container.shortlist.get_current_batch().sent_at is None
 
 
+def test_admin_preview_accepts_intro_and_ordered_blocks() -> None:
+    """G-05-1: POST {intro, blocks} composes body; never sets sent_at."""
+    batch = ShortlistBatch(
+        id=42,
+        week_start=date(2026, 9, 15),
+        sent_at=None,
+        items=(
+            ShortlistItem(
+                material_id=101,
+                rank=1,
+                title="Title A",
+                material_status="ready",
+                decision="approved",
+                score=0.9,
+                score_factors={"factors": [{"label": "A"}, {"label": "B"}]},
+            ),
+            ShortlistItem(
+                material_id=103,
+                rank=2,
+                title="Title B",
+                material_status="ready",
+                decision="approved",
+                score=0.8,
+                score_factors={"factors": [{"label": "A"}, {"label": "B"}]},
+            ),
+        ),
+    )
+    client, headers, container = _admin_client_with_batch(batch)
+
+    response = client.post(
+        "/admin/shortlist/preview",
+        headers=headers,
+        json={
+            "intro": "Добрый день коллеги!",
+            "blocks": [
+                {"kind": "material", "material_id": 101},
+                {"kind": "text", "text": "связка"},
+                {"kind": "material", "material_id": 103},
+            ],
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert "Добрый день коллеги!" in body["body"]
+    assert body["body"].index("Title A") < body["body"].index("связка") < body["body"].index(
+        "Title B"
+    )
+    assert [item["material_id"] for item in body["items"]] == [101, 103]
+    assert container.shortlist.get_current_batch().sent_at is None
+
+
+def test_admin_preview_invalid_composition_returns_400() -> None:
+    client, headers, _container = _admin_client_with_batch(_ready_approved_batch())
+
+    response = client.post(
+        "/admin/shortlist/preview",
+        headers=headers,
+        json={
+            "intro": "",
+            "blocks": [{"kind": "material", "material_id": 999}],
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "invalid_preview_composition"
+
+
 def test_admin_preview_employee_returns_403() -> None:
     private_key = ec.generate_private_key(ec.SECP256R1())
     jwk = _public_jwk(private_key)
