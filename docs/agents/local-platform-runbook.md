@@ -216,7 +216,7 @@ Also confirm the notebook file exists at `$NOTEBOOK_ROOT/hybrid-retrieval.ipynb`
 
 Record the apply method in the operator resume signal (or append a one-line note below when confirmed).
 
-**Applied:** _(pending — blocking human checkpoint 04-08)_
+**Applied:** 2026-09-21 — operator confirmed: SQL for `004_phase4_knowledge_razbory.sql` applied on shared VM (checkpoint steps 1, 2, 4); notebook copied to `NOTEBOOK_ROOT` (`hybrid-retrieval.ipynb` present); `NOTEBOOK_ROOT` set in `.env` for local API. Operator confirmed verify queries; exact row counts not logged in the resume signal.
 
 ---
 
