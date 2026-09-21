@@ -92,6 +92,7 @@ def _seeded_container(materials: list[Material], chunks_by_material: dict[int, l
     for material_id, chunk_list in chunks_by_material.items():
         chunks.replace_for_material(material_id, chunk_list)
     from backend.infrastructure.local_notebook_storage import LocalNotebookStorage
+    from backend.infrastructure.stub_mailer import StubMailer
 
     return AppContainer(
         materials=materials_repo,
@@ -105,6 +106,7 @@ def _seeded_container(materials: list[Material], chunks_by_material: dict[int, l
         razbors=InMemoryRazborRepository(),
         notebook_storage=LocalNotebookStorage("."),
         shortlist=InMemoryShortlistRepository(),
+        mailer=StubMailer(),
     )
 
 

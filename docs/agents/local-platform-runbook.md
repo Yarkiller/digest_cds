@@ -269,6 +269,14 @@ Record the apply method in the operator resume signal (or append a one-line note
 
 **Applied:** 2026-09-21 — operator confirmed applied for `005_phase5_admin_shortlist.sql` on shared VM (method not specified).
 
+**CI / Playwright honesty gate (ADMIN-01…08, D-77, D-90):** with default `VITE_USE_MOCKS=true`, run:
+
+```bash
+npx playwright test tests/admin.spec.js --reporter=line
+```
+
+Covers employee 403 deep-link, empty shortlist, select-all/top-3, preview fail/success gate, draft-in-pool block, stub send «Отправка записана» + `/issues/{n}` CTA, already-sent lock. ADMIN-08 returnUrl path: `tests/auth.spec.js` (`returnUrl=/issues/13` + open-redirect rejection). Live SMTP remains out of scope — stub honesty only (§4e above).
+
 ---
 
 ## 5. Live FE↔BE proof checklist (D-10)
