@@ -13,6 +13,7 @@ import {
   sendDigest,
   setDecision,
 } from '../services/adminApi.js'
+import { buildDefaultMaterialBlocks } from '../services/adminPreviewComposition.js'
 
 const TOAST_DISMISS_MS = 4000
 const TOP_N = 3
@@ -221,7 +222,8 @@ export default function AdminDigestPage() {
     setEmailModal('loading')
     setBanner('')
     try {
-      const preview = await previewEmail()
+      const blocks = buildDefaultMaterialBlocks(approvedReady)
+      const preview = await previewEmail(undefined, { intro: contextText, blocks })
       const fp = approvedFingerprint(items)
       setEmailPreviewed(true)
       setPreviewFingerprint(fp)
@@ -578,6 +580,14 @@ export default function AdminDigestPage() {
                 <p className="mt-3 font-display text-xl font-semibold break-words">
                   {emailModal.preview.subject}
                 </p>
+                {emailModal.preview.body ? (
+                  <p
+                    data-testid="email-preview-body"
+                    className="mt-3 whitespace-pre-wrap break-words text-sm text-ink-2"
+                  >
+                    {emailModal.preview.body}
+                  </p>
+                ) : null}
                 <ul className="mt-4 space-y-2">
                   {emailModal.preview.items.map((row) => (
                     <li key={row.material_id} className="text-sm break-words">

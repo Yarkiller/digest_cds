@@ -6,6 +6,13 @@
 import { delay } from '../utils/delay.js'
 import { getAccessToken } from './authApi.js'
 import { isMocksEnabled } from './authEnv.js'
+import {
+  buildDefaultMaterialBlocks,
+  composePreviewBody,
+  composePreviewItems,
+} from './adminPreviewComposition.js'
+
+export { buildDefaultMaterialBlocks, composePreviewBody, composePreviewItems }
 
 export class AdminApiError extends Error {
   constructor(message, { code = 'ADMIN_FAILED', retryable = true, detail = null } = {}) {
@@ -306,9 +313,16 @@ export async function setDecision(materialId, decision, accessToken) {
 }
 
 /**
+ * @typedef {{ intro?: string, blocks?: Array<{ kind: 'material', material_id: number } | { kind: 'text', text: string }> }} DigestPreviewComposition
+ *
+ * @param {string} [accessToken]
+ * @param {DigestPreviewComposition} [composition]
  * @returns {Promise<{ batch_id: number, subject: string, body: string, items: Array<{ material_id: number, rank: number, title: string }> }>}
  */
-export async function previewEmail(accessToken) {
+export async function previewEmail(accessToken, composition = {}) {
+  const intro = typeof composition?.intro === 'string' ? composition.intro : ''
+  const requestedBlocks = Array.isArray(composition?.blocks) ? composition.blocks : null
+
   if (useMocks()) {
     await delay(80)
     if (failNextPreview || stickyFlag('__DIGEST_ADMIN_FAIL_PREVIEW__')) {
@@ -324,17 +338,43 @@ export async function previewEmail(accessToken) {
         retryable: false,
       })
     }
+    const byId = new Map(pool.map((item) => [item.material_id, item]))
+    const blocks =
+      requestedBlocks && requestedBlocks.length > 0
+        ? requestedBlocks
+        : buildDefaultMaterialBlocks(pool)
+    for (const block of blocks) {
+      if (block?.kind === 'material' && !byId.has(block.material_id)) {
+        throw new AdminApiError('Некорректная композиция превью.', {
+          code: 'BAD_REQUEST',
+          retryable: false,
+        })
+      }
+    }
+    const titleById = new Map(pool.map((item) => [item.material_id, item.title]))
+    const items = composePreviewItems(blocks, byId)
+    if (items.length === 0) {
+      throw new AdminApiError('Нет одобренных ready-материалов для отправки.', {
+        code: 'EMPTY_SEND_POOL',
+        retryable: false,
+      })
+    }
     return {
       batch_id: mockBatch.batch_id ?? 1,
       subject: `Digest CDS · ${mockBatch.week_label ?? 'неделя'}`,
-      body: pool.map((item) => `• ${item.title}`).join('\n'),
-      items: pool.map(({ material_id, rank, title }) => ({ material_id, rank, title })),
+      body: composePreviewBody({ intro, blocks, titleById }),
+      items,
     }
   }
 
   const token = accessToken ?? (await getAccessToken())
   if (!token) {
     throw new AdminApiError('Требуется вход.', { code: 'UNAUTHORIZED', retryable: false })
+  }
+
+  const payload = {
+    intro,
+    ...(requestedBlocks != null ? { blocks: requestedBlocks } : {}),
   }
 
   let response
@@ -345,7 +385,7 @@ export async function previewEmail(accessToken) {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
-      body: '{}',
+      body: JSON.stringify(payload),
     })
   } catch {
     throw new AdminApiError('Превью недоступно', { code: 'NETWORK', retryable: true })
