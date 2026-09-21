@@ -93,7 +93,7 @@ class InMemoryProfileRepository:
         user = CurrentUser(
             id=user_id,
             email=email,
-            role="authenticated",
+            role="employee",
             display_name=display_name,
         )
         self._by_id[user_id] = user

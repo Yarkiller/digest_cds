@@ -1,16 +1,17 @@
 """Authenticated identity endpoints.
 
-Admin-route 403 (AUTH-03 full admin API gate) is deferred to Phase 5.
-This module exposes GET /me and POST /me/ping for Phase 1 JWT + ping proof.
+GET /me returns profiles.app_role (employee|analyst|ds|admin), default employee (D-76).
+Admin HTTP authorization lives on /admin via require_admin — never from JWT role claim.
 """
 
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from backend.application.use_cases.get_current_user import get_current_user
 from backend.application.use_cases.record_platform_ping import record_platform_ping
+from backend.application.use_cases.update_display_name import update_display_name
 from backend.domain.auth_claims import AccessTokenClaims
 from backend.interface.http.deps import get_principal
 
@@ -23,6 +24,13 @@ class CurrentUserResponse(BaseModel):
     id: str
     email: str
     role: str
+    display_name: str | None = None
+
+
+class UpdateMeRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    display_name: str = Field(min_length=1, max_length=120)
 
 
 class PingResponse(BaseModel):
@@ -32,13 +40,23 @@ class PingResponse(BaseModel):
     id: str
 
 
+def _to_response(user) -> CurrentUserResponse:
+    return CurrentUserResponse(
+        id=user.id,
+        email=user.email,
+        role=user.role,
+        display_name=user.display_name,
+    )
+
+
 @router.get(
     "/me",
     response_model=CurrentUserResponse,
     summary="Current authenticated user",
     description=(
         "Returns the CurrentUser DTO for a valid ES256 Bearer token with an allowed "
-        "corporate email. Admin-route 403 enforcement is Phase 5 (AUTH-03 partial)."
+        "corporate email. role is profiles.app_role (D-76); admin APIs gate via "
+        "require_admin on /admin."
     ),
 )
 def read_me(
@@ -52,7 +70,33 @@ def read_me(
             detail="profiles_not_configured",
         )
     user = get_current_user(container.profiles, claims)
-    return CurrentUserResponse(id=user.id, email=user.email, role=user.role)
+    return _to_response(user)
+
+
+@router.patch(
+    "/me",
+    response_model=CurrentUserResponse,
+    summary="Update current user display name",
+    description="Persists profiles.display_name for the authenticated principal.",
+)
+def patch_me(
+    body: UpdateMeRequest,
+    request: Request,
+    claims: AccessTokenClaims = Depends(get_principal),
+) -> CurrentUserResponse:
+    container = request.app.state.container
+    if container is None or getattr(container, "profiles", None) is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="profiles_not_configured",
+        )
+    user = update_display_name(
+        container.profiles,
+        claims.sub,
+        claims.email,
+        body.display_name,
+    )
+    return _to_response(user)
 
 
 @router.post(

@@ -1,4 +1,5 @@
 import { getAccessToken, getSession } from './authApi.js'
+import { isMocksEnabled } from './authEnv.js'
 
 export class MeApiError extends Error {
   constructor(message, { code = 'ME_FAILED', retryable = true } = {}) {
@@ -11,16 +12,29 @@ export class MeApiError extends Error {
 
 let failNextFetch = false
 
+/** @type {string} app_role for mock /me — default employee (D-76); harness may set admin */
+let mockRole = 'employee'
+
 export function armFailNextMeFetch() {
   failNextFetch = true
 }
 
-export function resetMeHarness() {
-  failNextFetch = false
+/** @param {'employee' | 'analyst' | 'ds' | 'admin'} role */
+export function setMockMeRole(role) {
+  mockRole = role
 }
 
+export function resetMeHarness() {
+  failNextFetch = false
+  mockDisplayName = null
+  mockRole = 'employee'
+}
+
+/** @type {string | null} */
+let mockDisplayName = null
+
 function useMocks() {
-  return import.meta.env.VITE_USE_MOCKS !== 'false'
+  return isMocksEnabled()
 }
 
 function apiBase() {
@@ -28,8 +42,7 @@ function apiBase() {
 }
 
 /**
- * @param {string | null | undefined} accessToken
- * @returns {Promise<{ id: string, email: string, role: string }>}
+ * @returns {Promise<{ id: string, email: string, role: string, display_name: string | null }>}
  */
 export async function fetchMe(accessToken) {
   if (failNextFetch) {
@@ -45,7 +58,8 @@ export async function fetchMe(accessToken) {
     return {
       id: 'mock-user-id',
       email: session?.user?.email ?? 'analyst@sberbank.ru',
-      role: 'authenticated',
+      role: mockRole,
+      display_name: mockDisplayName,
     }
   }
 
@@ -74,6 +88,66 @@ export async function fetchMe(accessToken) {
   }
   if (!response.ok) {
     throw new MeApiError('Не удалось загрузить профиль. Проверьте сеть.', {
+      code: 'NETWORK',
+      retryable: true,
+    })
+  }
+  return response.json()
+}
+
+/**
+ * Persist display name on profiles (+ optional Auth metadata sync is caller's job).
+ * @param {string} displayName
+ * @param {string | null | undefined} accessToken
+ * @returns {Promise<{ id: string, email: string, role: string, display_name: string | null }>}
+ */
+export async function updateDisplayName(displayName, accessToken) {
+  const trimmed = displayName.trim()
+  if (!trimmed) {
+    throw new MeApiError('Укажите имя.', { code: 'VALIDATION', retryable: false })
+  }
+
+  if (useMocks()) {
+    mockDisplayName = trimmed
+    const session = await getSession()
+    return {
+      id: 'mock-user-id',
+      email: session?.user?.email ?? 'analyst@sberbank.ru',
+      role: mockRole,
+      display_name: mockDisplayName,
+    }
+  }
+
+  const token = accessToken ?? (await getAccessToken())
+  if (!token) {
+    throw new MeApiError('Требуется вход.', { code: 'UNAUTHORIZED', retryable: false })
+  }
+
+  let response
+  try {
+    response = await fetch(`${apiBase()}/me`, {
+      method: 'PATCH',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ display_name: trimmed }),
+    })
+  } catch {
+    throw new MeApiError('Не удалось сохранить имя. Проверьте сеть.', {
+      code: 'NETWORK',
+      retryable: true,
+    })
+  }
+
+  if (response.status === 401) {
+    throw new MeApiError('Сессия истекла. Войдите снова.', {
+      code: 'UNAUTHORIZED',
+      retryable: false,
+    })
+  }
+  if (!response.ok) {
+    throw new MeApiError('Не удалось сохранить имя. Проверьте сеть.', {
       code: 'NETWORK',
       retryable: true,
     })

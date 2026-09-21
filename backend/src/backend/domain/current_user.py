@@ -9,5 +9,5 @@ from dataclasses import dataclass
 class CurrentUser:
     id: str
     email: str
-    role: str = "authenticated"
+    role: str = "employee"
     display_name: str | None = None
