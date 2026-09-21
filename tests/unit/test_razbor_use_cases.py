@@ -74,6 +74,52 @@ def test_list_razbors_empty_returns_empty_list() -> None:
 
 
 def test_get_razbor_missing_raises_not_found() -> None:
-    """Stub path for 04-06: missing id → RazborNotFoundError."""
+    """RAZB-02: missing id → RazborNotFoundError (soft 404 upstream)."""
     with pytest.raises(RazborNotFoundError):
         get_razbor(InMemoryRazborRepository(), 99)
+
+
+def test_get_razbor_returns_published_with_body() -> None:
+    """RAZB-02: published detail exposes title, status, body_markdown, meeting_at."""
+    meeting = datetime(2026, 3, 17, tzinfo=timezone.utc)
+    body = "## Intro\n\nProse.\n\n## Next\n\nMore."
+    repo = InMemoryRazborRepository(
+        [
+            Razbor(
+                id=2,
+                title="Anomaly Detection",
+                body_markdown=body,
+                meeting_at=meeting,
+                status=RazborStatus.PUBLISHED,
+                notebook_path=None,
+                created_at=datetime(2026, 3, 1, tzinfo=timezone.utc),
+            )
+        ]
+    )
+    detail = get_razbor(repo, 2)
+    assert detail.id == 2
+    assert detail.title == "Anomaly Detection"
+    assert detail.status == RazborStatus.PUBLISHED
+    assert detail.meeting_at == meeting
+    assert detail.body_markdown == body
+
+
+def test_get_razbor_announcement_returns_empty_body() -> None:
+    """D-68 / T-04-10: announcement stub ignores prose — body_markdown emptied."""
+    repo = InMemoryRazborRepository(
+        [
+            Razbor(
+                id=4,
+                title="RAG в корпоративной среде",
+                body_markdown="## Secret draft\n\nShould not leak.",
+                meeting_at=datetime(2026, 4, 14, tzinfo=timezone.utc),
+                status=RazborStatus.ANNOUNCEMENT,
+                notebook_path=None,
+                created_at=datetime(2026, 3, 1, tzinfo=timezone.utc),
+            )
+        ]
+    )
+    detail = get_razbor(repo, 4)
+    assert detail.status == RazborStatus.ANNOUNCEMENT
+    assert detail.title == "RAG в корпоративной среде"
+    assert detail.body_markdown == ""

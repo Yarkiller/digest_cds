@@ -207,3 +207,86 @@ def test_razbory_list_persistence_error_returns_503_unavailable() -> None:
     response = client.get("/razbory", headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 503
     assert response.json()["detail"] == "razbory_unavailable"
+
+
+def test_razbory_detail_without_authorization_returns_401() -> None:
+    """RAZB-02: GET /razbory/{id} requires Bearer JWT."""
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    client = _client(_public_jwk(private_key))
+    response = client.get("/razbory/1")
+    assert response.status_code == 401
+
+
+def test_razbory_detail_not_found_returns_404() -> None:
+    """RAZB-02: unknown id → 404 razbor_not_found (SPA soft 404)."""
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    client = _client(jwk, build_in_memory_container())
+    token = _mint(private_key, email="alice@sberbank.ru")
+    response = client.get("/razbory/99", headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 404
+    assert response.json()["detail"] == "razbor_not_found"
+
+
+def test_razbory_detail_returns_published_longread_fields() -> None:
+    """RAZB-02: published detail DTO has id, title, meeting_at, status, body_markdown."""
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    meeting = datetime(2026, 3, 17, tzinfo=timezone.utc)
+    created = datetime(2026, 3, 1, tzinfo=timezone.utc)
+    body = "## Intro\n\nHello.\n\n## Deep dive\n\nMore."
+    container = build_in_memory_container()
+    container.razbors = InMemoryRazborRepository(
+        [
+            Razbor(
+                id=2,
+                title="Anomaly Detection во внутреннем аудите",
+                body_markdown=body,
+                meeting_at=meeting,
+                status=RazborStatus.PUBLISHED,
+                notebook_path=None,
+                created_at=created,
+            )
+        ]
+    )
+    client = _client(jwk, container)
+    token = _mint(private_key, email="alice@sberbank.ru")
+    response = client.get("/razbory/2", headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["id"] == 2
+    assert payload["title"] == "Anomaly Detection во внутреннем аудите"
+    assert payload["status"] == "published"
+    assert payload["meeting_at"] is not None
+    assert payload["body_markdown"] == body
+    assert set(payload.keys()) >= {"id", "title", "meeting_at", "status", "body_markdown"}
+
+
+def test_razbory_detail_announcement_returns_empty_body() -> None:
+    """D-68: announcement detail is stub — body_markdown emptied, status announcement."""
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    meeting = datetime(2026, 4, 14, tzinfo=timezone.utc)
+    created = datetime(2026, 3, 1, tzinfo=timezone.utc)
+    container = build_in_memory_container()
+    container.razbors = InMemoryRazborRepository(
+        [
+            Razbor(
+                id=4,
+                title="RAG в корпоративной среде",
+                body_markdown="## Draft\n\nHidden.",
+                meeting_at=meeting,
+                status=RazborStatus.ANNOUNCEMENT,
+                notebook_path=None,
+                created_at=created,
+            )
+        ]
+    )
+    client = _client(jwk, container)
+    token = _mint(private_key, email="alice@sberbank.ru")
+    response = client.get("/razbory/4", headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "announcement"
+    assert payload["title"] == "RAG в корпоративной среде"
+    assert payload["body_markdown"] == ""
