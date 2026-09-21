@@ -136,9 +136,10 @@ def test_search_maps_sdk_errors_to_persistence_error() -> None:
 
 def test_search_does_not_use_list_all_python_path() -> None:
     """Live adapter must invoke SQL/RPC — not pull all chunks for Python cosine."""
-    from pathlib import Path
+    import inspect
 
-    src = Path("supabase-integration/src/supabase_integration/knowledge_chunk_repository.py")
-    text = src.read_text(encoding="utf-8")
-    assert "search_knowledge_chunks" in text or ".rpc(" in text
-    assert "list_all" not in text.split("def search")[1].split("def ")[0] or "rpc" in text
+    from supabase_integration.knowledge_chunk_repository import SupabaseKnowledgeChunkRepository
+
+    source = inspect.getsource(SupabaseKnowledgeChunkRepository.search)
+    assert "rpc" in source
+    assert "list_all" not in source

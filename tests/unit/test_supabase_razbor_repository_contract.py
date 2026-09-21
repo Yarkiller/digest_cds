@@ -132,9 +132,11 @@ def test_list_for_reader_returns_razbors_ordered() -> None:
     items = repo.list_for_reader()
     assert len(items) == 3
     assert all(isinstance(r, Razbor) for r in items)
-    assert items[0].status == RazborStatus.ANNOUNCEMENT
-    assert items[0].meeting_at is not None
-    assert items[1].notebook_path == "hybrid-retrieval.ipynb"
+    by_id = {r.id: r for r in items}
+    assert by_id[1].status == RazborStatus.ANNOUNCEMENT
+    assert by_id[2].notebook_path == "hybrid-retrieval.ipynb"
+    assert by_id[3].status == RazborStatus.PUBLISHED
+    assert by_id[3].meeting_at is None
 
 
 def test_get_returns_razbor_or_none() -> None:

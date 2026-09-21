@@ -4,9 +4,11 @@ from pathlib import Path
 
 from supabase_integration.client import create_publishable_client, create_service_role_client
 from supabase_integration.issue_repository import SupabaseIssueRepository
+from supabase_integration.knowledge_chunk_repository import SupabaseKnowledgeChunkRepository
 from supabase_integration.material_repository import SupabaseMaterialRepository
 from supabase_integration.ping_recorder import SupabasePingRecorder
 from supabase_integration.profile_repository import SupabaseProfileRepository
+from supabase_integration.razbor_repository import SupabaseRazborRepository
 from supabase_integration.vote_repository import SupabaseVoteRepository
 from supabase_integration.voting_cycle_repository import SupabaseVotingCycleReader
 
@@ -17,9 +19,11 @@ def migrations_dir() -> Path:
 
 __all__ = [
     "SupabaseIssueRepository",
+    "SupabaseKnowledgeChunkRepository",
     "SupabaseMaterialRepository",
     "SupabasePingRecorder",
     "SupabaseProfileRepository",
+    "SupabaseRazborRepository",
     "SupabaseVoteRepository",
     "SupabaseVotingCycleReader",
     "create_publishable_client",

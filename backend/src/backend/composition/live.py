@@ -6,12 +6,13 @@ from backend.composition.container import AppContainer
 from backend.composition.settings import Settings
 from backend.application.ports.query_embedder import StubQueryEmbedder
 from backend.infrastructure.local_notebook_storage import LocalNotebookStorage
-from backend.tests_support.in_memory import InMemoryKnowledgeChunkRepository, InMemoryRazborRepository
 from supabase_integration import (
     SupabaseIssueRepository,
+    SupabaseKnowledgeChunkRepository,
     SupabaseMaterialRepository,
     SupabasePingRecorder,
     SupabaseProfileRepository,
+    SupabaseRazborRepository,
     SupabaseVoteRepository,
     SupabaseVotingCycleReader,
     create_publishable_client,
@@ -41,13 +42,13 @@ def build_live_container(settings: Settings) -> AppContainer:
 
     return AppContainer(
         materials=SupabaseMaterialRepository(admin_client),
-        chunks=InMemoryKnowledgeChunkRepository(),
+        chunks=SupabaseKnowledgeChunkRepository(admin_client),
         profiles=SupabaseProfileRepository(admin_client),
         pings=SupabasePingRecorder(admin_client),
         issues=SupabaseIssueRepository(admin_client),
         voting_cycles=SupabaseVotingCycleReader(admin_client),
         votes=SupabaseVoteRepository(admin_client),
         embedder=StubQueryEmbedder(),
-        razbors=InMemoryRazborRepository(),
+        razbors=SupabaseRazborRepository(admin_client),
         notebook_storage=LocalNotebookStorage(settings.notebook_root or "."),
     )
