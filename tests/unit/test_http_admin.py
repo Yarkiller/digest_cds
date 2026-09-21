@@ -578,6 +578,54 @@ def test_admin_send_happy_path_publishes_and_returns_issue_link() -> None:
     assert container.issues.get_by_number(body["issue_number"]) is not None
 
 
+def test_admin_send_material_ids_order_honored_and_mismatch_is_400() -> None:
+    """G-05-1: SendDigestRequest.material_ids drives issue order; bad set → 400."""
+    batch = ShortlistBatch(
+        id=42,
+        week_start=date(2026, 9, 15),
+        sent_at=None,
+        items=(
+            ShortlistItem(
+                material_id=101,
+                rank=1,
+                title="First by rank",
+                material_status="ready",
+                decision="approved",
+                score=0.9,
+                score_factors={"factors": [{"label": "A"}, {"label": "B"}]},
+            ),
+            ShortlistItem(
+                material_id=102,
+                rank=2,
+                title="Second by rank",
+                material_status="ready",
+                decision="approved",
+                score=0.8,
+                score_factors={"factors": [{"label": "A"}, {"label": "B"}]},
+            ),
+        ),
+    )
+    client, headers, container = _admin_client_with_batch(batch)
+
+    bad = client.post(
+        "/admin/shortlist/send",
+        headers=headers,
+        json={"material_ids": [101]},
+    )
+    assert bad.status_code == 400
+
+    ok = client.post(
+        "/admin/shortlist/send",
+        headers=headers,
+        json={"material_ids": [102, 101]},
+    )
+    assert ok.status_code == 200
+    assert ok.json()["message"] == "Отправка записана"
+    published = container.issues.get_by_number(ok.json()["issue_number"])
+    assert published is not None
+    assert [item.title for item in published.items] == ["Second by rank", "First by rank"]
+
+
 def test_admin_send_second_returns_409_already_sent() -> None:
     """ADMIN-07 / D-89: repeat send → 409 «Уже отправлено»."""
     client, headers, _container = _admin_client_with_batch(_ready_approved_batch())

@@ -284,3 +284,76 @@ def test_send_repeat_after_success_is_idempotent_409_path() -> None:
     assert len([i for i in issues._issues if i.published_at is not None]) == 1
     assert mailer.last_body_text == first_body
     assert len(pings.entries) == ping_count
+
+
+def test_send_material_ids_reversed_order_becomes_publication_and_mail_order() -> None:
+    """G-05-1 / ADMIN-07: material_ids permutation is publication + mail order (not rank)."""
+    shortlist = InMemoryShortlistRepository(
+        batch=_batch(
+            _item(material_id=101, rank=1, title="First by rank"),
+            _item(material_id=102, rank=2, title="Second by rank"),
+        )
+    )
+    issues = InMemoryIssueRepository()
+    mailer = StubMailer()
+    pings = InMemoryPingRecorder()
+
+    result = send_digest(
+        shortlist,
+        _publisher(shortlist, issues),
+        mailer,
+        pings,
+        actor_user_id="admin-uuid-1",
+        now=datetime(2026, 9, 21, 15, 0, tzinfo=timezone.utc),
+        material_ids=[102, 101],
+    )
+
+    published = issues.get_by_number(result.issue_number)
+    assert published is not None
+    assert [item.title for item in published.items] == ["Second by rank", "First by rank"]
+    assert mailer.last_body_text is not None
+    second_at = mailer.last_body_text.index("Second by rank")
+    first_at = mailer.last_body_text.index("First by rank")
+    assert second_at < first_at
+
+
+def test_send_material_ids_mismatched_set_raises() -> None:
+    """G-05-1: material_ids must be exact permutation of approved∩ready → domain error."""
+    import backend.domain.errors as domain_errors
+
+    InvalidSendOrderError = getattr(domain_errors, "InvalidSendOrderError", None)
+    assert InvalidSendOrderError is not None, "InvalidSendOrderError domain error missing"
+
+    shortlist = InMemoryShortlistRepository(
+        batch=_batch(
+            _item(material_id=101, rank=1, title="A"),
+            _item(material_id=102, rank=2, title="B"),
+        )
+    )
+    issues = InMemoryIssueRepository()
+    mailer = StubMailer()
+    pings = InMemoryPingRecorder()
+
+    with pytest.raises(InvalidSendOrderError):
+        send_digest(
+            shortlist,
+            _publisher(shortlist, issues),
+            mailer,
+            pings,
+            actor_user_id="admin-uuid-1",
+            material_ids=[101],
+        )
+
+    with pytest.raises(InvalidSendOrderError):
+        send_digest(
+            shortlist,
+            _publisher(shortlist, issues),
+            mailer,
+            pings,
+            actor_user_id="admin-uuid-1",
+            material_ids=[101, 102, 999],
+        )
+
+    assert shortlist.get_current_batch().sent_at is None
+    assert issues.get_latest_published() is None
+    assert mailer.last_body_text is None
