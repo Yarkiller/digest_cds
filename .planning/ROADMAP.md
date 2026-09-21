@@ -113,7 +113,7 @@ Plans:
   3. Razbor list shows name/date/status (or empty CTA); multi-section разбор has sticky TOC navigation
   4. Notebook download works when attached and is clearly disabled when missing; metrics/overview labeling is honest
 
-**Plans**: 9/9 plans executed (+ 04-10 gap closure for G-04-2)
+**Plans**: 10/10 plans executed (+ 04-10 gap closure for G-04-2)
 **UI hint**: yes
 
 Plans:
@@ -152,7 +152,7 @@ Plans:
 
 **Wave 9** *(gap closure — UAT G-04-2)*
 
-- [ ] 04-10-PLAN.md — Gap G-04-2: announcement rows show «готовится» placeholder, suppress read CTA (RAZB-01)
+- [x] 04-10-PLAN.md — Gap G-04-2: announcement rows show «готовится» placeholder, suppress read CTA (RAZB-01)
 
 ### Phase 5: Admin Digest Publish
 
@@ -180,5 +180,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. Platform Foundation & Auth | 6/7 | Verified (PASS_WITH_GAPS) | 2026-09-19 |
 | 2. Issue, Materials & Archive | 6/6 | Complete    | 2026-09-20 |
 | 3. Voting Cycle | 6/6 | Complete    | 2026-09-20 |
-| 4. Knowledge & Razbory | 9/9 | In Progress|  |
+| 4. Knowledge & Razbory | 10/10 | In Progress|  |
 | 5. Admin Digest Publish | 0/TBD | Not started | - |
