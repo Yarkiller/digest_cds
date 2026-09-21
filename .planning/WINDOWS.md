@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 9
+open_count: 11
 waived_count: 0
-fixed_count: 0
-total_count: 9
-last_updated: 2026-09-21T04:45:40.363Z
+fixed_count: 1
+total_count: 12
+last_updated: 2026-09-21T05:12:02.428Z
 ---
 
 # Broken Windows Ledger
@@ -20,10 +20,13 @@ last_updated: 2026-09-21T04:45:40.363Z
 | 3 | 02 | skipped-test | tests/web-app.spec.js | 406 | UI-SPEC visual backstops describe.skip held for /gsd-verify-work | open |  | 2026-09-20T11:09:43.276Z |  |
 | 4 | 04 | stub | backend/src/backend/application/ports/query_embedder.py |  | StubQueryEmbedder deterministic hash embedder, not Foundry HTTP (Phase 4 OPT-OUT) | open |  | 2026-09-21T04:34:37.222Z |  |
 | 5 | 04 | stub | backend/src/backend/composition/live.py |  | live.py chunks still InMemoryKnowledgeChunkRepository until 04-08 | open |  | 2026-09-21T04:34:37.841Z |  |
-| 6 | 04 | skipped-test | tests/web-app.spec.js |  | Knowledge Playwright tests still assert client filterMaterials/tag facets; rewrite deferred to 04-09 | open |  | 2026-09-21T04:40:59.311Z |  |
+| 6 | 04 | skipped-test | tests/web-app.spec.js |  | Knowledge Playwright tests still assert client filterMaterials/tag facets; rewrite deferred to 04-09 | fixed |  | 2026-09-21T04:40:59.311Z | 2026-09-21T05:04:04.951Z |
 | 7 | 04 | deviation | web/src/services/knowledgeApi.js |  | Dynamic import of authEnv/authApi so mockSearchKnowledge stays node:test-friendly without Vite env | open |  | 2026-09-21T04:40:59.943Z |  |
 | 8 | 04 | stub | backend/src/backend/application/use_cases/get_razbor.py |  | get_razbor NotFound only; detail HTTP deferred to 04-06 | open |  | 2026-09-21T04:45:39.748Z |  |
 | 9 | 04 | stub | backend/src/backend/composition/live.py |  | live.py razbors still InMemoryRazborRepository until adapter | open |  | 2026-09-21T04:45:40.363Z |  |
+| 10 | 04 | deviation | tests/web-app.spec.js |  | Retired Загрузить ещё Playwright case; mock catalog is smaller than page size 10 | open |  | 2026-09-21T05:02:21.685Z |  |
+| 11 | 04 | stub | web/src/App.jsx |  | /razbory/:id placeholder shell until 04-06 | open |  | 2026-09-21T05:12:01.843Z |  |
+| 12 | 04 | stub | tests/ |  | Playwright razbory list/empty/nav deferred to 04-09 | open |  | 2026-09-21T05:12:02.428Z |  |
 
 ````json
 [
@@ -94,10 +97,10 @@ last_updated: 2026-09-21T04:45:40.363Z
     "file": "tests/web-app.spec.js",
     "line": null,
     "description": "Knowledge Playwright tests still assert client filterMaterials/tag facets; rewrite deferred to 04-09",
-    "status": "open",
+    "status": "fixed",
     "reason": "",
     "recorded_at": "2026-09-21T04:40:59.311Z",
-    "resolved_at": null
+    "resolved_at": "2026-09-21T05:04:04.951Z"
   },
   {
     "id": 7,
@@ -133,6 +136,42 @@ last_updated: 2026-09-21T04:45:40.363Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-09-21T04:45:40.363Z",
+    "resolved_at": null
+  },
+  {
+    "id": 10,
+    "kind": "deviation",
+    "phase": "04",
+    "file": "tests/web-app.spec.js",
+    "line": null,
+    "description": "Retired Загрузить ещё Playwright case; mock catalog is smaller than page size 10",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-21T05:02:21.685Z",
+    "resolved_at": null
+  },
+  {
+    "id": 11,
+    "kind": "stub",
+    "phase": "04",
+    "file": "web/src/App.jsx",
+    "line": null,
+    "description": "/razbory/:id placeholder shell until 04-06",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-21T05:12:01.843Z",
+    "resolved_at": null
+  },
+  {
+    "id": 12,
+    "kind": "stub",
+    "phase": "04",
+    "file": "tests/",
+    "line": null,
+    "description": "Playwright razbory list/empty/nav deferred to 04-09",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-21T05:12:02.428Z",
     "resolved_at": null
   }
 ]
