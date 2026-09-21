@@ -481,7 +481,8 @@ test.describe("web app responsive", () => {
 
       await expect(page.getByRole("navigation", { name: /основная навигация/i })).toBeVisible();
       await expect(page.getByRole("searchbox", { name: /поиск digest cds/i })).toBeVisible();
-      await expect(page.getByText("Мария Сидорова")).toBeHidden();
+      await expect(page.getByTestId("shell-identity")).toBeVisible();
+      await expect(page.getByTestId("shell-identity")).toHaveText("Мария Сидорова");
     }
 
     await page.goto("/");
