@@ -267,7 +267,7 @@ select proname from pg_proc where proname = 'claim_and_publish_digest';  -- expe
 
 Record the apply method in the operator resume signal (or append a one-line note below when confirmed).
 
-**Applied:** _(pending operator MCP/Studio apply — plan 05-05 blocking checkpoint)_
+**Applied:** 2026-09-21 — operator confirmed applied for `005_phase5_admin_shortlist.sql` on shared VM (method not specified).
 
 ---
 
