@@ -167,7 +167,7 @@ Plans:
   4. Successful send updates archive and success UI without uncontrolled duplicates; failure leaves selection and not-sent state
   5. Digest email link reaches issue after login via returnUrl when needed
 
-**Plans**: 3/6 plans executed
+**Plans**: 4/6 plans executed
 **UI hint**: yes
 
 Plans:
@@ -186,7 +186,7 @@ Plans:
 
 **Wave 4** *(blocked on Wave 3 — 05-04 and 05-05 parallel)*
 
-- [ ] 05-04-PLAN.md — SPA AdminDigestPage + ForbiddenPage + ADMIN-06 checkboxes (ADMIN-01…07)
+- [x] 05-04-PLAN.md — SPA AdminDigestPage + ForbiddenPage + ADMIN-06 checkboxes (ADMIN-01…07)
 - [ ] 05-05-PLAN.md — Migration 005 + live adapters + [BLOCKING] schema apply (ADMIN-01/02/07/08)
 
 **Wave 5** *(blocked on Wave 4)*
@@ -204,4 +204,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 2. Issue, Materials & Archive | 6/6 | Complete    | 2026-09-20 |
 | 3. Voting Cycle | 6/6 | Complete    | 2026-09-20 |
 | 4. Knowledge & Razbory | 10/10 | Complete    | 2026-09-21 |
-| 5. Admin Digest Publish | 3/6 | In Progress|  |
+| 5. Admin Digest Publish | 4/6 | In Progress|  |

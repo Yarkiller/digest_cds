@@ -61,11 +61,11 @@ Requirements for initial release. Each maps to exactly one roadmap phase. Tracea
 ### Admin Digest
 
 - [x] **ADMIN-01**: Admin sees shortlist of up to 5 ranked candidates; non-admin gets HTTP 403; empty shortlist shows refresh empty state (REQ-US-22)
-- [ ] **ADMIN-02**: Approve includes and persists; Reject excludes and is reflected in UI (REQ-US-23)
+- [x] **ADMIN-02**: Approve includes and persists; Reject excludes and is reflected in UI (REQ-US-23)
 - [x] **ADMIN-03**: Shortlist shows draft vs ready per row; send with included draft is blocked (REQ-US-24)
 - [x] **ADMIN-04**: Email preview with ≥1 ready selected matches selection; preview failure does not mark send verified (REQ-US-25)
 - [x] **ADMIN-05**: Candidate score/factors show ≥2 readable factors when available; else «обоснование недоступно» (REQ-US-26)
-- [ ] **ADMIN-06**: Select-all / keep top-N updates selection in one operation; manual clear of one item keeps others (REQ-US-27)
+- [x] **ADMIN-06**: Select-all / keep top-N updates selection in one operation; manual clear of one item keeps others (REQ-US-27)
 - [x] **ADMIN-07**: Confirm send with ≥1 ready initiates send, success UI, archive update; repeat send is controlled; network failure does not mark sent (REQ-US-31)
 - [x] **ADMIN-08**: After admin send, digest email contains link to issue/archive item; unauthenticated link → login then returnUrl (REQ-US-06)
 
@@ -125,11 +125,11 @@ Deferred past v1. Tracked but not in current roadmap phases.
 | RAZB-03 | Phase 4 | Complete |
 | RAZB-04 | Phase 4 | Complete |
 | ADMIN-01 | Phase 5 | Complete |
-| ADMIN-02 | Phase 5 | Pending |
+| ADMIN-02 | Phase 5 | Complete |
 | ADMIN-03 | Phase 5 | Complete |
 | ADMIN-04 | Phase 5 | Complete |
 | ADMIN-05 | Phase 5 | Complete |
-| ADMIN-06 | Phase 5 | Pending |
+| ADMIN-06 | Phase 5 | Complete |
 | ADMIN-07 | Phase 5 | Complete |
 | ADMIN-08 | Phase 5 | Complete |
 

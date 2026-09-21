@@ -3,16 +3,16 @@ gsd_state_version: 1.0
 current_phase: 05
 current_phase_name: Admin Digest Publish
 status: executing
-stopped_at: Completed 05-03-PLAN.md
-last_updated: "2026-09-21T14:54:34.563Z"
+stopped_at: Completed 05-04-PLAN.md
+last_updated: "2026-09-21T15:11:15.584Z"
 last_activity: 2026-09-21
 last_activity_desc: Phase 05 execution started
-state_head: 8f5b6dc5f85a0b4578962f8a395038b6b39270fa
+state_head: 268ba3faf81143749be0222564886d204bcc856a
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 37
-  completed_plans: 33
+  completed_plans: 34
   percent: 80
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-09-20)
 ## Current Position
 
 Phase: 05 (Admin Digest Publish) — EXECUTING
-Plan: 4 of 6
+Plan: 5 of 6
 Status: Ready to execute
 Last activity: 2026-09-21 — Phase 05 execution started
 
@@ -87,6 +87,7 @@ Progress: [███████████████████░] 30/31 p
 | Phase 05-admin-digest-publish P01 | 20min | 2 tasks | 18 files |
 | Phase 05-admin-digest-publish P02 | 4min | 2 tasks | 8 files |
 | Phase 05 P03 | 18min | 3 tasks | 16 files |
+| Phase 05-admin-digest-publish P04 | 15min | 3 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -172,6 +173,9 @@ Decisions are logged in PROJECT.md Key Decisions and `<decisions>` blocks.
 - [Phase 05]: ACK D-88: successful send MUST publish digest_issues + set sent_at (no stub-mail-without-publish)
 - [Phase 05]: resolve_mailer takes mailer mode string to avoid stub_mailer↔composition circular import
 - [Phase 05]: In-memory claim_sent simulates atomic sent_at IS NULL; live RPC deferred to 05-05
+- [Phase 05]: Route /admin/digest; AdminDigestPage self-gates Forbidden vs triage after /me
+- [Phase 05]: Send pool = approved∩ready (not checkboxes); checkboxes are batch Approve/Reject only (D-83)
+- [Phase 05]: Playwright resets adminApi harness between /admin navigations to clear Vite singleton mock state
 
 ### Pending Todos
 
@@ -194,7 +198,7 @@ None. Live FE↔BE proof approved 2026-09-19.
 
 ## Session Continuity
 
-Last session: 2026-09-21T14:54:33.857Z
-Stopped at: Completed 05-03-PLAN.md
+Last session: 2026-09-21T15:11:14.846Z
+Stopped at: Completed 05-04-PLAN.md
 Resume file: None
 Verification: `.planning/phases/01-platform-foundation-auth/01-VERIFICATION.md`
