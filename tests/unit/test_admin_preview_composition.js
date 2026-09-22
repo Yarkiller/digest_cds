@@ -63,3 +63,57 @@ describe('composePreviewBody', () => {
     assert.match(body, /Building Production RAG Systems/)
   })
 })
+
+describe('compositionFingerprint', () => {
+  it('changes when intro, order, or interstitial text drifts', async () => {
+    const { compositionFingerprint } = await import(
+      '../../web/src/services/adminPreviewComposition.js'
+    )
+    const base = compositionFingerprint({
+      intro: 'Hello',
+      blocks: [
+        { kind: 'material', material_id: 101 },
+        { kind: 'text', text: 'bridge' },
+        { kind: 'material', material_id: 102 },
+      ],
+    })
+    const introDrift = compositionFingerprint({
+      intro: 'Hello changed',
+      blocks: [
+        { kind: 'material', material_id: 101 },
+        { kind: 'text', text: 'bridge' },
+        { kind: 'material', material_id: 102 },
+      ],
+    })
+    const orderDrift = compositionFingerprint({
+      intro: 'Hello',
+      blocks: [
+        { kind: 'material', material_id: 102 },
+        { kind: 'text', text: 'bridge' },
+        { kind: 'material', material_id: 101 },
+      ],
+    })
+    const textDrift = compositionFingerprint({
+      intro: 'Hello',
+      blocks: [
+        { kind: 'material', material_id: 101 },
+        { kind: 'text', text: 'other' },
+        { kind: 'material', material_id: 102 },
+      ],
+    })
+    assert.notEqual(base, introDrift)
+    assert.notEqual(base, orderDrift)
+    assert.notEqual(base, textDrift)
+    assert.equal(
+      base,
+      compositionFingerprint({
+        intro: 'Hello',
+        blocks: [
+          { kind: 'material', material_id: 101 },
+          { kind: 'text', text: 'bridge' },
+          { kind: 'material', material_id: 102 },
+        ],
+      }),
+    )
+  })
+})

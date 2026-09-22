@@ -14,6 +14,7 @@ import {
   sendDigest,
   setDecision,
 } from '../services/adminApi.js'
+import { compositionFingerprint } from '../services/adminPreviewComposition.js'
 
 const TOAST_DISMISS_MS = 4000
 const TOP_N = 3
@@ -69,14 +70,6 @@ function factorText(item) {
   const labels = Array.isArray(item.factor_labels) ? item.factor_labels.filter(Boolean) : []
   if (labels.length < 2) return 'обоснование недоступно'
   return labels.join(' · ')
-}
-
-function approvedFingerprint(items) {
-  return items
-    .filter((item) => item.decision === 'approved' && item.material_status === 'ready')
-    .map((item) => item.material_id)
-    .sort((a, b) => a - b)
-    .join(',')
 }
 
 function applyBatch(dto, setItems, setBatchMeta, setDigestRest, setDaysUntilNext) {
@@ -179,7 +172,18 @@ export default function AdminDigestPage() {
     return () => window.clearTimeout(id)
   }, [toast])
 
-  const fingerprint = useMemo(() => approvedFingerprint(items), [items])
+  const fingerprint = useMemo(
+    () =>
+      compositionFingerprint({
+        intro: contextText,
+        blocks: issueBlocks.map((block) =>
+          block.kind === 'material'
+            ? { kind: 'material', material_id: block.material_id }
+            : { kind: 'text', text: block.text ?? '' },
+        ),
+      }),
+    [contextText, issueBlocks],
+  )
 
   useEffect(() => {
     if (emailPreviewed && previewFingerprint && fingerprint !== previewFingerprint) {
@@ -318,7 +322,7 @@ export default function AdminDigestPage() {
           : { kind: 'text', text: block.text ?? '' },
       )
       const preview = await previewEmail(undefined, { intro: contextText, blocks })
-      const fp = approvedFingerprint(items)
+      const fp = compositionFingerprint({ intro: contextText, blocks })
       setEmailPreviewed(true)
       setPreviewFingerprint(fp)
       // If the user closed while loading, do not reopen the modal (D-86 session flag still set).

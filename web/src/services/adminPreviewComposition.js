@@ -70,3 +70,27 @@ export function composePreviewItems(blocks, itemById) {
   }
   return items
 }
+
+/**
+ * Stable fingerprint of preview composition for D-86 / G-05-1 honesty gate.
+ * Includes intro + ordered material ids + interstitial text (not just the approved set).
+ *
+ * @param {{ intro?: string, blocks?: PreviewBlock[] }} opts
+ * @returns {string}
+ */
+export function compositionFingerprint({ intro = '', blocks = [] } = {}) {
+  const normalizedBlocks = (blocks ?? []).map((block) => {
+    if (!block || typeof block !== 'object') return null
+    if (block.kind === 'text') {
+      return { kind: 'text', text: String(block.text ?? '') }
+    }
+    if (block.kind === 'material') {
+      return { kind: 'material', material_id: Number(block.material_id) }
+    }
+    return null
+  }).filter(Boolean)
+  return JSON.stringify({
+    intro: String(intro ?? ''),
+    blocks: normalizedBlocks,
+  })
+}
