@@ -146,3 +146,28 @@ def test_get_admin_shortlist_propagates_persistence_error() -> None:
 
     with pytest.raises(PersistenceError):
         get_admin_shortlist(_Failing())
+
+
+def test_get_admin_shortlist_includes_week_label_sent_at_and_dek() -> None:
+    """WR-04: SPA consumes week_label, sent_at, and per-item dek from the live DTO."""
+    batch = ShortlistBatch(
+        id=10,
+        week_start=date(2026, 9, 15),
+        sent_at=None,
+        items=(
+            ShortlistItem(
+                material_id=1,
+                rank=1,
+                title="RAG",
+                material_status="ready",
+                decision="pending",
+                score=0.9,
+                score_factors={"A": 1, "B": 2},
+                dek="Краткий dek для превью",
+            ),
+        ),
+    )
+    result = get_admin_shortlist(InMemoryShortlistRepository(batch=batch))
+    assert result.week_label == "2026-09-15"
+    assert result.sent_at is None
+    assert result.items[0].dek == "Краткий dek для превью"

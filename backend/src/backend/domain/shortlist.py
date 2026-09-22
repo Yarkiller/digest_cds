@@ -48,6 +48,7 @@ class ShortlistItem:
     score_factors: Mapping[str, Any]
     decided_by: str | None = None
     decided_at: datetime | None = None
+    dek: str | None = None
 
 
 @dataclass(frozen=True)
@@ -67,6 +68,7 @@ class AdminShortlistItem:
     decision: str
     score: float | None
     factor_labels: tuple[str, ...]
+    dek: str | None = None
 
 
 @dataclass(frozen=True)
@@ -75,6 +77,8 @@ class AdminShortlist:
     items: tuple[AdminShortlistItem, ...]
     digest_rest: bool = False
     days_until_next_batch: int | None = None
+    week_label: str | None = None
+    sent_at: datetime | None = None
 
 
 # Locked product weekly cadence (PROJECT.md / ROADMAP «weekly» digest) — G-05-2.

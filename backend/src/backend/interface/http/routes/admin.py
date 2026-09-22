@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import datetime
+
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -40,6 +42,7 @@ class AdminShortlistItemResponse(BaseModel):
     decision: str
     score: float | None = None
     factor_labels: list[str] = []
+    dek: str | None = None
 
 
 class AdminShortlistResponse(BaseModel):
@@ -49,6 +52,8 @@ class AdminShortlistResponse(BaseModel):
     items: list[AdminShortlistItemResponse] = []
     digest_rest: bool = False
     days_until_next_batch: int | None = None
+    week_label: str | None = None
+    sent_at: datetime | None = None
 
 
 class SetShortlistDecisionRequest(BaseModel):
@@ -164,11 +169,14 @@ def _to_response(dto: AdminShortlist) -> AdminShortlistResponse:
                 decision=item.decision,
                 score=item.score,
                 factor_labels=list(item.factor_labels),
+                dek=item.dek,
             )
             for item in dto.items
         ],
         digest_rest=dto.digest_rest,
         days_until_next_batch=dto.days_until_next_batch,
+        week_label=dto.week_label,
+        sent_at=dto.sent_at,
     )
 
 

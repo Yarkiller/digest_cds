@@ -121,6 +121,7 @@ class InMemoryShortlistRepository:
                         score_factors=item.score_factors,
                         decided_by=actor_user_id,
                         decided_at=decided_at,
+                        dek=item.dek,
                     )
                 )
             else:

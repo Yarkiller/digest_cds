@@ -23,12 +23,16 @@ def get_admin_shortlist(shortlist: ShortlistRepository) -> AdminShortlist:
                 items=(),
                 digest_rest=True,
                 days_until_next_batch=DIGEST_WEEKLY_CADENCE_DAYS,
+                week_label=latest.week_start.isoformat(),
+                sent_at=latest.sent_at,
             )
         return AdminShortlist(
             batch_id=None,
             items=(),
             digest_rest=False,
             days_until_next_batch=None,
+            week_label=None,
+            sent_at=None,
         )
 
     ranked = sorted(batch.items, key=lambda item: item.rank)[:_MAX_SHORTLIST_ITEMS]
@@ -41,6 +45,7 @@ def get_admin_shortlist(shortlist: ShortlistRepository) -> AdminShortlist:
             decision=item.decision,
             score=float(item.score) if item.score is not None else None,
             factor_labels=tuple(honest_factor_labels(item.score_factors)),
+            dek=item.dek,
         )
         for item in ranked
     )
@@ -49,4 +54,6 @@ def get_admin_shortlist(shortlist: ShortlistRepository) -> AdminShortlist:
         items=items,
         digest_rest=False,
         days_until_next_batch=None,
+        week_label=batch.week_start.isoformat(),
+        sent_at=batch.sent_at,
     )

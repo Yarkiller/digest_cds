@@ -52,6 +52,7 @@ def _item_from_row(row: dict[str, Any]) -> ShortlistItem:
         score_factors=dict(factors),
         decided_by=str(row["decided_by"]) if row.get("decided_by") else None,
         decided_at=_parse_dt(row.get("decided_at")),
+        dek=(str(material["dek"]) if material.get("dek") is not None else None),
     )
 
 
@@ -203,7 +204,7 @@ class SupabaseShortlistRepository:
                 self._client.table("digest_shortlist_items")
                 .select(
                     "batch_id,material_id,rank,score,score_factors,decision,"
-                    "decided_by,decided_at,materials(title,status)"
+                    "decided_by,decided_at,materials(title,status,dek)"
                 )
                 .eq("batch_id", batch_id)
                 .order("rank")
