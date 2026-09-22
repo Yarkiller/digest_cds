@@ -17,6 +17,9 @@ let mockRole = 'employee'
 
 export function armFailNextMeFetch() {
   failNextFetch = true
+  if (typeof window !== 'undefined') {
+    window.__DIGEST_ME_FAIL_FETCH__ = true
+  }
 }
 
 /** @param {'employee' | 'analyst' | 'ds' | 'admin'} role */
@@ -33,7 +36,12 @@ export function resetMeHarness() {
   mockRole = 'employee'
   if (typeof window !== 'undefined') {
     window.__DIGEST_MOCK_ME_ROLE__ = 'employee'
+    window.__DIGEST_ME_FAIL_FETCH__ = false
   }
+}
+
+function stickyMeFail() {
+  return typeof window !== 'undefined' && Boolean(window.__DIGEST_ME_FAIL_FETCH__)
 }
 
 function resolveMockRole() {
@@ -58,8 +66,11 @@ function apiBase() {
  * @returns {Promise<{ id: string, email: string, role: string, display_name: string | null }>}
  */
 export async function fetchMe(accessToken) {
-  if (failNextFetch) {
+  if (failNextFetch || stickyMeFail()) {
     failNextFetch = false
+    if (typeof window !== 'undefined') {
+      window.__DIGEST_ME_FAIL_FETCH__ = false
+    }
     throw new MeApiError('Не удалось загрузить профиль. Проверьте сеть.', {
       code: 'NETWORK',
       retryable: true,

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import ServiceUnavailable from '../components/ServiceUnavailable.jsx'
 import ForbiddenPage from './ForbiddenPage.jsx'
 import { getAccessToken } from '../services/authApi.js'
-import { fetchMe } from '../services/meApi.js'
+import { MeApiError, fetchMe } from '../services/meApi.js'
 import {
   AdminApiError,
   DIGEST_WEEKLY_CADENCE_DAYS,
@@ -91,6 +91,7 @@ function applyBatch(dto, setItems, setBatchMeta, setDigestRest, setDaysUntilNext
  */
 export default function AdminDigestPage() {
   const [roleState, setRoleState] = useState('loading')
+  const [roleKey, setRoleKey] = useState(0)
   const [items, setItems] = useState([])
   const [batchMeta, setBatchMeta] = useState({
     batch_id: null,
@@ -120,20 +121,34 @@ export default function AdminDigestPage() {
   useEffect(() => {
     let cancelled = false
     async function loadRole() {
+      setRoleState('loading')
       try {
         const token = await getAccessToken()
         const me = await fetchMe(token)
         if (!cancelled) {
           setRoleState(me.role === 'admin' ? 'admin' : 'forbidden')
         }
-      } catch {
-        if (!cancelled) setRoleState('forbidden')
+      } catch (err) {
+        if (cancelled) return
+        // WR-03: only authz failures are Forbidden; network/5xx → error + retry
+        if (
+          err instanceof MeApiError &&
+          (err.code === 'UNAUTHORIZED' || err.code === 'FORBIDDEN')
+        ) {
+          setRoleState('forbidden')
+        } else {
+          setRoleState('error')
+        }
       }
     }
     loadRole()
     return () => {
       cancelled = true
     }
+  }, [roleKey])
+
+  const reloadRole = useCallback(() => {
+    setRoleKey((k) => k + 1)
   }, [])
 
   const reloadShortlist = useCallback(() => {
@@ -392,6 +407,16 @@ export default function AdminDigestPage() {
 
   if (roleState === 'forbidden') {
     return <ForbiddenPage />
+  }
+
+  if (roleState === 'error') {
+    return (
+      <section data-testid="admin-digest-page">
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted">Админ</p>
+        <h1 className="mt-2 font-sans text-3xl font-semibold text-ink">Shortlist дайджеста</h1>
+        <ServiceUnavailable onRetry={reloadRole} />
+      </section>
+    )
   }
 
   if (loadState === 'error') {

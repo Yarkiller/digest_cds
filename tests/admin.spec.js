@@ -74,6 +74,21 @@ test.describe("Admin Digest — role gate (D-75, D-76, D-77, ADMIN-01)", () => {
     await expect(page.getByText(/shortlist дайджеста/i)).toHaveCount(0);
     await expect(page.getByTestId("admin-shortlist")).toHaveCount(0);
   });
+
+  test("/me network failure shows ServiceUnavailable not Forbidden", async ({
+    page,
+  }) => {
+    // WR-03: transient /me outages must not look like 403
+    await page.addInitScript(() => {
+      window.__DIGEST_MOCK_ME_ROLE__ = "admin";
+      window.__DIGEST_ME_FAIL_FETCH__ = true;
+    });
+    await page.goto("/admin/digest");
+    await expect(page.getByTestId("service-unavailable")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Недостаточно прав", exact: true }),
+    ).toHaveCount(0);
+  });
 });
 
 test.describe("Admin Digest — shortlist triage (ADMIN-01…03, ADMIN-05, D-79, D-80)", () => {
