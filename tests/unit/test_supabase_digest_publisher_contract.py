@@ -27,12 +27,18 @@ class _FakeRpc:
 class _FakeClient:
     def __init__(self, *, data: Any = None, error: Exception | None = None) -> None:
         self.calls: list[tuple[str, dict[str, Any]]] = []
+        self.table_calls: list[str] = []
         self._data = data
         self._error = error
 
     def rpc(self, name: str, params: dict[str, Any]) -> _FakeRpc:
         self.calls.append((name, params))
         return _FakeRpc(data=self._data, error=self._error)
+
+    def table(self, name: str) -> Any:
+        """Record table access — CR-01 forbids pre-RPC rank rewrites via table()."""
+        self.table_calls.append(name)
+        raise AssertionError(f"unexpected table access before/during claim RPC: {name}")
 
 
 class _ApiError(Exception):
@@ -137,3 +143,32 @@ def test_generic_sdk_error_maps_to_persistence_error() -> None:
         publisher.claim_and_publish(
             batch_id=42, sent_at=_SENT_AT, period_label="2026-09-15", title="t"
         )
+
+
+def test_claim_and_publish_passes_material_ids_to_rpc_without_rank_rewrite() -> None:
+    """CR-01: material order must go into the RPC; no separate shortlist UPDATEs."""
+    from supabase_integration.digest_publisher import SupabaseDigestPublisher
+
+    payload = {
+        "batch_id": 42,
+        "issue_number": 4,
+        "issue_url": "/issues/4",
+        "delivery_status": "stubbed",
+        "recipient_count": 0,
+    }
+    client = _FakeClient(data=payload)
+    publisher = SupabaseDigestPublisher(client)
+
+    publication = publisher.claim_and_publish(
+        batch_id=42,
+        sent_at=_SENT_AT,
+        period_label="2026-09-15",
+        title="Digest CDS — 2026-09-15",
+        material_ids=[102, 101],
+    )
+
+    assert publication.issue_number == 4
+    assert client.table_calls == []
+    name, params = client.calls[0]
+    assert name == "claim_and_publish_digest"
+    assert params["p_material_ids"] == [102, 101]
