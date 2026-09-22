@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
@@ -14,8 +15,11 @@ from backend.domain.errors import (
     DraftInSendPoolError,
     EmptySendPoolError,
     InvalidSendOrderError,
+    PersistenceError,
 )
 from backend.domain.shortlist import ShortlistItem
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -76,11 +80,14 @@ def send_digest(
     """Validate pool → atomic claim+publish → mail → audit (D-88 mandatory publish-on-send).
 
     CR-01/WR-01: the claim, digest_issues publish, and delivery-column stamp are a single
-    transaction inside ``DigestPublisher.claim_and_publish`` (migration 005 RPC on live), so a
-    publish failure can never leave a batch stamped ``sent_at`` with no issue.
+    transaction inside ``DigestPublisher.claim_and_publish`` (migration 005/006 RPC on live),
+    so a publish failure can never leave a batch stamped ``sent_at`` with no issue.
 
     When ``material_ids`` is provided it must be an exact permutation of the approved∩ready
     pool; that order becomes publication and mail order (G-05-1).
+
+    CR-02: after a successful claim+publish, mail and audit are best-effort — failures are
+    logged and must not convert an already-published digest into a failed send response.
     """
     clock = now or datetime.now(timezone.utc)
     batch = shortlist.get_current_batch()
@@ -120,26 +127,38 @@ def send_digest(
         f"Читать: {issue_url}\n\n"
         f"Материалы:\n{titles}\n"
     )
-    mailer.send_digest(
-        batch_id=publication.batch_id,
-        issue_url=issue_url,
-        subject=subject,
-        body_text=body_text,
-        recipient_count=publication.recipient_count,
-    )
+    try:
+        mailer.send_digest(
+            batch_id=publication.batch_id,
+            issue_url=issue_url,
+            subject=subject,
+            body_text=body_text,
+            recipient_count=publication.recipient_count,
+        )
+    except PersistenceError:
+        logger.exception(
+            "digest_send mail failed after publish batch_id=%s",
+            publication.batch_id,
+        )
 
-    pings.record(
-        user_id=actor_user_id,
-        kind="digest_send",
-        payload={
-            "action": "send",
-            "batch_id": publication.batch_id,
-            "issue_number": publication.issue_number,
-            "issue_url": issue_url,
-            "delivery_status": publication.delivery_status,
-            "recipient_count": publication.recipient_count,
-        },
-    )
+    try:
+        pings.record(
+            user_id=actor_user_id,
+            kind="digest_send",
+            payload={
+                "action": "send",
+                "batch_id": publication.batch_id,
+                "issue_number": publication.issue_number,
+                "issue_url": issue_url,
+                "delivery_status": publication.delivery_status,
+                "recipient_count": publication.recipient_count,
+            },
+        )
+    except PersistenceError:
+        logger.exception(
+            "digest_send audit failed after publish batch_id=%s",
+            publication.batch_id,
+        )
 
     return SendDigestResult(
         batch_id=publication.batch_id,

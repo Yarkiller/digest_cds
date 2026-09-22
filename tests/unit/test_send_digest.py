@@ -353,3 +353,34 @@ def test_send_material_ids_mismatched_set_raises() -> None:
     assert shortlist.get_current_batch().sent_at is None
     assert issues.get_latest_published() is None
     assert mailer.last_body_text is None
+
+
+class _FailingPingRecorder(InMemoryPingRecorder):
+    """PingRecorder that always fails after publish (CR-02 false-failure probe)."""
+
+    def record(self, *args, **kwargs):  # type: ignore[override]
+        raise PersistenceError("ping audit failed (simulated)")
+
+
+def test_send_audit_failure_after_publish_still_returns_success() -> None:
+    """CR-02: after claim_and_publish succeeds, audit/mail errors must not fail the send."""
+    shortlist = InMemoryShortlistRepository(batch=_batch(_item(material_id=101)))
+    issues = InMemoryIssueRepository()
+    mailer = StubMailer()
+    pings = _FailingPingRecorder()
+
+    result = send_digest(
+        shortlist,
+        _publisher(shortlist, issues),
+        mailer,
+        pings,
+        actor_user_id="admin-uuid-1",
+        now=datetime(2026, 9, 21, 15, 0, tzinfo=timezone.utc),
+    )
+
+    assert result.message == "Отправка записана"
+    assert result.issue_url.startswith("/issues/")
+    assert shortlist.get_current_batch() is None
+    assert shortlist.get_latest_batch().sent_at is not None
+    assert issues.get_by_number(result.issue_number) is not None
+    assert mailer.last_body_text is not None
