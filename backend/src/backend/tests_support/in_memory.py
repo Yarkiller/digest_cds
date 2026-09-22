@@ -485,8 +485,12 @@ class InMemoryDigestPublisher:
                 raise EmptySendPoolError(batch_id=batch_id)
             if material_ids is not None:
                 by_id = {item.material_id: item for item in pool}
-                pool = [by_id[mid] for mid in material_ids if mid in by_id]
-                if len(pool) != len(by_id):
+                # CR-01/WR-05: material_ids is the publication order (may be the admin-visible
+                # top-5 subset). Require every requested id to be approved∩ready; ignore extras.
+                if any(mid not in by_id for mid in material_ids):
+                    raise EmptySendPoolError(batch_id=batch_id)
+                pool = [by_id[mid] for mid in material_ids]
+                if not pool:
                     raise EmptySendPoolError(batch_id=batch_id)
             issue_items = tuple(
                 IssueItem(
