@@ -1,0 +1,32 @@
+# Reproducible Postgres for Digest CDS.
+# The running homework instance is the full self-hosted Supabase stack on the
+# VPS (https://knowledge-db.ru/). This compose file is the database service
+# checked into the repository: same image family (auth schema + pgvector).
+#
+# Password comes from the environment. Do not commit a filled .env.
+#   POSTGRES_PASSWORD=... docker compose -f deploy/docker-compose.yml up --build
+
+services:
+  db:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: digest-cds-postgres:17.6.1.136
+    container_name: digest-cds-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-postgres}
+      POSTGRES_USER: postgres
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - digest_cds_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  digest_cds_pgdata:

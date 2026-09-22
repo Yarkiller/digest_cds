@@ -9,11 +9,27 @@ Digest CDS — корпоративный сервис сбора, структ�
 | Что | Куда |
 |-----|------|
 | GitHub | [https://github.com/Yarkiller/digest_cds](https://github.com/Yarkiller/digest_cds) |
+| Сдача ДЗ: Backend | [`backend_documentation.md`](backend_documentation.md) |
 | Отчёт о разработке | [`development_report.md`](development_report.md) |
 | ТЗ | [`docs/digest-cds/technical_specification.md`](docs/digest-cds/technical_specification.md) |
 | Скриншоты адаптива | [`docs/digest-cds/responsive-evidence/`](docs/digest-cds/responsive-evidence/) |
 | Local platform runbook | [`docs/agents/local-platform-runbook.md`](docs/agents/local-platform-runbook.md) |
 | Cloud.ru app deploy path (docs only) | [`docs/agents/cloudru-app-deploy-path.md`](docs/agents/cloudru-app-deploy-path.md) |
+
+## Сдача ДЗ: Backend
+
+Документ для проверки: [`backend_documentation.md`](backend_documentation.md) (архитектура, деплой, API, примеры запросов, процесс с AI).
+
+| Артефакт | Путь |
+|----------|------|
+| Документация Backend | [`backend_documentation.md`](backend_documentation.md) |
+| Миграции | [`supabase-integration/migrations/`](supabase-integration/migrations/) |
+| Docker | [`deploy/Dockerfile`](deploy/Dockerfile), [`deploy/docker-compose.yml`](deploy/docker-compose.yml) |
+| Шаблон окружения | [`.env.example`](.env.example) |
+| Код API | [`backend/`](backend/) |
+| Frontend с live API | [`web/src/services/`](web/src/services/) (`VITE_USE_MOCKS=false`) |
+
+Живая БД — self-hosted Supabase на `https://knowledge-db.ru/`. API и SPA для приёмки поднимаются локально по [`docs/agents/local-platform-runbook.md`](docs/agents/local-platform-runbook.md).
 
 ## Технологический стек
 
