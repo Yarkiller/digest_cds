@@ -25,7 +25,7 @@ from backend.domain.errors import (
     InvalidSendOrderError,
     PersistenceError,
 )
-from backend.domain.shortlist import ShortlistItem
+from backend.domain.shortlist import ShortlistItem, visible_shortlist_items
 
 logger = logging.getLogger(__name__)
 
@@ -124,11 +124,11 @@ def send_digest(
             raise AlreadySentError(latest.id)
         raise EmptySendPoolError()
 
-    drafts = _approved_drafts(batch.items)
+    drafts = _approved_drafts(visible_shortlist_items(batch.items))
     if drafts:
         raise DraftInSendPoolError(drafts, batch_id=batch.id)
 
-    pool = _approved_ready(batch.items)
+    pool = _approved_ready(visible_shortlist_items(batch.items))
     if not pool:
         raise EmptySendPoolError(batch_id=batch.id)
 

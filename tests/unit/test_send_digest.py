@@ -426,3 +426,42 @@ def test_send_body_includes_intro_and_interstitial_text_blocks() -> None:
     bridge_at = body.index("связка")
     first_at = body.index("First by rank")
     assert intro_at < second_at < bridge_at < first_at
+
+def test_send_validates_against_top_five_visible_pool() -> None:
+    """WR-05: send pool must match GET ≤5 so SPA material_ids cannot hit InvalidSendOrderError."""
+    shortlist = InMemoryShortlistRepository(
+        batch=_batch(
+            *(_item(material_id=100 + i, rank=i, title=f"Item {i}") for i in range(1, 7)),
+        )
+    )
+    batch = shortlist.get_current_batch()
+    assert batch is not None
+    for item in batch.items:
+        shortlist.set_decision(
+            batch_id=batch.id,
+            material_id=item.material_id,
+            decision="approved",
+            actor_user_id="admin-uuid-1",
+            decided_at=datetime(2026, 9, 21, 12, 0, tzinfo=timezone.utc),
+        )
+
+    issues = InMemoryIssueRepository()
+    mailer = StubMailer()
+    pings = InMemoryPingRecorder()
+    visible_ids = [101, 102, 103, 104, 105]
+
+    result = send_digest(
+        shortlist,
+        _publisher(shortlist, issues),
+        mailer,
+        pings,
+        actor_user_id="admin-uuid-1",
+        now=datetime(2026, 9, 21, 15, 0, tzinfo=timezone.utc),
+        material_ids=visible_ids,
+    )
+
+    published = issues.get_by_number(result.issue_number)
+    assert published is not None
+    assert len(published.items) == 5
+    assert {item.material_id for item in published.items} == set(visible_ids)
+

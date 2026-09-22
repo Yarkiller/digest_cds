@@ -83,3 +83,11 @@ class AdminShortlist:
 
 # Locked product weekly cadence (PROJECT.md / ROADMAP «weekly» digest) — G-05-2.
 DIGEST_WEEKLY_CADENCE_DAYS = 7
+
+# ADMIN-01 / D-78: admin-visible shortlist and send/preview pool cap.
+MAX_SHORTLIST_ITEMS = 5
+
+
+def visible_shortlist_items(items: tuple[ShortlistItem, ...]) -> tuple[ShortlistItem, ...]:
+    """Top-N by rank — shared by GET shortlist, preview, and send (WR-05)."""
+    return tuple(sorted(items, key=lambda item: item.rank)[:MAX_SHORTLIST_ITEMS])

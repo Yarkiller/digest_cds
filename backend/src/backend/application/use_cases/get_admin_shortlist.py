@@ -8,9 +8,8 @@ from backend.domain.shortlist import (
     AdminShortlist,
     AdminShortlistItem,
     honest_factor_labels,
+    visible_shortlist_items,
 )
-
-_MAX_SHORTLIST_ITEMS = 5
 
 
 def get_admin_shortlist(shortlist: ShortlistRepository) -> AdminShortlist:
@@ -35,7 +34,7 @@ def get_admin_shortlist(shortlist: ShortlistRepository) -> AdminShortlist:
             sent_at=None,
         )
 
-    ranked = sorted(batch.items, key=lambda item: item.rank)[:_MAX_SHORTLIST_ITEMS]
+    ranked = visible_shortlist_items(batch.items)
     items = tuple(
         AdminShortlistItem(
             material_id=item.material_id,

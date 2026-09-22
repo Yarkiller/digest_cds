@@ -7,7 +7,7 @@ from typing import Sequence
 
 from backend.application.ports.shortlist_repository import ShortlistRepository
 from backend.domain.errors import EmptySendPoolError, InvalidPreviewCompositionError
-from backend.domain.shortlist import ShortlistItem
+from backend.domain.shortlist import ShortlistItem, visible_shortlist_items
 
 
 @dataclass(frozen=True)
@@ -111,7 +111,7 @@ def preview_digest_email(
     if batch is None:
         raise EmptySendPoolError()
 
-    pool = _approved_ready(batch.items)
+    pool = _approved_ready(visible_shortlist_items(batch.items))
     if not pool:
         raise EmptySendPoolError(batch_id=batch.id)
 
