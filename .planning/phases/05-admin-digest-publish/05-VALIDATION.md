@@ -3,17 +3,17 @@ phase: 5
 slug: admin-digest-publish
 # status lifecycle: draft (seeded by plan-phase) → validated (set by validate-phase §6)
 # audit-milestone §5.5 distinguishes NOT-VALIDATED (draft) from PARTIAL (validated + nyquist_compliant: false) (#2117)
-status: draft
-nyquist_compliant: false
+status: validated
+nyquist_compliant: true
 wave_0_complete: true
 created: 2026-09-21
-updated: 2026-09-21
+updated: 2026-09-22
 ---
 
 # Phase 5 — Validation Strategy
 
 > Per-phase validation contract for feedback sampling during execution.
-> Refreshed by plan **05-06** after honesty e2e + unit gates landed (ADMIN-01…08).
+> Audited by `/gsd-validate-phase` on 2026-09-22. ADMIN-01…08 and the AUTH-03 admin gate are covered by existing unit and Playwright tests (including gap-closure plans 05-07…09).
 
 ---
 
@@ -54,10 +54,14 @@ updated: 2026-09-21
 | 05-06-batch | 05 / 06 | 3 | ADMIN-06 | — | Select-all / top-N checkboxes | e2e | `npx playwright test tests/admin.spec.js -g "топ"` | ✅ exists | ✅ green |
 | 05-07-send | 03 / 06 | 2 | ADMIN-07 | T-05-double | Send success; repeat 409 | unit + e2e | `uv run pytest tests/unit/test_send_digest.py -x`; Отправка записана / Уже отправлено | ✅ exists | ✅ green |
 | 05-08-link | 03 / 06 | 2 | ADMIN-08 / D-90 | T-05-20 | Stub body `/issues/{n}` + returnUrl | unit + e2e | `uv run pytest tests/unit/test_stub_mailer.py -x`; `tests/auth.spec.js` ADMIN-08 | ✅ exists | ✅ green |
+| 05-05-adapter | 05 | 4 | ADMIN-01, ADMIN-02, ADMIN-07, ADMIN-08 | T-05-09 | Live shortlist claim + issue publish contract; SMTP fail-fast | unit | `uv run pytest tests/unit/test_supabase_shortlist_repository_contract.py tests/unit/test_live_container_wiring.py -x` | ✅ exists | ✅ green |
+| 05-07-intro | 07 | 1 | ADMIN-04, ADMIN-03 | — | Preview body includes intro + ordered blocks | unit + e2e | `uv run pytest tests/unit/test_preview_digest.py tests/unit/test_http_admin.py -q --tb=short`; Playwright «Вводный текст» | ✅ exists | ✅ green |
+| 05-08-blocks | 08 | 2 | ADMIN-04, ADMIN-07, ADMIN-08 | — | Reorder / interstitial drives preview; send honors material order | unit + e2e | `uv run pytest tests/unit/test_send_digest.py tests/unit/test_http_admin.py -q --tb=short`; Playwright «блок» | ✅ exists | ✅ green |
+| 05-09-rest | 09 | 3 | ADMIN-01, ADMIN-07 | — | Post-send `digest_rest` hides shortlist until the next batch | unit + e2e | `uv run pytest tests/unit/test_get_admin_shortlist.py tests/unit/test_http_admin.py -q --tb=short`; rest-copy e2e | ✅ exists | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
-**Coverage notes (05-06):** ADMIN-01…08 closed via prior unit plans + this honesty gate. Playwright cites D-77 (403 UI), D-80 (empty), D-85 (draft), D-86 (preview fingerprint), D-87/D-90 (stub send + issue CTA / returnUrl).
+**Coverage notes (05-06, audited 2026-09-22):** ADMIN-01…08 closed via unit plans + the honesty gate, then extended by gap-closure plans. Playwright cites D-77 (403 UI), D-80 (empty), D-85 (draft), D-86 (preview fingerprint), D-87/D-90 (stub send + issue CTA / returnUrl), G-05-1 (intro + reorderable blocks), and G-05-2 (`digest_rest`).
 
 ---
 
@@ -92,6 +96,32 @@ updated: 2026-09-21
 - [x] Wave 0 covers all MISSING references
 - [x] No watch-mode flags
 - [x] Feedback latency < 120s
-- [ ] `nyquist_compliant: true` set in frontmatter — leave for `/gsd-validate-phase` unless already warranted
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending (`wave_0_complete: true`; `nyquist_compliant` deferred to validate-phase)
+**Approval:** validated 2026-09-22 (`nyquist_compliant: true`)
+
+---
+
+## Validation Audit 2026-09-22
+
+| Metric | Count |
+|--------|-------|
+| Gaps found | 0 |
+| Resolved | 0 |
+| Escalated | 0 |
+
+Requirement classification (COVERED = test exists, targets the behavior, and ran green):
+
+| Requirement | Status | Evidence |
+|-------------|--------|----------|
+| ADMIN-01 | COVERED | `test_get_admin_shortlist.py`, `test_http_admin.py` (≤5, empty, `digest_rest`); `admin.spec.js` empty + rest |
+| ADMIN-02 | COVERED | `test_set_shortlist_decision.py`, `test_http_admin.py` approve/reject; `admin.spec.js` «Одобрить выбранные» |
+| ADMIN-03 | COVERED | `test_send_digest.py` draft block; `test_http_admin.py` 400; `admin.spec.js` draft hint |
+| ADMIN-04 | COVERED | `test_preview_digest.py` (pool, intro, blocks, fail leaves unsent); `admin.spec.js` preview gate + intro + blocks |
+| ADMIN-05 | COVERED | `test_score_factors.py`; `admin.spec.js` «обоснование недоступно» |
+| ADMIN-06 | COVERED | `admin.spec.js` select-all, top-3, manual uncheck keeps siblings |
+| ADMIN-07 | COVERED | `test_send_digest.py` (publish, 409, order, mismatch, claim release); `admin.spec.js` «Отправка записана» / «Уже отправлено» |
+| ADMIN-08 | COVERED | `test_stub_mailer.py` + send issue path; `auth.spec.js` returnUrl `/issues/{n}`; success CTA href |
+| AUTH-03 (admin gate) | COVERED | `test_http_admin.py` 403 matrix; `test_http_me.py` `app_role`; `admin.spec.js` employee 403 page |
+
+Run on 2026-09-22: 79 phase-5 unit tests passed; 7 live-wiring tests passed; 20 `admin.spec.js` tests passed; ADMIN-08 auth returnUrl passed. No new test files. Manual-only rows stay environment proofs (live admin promote, optional mocks=false).
