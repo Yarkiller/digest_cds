@@ -463,5 +463,12 @@ def test_send_validates_against_top_five_visible_pool() -> None:
     published = issues.get_by_number(result.issue_number)
     assert published is not None
     assert len(published.items) == 5
-    assert {item.material_id for item in published.items} == set(visible_ids)
+    assert [item.title for item in published.items] == [
+        "Item 1",
+        "Item 2",
+        "Item 3",
+        "Item 4",
+        "Item 5",
+    ]
+    assert "Item 6" not in {item.title for item in published.items}
 
