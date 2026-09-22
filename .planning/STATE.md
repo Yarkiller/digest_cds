@@ -1,44 +1,43 @@
 ---
 gsd_state_version: 1.0
 current_phase: 05
-current_phase_name: Admin Digest Publish
-status: verifying
-stopped_at: Completed 05-09-PLAN.md
-last_updated: "2026-09-21T19:13:20.743Z"
-last_activity: 2026-09-21
-last_activity_desc: Phase 05 execution started
-state_head: 3f0c4255452116b7cc209e70694a05cc3cb46a36
+status: completed
+stopped_at: Phase 05 complete — all phases complete
+last_updated: "2026-09-22T02:27:32.184Z"
+last_activity: 2026-09-22
+last_activity_desc: Phase 05 complete
+state_head: e0a4955b60e766bf7776e8e152dcc813e436e0d7
 progress:
   total_phases: 5
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 40
   completed_plans: 39
-  percent: 80
+  percent: 98
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-09-20)
+See: .planning/PROJECT.md (updated 2026-09-22)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Phase 05 — Admin Digest Publish
+**Current focus:** Milestone complete — admin digest publish shipped
 
 ## Current Position
 
-Phase: 05 (Admin Digest Publish) — EXECUTING
-Plan: 9 of 9
-Status: Phase complete — ready for verification
-Last activity: 2026-09-21 — Completed 05-07 preview composition spine (G-05-1)
+Phase: 05
+Plan: Not started
+Status: All phases complete
+Last activity: 2026-09-22 — Phase 05 complete
 
-Progress: [████████░░] 80% (37/40 plans)
+Progress: [████████████████████] 39/40 plans (98%)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 28
+- Total plans completed: 37
 - Average duration: ~7min (plans 01–05 timed)
 - Total execution time: ~35min + 01-06 docs/human follow-up
 
@@ -50,6 +49,7 @@ Progress: [████████░░] 80% (37/40 plans)
 | 02 | 6 | - | - |
 | 03 | 6 | - | - |
 | 04 | 10 | - | - |
+| 05 | 9 | - | - |
 
 **Per-Plan Metrics:**
 
@@ -194,7 +194,7 @@ Decisions are logged in PROJECT.md Key Decisions and `<decisions>` blocks.
 
 ### Pending Todos
 
-None — ready to execute Phase 3 (`/gsd-execute-phase 3`).
+None. Milestone phases are complete.
 
 ### Blockers/Concerns
 
@@ -207,13 +207,12 @@ None. Live FE↔BE proof approved 2026-09-19.
 | Post-v1 | Public leaderboard (ADR-0001) | Deferred | 2026-09-19 | v1 |
 | Post-v1 | Quiz cards (REQ-US-29) | Deferred | 2026-09-19 | v1 |
 | Post-v1 | Admin YAML pipeline UI (REQ-US-30) | Deferred | 2026-09-19 | v1 |
-| Phase 5 | AUTH-03 admin-API 403 | Deferred | 2026-09-19 | Phase 1 verify |
 | Ops | Cloud.ru app VM deploy (D-07) | Docs only | 2026-09-19 | Phase 1 |
 | UX | Logout button in shell | Non-blocking | 2026-09-19 | Phase 1 |
 
 ## Session Continuity
 
-Last session: 2026-09-21T19:13:20.005Z
-Stopped at: Completed 05-09-PLAN.md
+Last session: 2026-09-22T02:27:32Z
+Stopped at: Phase 5 complete, milestone ready to close
 Resume file: None
-Verification: `.planning/phases/01-platform-foundation-auth/01-VERIFICATION.md`
+Verification: `.planning/phases/05-admin-digest-publish/05-VERIFICATION.md`

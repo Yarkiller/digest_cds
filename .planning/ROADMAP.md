@@ -10,7 +10,7 @@ Brownfield path from mock UI + in-memory ports to a production-shaped Digest CDS
 - [x] **Phase 2: Issue, Materials & Archive** - Current issue, prepared articles, archive (completed 2026-09-20)
 - [x] **Phase 3: Voting Cycle** - One honest vote, change while open, audit-language ballot (completed 2026-09-20)
 - [x] **Phase 4: Knowledge & Razbory** - Semantic search, role filters, разбор longread/notebook (completed 2026-09-21)
-- [ ] **Phase 5: Admin Digest Publish** - Shortlist triage, preview, send, email + archive
+- [x] **Phase 5: Admin Digest Publish** - Shortlist triage, preview, send, email + archive (completed 2026-09-22)
 
 ## Phase Details
 
@@ -210,4 +210,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 2. Issue, Materials & Archive | 6/6 | Complete    | 2026-09-20 |
 | 3. Voting Cycle | 6/6 | Complete    | 2026-09-20 |
 | 4. Knowledge & Razbory | 10/10 | Complete    | 2026-09-21 |
-| 5. Admin Digest Publish | 9/9 | In Progress|  |
+| 5. Admin Digest Publish | 9/9 | Complete    | 2026-09-22 |

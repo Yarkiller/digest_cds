@@ -38,12 +38,12 @@ v1 is done only when **all** of the following hold:
 - ✓ Current issue, materials (prepared article only), archive (ISSUE-*, MAT-*) — Phase 2
 - ✓ Voting cycle: one vote, change while open, audit-language ballot (VOTE-*) — Phase 3
 - ✓ Knowledge semantic search + role filters; разборы list/longread/notebook (KNOW-*, RAZB-*) — Phase 4
+- ✓ Admin shortlist → approve/reject → preview → send → archive (ADMIN-*) — Phase 5
 
 ### Active
 
 <!-- Current v1 scope — see REQUIREMENTS.md for IDs and acceptance. -->
 
-- [ ] Admin shortlist → approve/reject → preview → send → archive (ADMIN-*)
 - [ ] Platform: live DB, FastAPI, FE↔BE, security, errors, docs (PLAT-*)
 
 ### Out of Scope
@@ -60,7 +60,7 @@ v1 is done only when **all** of the following hold:
 ## Context
 
 - **Product framing:** Concept 3 Editorial UI («Digest CDS: издание»); personas and journeys J1–J6 in ingest context.
-- **Brownfield → live path:** Phases 1–4 shipped auth, issue/materials/archive, voting, knowledge search, and разборы (in-memory + live adapters/migration 004); Phase 5 is admin digest publish.
+- **Brownfield → live path:** Phases 1–5 shipped auth, issue/materials/archive, voting, knowledge search, разборы, and admin digest publish (in-memory + live adapters through migration 005). Outbound mail stays on StubMailer until SMTP is configured.
 - **Domain language:** `CONTEXT.md` + `docs/adr/` are canonical for agents.
 - **Intel source:** `.planning/intel/` (ingest MODE=new, READY, 0 blockers).
 - **Preserve:** `.planning/codebase/` brownfield map — do not delete.
@@ -86,6 +86,7 @@ v1 is done only when **all** of the following hold:
 | Material = prepared article only | Editorial trust; no media-as-material | ✓ Locked (SPEC/content) |
 | Ports & Adapters + TDD | Architecture & AGENTS rules | ✓ Locked |
 | Announcement разборы suppress read CTA (G-04-2) | Visual honesty: unpublished status must not look readable | ✓ Phase 4 |
+| Admin send publishes an issue and claims sent_at before stub mail (D-88, D-87) | Archive and the email link must match a real issue; SMTP is not live yet | ✓ Phase 5 |
 
 <decisions>
 ## Locked decisions (from ADRs / ingest)
@@ -126,4 +127,4 @@ After each phase transition: move validated/invalidated requirements; log decisi
 After milestone: full review of Core Value, Out of Scope, and Context against shipped reality.
 
 ---
-*Last updated: 2026-09-21 after Phase 4*
+*Last updated: 2026-09-22 after Phase 5*
