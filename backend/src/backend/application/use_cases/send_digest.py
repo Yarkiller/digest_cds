@@ -5,15 +5,23 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from typing import Sequence
 
 from backend.application.ports.digest_publisher import DigestPublisher
 from backend.application.ports.mailer import Mailer
 from backend.application.ports.ping_recorder import PingRecorder
 from backend.application.ports.shortlist_repository import ShortlistRepository
+from backend.application.use_cases.preview_digest_email import (
+    PreviewBlock,
+    PreviewMaterialBlock,
+    compose_digest_body,
+    compose_digest_segments,
+)
 from backend.domain.errors import (
     AlreadySentError,
     DraftInSendPoolError,
     EmptySendPoolError,
+    InvalidPreviewCompositionError,
     InvalidSendOrderError,
     PersistenceError,
 )
@@ -67,6 +75,17 @@ def _ordered_pool(
     return [by_id[mid] for mid in material_ids]
 
 
+def _material_ids_from_blocks(blocks: Sequence[PreviewBlock] | None) -> list[int] | None:
+    if blocks is None:
+        return None
+    ids = [
+        block.material_id
+        for block in blocks
+        if isinstance(block, PreviewMaterialBlock)
+    ]
+    return ids if ids else None
+
+
 def send_digest(
     shortlist: ShortlistRepository,
     publisher: DigestPublisher,
@@ -76,6 +95,8 @@ def send_digest(
     actor_user_id: str,
     now: datetime | None = None,
     material_ids: list[int] | None = None,
+    intro: str = "",
+    blocks: Sequence[PreviewBlock] | None = None,
 ) -> SendDigestResult:
     """Validate pool → atomic claim+publish → mail → audit (D-88 mandatory publish-on-send).
 
@@ -85,6 +106,9 @@ def send_digest(
 
     When ``material_ids`` is provided it must be an exact permutation of the approved∩ready
     pool; that order becomes publication and mail order (G-05-1).
+
+    WR-02: optional ``intro`` + ``blocks`` compose the mail body with the same rules as
+    preview (plus an issue URL header).
 
     CR-02: after a successful claim+publish, mail and audit are best-effort — failures are
     logged and must not convert an already-published digest into a failed send response.
@@ -108,8 +132,17 @@ def send_digest(
     if not pool:
         raise EmptySendPoolError(batch_id=batch.id)
 
-    ordered = _ordered_pool(pool, material_ids, batch_id=batch.id)
+    # Prefer explicit material_ids; otherwise derive order from composition blocks.
+    effective_ids = material_ids if material_ids is not None else _material_ids_from_blocks(blocks)
+    ordered = _ordered_pool(pool, effective_ids, batch_id=batch.id)
     ordered_ids = [item.material_id for item in ordered]
+
+    try:
+        _materials, body_segments = compose_digest_segments(pool=ordered, blocks=blocks)
+    except InvalidPreviewCompositionError as exc:
+        raise InvalidSendOrderError(batch_id=batch.id) from exc
+    except EmptySendPoolError as exc:
+        raise EmptySendPoolError(batch_id=batch.id) from exc
 
     publication = publisher.claim_and_publish(
         batch_id=batch.id,
@@ -120,12 +153,12 @@ def send_digest(
     )
 
     issue_url = publication.issue_url
-    titles = "\n".join(f"- {item.title}" for item in ordered)
+    composed = compose_digest_body(intro=intro, segments=body_segments)
     subject = f"Digest CDS — выпуск {publication.issue_number}"
     body_text = (
         f"Новый выпуск Digest CDS №{publication.issue_number}.\n"
         f"Читать: {issue_url}\n\n"
-        f"Материалы:\n{titles}\n"
+        f"{composed}"
     )
     try:
         mailer.send_digest(

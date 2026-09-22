@@ -103,6 +103,8 @@ class SendDigestRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     material_ids: list[int] | None = None
+    intro: str = ""
+    blocks: list[DigestPreviewMaterialBlockRequest | DigestPreviewTextBlockRequest] | None = None
 
 
 class SendDigestResponse(BaseModel):
@@ -134,6 +136,20 @@ def _require_container(request: Request):
             detail="container_not_configured",
         )
     return container
+
+
+def _to_preview_blocks(
+    blocks: list[DigestPreviewMaterialBlockRequest | DigestPreviewTextBlockRequest] | None,
+) -> list[PreviewMaterialBlock | PreviewTextBlock] | None:
+    if blocks is None:
+        return None
+    uc_blocks: list[PreviewMaterialBlock | PreviewTextBlock] = []
+    for block in blocks:
+        if isinstance(block, DigestPreviewMaterialBlockRequest):
+            uc_blocks.append(PreviewMaterialBlock(material_id=block.material_id))
+        else:
+            uc_blocks.append(PreviewTextBlock(text=block.text))
+    return uc_blocks
 
 
 def _to_response(dto: AdminShortlist) -> AdminShortlistResponse:
@@ -240,14 +256,7 @@ def post_shortlist_preview(
 ) -> DigestPreviewResponse:
     shortlist = _require_shortlist(request)
     payload = body or DigestPreviewRequest()
-    uc_blocks: list[PreviewMaterialBlock | PreviewTextBlock] | None = None
-    if payload.blocks is not None:
-        uc_blocks = []
-        for block in payload.blocks:
-            if isinstance(block, DigestPreviewMaterialBlockRequest):
-                uc_blocks.append(PreviewMaterialBlock(material_id=block.material_id))
-            else:
-                uc_blocks.append(PreviewTextBlock(text=block.text))
+    uc_blocks = _to_preview_blocks(payload.blocks)
     try:
         preview = preview_digest_email(
             shortlist,
@@ -309,6 +318,8 @@ def post_shortlist_send(
             container.pings,
             actor_user_id=admin.id,
             material_ids=payload.material_ids,
+            intro=payload.intro,
+            blocks=_to_preview_blocks(payload.blocks),
         )
     except DraftInSendPoolError as exc:
         raise HTTPException(

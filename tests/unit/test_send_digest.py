@@ -384,3 +384,45 @@ def test_send_audit_failure_after_publish_still_returns_success() -> None:
     assert shortlist.get_latest_batch().sent_at is not None
     assert issues.get_by_number(result.issue_number) is not None
     assert mailer.last_body_text is not None
+
+
+def test_send_body_includes_intro_and_interstitial_text_blocks() -> None:
+    """WR-02: mail body must match preview composition (intro + ordered blocks)."""
+    from backend.application.use_cases.preview_digest_email import (
+        PreviewMaterialBlock,
+        PreviewTextBlock,
+    )
+
+    shortlist = InMemoryShortlistRepository(
+        batch=_batch(
+            _item(material_id=101, rank=1, title="First by rank"),
+            _item(material_id=102, rank=2, title="Second by rank"),
+        )
+    )
+    issues = InMemoryIssueRepository()
+    mailer = StubMailer()
+    pings = InMemoryPingRecorder()
+
+    result = send_digest(
+        shortlist,
+        _publisher(shortlist, issues),
+        mailer,
+        pings,
+        actor_user_id="admin-uuid-1",
+        now=datetime(2026, 9, 21, 15, 0, tzinfo=timezone.utc),
+        material_ids=[102, 101],
+        intro="Коллеги, добрый день!",
+        blocks=[
+            PreviewMaterialBlock(material_id=102),
+            PreviewTextBlock(text="связка"),
+            PreviewMaterialBlock(material_id=101),
+        ],
+    )
+
+    body = mailer.last_body_text or ""
+    assert f"/issues/{result.issue_number}" in body
+    intro_at = body.index("Коллеги, добрый день!")
+    second_at = body.index("Second by rank")
+    bridge_at = body.index("связка")
+    first_at = body.index("First by rank")
+    assert intro_at < second_at < bridge_at < first_at

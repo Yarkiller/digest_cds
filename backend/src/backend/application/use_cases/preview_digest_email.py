@@ -49,13 +49,51 @@ def _approved_ready(items: tuple[ShortlistItem, ...]) -> list[ShortlistItem]:
     )
 
 
-def _compose_body(*, intro: str, segments: list[str]) -> str:
+def compose_digest_body(*, intro: str, segments: list[str]) -> str:
     parts: list[str] = []
     trimmed = intro.strip()
     if trimmed:
         parts.append(trimmed)
     parts.extend(segments)
     return "\n".join(parts) + ("\n" if parts else "")
+
+
+# Back-compat alias used by older call sites / tests.
+_compose_body = compose_digest_body
+
+
+def compose_digest_segments(
+    *,
+    pool: list[ShortlistItem],
+    blocks: Sequence[PreviewBlock] | None,
+) -> tuple[list[ShortlistItem], list[str]]:
+    """Build ordered materials + body segments from optional composition blocks.
+
+    Shared by preview and send so StubMailer/SMTP bodies match «Превью письма».
+    """
+    by_id = {item.material_id: item for item in pool}
+
+    if blocks is None or len(blocks) == 0:
+        return pool, [f"- {item.title}" for item in pool]
+
+    ordered_materials: list[ShortlistItem] = []
+    body_segments: list[str] = []
+    for block in blocks:
+        if isinstance(block, PreviewTextBlock):
+            text = block.text.strip()
+            if text:
+                body_segments.append(text)
+            continue
+        if not isinstance(block, PreviewMaterialBlock):
+            raise InvalidPreviewCompositionError()
+        item = by_id.get(block.material_id)
+        if item is None:
+            raise InvalidPreviewCompositionError(material_id=block.material_id)
+        ordered_materials.append(item)
+        body_segments.append(f"- {item.title}")
+    if not ordered_materials:
+        raise EmptySendPoolError()
+    return ordered_materials, body_segments
 
 
 def preview_digest_email(
@@ -77,29 +115,10 @@ def preview_digest_email(
     if not pool:
         raise EmptySendPoolError(batch_id=batch.id)
 
-    by_id = {item.material_id: item for item in pool}
-
-    if blocks is None or len(blocks) == 0:
-        ordered_materials = pool
-        body_segments = [f"- {item.title}" for item in ordered_materials]
-    else:
-        ordered_materials = []
-        body_segments = []
-        for block in blocks:
-            if isinstance(block, PreviewTextBlock):
-                text = block.text.strip()
-                if text:
-                    body_segments.append(text)
-                continue
-            if not isinstance(block, PreviewMaterialBlock):
-                raise InvalidPreviewCompositionError()
-            item = by_id.get(block.material_id)
-            if item is None:
-                raise InvalidPreviewCompositionError(material_id=block.material_id)
-            ordered_materials.append(item)
-            body_segments.append(f"- {item.title}")
-        if not ordered_materials:
-            raise EmptySendPoolError(batch_id=batch.id)
+    try:
+        ordered_materials, body_segments = compose_digest_segments(pool=pool, blocks=blocks)
+    except EmptySendPoolError:
+        raise EmptySendPoolError(batch_id=batch.id) from None
 
     preview_items = tuple(
         DigestPreviewItem(

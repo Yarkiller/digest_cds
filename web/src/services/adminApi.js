@@ -435,11 +435,13 @@ export async function previewEmail(accessToken, composition = {}) {
 
 /**
  * @param {string} [accessToken]
- * @param {{ material_ids?: number[] }} [options]
+ * @param {{ material_ids?: number[], intro?: string, blocks?: Array<{ kind: 'material', material_id: number } | { kind: 'text', text: string }> }} [options]
  * @returns {Promise<{ batch_id: number, issue_number: number, issue_url: string, delivery_status: string, recipient_count: number, message: string }>}
  */
 export async function sendDigest(accessToken, options = {}) {
   const materialIds = Array.isArray(options?.material_ids) ? options.material_ids : null
+  const intro = typeof options?.intro === 'string' ? options.intro : ''
+  const blocks = Array.isArray(options?.blocks) ? options.blocks : null
 
   if (useMocks()) {
     await delay(100)
@@ -495,7 +497,10 @@ export async function sendDigest(accessToken, options = {}) {
     throw new AdminApiError('Требуется вход.', { code: 'UNAUTHORIZED', retryable: false })
   }
 
-  const payload = materialIds != null ? { material_ids: materialIds } : {}
+  const payload = {}
+  if (materialIds != null) payload.material_ids = materialIds
+  if (intro) payload.intro = intro
+  if (blocks != null) payload.blocks = blocks
 
   let response
   try {
