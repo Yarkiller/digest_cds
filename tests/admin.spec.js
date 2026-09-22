@@ -153,6 +153,21 @@ test.describe("Admin Digest — shortlist triage (ADMIN-01…03, ADMIN-05, D-79,
     await expect(approveBtn).toBeDisabled();
     await expect(firstRow.getByText("одобрен")).toBeVisible();
   });
+
+  test("partial decision failure keeps failed selection and toasts ids (WR-06)", async ({
+    page,
+  }) => {
+    await gotoAsRole(page, "admin", "/admin/digest");
+    const rows = page.getByTestId("admin-shortlist-row");
+    await rows.nth(0).getByRole("checkbox").check();
+    await rows.nth(1).getByRole("checkbox").check();
+    await page.evaluate(() => window.__DIGEST_ADMIN_HARNESS__.armFailNextDecision());
+    await page.getByRole("button", { name: /одобрить выбранные/i }).click();
+    await expect(page.getByText(/не сохранено/i)).toBeVisible();
+    // First id fails (armed), second succeeds — failed row stays checked.
+    await expect(rows.nth(0).getByRole("checkbox")).toBeChecked();
+    await expect(rows.nth(1).getByText("одобрен")).toBeVisible();
+  });
 });
 
 test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07, D-85, D-86)", () => {

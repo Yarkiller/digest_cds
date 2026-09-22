@@ -282,17 +282,38 @@ export default function AdminDigestPage() {
     if (approveDisabled) return
     const ids = [...checkedIds]
     setMutating(true)
+    const failed = []
+    let latest = null
     try {
-      let latest = null
       for (const id of ids) {
-        latest = await setDecision(id, decision)
+        try {
+          latest = await setDecision(id, decision)
+        } catch {
+          failed.push(id)
+        }
+      }
+      if (failed.length > 0) {
+        // WR-06: reload honest shortlist; keep failed ids selected; toast which failed
+        try {
+          const dto = await fetchShortlist()
+          applyBatch(dto, setItems, setBatchMeta, setDigestRest, setDaysUntilNextBatch)
+        } catch {
+          if (latest) {
+            applyBatch(latest, setItems, setBatchMeta, setDigestRest, setDaysUntilNextBatch)
+          }
+        }
+        setToast(
+          failed.length === ids.length
+            ? 'Не сохранено'
+            : `Не сохранено: ${failed.join(', ')}`,
+        )
+        setCheckedIds(new Set(failed))
+        return
       }
       if (latest) {
         applyBatch(latest, setItems, setBatchMeta, setDigestRest, setDaysUntilNextBatch)
       }
       setCheckedIds(new Set())
-    } catch {
-      setToast('Не сохранено')
     } finally {
       setMutating(false)
     }
