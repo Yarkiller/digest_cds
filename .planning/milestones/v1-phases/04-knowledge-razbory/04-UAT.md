@@ -43,5 +43,9 @@ blocked: 0
   reason: "User reported: Если разбор темы ещё не готов (готовится) — кнопка «Читать разбор →» не должна быть показана. Это не логично. Показываем надпись — «Разбор этой темы ещё готовится — следите за обновлениями»."
   severity: major
   test: 2
-  artifacts: []
-  missing: []
+  root_cause: "web/src/components/ChronologyItem.jsx renders the «Читать разбор →» <Link to=/razbory/{id}> unconditionally, ignoring item.status. Announcement (status === 'announcement') / not-yet-ready razbory therefore still expose a read CTA."
+  artifacts:
+    - web/src/components/ChronologyItem.jsx
+    - tests/razbory.spec.js
+  missing:
+    - "Conditional in ChronologyItem: when status === 'announcement' (razbor not published/ready), suppress the «Читать разбор →» Link and render «Разбор этой темы ещё готовится — следите за обновлениями» instead."

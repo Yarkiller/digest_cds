@@ -8,6 +8,22 @@ Digest CDS is an editorial knowledge service for СВА (Служба внутр
 
 Authorized СВА staff can read a trustworthy weekly issue of prepared articles and influence the next разбор through one honest vote — without treating raw video/transcript as published material.
 
+## Current State
+
+v1 MVP shipped 2026-09-22. Five phases are verified: corporate auth on live Supabase, the current issue and archive, one honest vote, knowledge search and разборы, and admin shortlist → preview → send. Outbound mail stays on StubMailer. Signup confirmation mail on the shared VM is still unresolved (`g-01-3b-signup-mailer`).
+
+About 11,100 lines of Python and 8,400 lines of JS/JSX. Stack: FastAPI, React/Vite, self-hosted Supabase + pgvector, Playwright, pytest. Git range `cabd7eb` → `ba8be89` (330 commits, 2026-08-23 → 2026-09-22).
+
+## Next Milestone Goals
+
+- Public leaderboard (ADR-0001), deferred from v1
+- Quiz cards (REQ-US-29)
+- Admin YAML pipeline config UI (REQ-US-30)
+- Live SMTP in place of StubMailer
+- Signup confirmation mail so self-service `/register` persists a user (`g-01-3b-signup-mailer`)
+
+Fresh requirements and a roadmap for that milestone come from `/gsd-new-milestone`.
+
 ## Success Criteria (v1 — developer-facing)
 
 v1 is done only when **all** of the following hold:
@@ -24,34 +40,29 @@ v1 is done only when **all** of the following hold:
 
 ### Validated
 
-<!-- Inferred from brownfield map `.planning/codebase/` — scaffolding that already exists. -->
-
 - ✓ Ports & Adapters layout (`backend/`, `supabase-integration/`, `data-collection/`, `web/`) — brownfield
 - ✓ Initial Supabase schema + RLS SQL (`supabase-integration/migrations/001_initial_schema.sql`) — brownfield
 - ✓ React/Vite Editorial UI shell with mock data (`web/`) + design canon (`design-frontend/`) — brownfield
 - ✓ Domain entities/ports for Material & Knowledge (in-memory composition) — brownfield
 - ✓ Playwright E2E harness + pytest unit layout — brownfield
-
-### Validated
-
-- ✓ Corporate auth + session redirect (AUTH-*) — Phase 1
-- ✓ Current issue, materials (prepared article only), archive (ISSUE-*, MAT-*) — Phase 2
-- ✓ Voting cycle: one vote, change while open, audit-language ballot (VOTE-*) — Phase 3
-- ✓ Knowledge semantic search + role filters; разборы list/longread/notebook (KNOW-*, RAZB-*) — Phase 4
-- ✓ Admin shortlist → approve/reject → preview → send → archive (ADMIN-*) — Phase 5
+- ✓ Platform: live DB, FastAPI, FE↔BE, security, errors, docs (PLAT-*) — v1
+- ✓ Corporate auth + session redirect (AUTH-*) — v1
+- ✓ Current issue, materials (prepared article only), archive (ISSUE-*, MAT-*) — v1
+- ✓ Voting cycle: one vote, change while open, audit-language ballot (VOTE-*) — v1
+- ✓ Knowledge semantic search + role filters; разборы list/longread/notebook (KNOW-*, RAZB-*) — v1
+- ✓ Admin shortlist → approve/reject → preview → send → archive (ADMIN-*) — v1
 
 ### Active
 
-<!-- Current v1 scope — see REQUIREMENTS.md for IDs and acceptance. -->
-
-- [ ] Platform: live DB, FastAPI, FE↔BE, security, errors, docs (PLAT-*)
+- [ ] Public leaderboard (ADR-0001)
+- [ ] Quiz cards (REQ-US-29)
+- [ ] Admin YAML pipeline config UI (REQ-US-30)
+- [ ] Live SMTP delivery
+- [ ] Signup confirmation mail (`g-01-3b-signup-mailer`)
 
 ### Out of Scope
 
-- Public leaderboard / gamification UI — deferred past v1 (ADR-0001 locked); activity events may be collected
-- Quiz cards (карточки с вопросами) — post-v1 (REQ-US-29)
-- Admin YAML pipeline config UI — post-v1 (REQ-US-30)
-- XP, streaks, anonymous average comparison — rejected / not v1
+- XP, streaks, anonymous average comparison — rejected for v1 and still rejected as the participation driver
 - Storing or publishing video/audio/raw transcript as material — content contract
 - Public foreign LLM/Whisper APIs; local Whisper on app VM — ADR-0002
 - Managed Supabase Cloud / managed PostgreSQL Cloud.ru as primary DB — ADR-0004
@@ -59,8 +70,9 @@ v1 is done only when **all** of the following hold:
 
 ## Context
 
+- **Shipped v1:** Auth, issue/materials/archive, voting, knowledge search, разборы, and admin digest publish. Live adapters through migration 005. Mail is StubMailer.
 - **Product framing:** Concept 3 Editorial UI («Digest CDS: издание»); personas and journeys J1–J6 in ingest context.
-- **Brownfield → live path:** Phases 1–5 shipped auth, issue/materials/archive, voting, knowledge search, разборы, and admin digest publish (in-memory + live adapters through migration 005). Outbound mail stays on StubMailer until SMTP is configured.
+- **Known debt at close:** Nyquist drafts for phases 1–3; live FE↔BE smoke still human-gated under mocks in CI; rank rewrite before `claim_and_publish_digest` is non-atomic (CR-01); four debug sessions acknowledged 2026-09-22 (see STATE.md Deferred Items).
 - **Domain language:** `CONTEXT.md` + `docs/adr/` are canonical for agents.
 - **Intel source:** `.planning/intel/` (ingest MODE=new, READY, 0 blockers).
 - **Preserve:** `.planning/codebase/` brownfield map — do not delete.
@@ -87,6 +99,10 @@ v1 is done only when **all** of the following hold:
 | Ports & Adapters + TDD | Architecture & AGENTS rules | ✓ Locked |
 | Announcement разборы suppress read CTA (G-04-2) | Visual honesty: unpublished status must not look readable | ✓ Phase 4 |
 | Admin send publishes an issue and claims sent_at before stub mail (D-88, D-87) | Archive and the email link must match a real issue; SMTP is not live yet | ✓ Phase 5 |
+| Self-service `/register` with Логин; login is email+password (G-01-3) | UAT showed a dead registration CTA and a name field on login | ✓ Phase 1 |
+| Typography-only issue hero (D-26) | Current issue shows number, period, and title | ✓ Phase 2 |
+| StubMailer until SMTP is configured | Publish and the issue link must exist before live mail | ✓ Phase 5 |
+| Four debug sessions acknowledged at v1 close | Diagnosis files stayed open after the gap-closure plans; signup mailer is still unknown | — Deferred |
 
 <decisions>
 ## Locked decisions (from ADRs / ingest)
@@ -127,4 +143,4 @@ After each phase transition: move validated/invalidated requirements; log decisi
 After milestone: full review of Core Value, Out of Scope, and Context against shipped reality.
 
 ---
-*Last updated: 2026-09-22 after Phase 5*
+*Last updated: 2026-09-22 after v1 milestone*

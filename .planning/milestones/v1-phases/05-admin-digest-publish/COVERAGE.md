@@ -31,7 +31,7 @@
 | activity_events audit row on send | INTEGRATE | D-87 — reuse PingRecorder / activity_events (`kind=digest_send` or payload action=send) |
 | profiles.role read for admin gate | INTEGRATE | D-74 / AUTH-03 — authorize from `profiles.role`, never JWT `role` claim |
 | Idempotent seed `005_phase5_admin_shortlist.sql` | INTEGRATE | ≤5 demo candidates; honesty comment «demo batch для Phase 5» |
-| SPA direct `.from(shortlist|issues)` writes | OPT-OUT | never — FastAPI Bearer only; shortlist RLS has no authenticated policies |
+| SPA direct `.from(shortlist/issues)` writes | OPT-OUT | never — FastAPI Bearer only; shortlist RLS has no authenticated policies |
 | Destructive TRUNCATE / db reset | OPT-OUT | never on shared VM |
 
 ## FoundryModels / scoring pipeline

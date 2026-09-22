@@ -1,18 +1,18 @@
 ---
 gsd_state_version: 1.0
-current_phase: 05
-status: completed
+status: Awaiting next milestone
 stopped_at: Phase 05 complete — all phases complete
-last_updated: "2026-09-22T02:27:32.184Z"
+last_updated: "2026-09-22T03:03:54.500Z"
 last_activity: 2026-09-22
-last_activity_desc: Phase 05 complete
-state_head: e0a4955b60e766bf7776e8e152dcc813e436e0d7
+last_activity_desc: Milestone v1 completed and archived
+state_head: ba8be89a8732275ace6f086b723336c5932a0cd3
 progress:
   total_phases: 5
   completed_phases: 5
   total_plans: 40
   completed_plans: 39
   percent: 98
+current_phase: 05
 ---
 
 # Project State
@@ -22,16 +22,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-09-22)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Milestone complete — admin digest publish shipped
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Phase: 05
-Plan: Not started
-Status: All phases complete
-Last activity: 2026-09-22 — Phase 05 complete
-
-Progress: [████████████████████] 39/40 plans (98%)
+Phase: Milestone v1 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-09-22 — Milestone v1 completed and archived
 
 ## Performance Metrics
 
@@ -98,99 +96,9 @@ Progress: [████████████████████] 39/40 p
 
 ### Decisions
 
-Decisions are logged in PROJECT.md Key Decisions and `<decisions>` blocks.
+Full decision log: `.planning/PROJECT.md` (Key Decisions and `<decisions>`).
 
-- ADR-0001 locked: public leaderboard deferred past v1
-- ADR-0002…0004 adopted as project constraints (proposed ADRs)
-- Brownfield `.planning/codebase/` preserved
-- [Phase 1]: Pin RESEARCH FastAPI stack versions after human package approval
-- [Phase 1]: create_app(settings) injectable; HTTP edge only under interface/http
-- [Phase 1]: Exact corporate email domain match after @ (not endswith) to avoid subdomain spoofing
-- [Phase 1]: AccessTokenClaims in domain; JWT verify only in infrastructure; injectable signing_key_resolver for offline tests
-- [Phase 1]: PingRecorder returns recorded id; POST /me/ping body {ok,id}; empty payload until Plan 04
-- [Phase 1]: AUTH-03 admin-API 403 remains deferred to Phase 5; /me/ping uses JWT+domain gate only
-- [Phase 1]: APP_CONTAINER=memory|live selects builder; service_role only in composition/live.py
-- [Phase 1]: Auth dashboard user seed deferred to Plan 01-06 live proof (D-08)
-- [Phase 1]: Mock authApi/meApi when VITE_USE_MOCKS!==false; live only when false
-- [Phase 1]: RequireAuth skips gate when mocks on; force-gate via window.__DIGEST_FORCE_AUTH_GATE__
-- [Phase 1]: sanitizeReturnUrl same-origin relative paths only
-- [Phase 1]: PLAT-08 local runbook + Cloud.ru path-only docs; live FE↔BE proof human-approved 2026-09-19
-- [Phase 1]: Verification PASS_WITH_GAPS — admin 403 → Phase 5; Cloud.ru deploy docs-only; logout UI non-blocking
-- [Phase 02]: CurrentIssueResponse uses flat null fields + items=[] for no published issue
-- [Phase 02]: Empty Playwright arm uses window.__DIGEST_EMPTY_CURRENT_ISSUE__ across full reloads
-- [Phase 02]: live.py wires empty InMemoryIssueRepository until 02-02 Supabase adapter
-- [Phase 02]: Seed applied via Supabase MCP PostgREST insert (service_role) because raw_sql needs POSTGRES_URL
-- [Phase 02]: voting_cycles idempotency uses WHERE NOT EXISTS on opens_at/closes_at (no unique constraint)
-- [Phase 02]: MaterialRepository.get_by_slug + ready-only related filter landed for MAT-01 readiness
-- [Phase 02]: GET /archive via sibling archive_router; past issues reuse CurrentIssueResponse without voting_cycle
-- [Phase 02]: Issue soft-404 uses ContentApiError NOT_FOUND; EditorialCallout only when IssuePage isCurrent
-- [Phase 02]: MaterialNotFoundError accepts int|str for slug misses; draft always 404
-- [Phase 02]: Editor byline constant «Редакция Digest CDS» in material reader DTO
-- [Phase 02]: MaterialPage uses rehypeSlug+rehypeSanitize only; soft NOT_FOUND via contentApi
-- [Phase 02]: Cycle selection in get_current_issue (A2); adapters list_cycles only
-- [Phase 02]: SupabaseVotingCycleReader sibling module; past issues force voting_cycle=null
-- [Phase 02]: Cycle selection in get_current_issue (A2); adapters list_cycles only
-- [Phase 02]: SupabaseVotingCycleReader sibling module; past issues force voting_cycle=null
-- [Phase 02]: Sticky __DIGEST_FAIL_NEXT_CONTENT__ for StrictMode; clear on Retry (D-21..23)
-- [Phase 02]: UI-SPEC visual backstops describe.skip held for verify-work
-- [Phase 03]: D-52: POST /voting/votes returns full BallotSnapshot
-- [Phase 03]: live.py keeps InMemoryVoteRepository until 03-02 Supabase adapter
-- [Phase 03]: Reuse select_active_voting_cycle; status column is open/closed switch
-- [Phase 03]: Leaders/ties/hide-when-zero already in get_ballot from 03-01 — plan 03-03 adds contract tests only
-- [Phase 03]: Closed-cycle GET reuses select_active_voting_cycle (latest closed when no open)
-- [Phase 03]: Empty «Выберите тему» shown when ready && !selectedId (disabled CTA cannot receive click)
-- [Phase 03]: SPA votingApi uses isMocksEnabled; POST BallotSnapshot applied without mandatory re-GET (D-52, D-56)
-- [Phase 03]: Option-a: votes_enforce_open_and_topic trigger + use-case (not use-case-only)
-- [Phase 03]: 03-02 apply: MCP PostgREST seed + Studio SQL DDL (raw_sql/db push unavailable)
-- [Phase 03]: AutoML topic seeded with zero topic_materials (VOTE-04)
-- [Phase 03]: Leader strip test uses exact:true for «Лидирует» so strip phrase does not false-fail
-- [Phase 03]: Confirm CTA omitted entirely when cycle.status===closed (not merely disabled)
-- [Phase 03]: Mock closed POST throws CYCLE_CLOSED with ballot payload for D-51 readiness
-- [Phase 03]: 409 detail.ballot for CYCLE_CLOSED/VOTE_CONFLICT; expected_updated_at CAS only (no ETag)
-- [Phase 03]: GET ballot fail → ServiceUnavailable; POST fail → ErrorPanel; toast fade ~4s
-- [Phase 04]: [Phase 04]: Default knowledge search limit=10 with has_more via limit+1 (D-61)
-- [Phase 04]: [Phase 04]: StubQueryEmbedder 1024-d; Foundry HTTP deferred; max q 500 code points
-- [Phase 04]: [Phase 04]: Knowledge SPA Submit/Enter via knowledgeApi; blank/overlong client guards (500 code points); role chips deferred to 04-03
-- [Phase 04]: [Phase 04]: GET /razbory items[] chronology DTO; announcement|published status strings; empty 200; PersistenceError→503
-- [Phase 04]: [Phase 04]: live.py keeps InMemoryRazborRepository until Supabase razbor adapter
-- [Phase 04]: Invalid knowledge role is 400 invalid_role; SPA toasts Фильтр недоступен and resets to Все
-- [Phase 04]: Null, empty, and whitespace knowledge role means unrestricted (Все)
-- [Phase 04]: Zero-hit Сбросить фильтр clears role only and keeps the query (D-65)
-- [Phase 04]: [Phase 04]: Razbor list SPA ChronologyItem + byline constant; empty CTA /voting only (D-66…D-69)
-- [Phase 04]: [Phase 04]: /razbory/:id shell placeholder until 04-06 detail
-- [Phase 04]: [Phase 04]: RazborDetail view carries content_kind; domain Razbor unchanged
-- [Phase 04]: [Phase 04]: Announcement prose emptied in get_razbor (D-68 / T-04-10)
-- [Phase 04]: [Phase 04]: Notebook strip deferred to 04-07; notebook_available on detail DTO
-- [Phase 04]: [Phase 04]: Notebook under NOTEBOOK_ROOT via LocalNotebookStorage; path escape 400 (A5 / T-04-09)
-- [Phase 04]: [Phase 04]: Dual notebook strip on published only; announcement omits strip (D-70…72)
-- [Phase 04]: Hybrid fusion via SECURITY INVOKER RPC search_knowledge_chunks — not list_all + Python cosine on live
-- [Phase 04]: StubQueryEmbedder aligned with seeded 1024-d vectors for demo semantic hits (Foundry opt-out)
-- [Phase 04]: Blocking human apply: operator confirmed SQL + notebook + NOTEBOOK_ROOT before 04-08 close-out
-- [Phase 04]: [Phase 04]: Playwright honesty suites in knowledge.spec.js/razbory.spec.js; mocks CI default
-- [Phase 04]: [Phase 04]: TOC ids use user-content- prefix to match rehype-sanitize clobber
-- [Phase 04]: Branch ChronologyItem on item.status === announcement for G-04-2 placeholder vs Читать разбор CTA
-- [Phase 05]: Authorize admin only via profiles.role through require_admin — never JWT role claim (D-74)
-- [Phase 05]: Default app_role employee on CurrentUser / in-memory / meApi to match live adapter (D-76)
-- [Phase 05]: Empty shortlist batch returns 200 items=[] for D-80 SPA empty state
-- [Phase 05]: Decision allowlist pending|approved|rejected in use-case (HTTP 400); Pydantic forbids extras only
-- [Phase 05]: Approve on draft succeeds in 05-02; DraftInSendPoolError deferred to 05-03 (D-85)
-- [Phase 05]: decided_by from require_admin CurrentUser.id, not request body (T-05-07)
-- [Phase 05]: ACK D-88: successful send MUST publish digest_issues + set sent_at (no stub-mail-without-publish)
-- [Phase 05]: resolve_mailer takes mailer mode string to avoid stub_mailer↔composition circular import
-- [Phase 05]: In-memory claim_sent simulates atomic sent_at IS NULL; live RPC deferred to 05-05
-- [Phase 05]: Route /admin/digest; AdminDigestPage self-gates Forbidden vs triage after /me
-- [Phase 05]: Send pool = approved∩ready (not checkboxes); checkboxes are batch Approve/Reject only (D-83)
-- [Phase 05]: Playwright resets adminApi harness between /admin navigations to clear Vite singleton mock state
-- [Phase 05]: Blocking apply: operator confirmed 005 applied on shared VM (method not specified)
-- [Phase 05]: Prefer claim_and_publish_digest RPC for atomic claim+publish; StubMailer stays on live (D-87)
-- [Phase 05]: D-90 SPA: surface sendDigest.issue_url as К выпуску CTA after Отправка записана
-- [Phase 05]: ADMIN-08 e2e via auth.spec returnUrl=/issues/{n}; open-redirect // rejected
-- [Phase 05]: Default preview blocks = approved∩ready by rank until 05-08 reorder UI
-- [Phase 05]: Pure adminPreviewComposition.js for node --test without Vite import.meta
-- [Phase 05]: Button reorder (not HTML5 DnD) for a11y and Playwright stability
-- [Phase 05]: Publication order via material_ids + rank rewrite before claim_and_publish_digest (no new RPC)
-- [Phase 05]: days_until_next_batch is DIGEST_WEEKLY_CADENCE_DAYS=7 from product weekly cadence — not voting_cycles or week_start math
-- [Phase 05]: D-80 empty copy only when digest_rest is false; post-send/cold rest uses separate rest surface
+v1 close: four debug sessions acknowledged and deferred (see Deferred Items). Signup confirmation mail remains open.
 
 ### Pending Todos
 
@@ -198,12 +106,18 @@ None. Milestone phases are complete.
 
 ### Blockers/Concerns
 
-None. Live FE↔BE proof approved 2026-09-19.
+Signup confirmation mail (`g-01-3b-signup-mailer`) is still open: GoTrue returns 500 while sending the confirmation email, so self-service signup does not persist a user. Live FE↔BE proof was approved 2026-09-19.
 
 ## Deferred Items
 
+Items acknowledged and deferred at milestone close, most recent first:
+
 | Category | Item | Status | Deferred At | Milestone |
 |----------|------|--------|-------------|-----------|
+| debug_sessions | digest-preview-blocks-intro | diagnosed | 2026-09-22 | v1 |
+| debug_sessions | g-01-3-registration-ux | diagnosed | 2026-09-22 | v1 |
+| debug_sessions | g-01-3b-signup-mailer | unknown | 2026-09-22 | v1 |
+| debug_sessions | post-send-hide-shortlist | diagnosed | 2026-09-22 | v1 |
 | Post-v1 | Public leaderboard (ADR-0001) | Deferred | 2026-09-19 | v1 |
 | Post-v1 | Quiz cards (REQ-US-29) | Deferred | 2026-09-19 | v1 |
 | Post-v1 | Admin YAML pipeline UI (REQ-US-30) | Deferred | 2026-09-19 | v1 |
@@ -212,7 +126,11 @@ None. Live FE↔BE proof approved 2026-09-19.
 
 ## Session Continuity
 
-Last session: 2026-09-22T02:27:32Z
-Stopped at: Phase 5 complete, milestone ready to close
+Last session: 2026-09-22
+Stopped at: Milestone v1 archived
 Resume file: None
-Verification: `.planning/phases/05-admin-digest-publish/05-VERIFICATION.md`
+Verification: `.planning/milestones/v1-phases/05-admin-digest-publish/05-VERIFICATION.md`
+
+## Operator Next Steps
+
+- Start the next milestone with /gsd-new-milestone

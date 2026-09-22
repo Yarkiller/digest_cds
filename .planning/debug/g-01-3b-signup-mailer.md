@@ -1,3 +1,10 @@
+---
+audit_acknowledged:
+  milestone: v1
+  at: 2026-09-22
+  status: unknown
+---
+
 # Debug: G-01-3b registration signup 500
 
 **Date:** 2026-09-19  

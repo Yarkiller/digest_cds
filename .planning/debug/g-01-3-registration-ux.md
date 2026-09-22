@@ -6,6 +6,10 @@ updated: 2026-09-19T19:15:00Z
 goal: find_root_cause_only
 symptoms_prefilled: true
 gap_id: G-01-3
+audit_acknowledged:
+  milestone: v1
+  at: 2026-09-22
+  status: diagnosed
 ---
 
 ## Current Focus
@@ -20,6 +24,7 @@ known_pattern_candidate: none (no knowledge-base.md)
 reasoning_checkpoint:
   hypothesis: "Dead registration CTA + name-on-login exist because Phase 1 shipped a single LoginPage that conflates login with optional post-login display-name update, while self-service signUp was scoped out (D-08 / COVERAGE OPT-OUT)."
   confirming_evidence:
+
     - "LoginPage.jsx L192-194: Link to=\"/login\" labeled Регистрация"
     - "App.jsx: only /login auth route; no RegisterPage file"
     - "authApi.js: signInWithPassword + updateAuthDisplayName; no signUp export"
@@ -29,6 +34,7 @@ reasoning_checkpoint:
   fix_rationale: "N/A — diagnose only; fix requires scope decision (remove CTA vs implement register)"
   blind_spots: "Whether product owner intends to reverse OPT-OUT for Phase 1 or keep D-08 and only fix UX copy/CTA"
   candidate_causes:
+
     - "code: LoginPage wrong Link + name field on login; missing RegisterPage/route/signUp"
     - "config/scope: Phase 1 D-08 + COVERAGE deliberately OPT-OUT signUp"
   and_gate: "yes — wrong UI (code) AND intentional no-signUp scope (config) together produce the UAT failure: CTA promises registration that Phase 1 forbade"
