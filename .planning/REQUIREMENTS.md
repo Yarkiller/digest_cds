@@ -72,32 +72,30 @@ Deferred. Not in this milestone's roadmap.
 
 ## Traceability
 
-Updated during roadmap creation.
-
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DTO-01 | — | Pending |
-| DTO-02 | — | Pending |
-| CAP-01 | — | Pending |
-| CAP-02 | — | Pending |
-| LLM-01 | — | Pending |
-| LLM-02 | — | Pending |
-| LLM-03 | — | Pending |
-| LLM-04 | — | Pending |
-| LLM-05 | — | Pending |
-| PERS-01 | — | Pending |
-| PERS-02 | — | Pending |
-| CLI-01 | — | Pending |
-| CLI-02 | — | Pending |
-| CLI-03 | — | Pending |
-| CLI-04 | — | Pending |
-| CLI-05 | — | Pending |
+| DTO-01 | Phase 6 | Pending |
+| DTO-02 | Phase 6 | Pending |
+| CAP-01 | Phase 7 | Pending |
+| CAP-02 | Phase 7 | Pending |
+| LLM-01 | Phase 8 | Pending |
+| LLM-02 | Phase 8 | Pending |
+| LLM-03 | Phase 8 | Pending |
+| LLM-04 | Phase 8 | Pending |
+| LLM-05 | Phase 8 | Pending |
+| PERS-01 | Phase 9 | Pending |
+| PERS-02 | Phase 9 | Pending |
+| CLI-01 | Phase 10 | Pending |
+| CLI-02 | Phase 10 | Pending |
+| CLI-03 | Phase 10 | Pending |
+| CLI-04 | Phase 10 | Pending |
+| CLI-05 | Phase 10 | Pending |
 
 **Coverage:**
 - v1.1 requirements: 16 total
-- Mapped to phases: 0
-- Unmapped: 16
+- Mapped to phases: 16
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-09-24*
-*Last updated: 2026-09-24 after initial definition*
+*Last updated: 2026-09-24 after roadmap mapping (phases 6–10)*
