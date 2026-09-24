@@ -1,0 +1,103 @@
+# Requirements: Digest CDS
+
+**Defined:** 2026-09-24
+**Core Value:** Authorized СВА staff can read a trustworthy weekly issue of prepared articles and influence the next разбор through one honest vote — without treating raw video/transcript as published material.
+
+**Milestone:** v1.1 YouTube → LLM → Supabase ingestion
+
+## v1.1 Requirements
+
+Requirements for this milestone. Each maps to roadmap phases.
+
+### Contracts (data-collection)
+
+- [ ] **DTO-01**: Types `Transcript`, `VideoMetadata`, `MaterialDraft`, and `TemplateKind` live in `data-collection` and are covered by unit tests
+- [ ] **DTO-02**: Ports `TranscriptProvider` and `ArticleGenerator` have in-memory fakes usable by unit tests
+
+### Captions
+
+- [ ] **CAP-01**: Operator can pass a YouTube URL; the CLI resolves `video_id` and fetches captions with `ru`/`en` preference
+- [ ] **CAP-02**: Missing, disabled, or blocked captions exit non-zero with `stage=captions` and write zero database rows
+
+### Article generation
+
+- [ ] **LLM-01**: DeepSeek via an OpenAI-compatible SDK returns a validated `MaterialDraft` (`title`, `dek`, `body_markdown`, provenance fields)
+- [ ] **LLM-02**: Operator can choose `--template lecture|podcast` backed by repository markdown templates
+- [ ] **LLM-03**: LLM failures (network, 5xx, invalid JSON, validation) exit non-zero with `stage=llm`, zero database rows, and no partial output
+- [ ] **LLM-04**: System prompt enforces honesty — use only transcript content, no invented facts/names/numbers; output language matches the transcript language
+- [ ] **LLM-05**: Transcripts that exceed the context budget fail closed with `stage=llm_truncation` and no silent truncation (chunking deferred)
+
+### Persist and shortlist
+
+- [ ] **PERS-01**: A successful run inserts `materials` with `status=draft` only (never `ready`) and provenance fields `source_url`, `youtube_video_id`, `source_author`, `source_published_at`, `provenance_label`
+- [ ] **PERS-02**: The run enqueues `digest_shortlist_items` on the current unsent batch (`decision=pending`); if that batch already has 5 items, it creates a new unsent batch and enqueues there
+
+### CLI and UAT
+
+- [ ] **CLI-01**: `ingestion-service` Typer one-shot prints `material_id`, `slug`, `batch_id`, and `rank` on success
+- [ ] **CLI-02**: Re-running the same `video_id` does not create duplicate materials or shortlist rows (upsert / conflict-safe)
+- [ ] **CLI-03**: UAT: 3–5 real captioned videos appear as drafts in `/admin/digest`
+- [ ] **CLI-04**: CLI prints staged progress (`✓ transcript` / `✓ LLM` / `✓ saved`)
+- [ ] **CLI-05**: `ingestion-service` has its own `.env`, separate from the backend env file
+
+## v2 Requirements
+
+Deferred. Not in this milestone's roadmap.
+
+### Ingestion follow-ups
+
+- **ING-01**: HTTP API to trigger ingestion (no CLI-only)
+- **ING-02**: Scheduler / playlist or channel batch ingest
+- **ING-03**: Transcription when captions are missing (FoundryModels revisit; not Whisper-on-VM)
+- **ING-04**: Transcript chunking when content exceeds the context budget
+
+### Deferred product (post-v1, not this milestone)
+
+- **LEAD-01**: Public leaderboard (ADR-0001)
+- **QUIZ-01**: Quiz cards
+- **PIPE-01**: Admin YAML pipeline config UI
+- **MAIL-01**: Live SMTP in place of StubMailer
+- **MAIL-02**: Signup confirmation mail so self-service `/register` persists a user
+
+## Out of Scope
+
+| Feature | Reason |
+|---------|--------|
+| Auto-`ready`, auto-approve, auto-send | Editorial trust; admin HITL stays the publish gate |
+| Raw transcript or media stored as material body | Content contract (D-CONTENT-01) |
+| Silent transcript truncation | Operators must see `stage=llm_truncation`; chunking is v2 |
+| Whisper / local ASR on the app VM | ADR-0002; captions-only this milestone |
+| Ingestion talking to FastAPI or knowing SPA routes | Shared database is the contract; backend stays the reader |
+| Backend or SPA changes required for drafts to show | Existing `/admin/digest` shortlist is the review surface |
+
+## Traceability
+
+Updated during roadmap creation.
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| DTO-01 | — | Pending |
+| DTO-02 | — | Pending |
+| CAP-01 | — | Pending |
+| CAP-02 | — | Pending |
+| LLM-01 | — | Pending |
+| LLM-02 | — | Pending |
+| LLM-03 | — | Pending |
+| LLM-04 | — | Pending |
+| LLM-05 | — | Pending |
+| PERS-01 | — | Pending |
+| PERS-02 | — | Pending |
+| CLI-01 | — | Pending |
+| CLI-02 | — | Pending |
+| CLI-03 | — | Pending |
+| CLI-04 | — | Pending |
+| CLI-05 | — | Pending |
+
+**Coverage:**
+- v1.1 requirements: 16 total
+- Mapped to phases: 0
+- Unmapped: 16
+
+---
+*Requirements defined: 2026-09-24*
+*Last updated: 2026-09-24 after initial definition*
