@@ -14,15 +14,20 @@ v1 MVP shipped 2026-09-22. Five phases are verified: corporate auth on live Supa
 
 About 11,100 lines of Python and 8,400 lines of JS/JSX. Stack: FastAPI, React/Vite, self-hosted Supabase + pgvector, Playwright, pytest. Git range `cabd7eb` → `ba8be89` (330 commits, 2026-08-23 → 2026-09-22).
 
-## Next Milestone Goals
+## Current Milestone: v1.1 YouTube → LLM → Supabase ingestion
 
-- Public leaderboard (ADR-0001), deferred from v1
-- Quiz cards (REQ-US-29)
-- Admin YAML pipeline config UI (REQ-US-30)
-- Live SMTP in place of StubMailer
-- Signup confirmation mail so self-service `/register` persists a user (`g-01-3b-signup-mailer`)
+**Goal:** Operator can run a CLI one-shot that turns a YouTube URL into a `materials` draft and a shortlist row — without touching backend/SPA read paths.
 
-Fresh requirements and a roadmap for that milestone come from `/gsd-new-milestone`.
+**Target features:**
+- Expand `data-collection/` ports/DTOs: Transcript, VideoMetadata, MaterialDraft, TemplateKind
+- New thin `ingestion-service/` CLI runner (no HTTP API, no scheduler)
+- YouTube captions via `youtube-transcript-api` (no Whisper / FoundryModels transcription)
+- DeepSeek via OpenAI-compatible SDK — MVP LLM; FoundryModels revisit later
+- 1–2 prompt templates (`lecture.md`, `podcast.md`)
+- Pipeline: URL → transcript → LLM → markdown → Supabase `materials` (`status=draft`) + enqueue `digest_shortlist_items`
+- UAT: 3–5 real videos appear as drafts in `/admin/digest`
+
+**Deferred from this milestone (still post-v1):** Public leaderboard, quiz cards, admin YAML pipeline UI, live SMTP, signup confirmation mail.
 
 ## Success Criteria (v1 — developer-facing)
 
@@ -54,23 +59,25 @@ v1 is done only when **all** of the following hold:
 
 ### Active
 
-- [ ] Public leaderboard (ADR-0001)
-- [ ] Quiz cards (REQ-US-29)
-- [ ] Admin YAML pipeline config UI (REQ-US-30)
-- [ ] Live SMTP delivery
-- [ ] Signup confirmation mail (`g-01-3b-signup-mailer`)
+- [ ] `data-collection` ports/DTOs for Transcript, VideoMetadata, MaterialDraft, TemplateKind
+- [ ] `ingestion-service` CLI one-shot: YouTube URL → captions → DeepSeek → materials draft + shortlist enqueue
+- [ ] Lecture + podcast prompt templates
+- [ ] UAT: 3–5 real videos visible as drafts in `/admin/digest`
 
 ### Out of Scope
 
 - XP, streaks, anonymous average comparison — rejected for v1 and still rejected as the participation driver
 - Storing or publishing video/audio/raw transcript as material — content contract
-- Public foreign LLM/Whisper APIs; local Whisper on app VM — ADR-0002
+- Whisper / FoundryModels transcription this milestone — captions-only; FoundryModels revisit after DeepSeek MVP
+- Ingestion HTTP API, scheduler/batch, auto-publish/send — later milestones
+- Public leaderboard, quiz cards, admin YAML pipeline UI, live SMTP, signup mail — deferred (not this milestone)
 - Managed Supabase Cloud / managed PostgreSQL Cloud.ru as primary DB — ADR-0004
 - Dynamic admin-managed email domain list — ADR-0003 (fixed two domains only)
 
 ## Context
 
 - **Shipped v1:** Auth, issue/materials/archive, voting, knowledge search, разборы, and admin digest publish. Live adapters through migration 005. Mail is StubMailer.
+- **v1.1 focus:** Separate ingestion path (`data-collection` contracts + `ingestion-service` CLI) writes drafts into the same Supabase DB; backend/SPA unchanged as readers. DeepSeek MVP bends ADR-0002 temporarily (documented revisit → FoundryModels).
 - **Product framing:** Concept 3 Editorial UI («Digest CDS: издание»); personas and journeys J1–J6 in ingest context.
 - **Known debt at close:** Nyquist drafts for phases 1–3; live FE↔BE smoke still human-gated under mocks in CI; rank rewrite before `claim_and_publish_digest` is non-atomic (CR-01); four debug sessions acknowledged 2026-09-22 (see STATE.md Deferred Items).
 - **Domain language:** `CONTEXT.md` + `docs/adr/` are canonical for agents.
@@ -103,6 +110,8 @@ v1 is done only when **all** of the following hold:
 | Typography-only issue hero (D-26) | Current issue shows number, period, and title | ✓ Phase 2 |
 | StubMailer until SMTP is configured | Publish and the issue link must exist before live mail | ✓ Phase 5 |
 | Four debug sessions acknowledged at v1 close | Diagnosis files stayed open after the gap-closure plans; signup mailer is still unknown | — Deferred |
+| DeepSeek MVP for ingestion LLM (ADR-0002 bend) | Captions-only pipeline first; one external LLM; FoundryModels revisit later | — Pending |
+| Ingestion writes Supabase only; no backend coupling | Backend/SPA stay readers; CLI owns YouTube + LLM + shortlist enqueue | — Pending |
 
 <decisions>
 ## Locked decisions (from ADRs / ingest)
@@ -143,4 +152,4 @@ After each phase transition: move validated/invalidated requirements; log decisi
 After milestone: full review of Core Value, Out of Scope, and Context against shipped reality.
 
 ---
-*Last updated: 2026-09-22 after v1 milestone*
+*Last updated: 2026-09-24 after v1.1 milestone start*
