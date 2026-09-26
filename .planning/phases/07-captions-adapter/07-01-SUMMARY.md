@@ -165,6 +165,7 @@ Each task was committed atomically:
 ## Issues Encountered
 
 - Pre-existing failure in `tests/unit/test_http_admin.py::test_admin_shortlist_empty_batch_returns_200_empty_items` (response includes extra `sent_at`/`week_label` vs fixture) — unrelated dirty/working-tree drift; not introduced by 07-01. Plan verification ran targeted 07-01 files + full suite with that file ignored (324 passed).
+- gsd-tools `state.*` / `roadmap.update-plan-progress` hit EPERM on atomic rename of STATE.md / ROADMAP.md (file lock). Retried once; updated both files via direct edit instead. Noted per sequential-executor guidance.
 
 ## User Setup Required
 
