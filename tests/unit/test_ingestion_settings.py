@@ -35,8 +35,9 @@ def test_build_youtube_transcript_api_injects_generic_proxy_when_set() -> None:
         {"YOUTUBE_PROXY_URL": "socks5://192.168.1.68:1080"}
     )
     api = build_youtube_transcript_api(settings)
-    assert api.proxy_config is not None
-    assert isinstance(api.proxy_config, GenericProxyConfig)
+    proxy_config = api._fetcher._proxy_config
+    assert proxy_config is not None
+    assert isinstance(proxy_config, GenericProxyConfig)
 
 
 def test_build_youtube_transcript_api_direct_when_unset() -> None:
@@ -45,7 +46,7 @@ def test_build_youtube_transcript_api_direct_when_unset() -> None:
 
     settings = Settings.from_env({})
     api = build_youtube_transcript_api(settings)
-    assert api.proxy_config is None
+    assert api._fetcher._proxy_config is None
 
 
 def test_build_httpx_client_uses_proxy_when_set() -> None:

@@ -25,6 +25,15 @@ Step-by-step bring-up for **local Vite + local FastAPI** against the **existing 
    - `VITE_USE_MOCKS=true` for Playwright / offline UI (default)
    - `VITE_USE_MOCKS=false` **only** for the live FE↔BE proof (D-09 / D-10)
 
+4. Optional **YouTube ingestion** vars (Phase 7 captions/oEmbed — composition only, never adapters):
+   - `YOUTUBE_PROXY_URL` — optional SOCKS/HTTP proxy for Cloud.ru and other blocked egress.
+     Example (AdGuard Home SOCKS on LAN): `socks5://192.168.1.68:1080`
+     Unset → direct YouTube access. Without a working proxy from Cloud.ru, expect
+     `IpBlocked` / operator reason `youtube_blocked` — that is a **proxy/network** problem,
+     never a Whisper/ASR trigger (ADR-0002 captions-only MVP).
+   - Never put the full `YOUTUBE_PROXY_URL` (especially credentialed forms) into logs or
+     `IngestError.context`.
+
 Threat note (T-01-13): keep secrets in `.env` only — do not paste keys into markdown, commits, or screenshots.
 
 ---
@@ -307,3 +316,17 @@ CI / Playwright honesty suites use **mocks** (`VITE_USE_MOCKS=true`). After **04
 4. **Notebook:** published with `notebook_path` — dual strip, download works; missing notebook — strip stays, download disabled, «Notebook скоро будет».
 
 Record pass/fail in the verify-work session notes. This path is **not** required for CI green.
+
+---
+
+## 5c. Optional live YouTube captions / oEmbed (Phase 7, D-20)
+
+Default `uv run pytest` collects **only** `tests/unit` (`testpaths`) — no network. Optional live stubs live under `tests/integration/` and skip unless the flag is set.
+
+**Path-explicit command** (required — a bare `-m integration` collects zero tests because `testpaths` excludes `tests/integration`):
+
+```bash
+RUN_YOUTUBE_INTEGRATION=1 uv run pytest tests/integration -m integration
+```
+
+Use `YOUTUBE_PROXY_URL` from §1 when egress to YouTube is blocked (Cloud.ru → `youtube_blocked`). Pipeline order captions-then-metadata is Phase 10 policy (D-24) — these stubs do not implement the orchestrator.
