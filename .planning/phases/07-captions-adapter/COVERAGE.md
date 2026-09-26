@@ -24,6 +24,11 @@ Phase 7 integrates two external surfaces: the `youtube-transcript-api` library (
 | Exception `IpBlocked` | INTEGRATE | |
 | Exception `RequestBlocked` | INTEGRATE | |
 | Exception `PoTokenRequired` | INTEGRATE | |
+| Exception `YouTubeRequestFailed` (non-429 HTTP failure, incl. YouTube 5xx) | INTEGRATE | mapped to `CaptionsNetworkError` → `network_error`; must not fall through to `unknown_captions_error`, which would read as a content problem instead of a transport problem (D-19 intent) |
+| Exception `VideoUnplayable` | INTEGRATE | mapped to `CaptionsVideoUnavailable` → `video_unavailable` |
+| Exception `YouTubeDataUnparsable` | INTEGRATE | handled via the base-`CaptionsError` catch-all → `unknown_captions_error`; a YouTube response-shape change is not separately actionable for an operator |
+| Exception `FailedToCreateConsentCookie` | INTEGRATE | handled via the base-`CaptionsError` catch-all → `unknown_captions_error`; no cookie/consent bypass is in scope (D-19) |
+| Raw `requests.exceptions.Timeout` / `ConnectionError` propagating through the SDK | INTEGRATE | mapped to `CaptionsNetworkError` → `network_error`; `requests[socks]` is declared on `data-collection` so the caught types are a first-class dependency (D-18) |
 | Exception `CouldNotRetrieveTranscript` (catch-all) | INTEGRATE | |
 | `.fetch(video_id, languages=[...])` convenience fast path | OPT-OUT | superseded by list-then-pick — dialect base normalization (D-07) and `available_languages` in `no_preferred_language` (D-09) both require `.list()`; one code path is cheaper to test |
 | `WebshareProxyConfig` | OPT-OUT | vendor-specific; the verified path is a generic AdGuard SOCKS endpoint via `GenericProxyConfig` (D-16) |

@@ -73,7 +73,7 @@ created: 2026-09-26
 
 | Behavior | Requirement | Why Manual | Test Instructions |
 |----------|-------------|------------|-------------------|
-| Live captions via AdGuard SOCKS | CAP-01 | Network + local proxy | Set `YOUTUBE_PROXY_URL=socks5://192.168.1.68:1080`; `RUN_YOUTUBE_INTEGRATION=1 uv run pytest -m integration` per runbook |
+| Live captions via AdGuard SOCKS | CAP-01 | Network + local proxy | Set `YOUTUBE_PROXY_URL=socks5://192.168.1.68:1080`; run path-explicitly (root `testpaths` stays `tests/unit`, so a bare `-m integration` collects nothing): `RUN_YOUTUBE_INTEGRATION=1 uv run pytest tests/integration -m integration` per runbook |
 | Cloud.ru without proxy → `youtube_blocked` | CAP-02 | Ops confirmation | Document risk; do not “fix” with Whisper |
 
 ---

@@ -1,173 +1,95 @@
 ---
-status: passed
-type: plan-check
 phase: 07-captions-adapter
-reason: "Independent re-verification (not rubber-stamp): CAP-01/CAP-02 covered; D-14 gate=document; ASVS L1 block_on=high; no phantom 07-04; residual warnings only"
+checked: 2026-09-26
+mode: standard
+iteration: 3 (final re-verify)
+verdict: VERIFICATION PASSED
+blockers: 0
+warnings: 0
+findings_closed: 11 of 11
 ---
 
-# Phase 7 Plan Check — Captions Adapter
+# Phase 7 Plan Check — Captions Adapter (final)
 
-**Checked:** 2026-09-26  
-**Checker:** independent re-verification (gsd-plan-checker; not rubber-stamp of prior `07-PLAN-CHECK.md`)  
-**Plans:** 07-01, 07-02, 07-03  
-**Verdict:** PASS — VERIFICATION PASSED
+**Phase goal:** Operator can resolve a YouTube URL to captions, or get a loud captions-stage failure with no database side effects.
+**Plans checked:** `07-01-PLAN.md` (wave 1, tracer) · `07-02-PLAN.md` (wave 2) · `07-03-PLAN.md` (wave 3)
 
-## Quality gate checklist (phase-specific)
+## VERIFICATION PASSED
 
-| Expectation | Status | Evidence |
-|-------------|--------|----------|
-| CAP-01 and CAP-02 in every plan `requirements` | **PASS** | 07-01 / 07-02 / 07-03 frontmatter each list both |
-| Tracer-first 07-01 (`type: tracer`) — scaffold + URL + IngestError + mocked captions slice | **PASS** | Wave 1; Task 1 config scaffold; Task 2 thin E2E tracer; Task 3 URL matrix harden |
-| TDD RED before GREEN (`tdd=true` / RED first) | **PASS** | All behavior tasks `tdd="true"` with RED-first; scaffold `tdd=false` (config exception); checkpoint:decision exempt |
-| Every task has `read_first` + `acceptance_criteria` | **PASS** | All 11 tasks (3+4+4) including D-14 checkpoint |
-| `threat_model` each PLAN (ASVS L1 · `block_on=high`; high severity not `accept`) | **PASS** | All three; high threats mitigate (SSRF, fail-closed, DB-write, reason spoof, context leak, fabricate-author, proxy); only low `T-07-SC` uses `accept` in 02/03 |
-| D-14 checkpoint `gate=document` (not blocking) | **PASS** | 07-02 Task 1: `gate="document"`, `autonomous: true`, CONTEXT-locked continue |
-| Costly one-way doors rated (D-04 / D-11 / D-21) | **PASS** | 07-01 Task 2 reversibility cites D-04 + D-11; 07-03 Task 1 cites D-21/D-22; D-14 rated `one-way` with roadmap note |
-| Artifacts this phase produces section | **PASS** | Present in 07-01, 07-02, 07-03 |
-| Specless CAP edge probes → truths/assumptions | **PASS** | 07-01/07-02 must_haves.assumptions author CAP-01/CAP-02 probe predicates |
-| Prohibitions (no Whisper/ASR; no SDK as reason; no stage= in data-collection; no env in adapters; no DB/migrations; no Typer/openai/DeepSeek) | **PASS** | Each plan prohibitions + threat T-07-DBWRITE |
-| No phantom 07-04 | **PASS** | Only 07-01…07-03 on disk; ROADMAP lists three plans; D-21 metadata owned by 07-03 |
-| Architecture + TDD rules honored | **PASS** | Adapters in `data-collection`; IngestError/URL/Settings in `ingestion-service`; composition injects clients; RED→GREEN on behavior tasks |
+All 11 findings raised across the two prior iterations are closed. No blockers, no warnings. The three
+plans are cleared for execution.
 
-### Delta vs prior PLAN-CHECK
+| Iteration | Raised | Closed |
+|-----------|--------|--------|
+| 1 | B-1, B-2, W-1 … W-6 (2 blockers, 6 warnings) | 8 / 8 |
+| 2 | B-3, W-7, W-8 (1 blocker, 2 warnings) | 3 / 3 |
 
-Prior file was a short closure checklist (blockers closed, PASS). This pass re-ran goal-backward coverage against ROADMAP SC1–SC3, CONTEXT D-01…D-26, RESEARCH A1–A8 / Open Qs, COVERAGE INTEGRATE/OPT-OUT, VALIDATION Nyquist map, and `.cursor/rules`. **No new blockers.** Residual warnings recorded below (file-count, ROADMAP note dual-ownership, VALIDATION table gaps).
+## Iteration-2 findings — closure evidence
 
-## VERIFICATION PASSED — all checks pass
+### B-3 — D-14 ROADMAP note ownership vs. the already-committed edit — **CLOSED**
 
-**Phase:** 07-captions-adapter  
-**Plans verified:** 3  
-**Status:** No blockers; residual warnings only (non-blocking)
+The plan now matches reality: the note exists, is committed, and no task claims to write it.
 
-### Coverage Summary
+- `.planning/ROADMAP.md` is **absent** from `07-02` `files_modified` (7 entries, all source/test paths), and its `artifacts` list no longer carries a ROADMAP row.
+- The `must_haves` truth now reads "**ALREADY** recorded under Phase 9 in `.planning/ROADMAP.md` (written at plan time) — this plan verifies that note is present and does not write it (D-14)", with a dedicated assumption recording the B-3 resolution.
+- Task 1 `<context>` is explicitly verify-only ("Do not append, re-word, or re-add it — a second append would duplicate the requirement"), with three concrete steps: `rg -n "persist\.calls == \[\]" .planning/ROADMAP.md`, `git status --short .planning/ROADMAP.md` produces no output, and quote D-14 in the SUMMARY.
+- The unsatisfiable `git diff --stat` insertion criterion is gone, replaced by the clean-worktree assertion. A restore-if-missing fallback preserves the one-way-door safety: "If step 1 finds no match, the roadmap record was lost — stop and restore it before continuing."
+- The artifacts table row reads "Phase 9/10 live persist-spy requirement (already in ROADMAP; verified, not re-written)"; task 3's criterion stays verify-only and now says "(pre-existing note)".
 
-| Requirement | Plans | Status |
-|-------------|-------|--------|
-| CAP-01 | 01, 02, 03 | Covered — URL→`video_id` + ru→en adapter (01); taxonomy keeps happy path green (02); oEmbed/`VideoMetadataProvider` readiness (03) |
-| CAP-02 | 01, 02, 03 | Covered — tracer fail-closed empty/no-preferred (01); full SDK→CaptionsError→`stage=captions` + Fake failures + D-14 unit proof (02); metadata likewise fail-closed / no DTO (03) |
-| Roadmap SC-3 (zero DB rows) | 02 | Covered — adapter/unit “no Transcript” + `gate=document` Phase 9/10 persist-spy note (D-14) |
+Verified against the repo: `.planning/ROADMAP.md` line 99 carries the note under the Phase 9 details
+section above `**Plans**: TBD`, and `git status --short .planning/ROADMAP.md` returns no output — so both
+of task 1's criteria pass as written today.
 
-### Goal-backward (ROADMAP Phase 7 success criteria)
+### W-7 — stale bare-`PySocks` verification instructions in `07-03` — **CLOSED**
 
-| # | Success criterion | Plan coverage | Status |
-|---|-------------------|---------------|--------|
-| 1 | YouTube URL → `video_id` → `Transcript` preferring `ru` then `en` | 07-01 (extract + mocked adapter); dialect/harden edges in 01 | Covered |
-| 2 | Missing/disabled/blocked captions → non-zero `stage=captions` | 07-02 (`map_captions_error` + locked reasons + `exit_code=1`); tracer subtypes in 01 | Covered |
-| 3 | Captions failure writes zero DB rows | 07-02 D-14 unit proof + ROADMAP Phase 9/10 spy note; no persist/migrations this phase | Covered (deferred live spy correctly) |
+All four touchpoints now agree that `pyproject.toml` declares `requests[socks]` and that `PySocks` is an
+extra-supplied transitive:
 
-### Plan Summary
+- `<read_first>`: "confirm `httpx[socks]` and `requests[socks]` from 07-01 — PySocks arrives through the `[socks]` extra, so bare `PySocks` is NOT expected as a declared dependency"
+- `<behavior>`: adds "Do not re-introduce bare `PySocks` as a direct dependency: 07-01 deliberately declares `requests[socks]` … PySocks is supplied by the extra (visible in `uv.lock`, not in `pyproject.toml`)"
+- `<acceptance_criteria>`: "still declares the httpx socks extra and `requests[socks]`, and that bare `PySocks` was not re-added as a direct dependency"
+- `prohibitions`: "Do not re-add youtube-transcript-api / httpx[socks] / requests[socks] (nor bare PySocks, which is intentionally only an extra-supplied transitive)"
 
-| Plan | Wave | Tasks | Files | depends_on | Estimate | Structure |
-|------|------|-------|-------|------------|----------|-----------|
-| 07-01 | 1 | 3 | 15 | [] | 34k (high) | valid — files at classic band; intentional tracer note |
-| 07-02 | 2 | 4 | 9 | 07-01 | 30k (high) | valid |
-| 07-03 | 3 | 4 | 19 | 07-01, 07-02 | 34k (high) | valid — files warn (≥15); no 07-04 split (explicit) |
+The "fix as regression of 07-01" trap is gone — a grep for `PySocks` in `pyproject.toml` is no longer the
+expected check, so the W-1 dependency decision cannot be accidentally reverted.
 
-### Warnings (non-blocking)
+### W-8 — `07-03` T-07-ENVLEAK described the pre-W-5 `rg` pattern — **CLOSED**
 
-**1. [scope_sanity] Plan 07-01 lists 15 `files_modified` (classic ≥15 band)**
-- Mitigated: Frontmatter documents intentional thin E2E tracer (Phase 6 06-01 precedent); do not split
-- Fix: None
+The threat register row now carries the narrowed pattern verbatim plus the rationale: "`rg -n
+"os\.environ|os\.getenv|proxy\s*=|GenericProxyConfig"` on the adapter returns no match — the pattern
+forbids env reads and proxy construction while still allowing a docstring that explains the client may
+already carry composition-built proxy configuration (D-17)". Threat model and task-1 criterion are now
+identical, so a `/gsd-secure-phase` audit reading the register will grep the same pattern the plan tests.
 
-**2. [scope_sanity] Plan 07-03 lists 19 `files_modified` (≥15 band)**
-- Mitigated: Single wave delivering D-21 co-ship (oEmbed + Settings + `__all__` + runbook); phantom 07-04 forbidden
-- Fix: Optional only if executor context pressure — prefer keep one Wave-3 plan
+## Global checks (re-run)
 
-**3. [cross_plan_contracts] ROADMAP Phase 9 spy note owned by both 07-02 Task 1 (checkpoint) and Task 3 (mapper)**
-- Risk: Task 1 acceptance requires the note present; Task 3 acceptance expects a single-line `git diff` insertion — double-write or empty Task-3 diff
-- Fix: Executor writes the note once in the checkpoint (or once in Task 3); treat the other acceptance as “note present,” not a second insert
+| Check | Result |
+|-------|--------|
+| CAP-01 + CAP-02 in every plan `requirements` | PASS (3/3) |
+| D-01 … D-26 each cited in ≥1 plan | PASS — lowest total is D-07 at 4 citations; heaviest are D-10 (25), D-17 (24), D-13 (20), D-11 (19) |
+| `<threat_model>` present, ASVS L1, `block_on=high` | PASS (3/3). No `high` threat carries `accept`; the only `accept` rows are `T-07-SC` at `low` in 07-02 and 07-03 |
+| "Artifacts this phase produces" | PASS (3/3), owner columns mutually consistent after the 07-02 ROADMAP-row removal |
+| TDD ordering | PASS — every `tdd="true"` task has exactly one matching RED-first bullet (07-01: 2/2, 07-02: 3/3, 07-03: 4/4). The single `tdd="false"` task is 07-01's config/lockfile scaffold under the `tdd.mdc` config exception; 07-02's checkpoint is `gate=document` and writes no code |
+| No schema push / supabase migrations | PASS — no `migrations/` path appears in any `files_modified`; the only mentions are prohibitions plus 07-01's assertion that nothing under `supabase-integration/migrations/` changes |
+| Scope excludes Phase 8–10 | PASS (`typer`/`openai` prohibited in 07-01 and 07-03; 07-01 asserts both absent from the lockfile diff) |
+| CAP-02 live spy deferred (D-14) | PASS — note committed at `.planning/ROADMAP.md:99`, verified (not rewritten) by 07-02 task 1 |
+| COVERAGE.md INTEGRATE/OPT-OUT with OPT-OUT reasons | PASS — Surface 1 retains the five rows added for W-2 (`YouTubeRequestFailed`, `VideoUnplayable`, `YouTubeDataUnparsable`, `FailedToCreateConsentCookie`, raw `requests.exceptions.*`); every OPT-OUT carries a reason |
+| Wave structure | PASS — waves 1/2/3, `depends_on` chain `[] → 07-01 → 07-01+07-02`, matching ROADMAP's three-wave listing and `0/3` progress row |
+| Iteration-1 fixes still intact | PASS — `map_url_error` / `InvalidYouTubeUrl` / `requests[socks]` / the corrected T-07-CTXLEAK pointer all still present in 07-01 |
 
-**4. [nyquist] `07-VALIDATION.md` per-task table omits explicit rows for public-API + metadata-mapper verifies**
-- Mitigated: RESEARCH test map and plan `<verify>` blocks still cover `test_data_collection_public_api.py` / `test_metadata_error_mapping.py`; no watch-mode; feedback ≤60s
-- Fix: Optional — add rows at validate-phase; not required to execute
+## Optional notes (cosmetic — do not block execution)
 
-### Structured Issues
+1. **`07-02` task 1, blanket phrasing.** One criterion reads "No planning document is modified by this plan", scoped by the parenthetical to `.planning/ROADMAP.md` and `.planning/REQUIREMENTS.md`. The execute-plan workflow itself normally touches `.planning/STATE.md` and progress bookkeeping at plan completion, so a very literal executor might pause. The parenthetical resolves it; tightening the sentence to name the two files would remove the ambiguity entirely.
+2. **`07-02` "nine-subtype" label.** `success_criteria` says "nine-subtype `CaptionsError` taxonomy" while the truth enumerates a base plus eight subtypes — which yields nine types, nine mapper rows and nine D-10 reasons. The mapping is unambiguous; only the noun is loose.
+3. **`07-01` estimate unchanged at 34k tokens** after absorbing `InvalidYouTubeUrl`, `map_url_error` and `mapping/__init__.py`. Roughly 30 extra lines of production code plus parametrized rows, so the estimate remains plausible — worth watching at execution rather than re-estimating.
+4. **`07-03` remains the heaviest plan** (19 files, 4 tasks) because it absorbed the former wave 4. Comparable to the 07-01 tracer and the Phase 6 `06-01` precedent, but it is the plan most likely to want a mid-execution checkpoint.
 
-```yaml
-issues:
-  - dimension: scope_sanity
-    severity: warning
-    plan: "07-01"
-    description: "15 files_modified — classic ≥15 band; intentional tracer per plan note"
-    fix_hint: "Do not split; keep vertical slice proving URL + IngestError + mocked captions"
+## Ready for execution
 
-  - dimension: scope_sanity
-    severity: warning
-    plan: "07-03"
-    description: "19 files_modified — ≥15 band; under intentional no-07-04 constraint"
-    fix_hint: "Keep single Wave-3 plan unless executor context pressure forces a soft split inside the same wave"
-
-  - dimension: cross_plan_contracts
-    severity: warning
-    plan: "07-02"
-    description: "D-14 Phase 9/10 ROADMAP note claimed by checkpoint Task 1 and mapper Task 3"
-    fix_hint: "Single insert; other task verifies presence only"
-
-  - dimension: nyquist_compliance
-    severity: warning
-    plan: "07-VALIDATION"
-    description: "Per-task verification map missing explicit rows for public __all__ guard and metadata mapper"
-    fix_hint: "Extend table at validate-phase; plan automated verifies already exist"
+```
+Wave 1  07-01-PLAN.md  tracer: scaffold + extract_video_id/InvalidYouTubeUrl + map_url_error + IngestError + mocked captions happy path
+Wave 2  07-02-PLAN.md  CaptionsError taxonomy + SDK/transport mapping + map_captions_error + D-15 fake failures + D-14 verify-only checkpoint
+Wave 3  07-03-PLAN.md  VideoMetadataProvider + oEmbed adapter + MetadataError/mapper + FakeVideoMetadataProvider + seven-name barrel + Settings/proxy + runbook/live stubs
 ```
 
-## Dimension Summary
-
-| Dim | Result | Notes |
-|-----|--------|-------|
-| 1 Requirement coverage | PASS | CAP-01, CAP-02 across 01–03; SC-3 via D-14 |
-| 2 Task completeness | PASS | read_first + acceptance_criteria on all; TDD on behavior tasks |
-| 3 Dependency correctness | PASS | 01 → 02 → 03; waves match; no cycles |
-| 4 Key links planned | PASS | URL→id→adapter→Transcript; SDK→CaptionsError→IngestError; oEmbed→VideoMetadata; Settings→clients→adapters |
-| 5 Scope sanity | PASS* | 07-01 intentional 15-file tracer; 07-03 19-file warning (no phantom 07-04) |
-| 6 Verification derivation | PASS | must_haves truths observable via listed unit tests / rg asserts |
-| 7 Context compliance | PASS | D-01…D-26 owned; deferred (live/v/e forms, any-lang, Whisper, Typer, DeepSeek, persist, CONSISTENCY-01) excluded |
-| 7b Scope reduction / one-way doors | PASS | D-14 `gate=document`; D-04/D-11/D-21 costly rated |
-| 7c Architectural tiers | PASS | adapters in data-collection; IngestError/URL/Settings in ingestion-service; no SDK in domain; composition injects; no deep-import of fakes; no DB/migrations/Typer/DeepSeek/Whisper |
-| 8 Nyquist | PASS* | VALIDATION maps core verifies; no watch-mode; &lt;60s; table gaps = warning only |
-| 9 Cross-plan contracts | PASS* | taxonomy 01→02; FakeTranscriptProvider failures in 02; FakeVideoMetadataProvider + seven-name `__all__` in 03; ROADMAP note dual-claim warning |
-| 10 .cursor/rules | PASS | architecture.mdc Ports & Adapters + tdd.mdc RED→GREEN |
-| 11 Research resolution | PASS | Open Q1–Q6 RESOLVED; A1–A8 reflected (list-then-pick, to_thread, export port, BotChallenge, ingestion-service now, integration gate, httpx socks, metadata_invalid_response) |
-| 12 Pattern/COVERAGE | PASS | INTEGRATE list/fetch/proxy/exceptions/oEmbed author; OPT-OUTs (fetch languages fast-path, Webshare, cookies, translate, title/html/thumbnails, Data API) respected |
-| Review incorporation | SKIPPED | No REVIEWS.md |
-
-## Context decision coverage (D-01…D-26)
-
-| Decision | Owner plan(s) | Notes |
-|----------|---------------|-------|
-| D-01 URL accept matrix | 07-01 | Task 2 tracer + Task 3 harden |
-| D-02 deferred `/live/` `/v/` `/e/` | 07-01 | Explicit reject tests |
-| D-03 bare 11-char id | 07-01 | |
-| D-04 parse in ingestion-service | 07-01 | costly rated |
-| D-05 stage=url vs captions | 07-01 | CAP-02 captions-only |
-| D-06 auto-generated allowed | 07-01 | |
-| D-07 dialect base normalization | 07-01 | |
-| D-08 ru then en preference | 07-01 | |
-| D-09 no_preferred_language fail-closed | 07-01 / 07-02 | |
-| D-10 locked reason codes | 07-02 | |
-| D-11 IngestError + Stage Literal | 07-01 | costly rated |
-| D-12 CaptionsError taxonomy | 07-01 subset → 07-02 full | |
-| D-13 diagnostic envelope / typed context | 07-01 / 07-02 / 07-03 | |
-| D-14 CAP-02 unit + Phase 9/10 spy | 07-02 | gate=document; one-way |
-| D-15 FakeTranscriptProvider.failures | 07-02 | |
-| D-16 YOUTUBE_PROXY_URL | 07-03 | |
-| D-17 composition injects; no env in adapters | 07-01 / 07-03 | |
-| D-18 SOCKS deps | 07-01 (add); 07-03 verify-only | |
-| D-19 bot_challenge ≠ youtube_blocked | 07-02 | CaptionsBotChallenge |
-| D-20 integration marker + runbook | 07-01 marker; 07-03 stubs/runbook | |
-| D-21 captions + oEmbed same phase | 07-03 | costly rated |
-| D-22 VideoMetadataProvider + canonical URL | 07-03 | |
-| D-23 metadata fail-closed / no fabricated author | 07-03 | |
-| D-24 captions-then-metadata policy | 07-03 | document-only; Phase 10 |
-| D-25 MetadataError set + mapper | 07-03 | |
-| D-26 FakeVideoMetadataProvider | 07-03 | |
-
-## Recommendation
-
-**Plans verified.** Phase 7 is executable and goal-complete against ROADMAP SC1–SC3, CAP-01/CAP-02, CONTEXT D-01…D-26, COVERAGE INTEGRATE/OPT-OUT, Ports & Adapters, and mandatory TDD. Residual warnings (file counts, ROADMAP note ownership, VALIDATION table gaps) do not block execution.
-
-Run `/gsd-execute-phase 7` to proceed.
-
----
-
-*Gate type: Revision Gate (plan-phase Step 12)*  
-*Do not commit from plan-checker*
+*Iteration 1: 2 blockers, 6 warnings · Iteration 2: 1 blocker, 2 warnings · Iteration 3: PASSED · all checks 2026-09-26, mode standard*

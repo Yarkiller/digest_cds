@@ -416,7 +416,7 @@ pythonpath = ["."]
 **Copy for Phase 7:** New subsection for captions/oEmbed:
 - Optional `YOUTUBE_PROXY_URL` (`socks5://192.168.1.68:1080` AdGuard example from Phase 6).
 - Cloud.ru risk: without proxy expect `IpBlocked` → `youtube_blocked`.
-- How to run: `RUN_YOUTUBE_INTEGRATION=1 uv run pytest -m integration`.
+- How to run (path-explicit — `testpaths` stays `tests/unit`, so a bare `-m integration` collects zero tests): `RUN_YOUTUBE_INTEGRATION=1 uv run pytest tests/integration -m integration`.
 - Never commit proxy URLs with credentials; never `VITE_*` for proxy.
 
 ---

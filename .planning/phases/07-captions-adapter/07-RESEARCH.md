@@ -608,7 +608,7 @@ No blockers for planning.
 | Config file | root `pyproject.toml` `[tool.pytest.ini_options]` — today `testpaths = ["tests/unit"]` only |
 | Quick run command | `uv run pytest tests/unit/test_extract_video_id.py tests/unit/test_youtube_transcript_adapter.py tests/unit/test_ingest_error.py -x` |
 | Full suite command | `uv run pytest` (unit only by default) |
-| Integration (optional) | After marker registration: `RUN_YOUTUBE_INTEGRATION=1 uv run pytest -m integration` (exact env name discretionary) |
+| Integration (optional) | After marker registration, path-explicit because `testpaths = ["tests/unit"]`: `RUN_YOUTUBE_INTEGRATION=1 uv run pytest tests/integration -m integration` (exact env name discretionary) |
 
 ### Phase Requirements → Test Map
 
