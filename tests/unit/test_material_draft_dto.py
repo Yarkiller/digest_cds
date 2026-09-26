@@ -1,0 +1,51 @@
+"""RED→GREEN: MaterialDraft DTO (D-05, D-13, DTO-01)."""
+
+from datetime import datetime, timezone
+
+import pytest
+from pydantic import ValidationError
+
+
+def _valid_kwargs(**overrides: object) -> dict:
+    base: dict = {
+        "title": "RAG for audit",
+        "dek": "Как искать по регламентам СВА.",
+        "body_markdown": "# Intro\n\nBody",
+        "source_url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        "youtube_video_id": "dQw4w9WgXcQ",
+        "source_author": "Rick Astley",
+        "provenance_label": "YouTube · Rick Astley",
+    }
+    base.update(overrides)
+    return base
+
+
+def test_material_draft_constructs_required_fields() -> None:
+    from data_collection.dto.material_draft import MaterialDraft
+
+    dto = MaterialDraft(**_valid_kwargs())
+    assert dto.title == "RAG for audit"
+    assert dto.dek == "Как искать по регламентам СВА."
+    assert dto.body_markdown == "# Intro\n\nBody"
+    assert dto.source_url == "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    assert dto.youtube_video_id == "dQw4w9WgXcQ"
+    assert dto.source_author == "Rick Astley"
+    assert dto.provenance_label == "YouTube · Rick Astley"
+    assert dto.source_published_at is None
+
+
+def test_material_draft_source_published_at_optional() -> None:
+    from data_collection.dto.material_draft import MaterialDraft
+
+    published = datetime(2009, 10, 25, tzinfo=timezone.utc)
+    dto = MaterialDraft(**_valid_kwargs(source_published_at=published))
+    assert dto.source_published_at == published
+
+
+def test_material_draft_has_no_tags_role_hints_or_model_id() -> None:
+    from data_collection.dto.material_draft import MaterialDraft
+
+    dto = MaterialDraft(**_valid_kwargs())
+    assert not hasattr(dto, "tags") or "tags" not in dto.model_fields
+    assert "role_hints" not in dto.model_fields
+    assert "model_id" not in dto.model_fields
