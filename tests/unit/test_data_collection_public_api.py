@@ -42,6 +42,19 @@ def test_public_all_is_exactly_six_ingestion_names() -> None:
         assert hasattr(data_collection, name), f"missing public export: {name}"
 
 
+def test_ports_package_exports_transcript_provider() -> None:
+    """WR-01: ports barrel re-exports TranscriptProvider alongside ArticleGenerator."""
+    from data_collection.ports import ArticleGenerator, TranscriptProvider
+
+    import data_collection.ports as ports
+
+    importlib.reload(ports)
+    assert "TranscriptProvider" in ports.__all__
+    assert "ArticleGenerator" in ports.__all__
+    assert ports.TranscriptProvider is TranscriptProvider
+    assert ports.ArticleGenerator is ArticleGenerator
+
+
 @pytest.mark.parametrize("name", NEGATIVE_ROOT_NAMES)
 def test_negative_names_not_importable_from_package_root(name: str) -> None:
     """D-02, D-04, D-06: fakes, ArticleDraft, and old DTOs are not public exports."""
