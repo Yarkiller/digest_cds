@@ -1,4 +1,4 @@
-"""Public data_collection.__all__ whitelist + export negatives (D-01…D-04, D-06)."""
+"""Public data_collection.__all__ whitelist + export negatives (D-01…D-04, D-06, D-21)."""
 
 from __future__ import annotations
 
@@ -14,6 +14,7 @@ PUBLIC_NAMES = frozenset(
         "TemplateKind",
         "TranscriptProvider",
         "ArticleGenerator",
+        "VideoMetadataProvider",
     }
 )
 
@@ -21,6 +22,11 @@ NEGATIVE_ROOT_NAMES = (
     "ArticleDraft",
     "FakeTranscriptProvider",
     "FakeArticleGenerator",
+    "FakeVideoMetadataProvider",
+    "CaptionsError",
+    "MetadataError",
+    "YouTubeTranscriptAdapter",
+    "YouTubeOEmbedAdapter",
     "YoutubeSourceDto",
     "TranscriptResultDto",
     "ArticleAssistDto",
@@ -32,32 +38,43 @@ NEGATIVE_ROOT_NAMES = (
 )
 
 
-def test_public_all_is_exactly_six_ingestion_names() -> None:
-    """D-01, D-04: package root exports only the six public contracts."""
+def test_public_all_is_exactly_seven_ingestion_names() -> None:
+    """D-01, D-04, D-21: package root exports only the seven public contracts."""
     import data_collection
 
     importlib.reload(data_collection)
     assert set(data_collection.__all__) == PUBLIC_NAMES
+    assert len(data_collection.__all__) == 7
     for name in sorted(PUBLIC_NAMES):
         assert hasattr(data_collection, name), f"missing public export: {name}"
 
 
-def test_ports_package_exports_transcript_provider() -> None:
-    """WR-01: ports barrel re-exports TranscriptProvider alongside ArticleGenerator."""
-    from data_collection.ports import ArticleGenerator, TranscriptProvider
+def test_ports_package_exports_both_provider_protocols() -> None:
+    """WR-01 / D-21: ports barrel re-exports both providers alongside ArticleGenerator."""
+    from data_collection.ports import (
+        ArticleGenerator,
+        TranscriptProvider,
+        VideoMetadataProvider,
+    )
+    from data_collection.ports.video_metadata_provider import (
+        VideoMetadataProvider as ModuleLevel,
+    )
 
     import data_collection.ports as ports
 
     importlib.reload(ports)
     assert "TranscriptProvider" in ports.__all__
     assert "ArticleGenerator" in ports.__all__
+    assert "VideoMetadataProvider" in ports.__all__
     assert ports.TranscriptProvider is TranscriptProvider
     assert ports.ArticleGenerator is ArticleGenerator
+    assert ports.VideoMetadataProvider is VideoMetadataProvider
+    assert ports.VideoMetadataProvider is ModuleLevel
 
 
 @pytest.mark.parametrize("name", NEGATIVE_ROOT_NAMES)
 def test_negative_names_not_importable_from_package_root(name: str) -> None:
-    """D-02, D-04, D-06: fakes, ArticleDraft, and old DTOs are not public exports."""
+    """D-02, D-04, D-06, D-21: fakes, adapters, errors, and old DTOs stay off root."""
     import data_collection
 
     importlib.reload(data_collection)
@@ -66,3 +83,12 @@ def test_negative_names_not_importable_from_package_root(name: str) -> None:
         getattr(data_collection, name)
     with pytest.raises(ImportError):
         exec(f"from data_collection import {name}")
+
+
+def test_error_bases_importable_from_errors_submodules() -> None:
+    """Mapper import path: errors stay reachable via data_collection.errors.*."""
+    from data_collection.errors.captions import CaptionsError
+    from data_collection.errors.metadata import MetadataError
+
+    assert issubclass(CaptionsError, Exception)
+    assert issubclass(MetadataError, Exception)
