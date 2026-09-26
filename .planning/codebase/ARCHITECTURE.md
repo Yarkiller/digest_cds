@@ -1,7 +1,10 @@
-<!-- refreshed: 2026-09-19 -->
+---
+last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
+---
+<!-- refreshed: 2026-09-26 -->
 # Architecture
 
-**Analysis Date:** 2026-09-19
+**Analysis Date:** 2026-09-26
 
 ## System Overview
 
@@ -12,31 +15,34 @@
 │  React app (Vite)            │  Static design prototype                     │
 │  `web/src/`                  │  `design-frontend/`                          │
 │  pages → components →        │  HTML + CSS tokens + `scripts/app.js`        │
-│  `services/` + `data/mock`   │                                              │
+│  `services/` (+ mock/live)   │                                              │
 └──────────────┬───────────────┴──────────────────────────────────────────────┘
-               │  (planned: HTTP; today: mocks only)
+               │  Bearer JWT (Supabase Auth) + REST
+               │  VITE_API_BASE_URL → FastAPI
                ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                    Backend application core                                  │
 │  `backend/src/backend/`                                                      │
-│  interface/http  ← MISSING (no FastAPI routers yet)                          │
-│  composition/    → AppContainer                                              │
+│  interface/http  → FastAPI app + thin routers                                │
+│  composition/    → AppContainer (memory | live)                              │
 │  application/    → ports + use_cases                                         │
-│  domain/         → Material, KnowledgeChunk, errors                          │
+│  domain/         → entities, VOs, DomainError hierarchy                      │
+│  infrastructure/ → JWT verify, LocalNotebookStorage, StubMailer              │
 └──────────┬───────────────────────────────┬──────────────────────────────────┘
-           │ ports                         │ ports (planned adapters)
+           │ ports                         │ ports (live adapters)
            ▼                               ▼
 ┌──────────────────────────┐    ┌─────────────────────────────────────────────┐
 │  In-memory fakes         │    │  Adapter modules (workspace packages)       │
-│  `tests_support/`        │    │  `supabase-integration/` — migrations + stub│
-│  (current composition)   │    │  `data-collection/` — Pydantic DTOs only    │
+│  `tests_support/`        │    │  `supabase-integration/` — repos + SQL      │
+│  (APP_CONTAINER=memory)  │    │  `data-collection/` — Pydantic DTOs only    │
 └──────────────────────────┘    └──────────────────┬──────────────────────────┘
                                                    ▼
                                     ┌──────────────────────────────┐
                                     │  Supabase / Postgres         │
-                                    │  schema: `migrations/`       │
-                                    │  (+ FoundryModels / YouTube  │
-                                    │   — DTOs defined, no clients)│
+                                    │  schema: `migrations/001–006`│
+                                    │  Auth JWKS + profiles RLS    │
+                                    │  (+ Foundry/YouTube DTOs —   │
+                                    │   not wired to backend yet)  │
                                     └──────────────────────────────┘
 ```
 
@@ -44,17 +50,20 @@
 
 | Component | Responsibility | File |
 |-----------|----------------|------|
-| React shell & routes | Browser UI, navigation, page composition | `web/src/App.jsx`, `web/src/components/AppShell.jsx` |
-| UI pages | Issue, voting, knowledge, material views | `web/src/pages/*.jsx` |
-| Frontend API boundary | Vote submit (mock); intended home for all backend calls | `web/src/services/votingApi.js` |
-| Mock content | Local materials/topics/issue fixtures for UI | `web/src/data/mock.js` |
-| Domain entities | Material lifecycle, knowledge chunks/hits, domain errors | `backend/src/backend/domain/` |
-| Application ports | `MaterialRepository`, `KnowledgeChunkRepository` protocols | `backend/src/backend/application/ports/` |
-| Use-cases | Publish, index chunks, hybrid search | `backend/src/backend/application/use_cases/` |
-| Composition root | Wire adapters; expose `publish` / `index` / `search` | `backend/src/backend/composition/container.py` |
-| In-memory adapters | Test/local implementations of ports | `backend/src/backend/tests_support/in_memory.py` |
-| Data-collection DTOs | Normalized YouTube / text-import / FoundryModels shapes | `data-collection/src/data_collection/dto/` |
-| Supabase module | Migrations path public API; schema/RLS SQL | `supabase-integration/src/supabase_integration/__init__.py`, `supabase-integration/migrations/` |
+| React shell & routes | Browser UI, navigation, auth gate | `web/src/App.jsx`, `web/src/components/AppShell.jsx`, `RequireAuth.jsx` |
+| UI pages | Issue, archive, voting, knowledge, materials, razbory, profile, admin digest, auth | `web/src/pages/*.jsx` |
+| Frontend API boundary | REST + Supabase Auth; mock/live switch via `VITE_USE_MOCKS` | `web/src/services/*Api.js`, `authApi.js`, `supabaseClient.js` |
+| Mock content | Local fixtures when mocks enabled | `web/src/data/mock.js` |
+| FastAPI edge | Thin routers, CORS, request-id, JWT deps | `backend/src/backend/interface/http/` |
+| Domain entities | Material, Issue, Vote/Ballot, Razbor, Knowledge, Shortlist, CurrentUser, auth helpers | `backend/src/backend/domain/` |
+| Application ports | 13 `Protocol` contracts (+ `StubQueryEmbedder`) | `backend/src/backend/application/ports/` |
+| Use-cases | Ballot, issues, materials, search, razbory, profile, shortlist/digest, ping, publish/index | `backend/src/backend/application/use_cases/` |
+| Composition root | Memory vs live wiring; settings from env | `backend/src/backend/composition/` |
+| Backend-local infra | ES256 JWKS verify, FS notebooks, stub mailer | `backend/src/backend/infrastructure/` |
+| In-memory adapters | Test/local port fakes | `backend/src/backend/tests_support/in_memory.py` |
+| Supabase adapters | Repositories + digest publisher + clients | `supabase-integration/src/supabase_integration/` |
+| SQL schema / RLS / RPCs | Migrations `001`…`006` | `supabase-integration/migrations/` |
+| Data-collection DTOs | YouTube / text-import / FoundryModels shapes | `data-collection/src/data_collection/dto/` |
 | Design prototype | Canonical Editorial UI (static) | `design-frontend/` |
 | Domain glossary | Shared language for agents and product | `CONTEXT.md` |
 | Architecture ADRs | Deployment, auth domain, FoundryModels, leaderboard | `docs/adr/` |
@@ -67,8 +76,9 @@
 - Dependencies point inward: adapters → application → domain; domain has zero FastAPI/httpx/supabase imports.
 - Ports are `typing.Protocol` in `backend/.../application/ports/`.
 - External systems live in sibling workspace packages (`supabase-integration`, `data-collection`), not inside domain/use-cases.
-- Wiring only in `backend/.../composition/` (`AppContainer`, `build_in_memory_container`).
-- Frontend must call backends only through `web/src/services/`; pages must not import Supabase/SDK details.
+- Wiring only in `backend/.../composition/` (`AppContainer`, `build_in_memory_container`, `build_live_container`).
+- HTTP layer is thin: routers call use-cases via `app.state.container`; JWT + corporate email gate in `deps.py`.
+- Frontend calls backends only through `web/src/services/`; identity via Supabase Auth client-side; API data via FastAPI with Bearer token.
 - TDD (Red–Green–Refactor) is mandatory for behavior changes (`.cursor/rules/tdd.mdc`, `AGENTS.md`).
 
 ## Layers
@@ -76,145 +86,179 @@
 **Domain (`backend/src/backend/domain/`):**
 - Purpose: Pure business entities, value objects, domain errors.
 - Location: `backend/src/backend/domain/`
-- Contains: `Material`, `MaterialStatus`, `KnowledgeChunk`, `KnowledgeHit`, `DomainError` hierarchy.
+- Contains: `Material`/`MaterialStatus`, `Issue`/`IssueItem`, `KnowledgeChunk`/`KnowledgeHit`, voting/ballot types, `Razbor`, shortlist models, `CurrentUser`, `AccessTokenClaims`, email-domain helpers, `DomainError` hierarchy.
 - Depends on: Standard library only.
-- Used by: Application ports, use-cases, composition, public package exports in `backend/src/backend/__init__.py`.
+- Used by: Ports, use-cases, adapters (mapping), package exports.
 
 **Application — ports (`backend/src/backend/application/ports/`):**
-- Purpose: Persistence/search contracts without implementation.
-- Location: `backend/src/backend/application/ports/`
-- Contains: `MaterialRepository`, `KnowledgeChunkRepository`.
+- Purpose: Persistence/search/mail/embed contracts without implementation.
+- Contains: `MaterialRepository`, `KnowledgeChunkRepository`, `IssueRepository`, `ProfileRepository`, `PingRecorder`, `VoteRepository`, `VotingCycleReader`, `RazborRepository`, `ShortlistRepository`, `DigestPublisher`, `NotebookStorage`, `Mailer`, `QueryEmbedder` (+ `StubQueryEmbedder`).
 - Depends on: Domain types only.
 - Used by: Use-cases and composition typing.
 
 **Application — use-cases (`backend/src/backend/application/use_cases/`):**
 - Purpose: Orchestrate domain rules against ports.
-- Location: `backend/src/backend/application/use_cases/`
-- Contains: `publish_material`, `index_material_chunks` (+ `split_article_into_atoms`), `search_knowledge`.
-- Depends on: Domain + ports (+ injected callables like `embed`).
-- Used by: `AppContainer` methods.
+- Contains: `get_current_user`, `update_display_name`, `record_platform_ping`, `get_current_issue`, `get_issue_by_number`, `list_archive_issues`, `get_material_for_reader`, `get_ballot`, `cast_vote`, `search_knowledge`, `list_razbors`, `get_razbor`, `download_razbor_notebook`, `get_admin_shortlist`, `set_shortlist_decision`, `preview_digest_email`, `send_digest`, `publish_material`, `index_material_chunks`.
+- Depends on: Domain + ports (+ injected callables like embed).
+- Used by: HTTP routers and `AppContainer` façade methods (`publish` / `index` / `search`).
 
 **Composition (`backend/src/backend/composition/`):**
 - Purpose: Single DI / bootstrap root.
-- Location: `backend/src/backend/composition/container.py`
-- Contains: `AppContainer`, `build_in_memory_container`.
-- Depends on: Ports, use-cases, in-memory adapters.
-- Used by: Unit tests (`tests/unit/test_composition_container.py`); future HTTP layer / workers.
+- Contains: `AppContainer`, `build_in_memory_container` (`container.py`), `build_live_container` (`live.py`), `Settings` (`settings.py`).
+- Depends on: Ports, use-cases, in-memory fakes, and (live only) `supabase_integration` adapters.
+- Used by: `interface/http/app.py` via `resolve_container`; unit tests.
 
-**Interface / HTTP:**
-- Purpose (target): Thin FastAPI routers mapping HTTP ↔ use-cases.
-- Location: Planned at `backend/src/backend/interface/http/` per architecture rule.
-- Status: **Not present** — no FastAPI app, routers, or ASGI entrypoint in the repo.
+**Interface / HTTP (`backend/src/backend/interface/http/`):**
+- Purpose: Thin FastAPI edge — map HTTP ↔ use-cases.
+- Contains: `app.py` (`create_app`, `create_default_app`), `deps.py`, `middleware.py`, routers under `routes/` (`health`, `me`, `issues`, `materials`, `knowledge`, `razbory`, `voting`, `admin`).
+- Depends on: Composition container, domain errors, infrastructure JWT.
+- Status: **Present and wired** for reader/admin flows; publish/index use-cases exist but have no dedicated public HTTP routes.
 
-**Infrastructure (backend-local):**
-- Purpose (target): Backend-owned adapters if not living in sibling modules.
-- Location: Planned at `backend/src/backend/infrastructure/`.
-- Status: **Not present** — current adapters are in-memory under `tests_support/`.
+**Infrastructure (backend-local) (`backend/src/backend/infrastructure/`):**
+- Purpose: Backend-owned adapters not living in sibling packages.
+- Contains: `auth_jwt.py` (JWKS verify), `local_notebook_storage.py`, `stub_mailer.py`.
+- Used by: HTTP deps and both memory/live containers (notebooks + mailer).
 
 **Adapter — supabase-integration:**
-- Purpose: DB schema, RLS, eventual Supabase SDK adapters implementing ports.
+- Purpose: Postgres/Supabase schema, RLS, SDK repositories implementing ports.
 - Location: `supabase-integration/`
-- Contains: `migrations/001_initial_schema.sql`; public `migrations_dir()` only.
-- Depends on: Declares workspace dep on `backend` (for future port implementations); no live SDK client yet.
+- Contains: `client.py`, repository adapters, `digest_publisher.py`, migrations `001`…`006`, public `__init__.py` exports.
+- Depends on: Workspace package `backend` (domain types / `PersistenceError` mapping).
 
 **Adapter — data-collection:**
 - Purpose: External API boundary DTOs (YouTube, text import, FoundryModels).
 - Location: `data-collection/src/data_collection/`
 - Contains: Pydantic models in `dto/`; package exports via `__init__.py`.
-- Depends on: `pydantic` only — no HTTP clients yet.
+- Depends on: `pydantic` only — no HTTP clients; **not imported by backend** yet.
 
 **Frontend delivery (`web/`):**
-- Purpose: Production-oriented React UI for homework / product surface.
+- Purpose: Production React UI for Digest CDS.
 - Location: `web/src/`
 - Contains: Pages, components, services, utils, mock data, Tailwind styles (`index.css`).
-- Depends on: React 19, React Router 7, Vite 8 — mock data today, not backend.
+- Depends on: React 19, React Router 7, Vite, `@supabase/supabase-js` for Auth when live.
 
 **Design delivery (`design-frontend/`):**
-- Purpose: Static Editorial concept (UI Concept 3); design tokens source of truth for look.
+- Purpose: Static Editorial concept (UI Concept 3); design tokens source of truth.
 - Location: `design-frontend/`
 - Contains: `pages/*.html`, `styles/*.css`, `scripts/app.js`, assets.
 - Depends on: Browser only; served statically for Playwright design project.
 
 ## Data Flow
 
-### Primary Request Path (target publish → index → search)
+### Auth (identity outside FastAPI)
 
-1. Composition builds container with repository adapters (`backend/src/backend/composition/container.py` — `build_in_memory_container`).
-2. `AppContainer.publish(material_id)` → `publish_material` loads material, validates via `Material.as_ready`, saves as `READY` (`backend/src/backend/application/use_cases/publish_material.py`).
-3. `AppContainer.index(...)` → `index_material_chunks` requires `READY`, splits markdown into atoms, embeds via injected `embed`, replaces chunks (`backend/src/backend/application/use_cases/index_material_chunks.py`).
-4. `AppContainer.search(...)` → `search_knowledge` scores chunks (0.7 cosine + 0.3 token FTS), optional role filter, returns `KnowledgeHit` list (`backend/src/backend/application/use_cases/search_knowledge.py`).
+1. Browser uses `web/src/services/authApi.js` → Supabase Auth (`signInWithPassword` / session).
+2. Protected pages pass `Authorization: Bearer <access_token>` via service helpers.
+3. FastAPI `deps.py` verifies JWT (ES256 JWKS), enforces corporate email allowlist, loads profile via `get_current_user` for admin gates.
+4. Login/register are **not** proxied through FastAPI.
 
-### Frontend voting path (current)
+### Profile / platform ping
 
-1. User selects topic on `web/src/pages/VotingPage.jsx`.
-2. Page calls `submitVote(topicId)` in `web/src/services/votingApi.js` (delay + optional fail harness).
-3. Service returns `{ topicId, savedAt }` or throws `VoteSubmitError` — no network backend.
+1. `GET|PATCH /me`, `POST /me/ping` → use-cases `get_current_user` / `update_display_name` / `record_platform_ping`.
+2. Live: `SupabaseProfileRepository`, `SupabasePingRecorder` on `profiles` / ping tables.
 
-### Frontend knowledge / issue path (current)
+### Issues, archive, materials (reader)
 
-1. Pages import fixtures from `web/src/data/mock.js`.
-2. Filters run client-side via `web/src/utils/filters.js`.
-3. No hybrid vector search from backend is wired to the UI yet.
+1. `GET /issues/current`, `/issues/{number}`, `/archive`, `/materials/{slug}`.
+2. Use-cases read via `IssueRepository` / `MaterialRepository` (ready-only for materials).
+3. Live: `SupabaseIssueRepository`, `SupabaseMaterialRepository`.
 
-### Ingestion path (schema + DTOs; adapters incomplete)
+### Voting ballot
 
-1. External source shapes enter as DTOs (`YoutubeSourceDto`, `TextImportDto`, Foundry result DTOs) from `data-collection`.
-2. Persistence target tables live in `supabase-integration/migrations/001_initial_schema.sql` (`ingestion_sources`, `ingestion_jobs`, `source_texts`, `materials`, `knowledge_chunks`, voting/digest tables).
-3. Port implementations that map DTOs → domain → DB are not implemented yet.
+1. `GET /voting/current` → `get_ballot(votes, voting_cycles, user_id)`.
+2. `POST /voting/votes` → `cast_vote` with optimistic concurrency (`expected_updated_at`).
+3. Live: `SupabaseVoteRepository`, `SupabaseVotingCycleReader`.
+
+### Knowledge search
+
+1. `GET /knowledge/search` → `AppContainer.search` → `StubQueryEmbedder.embed` + `search_knowledge`.
+2. Live chunks via `SupabaseKnowledgeChunkRepository` (hybrid/pgvector in adapter); embedder remains stub in both containers today.
+
+### Razbory + notebooks
+
+1. `GET /razbory`, `/razbory/{id}` → `RazborRepository`.
+2. `GET /razbory/{id}/notebook` → `download_razbor_notebook` + `NotebookStorage.resolve` (`LocalNotebookStorage` under `NOTEBOOK_ROOT` even in live mode).
+
+### Admin shortlist / digest send
+
+1. `GET /admin/shortlist`, decision/preview/send under `/admin/shortlist/...` (requires `profiles.role=admin`).
+2. `send_digest` → `DigestPublisher.claim_and_publish` (RPC) + `Mailer.send_digest` (`StubMailer` today; `MAILER=smtp` fail-fast).
+
+### Publish → index → search (container façade; limited HTTP)
+
+1. `AppContainer.publish` / `.index` / `.search` wrap use-cases for tests and internal flows.
+2. Material publish for digest is tied to admin send / `claim_and_publish` RPC, not a public CRUD publish route.
+3. No HTTP routes for `publish_material` / `index_material_chunks` as standalone admin APIs.
+
+### Ingestion path (DTOs + schema; adapters incomplete)
+
+1. External source shapes exist as DTOs in `data-collection`.
+2. Persistence tables live in migrations (`ingestion_*`, `materials`, `knowledge_chunks`, …).
+3. Writers mapping DTOs → domain → DB are not implemented in production packages yet.
 
 **State Management:**
-- Backend: Stateless use-cases; state in repository adapters (in-memory dicts today).
-- Frontend: Local React `useState` / `useMemo` per page; no global store library.
-- Auth profile: Schema expects Supabase `auth.users` → `profiles`; UI shows static display name in `AppShell`.
+- Backend: Stateless use-cases; state in repository adapters (in-memory dicts or Supabase).
+- Frontend: Local React state per page; no global store library. Mock/live toggled by `VITE_USE_MOCKS`.
+- Auth session: Supabase client session (live) or mock harness (Playwright / mocks).
 
 ## Key Abstractions
 
 **Material:**
 - Purpose: Publishable article unit (draft → ready) with provenance, roles, tags.
 - Examples: `backend/src/backend/domain/material.py`
-- Pattern: Frozen dataclass + `MaterialStatus` enum; `assert_publishable` / `as_ready` enforce rules.
+- Pattern: Frozen dataclass + `MaterialStatus`; `assert_publishable` / `as_ready`.
 
 **KnowledgeChunk / KnowledgeHit:**
 - Purpose: Indexed atomic content for retrieval; search result DTO.
 - Examples: `backend/src/backend/domain/knowledge.py`
-- Pattern: Frozen dataclasses; embeddings as `list[float]` (dim aligned with Foundry `EMBEDDING_DIM = 1024` in `data-collection`).
+- Pattern: Frozen dataclasses; embeddings as `list[float]` (dim aligned with Foundry `EMBEDDING_DIM = 1024`).
 
-**Repository ports:**
-- Purpose: Persist materials and chunks without coupling to Supabase.
-- Examples: `backend/src/backend/application/ports/material_repository.py`, `knowledge_chunk_repository.py`
-- Pattern: `Protocol` with narrow methods (`get`/`save`, `replace_for_material`/`list_all`).
+**Repository / capability ports:**
+- Purpose: Persist and side-effect without coupling to Supabase/SMTP/FS details.
+- Examples: `application/ports/*_repository.py`, `digest_publisher.py`, `mailer.py`, `notebook_storage.py`
+- Pattern: `Protocol` with narrow methods.
 
 **AppContainer:**
-- Purpose: Application façade used by tests and future HTTP/workers.
+- Purpose: Application façade holding all ports; used by HTTP and tests.
 - Examples: `backend/src/backend/composition/container.py`
-- Pattern: Dataclass holding ports; methods delegate to pure use-case functions.
+- Pattern: Dataclass of ports; methods delegate to pure use-case functions.
+
+**HTTP deps:**
+- Purpose: Authn/authz at the edge without bloating routers.
+- Examples: `backend/src/backend/interface/http/deps.py`
+- Pattern: Bearer verify → email allowlist → optional admin via DB role.
+
+**Frontend service module:**
+- Purpose: Isolate side effects from UI components.
+- Examples: `web/src/services/contentApi.js`, `votingApi.js`, `adminApi.js`
+- Pattern: Async functions + typed errors; mock/live branch; Playwright harnesses on `window`.
 
 **External DTOs:**
 - Purpose: Validate/normalize boundary payloads from YouTube / text import / FoundryModels.
 - Examples: `data-collection/src/data_collection/dto/*.py`
-- Pattern: Pydantic `BaseModel` with validators; exported via package `__all__`.
-
-**Frontend service module:**
-- Purpose: Isolate side effects from UI components.
-- Examples: `web/src/services/votingApi.js`
-- Pattern: Async functions + typed error class; pages import services, not raw fetch.
+- Pattern: Pydantic `BaseModel`; exported via package `__all__`.
 
 ## Entry Points
 
 **React SPA:**
 - Location: `web/src/main.jsx` → `web/src/App.jsx`
-- Triggers: Vite dev (`npm run dev`) or production build (`npm run build`).
-- Responsibilities: Mount React, register routes under `AppShell`.
+- Triggers: Vite dev (`npm run dev`, port 5173) or production build; Playwright uses 5174 with mocks.
+- Responsibilities: Mount React, register routes, expose `__DIGEST_*_HARNESS__` for E2E.
 
-**Python workspace / composition:**
-- Location: `backend/src/backend/composition/container.py`
-- Triggers: Imports from tests (`tests/unit/`), future ASGI app or CLI.
-- Responsibilities: Construct repositories and invoke use-cases.
+**FastAPI / Uvicorn:**
+- Location: `backend.interface.http.app:create_default_app` (factory)
+- Triggers: `uv run --env-file .env uvicorn backend.interface.http.app:create_default_app --factory --host 127.0.0.1 --port 8000`
+- Responsibilities: Load `Settings`, resolve memory/live container, serve routers.
+
+**Python composition:**
+- Location: `backend/src/backend/composition/container.py`, `live.py`
+- Triggers: App factory, unit tests.
+- Responsibilities: Construct adapters and expose use-case façade.
 
 **Backend public package API:**
 - Location: `backend/src/backend/__init__.py`
 - Triggers: `from backend import Material, ...`
-- Responsibilities: Re-export domain types/errors for consumers.
+- Responsibilities: Re-export domain types/errors for consumers/adapters.
 
 **Data-collection public API:**
 - Location: `data-collection/src/data_collection/__init__.py`
@@ -223,8 +267,8 @@
 
 **Supabase-integration public API:**
 - Location: `supabase-integration/src/supabase_integration/__init__.py`
-- Triggers: `migrations_dir()` for schema contract tests.
-- Responsibilities: Locate SQL migrations directory.
+- Triggers: Client factories, repository classes, `migrations_dir()`.
+- Responsibilities: Adapter surface for live composition.
 
 **Design prototype:**
 - Location: `design-frontend/index.html` and `design-frontend/pages/*.html`
@@ -233,17 +277,18 @@
 
 **Root workspace:**
 - Location: `pyproject.toml` (uv workspace), `package.json` (npm scripts).
-- Triggers: `uv run pytest`, `npm test`, `npm run test:unit`.
+- Triggers: `uv run pytest`, `npm test`, `npm run test:unit`, `npm run platform:runbook`.
 - Responsibilities: Orchestrate multi-package tooling.
 
 ## Architectural Constraints
 
-- **Threading:** Python use-cases are synchronous pure functions; no async runtime in backend package yet. Frontend is single-threaded browser event loop.
-- **Global state:** Frontend vote-fail harness uses module-level `failNextSubmit` in `web/src/services/votingApi.js`. Backend in-memory repos hold mutable dicts/lists inside adapter instances only.
-- **Circular imports:** Not observed among backend packages; `supabase-integration` depends on `backend` workspace package; `backend` must not import `supabase_integration` or `data_collection` in domain/use-cases.
-- **Module boundaries:** No deep-imports into another package’s internals; use package `__init__.py` / ports. uv workspace members: `backend`, `data-collection`, `supabase-integration` (`pyproject.toml`).
-- **Secrets:** `.env` may exist at repo root for local config — never import secrets into domain; never commit values. Note existence only.
-- **Missing delivery layer:** Do not invent FastAPI routes inside use-cases; add thin routers under `interface/http` and wire in composition when HTTP is introduced.
+- **Threading:** Python use-cases are synchronous; FastAPI routes call them directly. Frontend is browser event loop.
+- **Composition modes:** `APP_CONTAINER=memory` (default) vs `live` (requires `SUPABASE_URL` + `SUPABASE_SECRET_KEY`). Live imports `supabase_integration` from workspace root install (`digest-cds` meta-package); `backend` alone does not declare that dependency.
+- **Circular imports:** `supabase-integration` depends on `backend`; domain/use-cases must not import `supabase_integration` or `data_collection`.
+- **Module boundaries:** No deep-imports into another package’s internals; use package `__init__.py` / ports. uv members: `backend`, `data-collection`, `supabase-integration`.
+- **Secrets:** `.env` at repo root for local config — never import secrets into domain; never commit values.
+- **Auth split:** JWT issuance is Supabase-only; FastAPI validates tokens and enforces email/role policy.
+- **Notebooks:** Always local filesystem (`LocalNotebookStorage`), not Supabase Storage.
 - **TDD:** No production behavior without a failing automated test first.
 
 ## Anti-Patterns
@@ -252,59 +297,62 @@
 
 **What happens:** Importing `supabase`, `httpx`, or `requests` in `domain/` or `use_cases/`.
 **Why it's wrong:** Couples business rules to one vendor; breaks unit tests without network/DB.
-**Do this instead:** Define a port in `application/ports/`, implement in `supabase-integration` or `data-collection`, wire in `composition/container.py`.
+**Do this instead:** Define a port in `application/ports/`, implement in `supabase-integration` or `data-collection`, wire in `composition/`.
 
-### Business rules in React pages or FastAPI routers
+### Business rules in React pages or fat FastAPI routers
 
-**What happens:** Scoring, publishability, or ranking computed in `web/src/pages/*.jsx` or (future) fat routers.
+**What happens:** Scoring, publishability, or ranking computed in `web/src/pages/*.jsx` or thick route handlers.
 **Why it's wrong:** Duplicates domain logic; UI and API diverge.
-**Do this instead:** Keep rules in domain/use-cases; UI renders DTOs (e.g. score from `KnowledgeHit`). Client-side filters on mock data in `utils/filters.js` are UI-only until search API exists.
+**Do this instead:** Keep rules in domain/use-cases; UI renders DTOs; routers only map HTTP ↔ use-cases.
 
 ### Bypassing `web/src/services/`
 
-**What happens:** Pages call `fetch`/Supabase client directly.
-**Why it's wrong:** Leaks infrastructure into UI; hard to swap mock → real API.
-**Do this instead:** Add service modules under `web/src/services/` (pattern already used by `votingApi.js`).
+**What happens:** Pages call `fetch`/Supabase client directly (except auth, which is confined to `authApi`/`supabaseClient`).
+**Why it's wrong:** Leaks infrastructure into UI; hard to swap mock → live.
+**Do this instead:** Add/extend modules under `web/src/services/`.
 
 ### Wiring outside composition root
 
-**What happens:** `create_client(...)` or repository construction scattered in use-cases or random modules.
-**Why it's wrong:** Multiple composition points; adapters become undeleteable without hunting call sites.
+**What happens:** `create_client(...)` or repository construction scattered in use-cases or routers.
+**Why it's wrong:** Multiple composition points; adapters become undeleteable.
 **Do this instead:** Only construct adapters in `backend/src/backend/composition/`.
 
 ### Treating design-frontend as production app
 
 **What happens:** Shipping features only in static HTML under `design-frontend/`.
 **Why it's wrong:** Product path is `web/`; design folder is concept/reference.
-**Do this instead:** Implement product behavior in `web/` (and backend packages); keep design-frontend aligned for visuals/E2E reference.
+**Do this instead:** Implement product behavior in `web/` + backend packages; keep design-frontend aligned for visuals/E2E.
 
 ## Error Handling
 
-**Strategy:** Domain exceptions for business failures; frontend typed errors for UX; adapter boundary maps SDK/HTTP failures into domain errors (when adapters exist).
+**Strategy:** Domain exceptions for business failures; infrastructure/token errors at the edge; frontend typed errors for UX; adapters map SDK failures into domain/`PersistenceError` at the boundary.
 
 **Patterns:**
-- Domain: `MaterialNotFoundError`, `MaterialValidationError`, `MaterialNotReadyError` extend `DomainError` (`backend/src/backend/domain/errors.py`).
-- Use-cases raise domain errors; callers (container / future HTTP) translate to status codes.
-- Frontend: `VoteSubmitError` with `code` and `retryable` (`web/src/services/votingApi.js`); UI surfaces via `ErrorPanel` (`web/src/components/ErrorPanel.jsx`).
+- Domain: `DomainError` family in `backend/src/backend/domain/errors.py` (material, issue, razbor, notebook, knowledge, voting, shortlist/digest).
+- HTTP: Routers/deps translate domain and `TokenVerificationError` into status codes.
+- Frontend: Service-level error classes (e.g. vote/admin/content failures) surfaced via `ErrorPanel` / `ServiceUnavailable`.
 - DTO validation: Pydantic `ValidationError` at data-collection boundary.
 
 ## Cross-Cutting Concerns
 
-**Logging:** Not standardized in backend packages yet — no shared logger module. Prefer adding logging at adapter/HTTP edges, not inside pure domain.
+**Logging:** `structlog` configured at HTTP edge (`middleware.py` / `configure_structlog`); prefer logging at adapter/HTTP edges, not inside pure domain.
 
 **Validation:**
-- Domain: `Material.assert_publishable`.
-- DTOs: Pydantic field validators in `data-collection`.
-- SQL: check constraints and enums in `001_initial_schema.sql`.
+- Domain invariants on entities (e.g. `Material.assert_publishable`).
+- DTOs: Pydantic validators in `data-collection`.
+- SQL: check constraints, enums, RLS in migrations.
 
-**Authentication:**
-- Target: Supabase Auth + `profiles` / `app_role` (see migration and ADR-0003 email domain restriction).
-- Current UI: No real auth flow; static user label in `AppShell`.
+**Authentication / authorization:**
+- Supabase Auth for identity; FastAPI Bearer JWKS verify.
+- Corporate email allowlist (ADR-0003) in domain helpers + `deps.py` / frontend `emailDomain.js`.
+- Admin: DB `profiles.role=admin` via `require_admin`, not JWT app-role claim alone.
 
-**Design tokens:** Editorial tokens live in `design-frontend/styles/tokens.css`; React app mirrors via Tailwind/CSS variables in `web/src/index.css`.
+**CORS / request ID:** `CORSMiddleware` from `Settings.cors_origins`; `RequestIdMiddleware` + `X-Request-ID`.
 
-**Documentation / ADRs:** Product language in `CONTEXT.md`; decisions in `docs/adr/`; agent workflow docs in `docs/agents/`.
+**Design tokens:** Editorial tokens in `design-frontend/styles/tokens.css`; React mirrors via Tailwind/`@theme` in `web/src/index.css`.
+
+**Documentation / ADRs:** Product language in `CONTEXT.md`; decisions in `docs/adr/`; agent runbooks in `docs/agents/`.
 
 ---
 
-*Architecture analysis: 2026-09-19*
+*Architecture analysis: 2026-09-26*
