@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field, field_validator
 
 class Transcript(BaseModel):
     text: str = Field(min_length=1)
-    language: str = Field(min_length=2, max_length=10)
+    language: str
     video_id: str = Field(min_length=1)
 
     @field_validator("text", "video_id")

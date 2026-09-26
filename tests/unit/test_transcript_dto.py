@@ -51,3 +51,11 @@ def test_transcript_language_length_bounds() -> None:
 
     with pytest.raises(ValidationError):
         Transcript(text="hello", language="x" * 11, video_id="abc")
+
+
+def test_transcript_language_strips_before_length_bounds() -> None:
+    """WR-02: padded valid BCP-47 tags pass after strip (D-09)."""
+    from data_collection.dto.transcript import Transcript
+
+    dto = Transcript(text="hello", language="  zh-Hans  ", video_id="abc")
+    assert dto.language == "zh-Hans"
