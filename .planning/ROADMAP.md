@@ -96,6 +96,7 @@ Full phase detail: [milestones/v1-ROADMAP.md](milestones/v1-ROADMAP.md)
   2. The run enqueues `digest_shortlist_items` on the current unsent batch with `decision=pending`
   3. When the current unsent batch already has 5 items, the run creates a new unsent batch and enqueues there (does not fail-if-full)
   4. Persist/enqueue never attaches to a batch with `sent_at` set
+**Deferred from Phase 7 (CAP-02 / D-14):** captions failure test — fake failing `TranscriptProvider` + spy `PersistPort` → `persist.calls == []` (Phase 7 proved CAP-02 at unit/adapter level; live zero-row assertion belongs to Phase 9/10).
 **Plans**: TBD
 
 ### Phase 10: CLI Composition & UAT
