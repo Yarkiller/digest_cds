@@ -40,7 +40,16 @@ Full phase detail: [milestones/v1-ROADMAP.md](milestones/v1-ROADMAP.md)
   1. Types `Transcript`, `VideoMetadata`, `MaterialDraft`, and `TemplateKind` exist in `data-collection` and pass unit tests
   2. Ports `TranscriptProvider` and `ArticleGenerator` have in-memory fakes that unit tests can inject without network or DB
   3. A `Transcript` cannot be passed where a `MaterialDraft` is required (type boundary holds in tests)
-**Plans**: TBD
+**Plans**: `06-01-PLAN.md` · `06-02-PLAN.md` · `06-03-PLAN.md`
+
+**Wave 1**
+- [ ] `06-01-PLAN.md` — Tracer: DTOs + ArticleGenerator fake + assembler + type boundary
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [ ] `06-02-PLAN.md` — TranscriptProvider fake + DTO validation edges
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [ ] `06-03-PLAN.md` — Public `__all__` rewrite + brownfield DTO delete (checkpoint:decision)
 
 ### Phase 7: Captions Adapter
 **Goal**: Operator can resolve a YouTube URL to captions, or get a loud captions-stage failure with no database side effects

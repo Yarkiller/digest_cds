@@ -556,22 +556,16 @@ def test_transcript_rejected_where_material_draft_required() -> None:
 
 **If empty:** N/A — discretion items remain for planner confirmation where marked ASSUMED.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Where to place `require_material_draft`**
-   - What we know: Roadmap SC-3 needs a consumer; assembler alone never sees Transcript.
-   - What's unclear: public helper vs test-only (Claude's Discretion).
-   - Recommendation: public tiny helper next to assembler (Phase 9 reuse; still zero I/O).
+1. **Where to place `require_material_draft`** — RESOLVED
+   - Locked by 06-01: public tiny helper `require_material_draft` in `assemble.py` (Phase 9 persist can reuse; zero I/O).
 
-2. **Async test runner**
-   - What we know: Ports are async; workspace has no `pytest-asyncio` and no existing `asyncio.run` tests.
-   - What's unclear: whether a later phase will standardize on a plugin.
-   - Recommendation: `asyncio.run(...)` inside sync pytest tests; **do not** add `pytest-asyncio` for Phase 6.
+2. **Async test runner** — RESOLVED
+   - Locked by 06-01/06-02: `asyncio.run(...)` inside sync pytest tests; **do not** add `pytest-asyncio` for Phase 6.
 
-3. **Exact MaterialDraft string validators beyond requiredness**
-   - What we know: D-05 requires fields; D-09 specifies strip/blank for Transcript.
-   - What's unclear: whether every MaterialDraft required string gets the same strip rule.
-   - Recommendation: Strip/non-blank on MaterialDraft required strings (`title`, `dek`, `body_markdown`, `source_url`, `youtube_video_id`, `source_author`, `provenance_label`); allow `source_published_at=None`. Same spirit for ArticleDraft article fields.
+3. **Exact MaterialDraft string validators beyond requiredness** — RESOLVED
+   - Locked by 06-01/06-02: strip/non-blank on MaterialDraft required strings (`title`, `dek`, `body_markdown`, `source_url`, `youtube_video_id`, `source_author`, `provenance_label`); allow `source_published_at=None`. Same spirit for ArticleDraft article fields.
 
 No blockers for planning.
 

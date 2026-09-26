@@ -3,17 +3,17 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: YouTube → LLM → Supabase ingestion
 current_phase: 6
-current_phase_name: v1.1 phases 6–10
-status: planning
-stopped_at: Phase 6 context gathered
-last_updated: "2026-09-26T12:16:21.479Z"
-last_activity: 2026-09-24
-last_activity_desc: v1.1 roadmap created (phases 6–10)
+current_phase_name: Ports & DTOs
+status: ready_to_execute
+stopped_at: Phase 6 planned — 3 plans ready
+last_updated: "2026-09-26T15:50:00.000Z"
+last_activity: 2026-09-26
+last_activity_desc: Phase 6 plans created (06-01 tracer, 06-02 edges, 06-03 public API)
 state_head: 701c79c2ba3fb69aed707b25fab414b929dfc46e
 progress:
   total_phases: 5
   completed_phases: 0
-  total_plans: 0
+  total_plans: 3
   completed_plans: 0
   percent: 0
 ---
@@ -25,14 +25,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-09-24)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Phase 6 — Ports & DTOs (ready to discuss)
+**Current focus:** Phase 6 — Ports & DTOs (ready to execute)
 
 ## Current Position
 
 Phase: 6 of 10 (Ports & DTOs) — v1.1 phases 6–10
-Plan: —
-Status: Ready to discuss Phase 6
-Last activity: 2026-09-24 — v1.1 roadmap created (phases 6–10)
+Plan: 3 plans in 3 waves (06-01 tracer → 06-02 → 06-03)
+Status: Ready to execute
+Last activity: 2026-09-26 — Phase 6 planned
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -49,7 +49,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1–5 (v1 shipped) | 40 | complete | see MILESTONES |
-| 6. Ports & DTOs | - | - | - |
+| 6. Ports & DTOs | 3 | planned | - |
 | 7. Captions Adapter | - | - | - |
 | 8. DeepSeek Article & Templates | - | - | - |
 | 9. Draft Persist & Shortlist Enqueue | - | - | - |
@@ -67,9 +67,13 @@ v1.1 locked for roadmap:
 - PERS-01: provenance columns required; migration in scope if missing
 - LLM-03/04/05 and CLI-04/05 in scope; DeepSeek MVP, captions only
 
+Phase 6 planning locks (see `06-CONTEXT.md` / `06-RESEARCH.md`):
+
+- `require_material_draft` in `assemble.py`; async fakes via `asyncio.run`; strip/non-blank MaterialDraft strings
+
 ### Pending Todos
 
-None. Next: `/gsd-discuss-phase 6` or `/gsd-plan-phase 6`.
+None. Next: `/gsd-execute-phase 6`
 
 ### Blockers/Concerns
 
@@ -82,7 +86,7 @@ leaderboard, quiz, PIPE-01 YAML UI, live SMTP, signup mail, Whisper/Foundry ASR,
 
 ## Session Continuity
 
-Last session: 2026-09-26T12:16:21.461Z
-Stopped at: Phase 6 context gathered
-Resume file: C:\Users\Yarkiller\PycharmPET-Projects\Digital_CDS\.planning\phases\06-ports-dtos\06-CONTEXT.md
-Next: discuss or plan Phase 6
+Last session: 2026-09-26T15:50:00.000Z
+Stopped at: Phase 6 planned — 3 plans ready
+Resume file: C:\Users\Yarkiller\PycharmPET-Projects\Digital_CDS\.planning\phases\06-ports-dtos\06-01-PLAN.md
+Next: `/gsd-execute-phase 6`
