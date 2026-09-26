@@ -16,8 +16,8 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Captions
 
-- [ ] **CAP-01**: Operator can pass a YouTube URL; the CLI resolves `video_id` and fetches captions with `ru`/`en` preference
-- [ ] **CAP-02**: Missing, disabled, or blocked captions exit non-zero with `stage=captions` and write zero database rows
+- [x] **CAP-01**: Operator can pass a YouTube URL; the CLI resolves `video_id` and fetches captions with `ru`/`en` preference
+- [x] **CAP-02**: Missing, disabled, or blocked captions exit non-zero with `stage=captions` and write zero database rows
 
 ### Article generation
 
@@ -76,8 +76,8 @@ Deferred. Not in this milestone's roadmap.
 |-------------|-------|--------|
 | DTO-01 | Phase 6 | Complete |
 | DTO-02 | Phase 6 | Complete |
-| CAP-01 | Phase 7 | Pending |
-| CAP-02 | Phase 7 | Pending |
+| CAP-01 | Phase 7 | Complete |
+| CAP-02 | Phase 7 | Complete |
 | LLM-01 | Phase 8 | Pending |
 | LLM-02 | Phase 8 | Pending |
 | LLM-03 | Phase 8 | Pending |
