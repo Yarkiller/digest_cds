@@ -40,15 +40,12 @@ created: 2026-09-26
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 06-01-01 | 01 | 1 | DTO-01 | T-06-01 | Reject blank/whitespace Transcript fields | unit | `uv run pytest tests/unit/test_transcript_dto.py -x` | ❌ W0 | ⬜ pending |
-| 06-01-02 | 01 | 1 | DTO-01 | T-06-01 | VideoMetadata author/url/id required; published_at optional | unit | `uv run pytest tests/unit/test_video_metadata_dto.py -x` | ❌ W0 | ⬜ pending |
-| 06-01-03 | 01 | 1 | DTO-01 | T-06-01 | MaterialDraft required provenance fields; None published_at OK | unit | `uv run pytest tests/unit/test_material_draft_dto.py -x` | ❌ W0 | ⬜ pending |
-| 06-01-04 | 01 | 1 | DTO-01 | — | TemplateKind only lecture\|podcast | unit | `uv run pytest tests/unit/test_template_kind.py -x` | ❌ W0 | ⬜ pending |
-| 06-02-01 | 02 | 1 | DTO-02 | T-06-03 | FakeTranscriptProvider scripted + `.calls` | unit async | `uv run pytest tests/unit/test_transcript_provider_fake.py -x` | ❌ W0 | ⬜ pending |
-| 06-02-02 | 02 | 1 | DTO-02 | T-06-03 | FakeArticleGenerator scripted + `.calls` | unit async | `uv run pytest tests/unit/test_article_generator_fake.py -x` | ❌ W0 | ⬜ pending |
-| 06-03-01 | 03 | 2 | D-07 | T-06-04 | Assembler maps fields; does not invent provenance_label | unit | `uv run pytest tests/unit/test_assemble_material_draft.py -x` | ❌ W0 | ⬜ pending |
-| 06-03-02 | 03 | 2 | SC-3 | T-06-02 | Transcript rejected where MaterialDraft required | unit | `uv run pytest tests/unit/test_material_draft_type_boundary.py -x` | ❌ W0 | ⬜ pending |
-| 06-04-01 | 04 | 2 | D-01…D-04 | T-06-03 | Old DTOs gone; public `__all__` = new surface only; fakes/ArticleDraft not exported | unit / import | `uv run pytest tests/unit/test_data_collection_public_api.py -x` | ❌ W0 | ⬜ pending |
+| 06-01-01 | 01 | 1 | DTO-01 / DTO-02 / D-07 / SC-3 | T-06-01, T-06-02, T-06-03, T-06-04 | Tracer: DTOs + FakeArticleGenerator + assembler + Transcript≠MaterialDraft boundary | unit (+ async via asyncio.run) | `uv run pytest tests/unit/test_transcript_dto.py tests/unit/test_video_metadata_dto.py tests/unit/test_material_draft_dto.py tests/unit/test_template_kind.py tests/unit/test_article_draft_internal.py tests/unit/test_article_generator_fake.py tests/unit/test_assemble_material_draft.py tests/unit/test_material_draft_type_boundary.py -x` | ❌ W0 | ⬜ pending |
+| 06-01-02 | 01 | 1 | DTO-01 | T-06-01 | MaterialDraft missing-required + TemplateKind closed set | unit | `uv run pytest tests/unit/test_material_draft_dto.py tests/unit/test_template_kind.py -x` | ❌ W0 | ⬜ pending |
+| 06-02-01 | 02 | 2 | DTO-02 | T-06-03 | FakeTranscriptProvider scripted + `.calls` order | unit async | `uv run pytest tests/unit/test_transcript_provider_fake.py -x` | ❌ W0 | ⬜ pending |
+| 06-02-02 | 02 | 2 | DTO-01 | T-06-01, T-06-05 | DTO validation edges (blank/language/nullable published_at) | unit | `uv run pytest tests/unit/test_transcript_dto.py tests/unit/test_video_metadata_dto.py tests/unit/test_material_draft_dto.py tests/unit/test_article_draft_internal.py -x` | ❌ W0 | ⬜ pending |
+| 06-03-01 | 03 | 3 | D-01…D-03 | — | Checkpoint: costly public-API replacement go/no-go (no deletes yet) | checkpoint | `echo checkpoint-decision-d01-d03` | N/A | ⬜ pending |
+| 06-03-02 | 03 | 3 | D-01…D-04 | T-06-03, T-06-07 | Old DTOs gone; public `__all__` = six names; fakes/ArticleDraft not exported | unit / import | `uv run pytest tests/unit/test_data_collection_public_api.py -x && uv run pytest` | ❌ W0 | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
