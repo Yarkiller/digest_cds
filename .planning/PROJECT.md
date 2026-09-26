@@ -56,10 +56,10 @@ v1 is done only when **all** of the following hold:
 - ✓ Voting cycle: one vote, change while open, audit-language ballot (VOTE-*) — v1
 - ✓ Knowledge semantic search + role filters; разборы list/longread/notebook (KNOW-*, RAZB-*) — v1
 - ✓ Admin shortlist → approve/reject → preview → send → archive (ADMIN-*) — v1
+- ✓ `data-collection` ports/DTOs: Transcript, VideoMetadata, MaterialDraft, TemplateKind + TranscriptProvider/ArticleGenerator fakes (DTO-01, DTO-02) — Phase 6
 
 ### Active
 
-- [ ] `data-collection` ports/DTOs for Transcript, VideoMetadata, MaterialDraft, TemplateKind
 - [ ] `ingestion-service` CLI one-shot: YouTube URL → captions → DeepSeek → materials draft + shortlist enqueue
 - [ ] Lecture + podcast prompt templates
 - [ ] UAT: 3–5 real videos visible as drafts in `/admin/digest`
@@ -112,6 +112,7 @@ v1 is done only when **all** of the following hold:
 | Four debug sessions acknowledged at v1 close | Diagnosis files stayed open after the gap-closure plans; signup mailer is still unknown | — Deferred |
 | DeepSeek MVP for ingestion LLM (ADR-0002 bend) | Captions-only pipeline first; one external LLM; FoundryModels revisit later | — Pending |
 | Ingestion writes Supabase only; no backend coupling | Backend/SPA stay readers; CLI owns YouTube + LLM + shortlist enqueue | — Pending |
+| Phase 6 six-name public `__all__`; brownfield YouTube/Foundry/text-import DTOs deleted (D-01…D-03) | Single ingestion contract; no parallel public DTO names | ✓ Phase 6 |
 
 <decisions>
 ## Locked decisions (from ADRs / ingest)
@@ -152,4 +153,4 @@ After each phase transition: move validated/invalidated requirements; log decisi
 After milestone: full review of Core Value, Out of Scope, and Context against shipped reality.
 
 ---
-*Last updated: 2026-09-24 after v1.1 milestone start*
+*Last updated: 2026-09-26 after Phase 6*
