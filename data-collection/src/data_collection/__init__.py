@@ -1,23 +1,17 @@
-"""Public API for data-collection DTOs."""
+"""Public API for data-collection ingestion contracts (D-01, D-04)."""
 
-from data_collection.dto.foundry import (
-    EMBEDDING_DIM,
-    ArticleAssistDto,
-    EmbeddingResultDto,
-    SummaryResultDto,
-    TaggingResultDto,
-    TranscriptResultDto,
-)
-from data_collection.dto.text_import import TextImportDto
-from data_collection.dto.youtube import YoutubeSourceDto
+from data_collection.dto.material_draft import MaterialDraft
+from data_collection.dto.template_kind import TemplateKind
+from data_collection.dto.transcript import Transcript
+from data_collection.dto.video_metadata import VideoMetadata
+from data_collection.ports.article_generator import ArticleGenerator
+from data_collection.ports.transcript_provider import TranscriptProvider
 
 __all__ = [
-    "EMBEDDING_DIM",
-    "ArticleAssistDto",
-    "EmbeddingResultDto",
-    "SummaryResultDto",
-    "TaggingResultDto",
-    "TextImportDto",
-    "TranscriptResultDto",
-    "YoutubeSourceDto",
+    "Transcript",
+    "VideoMetadata",
+    "MaterialDraft",
+    "TemplateKind",
+    "TranscriptProvider",
+    "ArticleGenerator",
 ]
