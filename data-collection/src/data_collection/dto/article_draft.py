@@ -2,6 +2,8 @@
 
 from pydantic import BaseModel, Field, field_validator
 
+from data_collection.dto._validators import strip_non_blank
+
 
 class ArticleDraft(BaseModel):
     title: str = Field(min_length=1)
@@ -11,7 +13,4 @@ class ArticleDraft(BaseModel):
     @field_validator("title", "dek", "body_markdown")
     @classmethod
     def _strip_non_blank(cls, value: str) -> str:
-        cleaned = value.strip()
-        if not cleaned:
-            raise ValueError("must not be blank")
-        return cleaned
+        return strip_non_blank(value)

@@ -4,6 +4,8 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field, field_validator
 
+from data_collection.dto._validators import strip_non_blank
+
 
 class VideoMetadata(BaseModel):
     video_id: str = Field(min_length=1)
@@ -14,10 +16,7 @@ class VideoMetadata(BaseModel):
     @field_validator("video_id", "source_url", "author")
     @classmethod
     def _strip_non_blank(cls, value: str) -> str:
-        cleaned = value.strip()
-        if not cleaned:
-            raise ValueError("must not be blank")
-        return cleaned
+        return strip_non_blank(value)
 
     @field_validator("published_at")
     @classmethod
