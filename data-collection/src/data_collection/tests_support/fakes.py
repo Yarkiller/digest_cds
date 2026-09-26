@@ -1,4 +1,4 @@
-"""Scripted success + call-spy fakes for ingestion ports (D-15, D-16, D-17)."""
+"""Scripted success + call-spy fakes for ingestion ports (D-15, D-16, D-17, D-26)."""
 
 from __future__ import annotations
 
@@ -7,7 +7,9 @@ from typing import TypedDict
 from data_collection.dto.article_draft import ArticleDraft
 from data_collection.dto.template_kind import TemplateKind
 from data_collection.dto.transcript import Transcript
+from data_collection.dto.video_metadata import VideoMetadata
 from data_collection.errors.captions import CaptionsError
+from data_collection.errors.metadata import MetadataError
 
 
 class ArticleGeneratorCall(TypedDict):
@@ -26,6 +28,23 @@ class FakeTranscriptProvider:
         self.calls: list[str] = []
 
     async def get(self, video_id: str) -> Transcript:
+        self.calls.append(video_id)
+        if video_id in self._failures:
+            raise self._failures[video_id]
+        return self._result
+
+
+class FakeVideoMetadataProvider:
+    def __init__(
+        self,
+        result: VideoMetadata,
+        failures: dict[str, MetadataError] | None = None,
+    ) -> None:
+        self._result = result
+        self._failures = failures or {}
+        self.calls: list[str] = []
+
+    async def get(self, video_id: str) -> VideoMetadata:
         self.calls.append(video_id)
         if video_id in self._failures:
             raise self._failures[video_id]

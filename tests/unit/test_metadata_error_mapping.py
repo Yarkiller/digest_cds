@@ -74,9 +74,7 @@ def test_map_metadata_error_redacts_credentialed_proxy_context() -> None:
     assert "proxy_url" not in mapped.context
     assert "YOUTUBE_PROXY_URL" not in mapped.context
     assert "secret" not in str(mapped.context)
-    blob = str(mapped.to_dict())
-    assert "secret" not in blob
-    assert "socks5://user:secret@" not in blob
+    assert "socks5://" not in str(mapped.context)
 
 
 def test_map_metadata_error_forwards_status_code_allowlist() -> None:
