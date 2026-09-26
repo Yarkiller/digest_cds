@@ -5,17 +5,17 @@ milestone_name: YouTube → LLM → Supabase ingestion
 current_phase: 7
 current_phase_name: Captions Adapter
 status: in_progress
-stopped_at: Completed 07-01-PLAN.md
-last_updated: "2026-09-26T19:00:39.000Z"
+stopped_at: Completed 07-02-PLAN.md
+last_updated: "2026-09-26T19:08:32.000Z"
 last_activity: 2026-09-26
-last_activity_desc: Completed 07-01 captions adapter tracer
-state_head: b1eb411
+last_activity_desc: Completed 07-02 fail-closed CaptionsError + locked reasons
+state_head: 3402f9f
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 3
-  completed_plans: 1
-  percent: 33
+  completed_plans: 2
+  percent: 67
 ---
 
 # Project State
@@ -25,16 +25,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-09-24)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Phase 7 — Captions Adapter (07-01 complete; 07-02 next)
+**Current focus:** Phase 7 — Captions Adapter (07-01/07-02 complete; 07-03 next)
 
 ## Current Position
 
 Phase: 7 of 10 (Captions Adapter) — v1.1 phases 6–10
-Plan: 1 of 3 (07-01 complete)
-Status: In progress — next `/gsd-execute-phase 7` (plan 02)
-Last activity: 2026-09-26 — 07-01 tracer slice shipped
+Plan: 2 of 3 (07-02 complete)
+Status: In progress — next `/gsd-execute-phase 7` (plan 03)
+Last activity: 2026-09-26 — 07-02 CaptionsError taxonomy + locked reasons shipped
 
-Progress: [███░░░░░░░] 33% (phase plans)
+Progress: [██████░░░░] 67% (phase plans)
 
 ## Performance Metrics
 
@@ -50,7 +50,7 @@ Progress: [███░░░░░░░] 33% (phase plans)
 |-------|-------|-------|----------|
 | 1–5 (v1 shipped) | 40 | complete | see MILESTONES |
 | 6. Ports & DTOs | 3/3 | complete | ~3min |
-| 7. Captions Adapter | 1/3 | in progress | - |
+| 7. Captions Adapter | 2/3 | in progress | - |
 | 8. DeepSeek Article & Templates | - | - | - |
 | 9. Draft Persist & Shortlist Enqueue | - | - | - |
 | 10. CLI Composition & UAT | - | - | - |
@@ -63,6 +63,7 @@ Progress: [███░░░░░░░] 33% (phase plans)
 | 06 | 02 | 3min | 2 | 7 |
 | 06 | 03 | 2min | 2 | 8 |
 | 07 | 01 | 4min | 3 | 17 |
+| 07 | 02 | 5min | 4 | 9 |
 
 ## Accumulated Context
 
@@ -96,19 +97,22 @@ Phase 7 planning (07-01…07-03):
 - D-15 FakeTranscriptProvider.failures owned by 07-02; D-26 FakeVideoMetadataProvider by 07-03
 - No schema push / migrations this phase; COVERAGE.md OPT-OUTs for Whisper/poToken/playlist
 
-Phase 7 execution (07-01):
+Phase 7 execution (07-01…07-02):
 
 - List-then-pick captions + exact-netloc URL allowlist + IngestError envelope (D-01/D-07/D-11/D-17)
 - `ingestion-service` workspace member live; CAP-01/CAP-02 shared IDs wait for sibling plans before REQUIREMENTS Complete
+- Full CaptionsError taxonomy (9 subtypes incl. CaptionsBotChallenge) + adapter SDK mapping (CAP-02, D-12, D-19)
+- `map_captions_error` locked D-10 reasons + context allowlist redaction (D-13); FakeTranscriptProvider.failures additive (D-15)
+- D-14 Phase 9 note: failing TranscriptProvider + spy PersistPort → persist.calls == []
 
 ### Pending Todos
 
-None. Next: execute `07-02-PLAN.md`
+None. Next: execute `07-03-PLAN.md`
 
 ### Blockers/Concerns
 
 Signup confirmation mail (`g-01-3b-signup-mailer`) remains open from v1 (not this milestone).
-gsd-tools STATE/ROADMAP atomic rename hit EPERM (file lock); updated via direct edit instead.
+gsd-tools STATE/ROADMAP atomic rename hit EPERM (file lock); updated via direct edit instead (retry failed).
 
 ## Deferred Items
 
@@ -117,7 +121,7 @@ leaderboard, quiz, PIPE-01 YAML UI, live SMTP, signup mail, Whisper/Foundry ASR,
 
 ## Session Continuity
 
-Last session: 2026-09-26T19:00:39.000Z
-Stopped at: Completed 07-01-PLAN.md
+Last session: 2026-09-26T19:08:32.000Z
+Stopped at: Completed 07-02-PLAN.md
 Resume file: None
-Next: `.planning/phases/07-captions-adapter/07-02-PLAN.md`
+Next: `.planning/phases/07-captions-adapter/07-03-PLAN.md`

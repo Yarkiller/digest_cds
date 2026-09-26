@@ -65,7 +65,7 @@ Full phase detail: [milestones/v1-ROADMAP.md](milestones/v1-ROADMAP.md)
 - [x] `07-01-PLAN.md` — Tracer: ingestion-service scaffold + extract_video_id + IngestError + mocked captions happy path (CAP-01) — 2026-09-26
 
 **Wave 2** *(blocked on Wave 1 completion)*
-- [ ] `07-02-PLAN.md` — Fail-closed CaptionsError + locked reasons + language edges (CAP-02 unit) + D-14 Phase 9/10 spy note
+- [x] `07-02-PLAN.md` — Fail-closed CaptionsError + locked reasons + language edges (CAP-02 unit) + D-14 Phase 9/10 spy note — 2026-09-26
 
 **Wave 3** *(blocked on Wave 2 completion)*
 - [ ] `07-03-PLAN.md` — oEmbed/VideoMetadataProvider + FakeVideoMetadataProvider + Settings/proxy + public `__all__` + runbook/integration gate
@@ -120,7 +120,7 @@ Full phase detail: [milestones/v1-ROADMAP.md](milestones/v1-ROADMAP.md)
 | 4. Knowledge & Razbory | v1 | 10/10 | Complete | 2026-09-21 |
 | 5. Admin Digest Publish | v1 | 9/9 | Complete | 2026-09-22 |
 | 6. Ports & DTOs | v1.1 | 3/3 | Complete | 2026-09-26 |
-| 7. Captions Adapter | v1.1 | 1/3 | In Progress | - |
+| 7. Captions Adapter | v1.1 | 2/3 | In Progress | - |
 | 8. DeepSeek Article & Templates | v1.1 | 0/? | Not started | - |
 | 9. Draft Persist & Shortlist Enqueue | v1.1 | 0/? | Not started | - |
 | 10. CLI Composition & UAT | v1.1 | 0/? | Not started | - |
