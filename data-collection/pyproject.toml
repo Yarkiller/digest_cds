@@ -5,6 +5,9 @@ description = "External API adapters and DTOs for Digest CDS"
 requires-python = ">=3.12"
 dependencies = [
     "pydantic>=2.10.0",
+    "youtube-transcript-api>=1.2.0,<2",
+    "httpx[socks]==0.28.1",
+    "requests[socks]",
 ]
 
 [build-system]
