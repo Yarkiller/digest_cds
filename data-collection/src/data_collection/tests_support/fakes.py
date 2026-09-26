@@ -2,9 +2,16 @@
 
 from __future__ import annotations
 
+from typing import TypedDict
+
 from data_collection.dto.article_draft import ArticleDraft
 from data_collection.dto.template_kind import TemplateKind
 from data_collection.dto.transcript import Transcript
+
+
+class ArticleGeneratorCall(TypedDict):
+    transcript: Transcript
+    template: TemplateKind
 
 
 class FakeTranscriptProvider:
@@ -20,7 +27,7 @@ class FakeTranscriptProvider:
 class FakeArticleGenerator:
     def __init__(self, result: ArticleDraft) -> None:
         self._result = result
-        self.calls: list[dict] = []
+        self.calls: list[ArticleGeneratorCall] = []
 
     async def process(
         self, transcript: Transcript, template: TemplateKind
