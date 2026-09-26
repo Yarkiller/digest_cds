@@ -54,6 +54,10 @@ def extract_video_id(value: str) -> str:
 
     head = segments[0].lower()
 
+    # D-02: deferred forms — reject explicitly (allowlist, not silent accept)
+    if head in {"live", "v", "e"}:
+        raise InvalidYouTubeUrl("not_a_youtube_url", value)
+
     if head == "watch":
         vids = query.get("v") or []
         if not vids or not vids[0]:
@@ -65,6 +69,7 @@ def extract_video_id(value: str) -> str:
             raise InvalidYouTubeUrl("missing_video_id", value)
         return _require_id(segments[1], value)
 
+    # channel / @handle / user / playlist-without-v / unknown paths
     raise InvalidYouTubeUrl("not_a_youtube_url", value)
 
 
