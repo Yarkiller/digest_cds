@@ -21,7 +21,8 @@ def test_transcript_strips_text_and_video_id() -> None:
     assert dto.video_id == "abc123"
 
 
-def test_transcript_rejects_blank_text() -> None:
+def test_transcript_rejects_whitespace_only_text() -> None:
+    """DTO-01 empty probe: whitespace-only text → ValidationError (D-09)."""
     from data_collection.dto.transcript import Transcript
 
     with pytest.raises(ValidationError):
@@ -29,13 +30,17 @@ def test_transcript_rejects_blank_text() -> None:
 
 
 def test_transcript_rejects_blank_video_id() -> None:
+    """DTO-01 empty probe: blank/empty video_id rejected (D-09)."""
     from data_collection.dto.transcript import Transcript
 
     with pytest.raises(ValidationError):
         Transcript(text="hello", language="en", video_id="   ")
+    with pytest.raises(ValidationError):
+        Transcript(text="hello", language="en", video_id="")
 
 
 def test_transcript_language_length_bounds() -> None:
+    """DTO-01: language too short/long rejected (D-09)."""
     from data_collection.dto.transcript import Transcript
 
     ok = Transcript(text="hello", language="zh-Hans", video_id="abc")
@@ -46,27 +51,3 @@ def test_transcript_language_length_bounds() -> None:
 
     with pytest.raises(ValidationError):
         Transcript(text="hello", language="x" * 11, video_id="abc")
-
-
-def test_transcript_rejects_empty_video_id() -> None:
-    """DTO-01 empty probe: blank video_id rejected (D-09)."""
-    from data_collection.dto.transcript import Transcript
-
-    with pytest.raises(ValidationError):
-        Transcript(text="hello", language="en", video_id="")
-
-
-def test_transcript_rejects_whitespace_only_text() -> None:
-    """DTO-01 empty probe: whitespace-only text → ValidationError (D-09)."""
-    from data_collection.dto.transcript import Transcript
-
-    with pytest.raises(ValidationError):
-        Transcript(text="   ", language="en", video_id="abc")
-
-
-def test_transcript_rejects_empty_video_id_string() -> None:
-    """D-09 empty probe: blank video_id rejected (DTO-01)."""
-    from data_collection.dto.transcript import Transcript
-
-    with pytest.raises(ValidationError):
-        Transcript(text="hello", language="en", video_id="")

@@ -42,6 +42,14 @@ def test_material_draft_source_published_at_optional() -> None:
     assert dto.source_published_at == published
 
 
+def test_material_draft_source_published_at_none_constructs() -> None:
+    """DTO-01 nullable: explicit source_published_at=None succeeds (D-13, D-14)."""
+    from data_collection.dto.material_draft import MaterialDraft
+
+    dto = MaterialDraft(**_valid_kwargs(source_published_at=None))
+    assert dto.source_published_at is None
+
+
 def test_material_draft_has_no_tags_role_hints_or_model_id() -> None:
     from data_collection.dto.material_draft import MaterialDraft
 
@@ -73,14 +81,6 @@ def test_material_draft_rejects_missing_required_field(missing_field: str) -> No
         MaterialDraft(**kwargs)
 
 
-def test_material_draft_source_published_at_none_constructs() -> None:
-    """DTO-01 nullable: explicit source_published_at=None succeeds (D-13, D-14)."""
-    from data_collection.dto.material_draft import MaterialDraft
-
-    dto = MaterialDraft(**_valid_kwargs(source_published_at=None))
-    assert dto.source_published_at is None
-
-
 @pytest.mark.parametrize("blank_field", ["title", "provenance_label"])
 def test_material_draft_rejects_blank_provenance_and_title(blank_field: str) -> None:
     """DTO-01 empty probe: blank provenance_label/title rejected (D-05)."""
@@ -88,21 +88,3 @@ def test_material_draft_rejects_blank_provenance_and_title(blank_field: str) -> 
 
     with pytest.raises(ValidationError):
         MaterialDraft(**_valid_kwargs(**{blank_field: "   "}))
-
-
-def test_material_draft_source_published_at_none_ok() -> None:
-    """D-14: explicit None source_published_at constructs (DTO-01)."""
-    from data_collection.dto.material_draft import MaterialDraft
-
-    dto = MaterialDraft(**_valid_kwargs(source_published_at=None))
-    assert dto.source_published_at is None
-
-
-def test_material_draft_rejects_blank_provenance_label_and_title() -> None:
-    """D-05: blank provenance_label/title rejected (DTO-01)."""
-    from data_collection.dto.material_draft import MaterialDraft
-
-    with pytest.raises(ValidationError):
-        MaterialDraft(**_valid_kwargs(provenance_label="   "))
-    with pytest.raises(ValidationError):
-        MaterialDraft(**_valid_kwargs(title="   "))

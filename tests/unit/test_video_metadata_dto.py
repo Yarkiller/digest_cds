@@ -33,15 +33,16 @@ def test_video_metadata_published_at_optional() -> None:
     assert dto.published_at == published
 
 
-def test_video_metadata_rejects_blank_video_id() -> None:
+def test_video_metadata_omitting_published_at_is_none() -> None:
+    """DTO-01 nullable: omit published_at → None OK (D-11, D-13)."""
     from data_collection.dto.video_metadata import VideoMetadata
 
-    with pytest.raises(ValidationError):
-        VideoMetadata(
-            video_id="   ",
-            source_url="https://example.com",
-            author="Author",
-        )
+    dto = VideoMetadata(
+        video_id="dQw4w9WgXcQ",
+        source_url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        author="Rick Astley",
+    )
+    assert dto.published_at is None
 
 
 @pytest.mark.parametrize("missing_field", ["video_id", "source_url", "author"])
@@ -59,10 +60,16 @@ def test_video_metadata_rejects_missing_required_field(missing_field: str) -> No
         VideoMetadata(**kwargs)
 
 
-def test_video_metadata_rejects_blank_author_and_source_url() -> None:
-    """DTO-01 empty probe: blank author/source_url rejected (D-11)."""
+def test_video_metadata_rejects_blank_required_strings() -> None:
+    """DTO-01 empty probe: blank video_id/author/source_url rejected (D-11)."""
     from data_collection.dto.video_metadata import VideoMetadata
 
+    with pytest.raises(ValidationError):
+        VideoMetadata(
+            video_id="   ",
+            source_url="https://example.com",
+            author="Author",
+        )
     with pytest.raises(ValidationError):
         VideoMetadata(
             video_id="dQw4w9WgXcQ",
@@ -75,60 +82,3 @@ def test_video_metadata_rejects_blank_author_and_source_url() -> None:
             source_url="   ",
             author="Rick Astley",
         )
-
-
-def test_video_metadata_omitting_published_at_is_none() -> None:
-    """DTO-01 nullable: omit published_at → None OK (D-11, D-13)."""
-    from data_collection.dto.video_metadata import VideoMetadata
-
-    dto = VideoMetadata(
-        video_id="dQw4w9WgXcQ",
-        source_url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-        author="Rick Astley",
-    )
-    assert dto.published_at is None
-
-
-def test_video_metadata_rejects_missing_required_fields() -> None:
-    """D-11/D-12: author, source_url, video_id required (DTO-01)."""
-    from data_collection.dto.video_metadata import VideoMetadata
-
-    base = {
-        "video_id": "dQw4w9WgXcQ",
-        "source_url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-        "author": "Rick Astley",
-    }
-    for missing in ("video_id", "source_url", "author"):
-        kwargs = {k: v for k, v in base.items() if k != missing}
-        with pytest.raises(ValidationError):
-            VideoMetadata(**kwargs)
-
-
-def test_video_metadata_rejects_blank_author_and_source_url() -> None:
-    """D-11: blank author/source_url rejected (DTO-01)."""
-    from data_collection.dto.video_metadata import VideoMetadata
-
-    with pytest.raises(ValidationError):
-        VideoMetadata(
-            video_id="abc",
-            source_url="https://example.com",
-            author="   ",
-        )
-    with pytest.raises(ValidationError):
-        VideoMetadata(
-            video_id="abc",
-            source_url="   ",
-            author="Author",
-        )
-
-
-def test_video_metadata_omitting_published_at_is_none() -> None:
-    """D-13: null-ish published_at omitted → None OK (DTO-01)."""
-    from data_collection.dto.video_metadata import VideoMetadata
-
-    dto = VideoMetadata(
-        video_id="abc",
-        source_url="https://example.com",
-        author="Author",
-    )
-    assert dto.published_at is None
