@@ -5,10 +5,10 @@ milestone_name: YouTube → LLM → Supabase ingestion
 current_phase: 6
 current_phase_name: Ports & DTOs
 status: phase_complete
-stopped_at: Completed 06-03-PLAN.md
-last_updated: "2026-09-26T14:16:45.000Z"
+stopped_at: Phase 7 context gathered
+last_updated: "2026-09-26T18:15:00.000Z"
 last_activity: 2026-09-26
-last_activity_desc: Completed 06-03 public API + brownfield delete
+last_activity_desc: Phase 7 Captions Adapter context gathered
 state_head: 315ed99
 progress:
   total_phases: 5
@@ -25,14 +25,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-09-24)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Phase 6 — Ports & DTOs (complete; next Phase 7)
+**Current focus:** Phase 7 — Captions Adapter (context gathered; ready to plan)
 
 ## Current Position
 
-Phase: 6 of 10 (Ports & DTOs) — v1.1 phases 6–10
-Plan: 3 of 3 (complete)
-Status: Phase complete — ready for verify-work / Phase 7
-Last activity: 2026-09-26 — Completed 06-03-PLAN.md
+Phase: 7 of 10 (Captions Adapter) — v1.1 phases 6–10
+Plan: 0 of ? (not planned yet)
+Status: Context gathered — ready for `/gsd-plan-phase 7`
+Last activity: 2026-09-26 — Phase 7 context gathered
 
 Progress: [██████████] 100% (phase plans)
 
@@ -89,7 +89,7 @@ Phase 6 execution (06-01…06-03):
 
 ### Pending Todos
 
-None. Next: `/gsd-verify-work 06` then plan Phase 7
+None. Next: `/gsd-plan-phase 7`
 
 ### Blockers/Concerns
 
@@ -102,7 +102,7 @@ leaderboard, quiz, PIPE-01 YAML UI, live SMTP, signup mail, Whisper/Foundry ASR,
 
 ## Session Continuity
 
-Last session: 2026-09-26T14:16:45.000Z
-Stopped at: Completed 06-03-PLAN.md
-Resume file: None
-Next: `/gsd-verify-work 06` or `/gsd-plan-phase 7`
+Last session: 2026-09-26T18:15:00.000Z
+Stopped at: Phase 7 context gathered
+Resume file: `.planning/phases/07-captions-adapter/07-CONTEXT.md`
+Next: `/gsd-plan-phase 7`
