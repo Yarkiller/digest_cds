@@ -45,7 +45,8 @@ def test_material_draft_source_published_at_optional() -> None:
 def test_material_draft_has_no_tags_role_hints_or_model_id() -> None:
     from data_collection.dto.material_draft import MaterialDraft
 
-    dto = MaterialDraft(**_valid_kwargs())
-    assert not hasattr(dto, "tags") or "tags" not in dto.model_fields
-    assert "role_hints" not in dto.model_fields
-    assert "model_id" not in dto.model_fields
+    MaterialDraft(**_valid_kwargs())
+    fields = MaterialDraft.model_fields
+    assert "tags" not in fields
+    assert "role_hints" not in fields
+    assert "model_id" not in fields
