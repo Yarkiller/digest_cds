@@ -24,7 +24,7 @@ def assemble_material_draft(
     )
 
 
-def require_material_draft(value: MaterialDraft) -> MaterialDraft:
+def require_material_draft(value: object) -> MaterialDraft:
     if not isinstance(value, MaterialDraft):
         raise TypeError("MaterialDraft required")
     return value

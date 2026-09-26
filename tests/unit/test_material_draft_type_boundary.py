@@ -9,7 +9,7 @@ def test_require_material_draft_rejects_transcript() -> None:
 
     transcript = Transcript(text="hello", language="en", video_id="abc")
     with pytest.raises(TypeError):
-        require_material_draft(transcript)  # type: ignore[arg-type]
+        require_material_draft(transcript)
 
 
 def test_require_material_draft_returns_valid_draft() -> None:
