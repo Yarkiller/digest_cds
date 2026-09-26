@@ -5,17 +5,17 @@ milestone_name: YouTube → LLM → Supabase ingestion
 current_phase: 6
 current_phase_name: Ports & DTOs
 status: in_progress
-stopped_at: Completed 06-01-PLAN.md
-last_updated: "2026-09-26T13:22:00.000Z"
+stopped_at: Completed 06-02-PLAN.md
+last_updated: "2026-09-26T13:28:00.000Z"
 last_activity: 2026-09-26
-last_activity_desc: Completed 06-01 tracer DTOs + assembler
-state_head: 1080f4a3d93254f0da11e7eac73307534984279c
+last_activity_desc: Completed 06-02 TranscriptProvider + DTO edges
+state_head: bf7e332133970e879984c34a0a1bd9292b679f6e
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 3
-  completed_plans: 1
-  percent: 33
+  completed_plans: 2
+  percent: 67
 ---
 
 # Project State
@@ -25,31 +25,31 @@ progress:
 See: .planning/PROJECT.md (updated 2026-09-24)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Phase 6 — Ports & DTOs (06-01 complete; next 06-02)
+**Current focus:** Phase 6 — Ports & DTOs (06-02 complete; next 06-03)
 
 ## Current Position
 
 Phase: 6 of 10 (Ports & DTOs) — v1.1 phases 6–10
-Plan: 2 of 3 (next: 06-02 validation edges)
+Plan: 3 of 3 (next: 06-03 public API + brownfield delete)
 Status: In progress
-Last activity: 2026-09-26 — Completed 06-01-PLAN.md
+Last activity: 2026-09-26 — Completed 06-02-PLAN.md
 
-Progress: [███░░░░░░░] 33%
+Progress: [███████░░░] 67%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 38 (37 v1 + 1 v1.1)
-- Average duration: ~7min (plans 01–05 timed); 06-01 = 4min
-- Total execution time: ~39min + 01-06 docs/human follow-up
+- Total plans completed: 39 (37 v1 + 2 v1.1)
+- Average duration: ~7min (plans 01–05 timed); 06-01 = 4min; 06-02 = 3min
+- Total execution time: ~42min + 01-06 docs/human follow-up
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1–5 (v1 shipped) | 40 | complete | see MILESTONES |
-| 6. Ports & DTOs | 1/3 | in progress | 4min (06-01) |
+| 6. Ports & DTOs | 2/3 | in progress | ~3.5min |
 | 7. Captions Adapter | - | - | - |
 | 8. DeepSeek Article & Templates | - | - | - |
 | 9. Draft Persist & Shortlist Enqueue | - | - | - |
@@ -60,6 +60,7 @@ Progress: [███░░░░░░░] 33%
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
 | 06 | 01 | 4min | 2 | 18 |
+| 06 | 02 | 3min | 2 | 7 |
 
 ## Accumulated Context
 
@@ -77,15 +78,16 @@ Phase 6 planning locks (see `06-CONTEXT.md` / `06-RESEARCH.md`):
 
 - `require_material_draft` in `assemble.py`; async fakes via `asyncio.run`; strip/non-blank MaterialDraft strings
 
-Phase 6 execution (06-01):
+Phase 6 execution (06-01 + 06-02):
 
-- Tracer shipped ArticleGenerator half of DTO-02; TranscriptProvider deferred to 06-02
+- Both port fakes shipped: FakeArticleGenerator + FakeTranscriptProvider (DTO-02)
+- DTO-01 empty/blank/language/nullable published_at edges locked; no schema migration
 - ArticleDraft stays internal until 06-03 public `__all__` rewrite
-- DTO-01/DTO-02 not marked Complete until 06-02 and 06-03 finish (shared-ID gate)
+- DTO-01/DTO-02 not marked Complete until 06-03 finishes (shared-ID gate)
 
 ### Pending Todos
 
-None. Next: execute `06-02-PLAN.md`
+None. Next: execute `06-03-PLAN.md`
 
 ### Blockers/Concerns
 
@@ -98,7 +100,7 @@ leaderboard, quiz, PIPE-01 YAML UI, live SMTP, signup mail, Whisper/Foundry ASR,
 
 ## Session Continuity
 
-Last session: 2026-09-26T13:22:00.000Z
-Stopped at: Completed 06-01-PLAN.md
+Last session: 2026-09-26T13:28:00.000Z
+Stopped at: Completed 06-02-PLAN.md
 Resume file: None
-Next: `.planning/phases/06-ports-dtos/06-02-PLAN.md`
+Next: `.planning/phases/06-ports-dtos/06-03-PLAN.md`
