@@ -42,6 +42,14 @@ def test_material_draft_source_published_at_optional() -> None:
     assert dto.source_published_at == published
 
 
+def test_material_draft_rejects_naive_source_published_at() -> None:
+    """WR-03: provenance source_published_at must be timezone-aware (D-14 / PERS-01)."""
+    from data_collection.dto.material_draft import MaterialDraft
+
+    with pytest.raises(ValidationError):
+        MaterialDraft(**_valid_kwargs(source_published_at=datetime(2009, 10, 25)))
+
+
 def test_material_draft_source_published_at_none_constructs() -> None:
     """DTO-01 nullable: explicit source_published_at=None succeeds (D-13, D-14)."""
     from data_collection.dto.material_draft import MaterialDraft

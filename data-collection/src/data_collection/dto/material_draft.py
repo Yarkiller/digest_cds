@@ -30,3 +30,10 @@ class MaterialDraft(BaseModel):
         if not cleaned:
             raise ValueError("must not be blank")
         return cleaned
+
+    @field_validator("source_published_at")
+    @classmethod
+    def _require_aware(cls, value: datetime | None) -> datetime | None:
+        if value is not None and value.tzinfo is None:
+            raise ValueError("source_published_at must be timezone-aware")
+        return value

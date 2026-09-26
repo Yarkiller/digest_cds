@@ -33,6 +33,19 @@ def test_video_metadata_published_at_optional() -> None:
     assert dto.published_at == published
 
 
+def test_video_metadata_rejects_naive_published_at() -> None:
+    """WR-03: provenance published_at must be timezone-aware (D-14 / PERS-01)."""
+    from data_collection.dto.video_metadata import VideoMetadata
+
+    with pytest.raises(ValidationError):
+        VideoMetadata(
+            video_id="dQw4w9WgXcQ",
+            source_url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+            author="Rick Astley",
+            published_at=datetime(2009, 10, 25),
+        )
+
+
 def test_video_metadata_omitting_published_at_is_none() -> None:
     """DTO-01 nullable: omit published_at → None OK (D-11, D-13)."""
     from data_collection.dto.video_metadata import VideoMetadata
