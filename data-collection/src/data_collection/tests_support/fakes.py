@@ -7,6 +7,7 @@ from typing import TypedDict
 from data_collection.dto.article_draft import ArticleDraft
 from data_collection.dto.template_kind import TemplateKind
 from data_collection.dto.transcript import Transcript
+from data_collection.errors.captions import CaptionsError
 
 
 class ArticleGeneratorCall(TypedDict):
@@ -15,12 +16,19 @@ class ArticleGeneratorCall(TypedDict):
 
 
 class FakeTranscriptProvider:
-    def __init__(self, result: Transcript) -> None:
+    def __init__(
+        self,
+        result: Transcript,
+        failures: dict[str, CaptionsError] | None = None,
+    ) -> None:
         self._result = result
+        self._failures = failures or {}
         self.calls: list[str] = []
 
     async def get(self, video_id: str) -> Transcript:
         self.calls.append(video_id)
+        if video_id in self._failures:
+            raise self._failures[video_id]
         return self._result
 
 
