@@ -2,20 +2,20 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: YouTube → LLM → Supabase ingestion
-current_phase: 6
-current_phase_name: Ports & DTOs
-status: phase_complete
-stopped_at: Phase 7 context gathered
-last_updated: "2026-09-26T18:15:00.000Z"
+current_phase: 7
+current_phase_name: Captions Adapter
+status: ready_to_execute
+stopped_at: Phase 7 plans verified
+last_updated: "2026-09-26T21:45:00.000Z"
 last_activity: 2026-09-26
-last_activity_desc: Phase 7 Captions Adapter context gathered
+last_activity_desc: Phase 7 Captions Adapter planned (3 plans verified)
 state_head: 315ed99
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 3
-  completed_plans: 3
-  percent: 100
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -25,16 +25,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-09-24)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Phase 7 — Captions Adapter (context gathered; ready to plan)
+**Current focus:** Phase 7 — Captions Adapter (planned; ready to execute)
 
 ## Current Position
 
 Phase: 7 of 10 (Captions Adapter) — v1.1 phases 6–10
-Plan: 0 of ? (not planned yet)
-Status: Context gathered — ready for `/gsd-plan-phase 7`
-Last activity: 2026-09-26 — Phase 7 context gathered
+Plan: 0 of 3 (ready to execute)
+Status: Ready to execute — `/gsd-execute-phase 7`
+Last activity: 2026-09-26 — Phase 7 plans created and verified
 
-Progress: [██████████] 100% (phase plans)
+Progress: [░░░░░░░░░░] 0% (phase plans)
 
 ## Performance Metrics
 
@@ -50,7 +50,7 @@ Progress: [██████████] 100% (phase plans)
 |-------|-------|-------|----------|
 | 1–5 (v1 shipped) | 40 | complete | see MILESTONES |
 | 6. Ports & DTOs | 3/3 | complete | ~3min |
-| 7. Captions Adapter | - | - | - |
+| 7. Captions Adapter | 0/3 | planned | - |
 | 8. DeepSeek Article & Templates | - | - | - |
 | 9. Draft Persist & Shortlist Enqueue | - | - | - |
 | 10. CLI Composition & UAT | - | - | - |
@@ -87,9 +87,17 @@ Phase 6 execution (06-01…06-03):
 - Public `__all__` is six ingestion names only; fakes/ArticleDraft not exported (D-04, D-06)
 - Backend `query_embedder.EMBEDDING_DIM=1024` untouched; DTO-01/DTO-02 Complete
 
+Phase 7 planning (07-01…07-03):
+
+- Tracer-first: URL parse + IngestError + mocked captions happy path (CAP-01)
+- CAP-02 unit-only (D-14); live persist spy deferred to Phase 9/10 with ROADMAP note + 07-02 checkpoint:decision
+- oEmbed + VideoMetadataProvider ship with captions (D-21…D-26)
+- D-15 FakeTranscriptProvider.failures owned by 07-02; D-26 FakeVideoMetadataProvider by 07-03
+- No schema push / migrations this phase; COVERAGE.md OPT-OUTs for Whisper/poToken/playlist
+
 ### Pending Todos
 
-None. Next: `/gsd-plan-phase 7`
+None. Next: `/gsd-execute-phase 7`
 
 ### Blockers/Concerns
 
@@ -102,7 +110,7 @@ leaderboard, quiz, PIPE-01 YAML UI, live SMTP, signup mail, Whisper/Foundry ASR,
 
 ## Session Continuity
 
-Last session: 2026-09-26T18:15:00.000Z
-Stopped at: Phase 7 context gathered
-Resume file: `.planning/phases/07-captions-adapter/07-CONTEXT.md`
-Next: `/gsd-plan-phase 7`
+Last session: 2026-09-26T21:45:00.000Z
+Stopped at: Phase 7 plans verified (3 plans)
+Resume file: `.planning/phases/07-captions-adapter/07-01-PLAN.md`
+Next: `/gsd-execute-phase 7`

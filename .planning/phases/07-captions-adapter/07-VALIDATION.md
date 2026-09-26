@@ -40,12 +40,14 @@ created: 2026-09-26
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 07-W0 | 01 | 0 | CAP-01/CAP-02 | — | N/A | infra | register `integration` marker; scaffold deps | ❌ W0 | ⬜ pending |
+| 07-W0 | 01 | 1 | CAP-01/CAP-02 | — | N/A | infra | register `integration` marker; scaffold deps (07-01) | ❌ W0 | ⬜ pending |
 | 07-url | 01 | 1 | CAP-01 | T-07-SSRF | Allowlist YouTube URL forms; reject non-YouTube | unit | `uv run pytest tests/unit/test_extract_video_id.py -x` | ❌ W0 | ⬜ pending |
-| 07-cap | 02 | 1 | CAP-01/CAP-02 | T-07-REASON | Locked reason codes; fail-closed CaptionsError | unit | `uv run pytest tests/unit/test_youtube_transcript_adapter.py -x` | ❌ W0 | ⬜ pending |
-| 07-map | 02 | 2 | CAP-02 | T-07-PROXY | No proxy URL in error context | unit | `uv run pytest tests/unit/test_captions_error_mapping.py tests/unit/test_ingest_error.py -x` | ❌ W0 | ⬜ pending |
-| 07-meta | 03 | 2 | CAP-01 | T-07-SSRF | Canonical watch URL only after id extract | unit | `uv run pytest tests/unit/test_youtube_oembed_adapter.py -x` | ❌ W0 | ⬜ pending |
-| 07-fake | 03 | 2 | D-15/D-26 | — | Additive failure catalogs | unit | `uv run pytest tests/unit/test_fake_transcript_provider_failures.py tests/unit/test_fake_video_metadata_provider.py -x` | ❌ W0 | ⬜ pending |
+| 07-cap | 01 | 1 | CAP-01/CAP-02 | T-07-FAILCLOSED | Mocked captions happy path + no_preferred/empty | unit | `uv run pytest tests/unit/test_youtube_transcript_adapter.py -x` | ❌ W0 | ⬜ pending |
+| 07-map | 02 | 2 | CAP-02 | T-07-REASON | Locked reason codes; fail-closed CaptionsError | unit | `uv run pytest tests/unit/test_captions_error_mapping.py tests/unit/test_youtube_transcript_adapter.py -x` | ❌ W0 | ⬜ pending |
+| 07-d15 | 02 | 2 | D-15 | — | FakeTranscriptProvider additive failures | unit | `uv run pytest tests/unit/test_fake_transcript_provider_failures.py tests/unit/test_transcript_provider_fake.py -x` | ❌ W0 | ⬜ pending |
+| 07-meta | 03 | 3 | CAP-01 | T-07-SSRF | Canonical watch URL only after id extract | unit | `uv run pytest tests/unit/test_youtube_oembed_adapter.py -x` | ❌ W0 | ⬜ pending |
+| 07-fake-meta | 03 | 3 | D-26 | — | FakeVideoMetadataProvider failure catalog | unit | `uv run pytest tests/unit/test_fake_video_metadata_provider.py -x` | ❌ W0 | ⬜ pending |
+| 07-settings | 03 | 3 | D-16/D-17 | T-07-PROXY | Settings/proxy injection; no proxy in error context | unit | `uv run pytest tests/unit/test_ingestion_settings.py -x` | ❌ W0 | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -58,7 +60,7 @@ created: 2026-09-26
 - [ ] RED tests for transcript adapter language preference + error mapping (mocked SDK)
 - [ ] RED tests for oEmbed adapter + MetadataError mapping (mocked httpx)
 - [ ] RED tests for `IngestError.to_dict()` envelope
-- [ ] RED tests for additive fake failure catalogs (D-15/D-26)
+- [ ] RED tests for FakeTranscriptProvider failures (D-15, plan 07-02) and FakeVideoMetadataProvider (D-26, plan 07-03)
 - [ ] Scaffold `ingestion-service` workspace member + `data-collection` deps (`youtube-transcript-api`, `httpx[socks]`, `PySocks`)
 - [ ] Extend runbook with `YOUTUBE_PROXY_URL` + optional live tests
 - [ ] Assert no Supabase migrations / persist writers / Typer CLI / openai deps in this phase
