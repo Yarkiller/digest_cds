@@ -1,5 +1,8 @@
 ---
+status: superseded
+type: plan-check
 phase: 07-captions-adapter
+reason: "Plan-check artifact from /gsd-plan-phase — not an executable plan; real plans are 07-01..07-03"
 checked: 2026-09-26
 mode: standard
 iteration: 3 (final re-verify)
