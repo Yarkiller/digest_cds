@@ -1,3 +1,10 @@
+---
+status: superseded
+type: plan-check
+phase: 06-ports-dtos
+reason: "Plan-check artifact from /gsd-plan-phase — not an executable plan; real plans are 06-01..06-03"
+---
+
 # Phase 6 Plan Check — Ports & DTOs
 
 **Checked:** 2026-09-26  
