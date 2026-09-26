@@ -1,4 +1,4 @@
-"""Captions adapter errors — no pipeline stage vocabulary (D-11, D-12)."""
+"""Captions adapter errors — module-local taxonomy only (D-11, D-12)."""
 
 from __future__ import annotations
 
