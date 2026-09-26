@@ -50,3 +50,24 @@ def test_material_draft_has_no_tags_role_hints_or_model_id() -> None:
     assert "tags" not in fields
     assert "role_hints" not in fields
     assert "model_id" not in fields
+
+
+@pytest.mark.parametrize(
+    "missing_field",
+    [
+        "title",
+        "dek",
+        "body_markdown",
+        "source_url",
+        "youtube_video_id",
+        "source_author",
+        "provenance_label",
+    ],
+)
+def test_material_draft_rejects_missing_required_field(missing_field: str) -> None:
+    from data_collection.dto.material_draft import MaterialDraft
+
+    kwargs = _valid_kwargs()
+    del kwargs[missing_field]
+    with pytest.raises(ValidationError):
+        MaterialDraft(**kwargs)
