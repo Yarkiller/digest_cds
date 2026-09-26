@@ -4,7 +4,7 @@ milestone: v1.1
 milestone_name: YouTube → LLM → Supabase ingestion
 current_phase: 7
 current_phase_name: Captions Adapter
-status: in_progress
+status: complete
 stopped_at: Phase 7 plans verified; 07-03 execution in progress
 last_updated: "2026-09-26T21:35:00.000Z"
 last_activity: 2026-09-26
@@ -12,10 +12,10 @@ last_activity_desc: Phase 7 plans verified (07-01…07-03); CAP-01/CAP-02 + D-01
 state_head: 5343b83
 progress:
   total_phases: 5
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 3
-  completed_plans: 2
-  percent: 67
+  completed_plans: 3
+  percent: 100
 ---
 
 # Project State
@@ -34,7 +34,7 @@ Plan: 2 of 3 (07-03 in progress)
 Status: Plans verified — continue `/gsd-execute-phase 7` for remaining 07-03
 Last activity: 2026-09-26 — Phase 7 plan-checker VERIFICATION PASSED (3 plans, 3 waves)
 
-Progress: [██████░░░░] 67% (phase plans)
+Progress: [██████████] 100% (phase plans)
 
 ## Performance Metrics
 
@@ -50,7 +50,7 @@ Progress: [██████░░░░] 67% (phase plans)
 |-------|-------|-------|----------|
 | 1–5 (v1 shipped) | 40 | complete | see MILESTONES |
 | 6. Ports & DTOs | 3/3 | complete | ~3min |
-| 7. Captions Adapter | 2/3 | in progress | - |
+| 7. Captions Adapter | 3/3 | complete | ~8min |
 | 8. DeepSeek Article & Templates | - | - | - |
 | 9. Draft Persist & Shortlist Enqueue | - | - | - |
 | 10. CLI Composition & UAT | - | - | - |
@@ -64,6 +64,7 @@ Progress: [██████░░░░] 67% (phase plans)
 | 06 | 03 | 2min | 2 | 8 |
 | 07 | 01 | 4min | 3 | 17 |
 | 07 | 02 | 5min | 4 | 9 |
+| 07 | 03 | 8min | 4 | 19 |
 
 ## Accumulated Context
 
@@ -97,17 +98,19 @@ Phase 7 planning (07-01…07-03):
 - D-15 FakeTranscriptProvider.failures owned by 07-02; D-26 FakeVideoMetadataProvider by 07-03
 - No schema push / migrations this phase; COVERAGE.md OPT-OUTs for Whisper/poToken/playlist
 
-Phase 7 execution (07-01…07-02):
+Phase 7 execution (07-01…07-03):
 
 - List-then-pick captions + exact-netloc URL allowlist + IngestError envelope (D-01/D-07/D-11/D-17)
 - `ingestion-service` workspace member live; CAP-01/CAP-02 shared IDs wait for sibling plans before REQUIREMENTS Complete
 - Full CaptionsError taxonomy (9 subtypes incl. CaptionsBotChallenge) + adapter SDK mapping (CAP-02, D-12, D-19)
 - `map_captions_error` locked D-10 reasons + context allowlist redaction (D-13); FakeTranscriptProvider.failures additive (D-15)
 - D-14 Phase 9 note: failing TranscriptProvider + spy PersistPort → persist.calls == []
+- VideoMetadataProvider + YouTubeOEmbedAdapter + MetadataError/map_metadata_error + FakeVideoMetadataProvider (D-21…D-26)
+- Seven-name public barrel; Settings.youtube_proxy_url + clients; runbook live stubs (D-16…D-20)
 
 ### Pending Todos
 
-None. Next: finish `/gsd-execute-phase 7` (07-03 Settings/proxy/runbook/live stubs)
+None. Next: `/gsd-verify-work 7` then `/gsd-plan-phase 8`
 
 ### Blockers/Concerns
 
@@ -121,7 +124,7 @@ leaderboard, quiz, PIPE-01 YAML UI, live SMTP, signup mail, Whisper/Foundry ASR,
 
 ## Session Continuity
 
-Last session: 2026-09-26T19:08:32.000Z
-Stopped at: Completed 07-02-PLAN.md
+Last session: 2026-09-26T21:35:00.000Z
+Stopped at: Completed 07-03-PLAN.md
 Resume file: None
-Next: `.planning/phases/07-captions-adapter/07-03-PLAN.md`
+Next: `/gsd-verify-work 7` then Phase 8

@@ -25,7 +25,7 @@ Full phase detail: [milestones/v1-ROADMAP.md](milestones/v1-ROADMAP.md)
 **Milestone Goal:** Operator can run a CLI one-shot that turns a YouTube URL into a `materials` draft and a shortlist row — without touching backend/SPA read paths.
 
 - [x] **Phase 6: Ports & DTOs** - Typed Transcript / MaterialDraft boundaries and in-memory port fakes
-- [ ] **Phase 7: Captions Adapter** - YouTube URL → captions with fail-closed, zero-row exits
+- [x] **Phase 7: Captions Adapter** - YouTube URL → captions with fail-closed, zero-row exits
 - [ ] **Phase 8: DeepSeek Article & Templates** - Validated MaterialDraft via lecture/podcast templates, honesty and fail-closed LLM errors
 - [ ] **Phase 9: Draft Persist & Shortlist Enqueue** - materials draft + provenance + overflow-safe shortlist enqueue
 - [ ] **Phase 10: CLI Composition & UAT** - Typer one-shot, idempotency, staged progress, separate env, 3–5 video UAT
@@ -68,7 +68,7 @@ Full phase detail: [milestones/v1-ROADMAP.md](milestones/v1-ROADMAP.md)
 - [x] `07-02-PLAN.md` — Fail-closed CaptionsError + locked reasons + language edges (CAP-02 unit) + D-14 Phase 9/10 spy note — 2026-09-26
 
 **Wave 3** *(blocked on Wave 2 completion)*
-- [ ] `07-03-PLAN.md` — oEmbed/VideoMetadataProvider + FakeVideoMetadataProvider + Settings/proxy + public `__all__` + runbook/integration gate
+- [x] `07-03-PLAN.md` — oEmbed/VideoMetadataProvider + FakeVideoMetadataProvider + Settings/proxy + public `__all__` + runbook/integration gate — 2026-09-26
 
 **Cross-cutting constraints:**
 - CAP-01 and CAP-02 appear in every plan `requirements` field
@@ -120,7 +120,7 @@ Full phase detail: [milestones/v1-ROADMAP.md](milestones/v1-ROADMAP.md)
 | 4. Knowledge & Razbory | v1 | 10/10 | Complete | 2026-09-21 |
 | 5. Admin Digest Publish | v1 | 9/9 | Complete | 2026-09-22 |
 | 6. Ports & DTOs | v1.1 | 3/3 | Complete | 2026-09-26 |
-| 7. Captions Adapter | v1.1 | 2/3 | In Progress | - |
+| 7. Captions Adapter | v1.1 | 3/3 | Complete | 2026-09-26 |
 | 8. DeepSeek Article & Templates | v1.1 | 0/? | Not started | - |
 | 9. Draft Persist & Shortlist Enqueue | v1.1 | 0/? | Not started | - |
 | 10. CLI Composition & UAT | v1.1 | 0/? | Not started | - |
