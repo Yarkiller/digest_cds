@@ -1,5 +1,6 @@
 """Ingestion error mappers (URL / captions / metadata)."""
 
+from ingestion_service.mapping.captions import map_captions_error
 from ingestion_service.mapping.url import map_url_error
 
-__all__ = ["map_url_error"]
+__all__ = ["map_url_error", "map_captions_error"]
