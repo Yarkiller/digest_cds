@@ -11,8 +11,8 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Contracts (data-collection)
 
-- [ ] **DTO-01**: Types `Transcript`, `VideoMetadata`, `MaterialDraft`, and `TemplateKind` live in `data-collection` and are covered by unit tests
-- [ ] **DTO-02**: Ports `TranscriptProvider` and `ArticleGenerator` have in-memory fakes usable by unit tests
+- [x] **DTO-01**: Types `Transcript`, `VideoMetadata`, `MaterialDraft`, and `TemplateKind` live in `data-collection` and are covered by unit tests
+- [x] **DTO-02**: Ports `TranscriptProvider` and `ArticleGenerator` have in-memory fakes usable by unit tests
 
 ### Captions
 
@@ -74,8 +74,8 @@ Deferred. Not in this milestone's roadmap.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DTO-01 | Phase 6 | Pending |
-| DTO-02 | Phase 6 | Pending |
+| DTO-01 | Phase 6 | Complete |
+| DTO-02 | Phase 6 | Complete |
 | CAP-01 | Phase 7 | Pending |
 | CAP-02 | Phase 7 | Pending |
 | LLM-01 | Phase 8 | Pending |

@@ -24,7 +24,7 @@ Full phase detail: [milestones/v1-ROADMAP.md](milestones/v1-ROADMAP.md)
 
 **Milestone Goal:** Operator can run a CLI one-shot that turns a YouTube URL into a `materials` draft and a shortlist row — without touching backend/SPA read paths.
 
-- [ ] **Phase 6: Ports & DTOs** - Typed Transcript / MaterialDraft boundaries and in-memory port fakes
+- [x] **Phase 6: Ports & DTOs** - Typed Transcript / MaterialDraft boundaries and in-memory port fakes
 - [ ] **Phase 7: Captions Adapter** - YouTube URL → captions with fail-closed, zero-row exits
 - [ ] **Phase 8: DeepSeek Article & Templates** - Validated MaterialDraft via lecture/podcast templates, honesty and fail-closed LLM errors
 - [ ] **Phase 9: Draft Persist & Shortlist Enqueue** - materials draft + provenance + overflow-safe shortlist enqueue
@@ -49,7 +49,7 @@ Full phase detail: [milestones/v1-ROADMAP.md](milestones/v1-ROADMAP.md)
 - [x] `06-02-PLAN.md` — TranscriptProvider fake + DTO validation edges ✓ 2026-09-26
 
 **Wave 3** *(blocked on Wave 2 completion)*
-- [ ] `06-03-PLAN.md` — Public `__all__` rewrite + brownfield DTO delete (checkpoint:decision)
+- [x] `06-03-PLAN.md` — Public `__all__` rewrite + brownfield DTO delete ✓ 2026-09-26
 
 ### Phase 7: Captions Adapter
 **Goal**: Operator can resolve a YouTube URL to captions, or get a loud captions-stage failure with no database side effects
@@ -103,7 +103,7 @@ Full phase detail: [milestones/v1-ROADMAP.md](milestones/v1-ROADMAP.md)
 | 3. Voting Cycle | v1 | 6/6 | Complete | 2026-09-20 |
 | 4. Knowledge & Razbory | v1 | 10/10 | Complete | 2026-09-21 |
 | 5. Admin Digest Publish | v1 | 9/9 | Complete | 2026-09-22 |
-| 6. Ports & DTOs | v1.1 | 2/3 | In Progress | - |
+| 6. Ports & DTOs | v1.1 | 3/3 | Complete | 2026-09-26 |
 | 7. Captions Adapter | v1.1 | 0/? | Not started | - |
 | 8. DeepSeek Article & Templates | v1.1 | 0/? | Not started | - |
 | 9. Draft Persist & Shortlist Enqueue | v1.1 | 0/? | Not started | - |
