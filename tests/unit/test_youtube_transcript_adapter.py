@@ -276,6 +276,22 @@ def test_adapter_empty_track_list_raises_captions_unavailable() -> None:
     assert exc_info.value.video_id == VIDEO_ID
 
 
+def test_adapter_none_language_code_maps_to_captions_error() -> None:
+    from data_collection.adapters.youtube_transcript import YouTubeTranscriptAdapter
+    from data_collection.errors.captions import CaptionsError
+
+    track = _Track("en", ["hello"])
+    track.language_code = None  # type: ignore[assignment]
+    adapter = YouTubeTranscriptAdapter(_FakeApi([track]))
+
+    with pytest.raises(CaptionsError) as exc_info:
+        asyncio.run(adapter.get(VIDEO_ID))
+
+    err = exc_info.value
+    assert err.video_id == VIDEO_ID
+    assert not isinstance(err, AttributeError)
+
+
 def test_captions_taxonomy_subtypes_inherit_and_store_video_id() -> None:
     from data_collection.errors.captions import (
         CaptionsBlocked,

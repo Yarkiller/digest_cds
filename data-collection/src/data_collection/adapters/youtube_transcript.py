@@ -35,7 +35,9 @@ from data_collection.errors.captions import (
 )
 
 
-def _base_lang(code: str) -> str:
+def _base_lang(code: object) -> str | None:
+    if not isinstance(code, str) or not code:
+        return None
     return code.split("-")[0].lower()
 
 
@@ -93,6 +95,10 @@ class YouTubeTranscriptAdapter:
             raise CaptionsError(
                 video_id, exception_class=_exception_class(exc)
             ) from exc
+        except (AttributeError, TypeError) as exc:
+            raise CaptionsError(
+                video_id, exception_class=_exception_class(exc)
+            ) from exc
 
     def _fetch_inner(self, video_id: str) -> Transcript:
         tracks = list(self._api.list(video_id))
@@ -103,7 +109,7 @@ class YouTubeTranscriptAdapter:
         language = None
         for preferred in ("ru", "en"):
             for track in tracks:
-                if _base_lang(track.language_code) == preferred:
+                if _base_lang(getattr(track, "language_code", None)) == preferred:
                     chosen = track
                     language = preferred
                     break
@@ -111,7 +117,13 @@ class YouTubeTranscriptAdapter:
                 break
 
         if chosen is None or language is None:
-            available = sorted({t.language_code for t in tracks})
+            available = sorted(
+                {
+                    code
+                    for t in tracks
+                    if isinstance((code := getattr(t, "language_code", None)), str)
+                }
+            )
             raise CaptionsNoPreferredLanguage(
                 video_id=video_id,
                 available_languages=available,
