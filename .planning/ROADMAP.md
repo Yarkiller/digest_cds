@@ -119,7 +119,7 @@ Full phase detail: [milestones/v1-ROADMAP.md](milestones/v1-ROADMAP.md)
 **Deferred from Phase 7 (CAP-02 / D-14):** captions failure test — fake failing `TranscriptProvider` + spy `PersistPort` → `persist.calls == []` (Phase 7 proved CAP-02 at unit/adapter level; live zero-row assertion belongs to Phase 9/10).
 **Plans**: `09-01-PLAN.md` · `09-02-PLAN.md` · `09-03-PLAN.md` · `09-04-PLAN.md`
 - [x] 09-01-PLAN.md
-- [ ] 09-02-PLAN.md
+- [x] 09-02-PLAN.md
 - [ ] 09-03-PLAN.md
 - [ ] 09-04-PLAN.md
 
@@ -127,7 +127,7 @@ Full phase detail: [milestones/v1-ROADMAP.md](milestones/v1-ROADMAP.md)
 - [x] `09-01-PLAN.md` — Tracer: RoleKind promotion — `roles: list[RoleKind]` on ArticleDraft/MaterialDraft, audience-role instructions in lecture/podcast templates, assembler copy, DeepSeek adapter normalization ✓ 2026-09-27
 
 **Wave 2** *(blocked on Wave 1 completion)*
-- [ ] `09-02-PLAN.md` — PersistPort + persist_draft use-case with generate_slug/estimate_reading_minutes, DraftPersistError mapping, FakeDraftPersister
+- [x] `09-02-PLAN.md` — PersistPort + persist_draft use-case with generate_slug/estimate_reading_minutes, DraftPersistError mapping, FakeDraftPersister ✓ 2026-09-27
 
 **Wave 3** *(blocked on Wave 2 completion)*
 - [ ] `09-03-PLAN.md` — Migration 007 (provenance columns + unique youtube_video_id + atomic persist_draft_and_enqueue RPC) and SupabaseDraftPersister
@@ -160,5 +160,5 @@ Full phase detail: [milestones/v1-ROADMAP.md](milestones/v1-ROADMAP.md)
 | 6. Ports & DTOs | v1.1 | 3/3 | Complete | 2026-09-26 |
 | 7. Captions Adapter | v1.1 | 3/3 | Complete | 2026-09-26 |
 | 8. DeepSeek Article & Templates | v1.1 | 4/4 | Complete | 2026-09-27 |
-| 9. Draft Persist & Shortlist Enqueue | v1.1 | 1/4 | In Progress|  |
+| 9. Draft Persist & Shortlist Enqueue | v1.1 | 2/4 | In Progress|  |
 | 10. CLI Composition & UAT | v1.1 | 0/? | Not started | - |
