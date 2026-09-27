@@ -1,68 +1,47 @@
 ---
-phase: 07-captions-adapter
-fix_iteration: 1
-fix_scope: critical_warning
-reviewed: 2026-09-27T09:15:00Z
-fixed: 2026-09-27T09:30:00Z
+status: already_fixed
+findings_in_scope:
+  - CR-01
+  - WR-01
+  - WR-02
+  - WR-03
+  - WR-04
+  - WR-05
+fixed:
+  - CR-01
+  - WR-01
+  - WR-02
+  - WR-03
+  - WR-04
+  - WR-05
+skipped: []
+iteration: 1
 ---
 
-# Phase 07: Review Fix Report (iteration 1)
+# Phase 07 Review Fix Report — Iteration 1
 
-**Scope:** `critical_warning` — Critical (CR-*) and Warning (WR-*) only.  
-**Source:** `07-REVIEW.md`
+## Summary
 
-## Fixed
+All Critical and Warning findings from `07-REVIEW.md` are already addressed in the current working tree. No production-code changes were required, and the existing unit tests pass.
 
-| ID | Commit | Summary |
-|----|--------|---------|
-| CR-01 | `8e2162a` | Safe adapter exception messages (no raw `context`); mappers build `message` from reason + `video_id`; redaction tests assert `message` / `to_dict()["message"]` |
-| WR-01 | `f2f397d` | Catch `YouTubeTranscriptApiException` (covers `CookieInvalid` / `CookieError`); unit case for `CookieInvalid` → `CaptionsError` |
-| WR-02 | `2c06275` | Strip URL userinfo in `InvalidYouTubeUrl` diagnostics; URL mapper allowlists context + safe message; redaction tests |
-| WR-03 | `1373659` | Join caption snippets with space + whitespace normalize; multi-snippet unit test |
-| WR-04 | `47554e1` | oEmbed `429` / `5xx` → `MetadataNetworkError` (404/403 stay `MetadataUnavailable`); status parametrization tests |
-| WR-05 | `5098bd3` | Coerce non-string `language_code`; wrap `AttributeError`/`TypeError` → `CaptionsError`; unit case for `language_code=None` |
+## Findings verified
 
-## Skipped (out of scope)
+| ID | Fix location | Verification |
+|----|-------------|--------------|
+| CR-01 | `data-collection/src/data_collection/errors/captions.py:16` and `metadata.py:16` use a safe fixed message; `ingestion_service/mapping/captions.py:70` and `metadata.py:51` build `message` from `reason + video_id` only | `test_map_captions_error_redacts_credentialed_proxy_context`, `test_map_metadata_error_redacts_credentialed_proxy_context` assert secrets absent from `mapped.message` and `payload["message"]` |
+| WR-01 | `data-collection/src/data_collection/adapters/youtube_transcript.py:90-100` catches `YouTubeTranscriptApiException` and `(AttributeError, TypeError)` | `test_adapter_maps_sdk_exception_to_captions_subtype` covers `CookieInvalid` and `FailedToCreateConsentCookie` |
+| WR-02 | `ingestion-service/src/ingestion_service/url.py:20-45` strips userinfo before storing `value`/context; `ingestion-service/src/ingestion_service/mapping/url.py:9-15` allowlists context keys | `test_map_url_error_redacts_userinfo_credentials`, `test_map_url_error_redacts_userinfo_on_invalid_youtube_id` |
+| WR-03 | `data-collection/src/data_collection/adapters/youtube_transcript.py:115-116` joins snippets with a single space and normalizes whitespace | `test_adapter_joins_multi_snippet_text_with_spaces` |
+| WR-04 | `data-collection/src/data_collection/adapters/youtube_oembed.py:53-61` maps 429 and 5xx to `MetadataNetworkError`, keeps 404/403 as `MetadataUnavailable` | `test_http_5xx_and_429_raise_metadata_network_error`, `test_http_404_and_403_raise_metadata_unavailable` |
+| WR-05 | `data-collection/src/data_collection/adapters/youtube_transcript.py:37-40` guards `_base_lang` against non-string `language_code`; unexpected errors are wrapped into `CaptionsError` | `test_adapter_none_language_code_maps_to_captions_error` |
 
-| ID | Reason |
-|----|--------|
-| IN-02 | Live integration stubs — deferred to Phase 10; not critical_warning |
-| IN-03 | Adapter constructor `Any` typing — info only; not critical_warning |
-
-## Auto-resolved by CR/WR fixes
-
-| ID | Notes |
-|----|-------|
-| IN-01 | Message/envelope redaction assertions added as part of CR-01 |
-
-## Deferred
-
-None.
-
-## Test results
+## Test run
 
 ```text
-uv run pytest \
-  tests/unit/test_captions_error_mapping.py \
-  tests/unit/test_metadata_error_mapping.py \
-  tests/unit/test_youtube_transcript_adapter.py \
-  tests/unit/test_youtube_oembed_adapter.py \
-  tests/unit/test_ingest_error.py \
-  tests/unit/test_extract_video_id.py
-→ 103 passed
+$ uv run pytest tests/unit/test_captions_error_mapping.py tests/unit/test_metadata_error_mapping.py tests/unit/test_youtube_transcript_adapter.py tests/unit/test_youtube_oembed_adapter.py tests/unit/test_ingest_error.py -q
+68 passed in 0.57s
 ```
 
-**Remaining test failures:** none in the fix suite above.
+## Commits
 
-## Commits (newest last)
-
-1. `8e2162a` — `fix(07): CR-01 redact secrets from error messages`
-2. `f2f397d` — `fix(07): WR-01 map Cookie and SDK exceptions to CaptionsError`
-3. `2c06275` — `fix(07): WR-02 redact URL userinfo from diagnostics`
-4. `1373659` — `fix(07): WR-03 join caption snippets with spaces`
-5. `47554e1` — `fix(07): WR-04 map oEmbed 5xx and 429 to MetadataNetworkError`
-6. `5098bd3` — `fix(07): WR-05 coerce malformed language_code to CaptionsError`
-
----
-
-_Fixer: gsd-code-fixer · iteration 1 · scope critical_warning_
+No commits were created because the required fixes were already present in HEAD and the working tree had no uncommitted changes for Phase 07 files.
