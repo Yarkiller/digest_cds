@@ -5,8 +5,8 @@ milestone_name: YouTube → LLM → Supabase ingestion
 current_phase: 8
 current_phase_name: DeepSeek Article & Templates
 status: ready_to_plan
-stopped_at: Phase 7 complete — ready to plan Phase 8
-last_updated: "2026-09-26T22:15:00.000Z"
+stopped_at: Phase 8 context gathered
+last_updated: "2026-09-27T07:29:29.691Z"
 last_activity: 2026-09-26
 last_activity_desc: Phase 7 Captions Adapter executed and verified (3/3 plans; CAP-01/CAP-02)
 state_head: a5d5e34
@@ -125,7 +125,7 @@ leaderboard, quiz, PIPE-01 YAML UI, live SMTP, signup mail, Whisper/Foundry ASR,
 
 ## Session Continuity
 
-Last session: 2026-09-26T22:15:00.000Z
-Stopped at: Phase 7 complete (verified)
-Resume file: None
+Last session: 2026-09-27T07:29:29.691Z
+Stopped at: Phase 8 context gathered
+Resume file: .planning/phases/08-deepseek-article-templates/08-CONTEXT.md
 Next: `/gsd-plan-phase 8`
