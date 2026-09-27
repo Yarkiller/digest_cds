@@ -33,13 +33,13 @@ def _persist_spy() -> FakeDraftPersister:
 
 
 async def attempt_captions(provider: FakeTranscriptProvider, video_id: str) -> None:
-    raise NotImplementedError("CAP-02 captions boundary")
+    await provider.get(video_id)
 
 
 async def attempt_article(
     generator: FakeArticleGenerator, transcript: Transcript
 ) -> None:
-    raise NotImplementedError("CAP-02 article boundary")
+    await generator.process(transcript, TemplateKind.LECTURE)
 
 
 def test_captions_failure_leaves_persist_calls_empty() -> None:
