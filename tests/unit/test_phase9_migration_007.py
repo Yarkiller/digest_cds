@@ -55,27 +55,32 @@ def test_migration_007_youtube_video_id_unique_is_ddl_not_comment() -> None:
 
 
 def test_migration_007_creates_persist_draft_and_enqueue_rpc() -> None:
-    text = _sql()
-    lower = text.lower()
-    assert "create or replace function public.persist_draft_and_enqueue" in lower
-    assert "security invoker" in lower
-    assert "status='draft'" in lower.replace(" ", "")
-    assert "format='статья'" in lower.replace(" ", "") or "format='статья'" in text
-    assert "on conflict (youtube_video_id) do nothing" in lower
-    assert "sent_at is null" in lower
-    assert "p_batch_size" in lower
-    assert "get diagnostics" in lower
+    executable = _normalized_executable_sql()
+    assert "create or replace function public.persist_draft_and_enqueue" in executable
+    assert "security invoker" in executable
+    assert "'draft'" in executable
+    assert "'статья'" in executable
+    assert "on conflict (youtube_video_id) do nothing" in executable
+    assert "sent_at is null" in executable
+    assert "p_batch_size" in executable
+    assert "get diagnostics" in executable
+    # Trailing comments used to satisfy status=/format=; those phrases must not count.
+    assert "status='draft'" not in executable
+    assert "format='статья'" not in executable
 
 
 def test_migration_007_skips_sent_batches_and_is_idempotent_on_video_id() -> None:
     """RESEARCH batch_sent: a latest batch with sent_at set is not the enqueue target."""
-    text = _sql()
-    lower = text.lower()
-    assert "sent_at is null" in lower
-    assert "sent_at is not null" in lower or "sent_at is null" in lower
-    assert "existing" in lower or "already exists" in lower or "v_inserted" in lower
-    assert "digest_shortlist_items" in lower
-    assert "decision" in lower and "pending" in lower
+    executable = _normalized_executable_sql()
+    assert "and b.sent_at is null" in executable
+    assert "where b.sent_at is null" in executable
+    assert "v_inserted" in executable
+    assert "on conflict (youtube_video_id) do nothing" in executable
+    assert "digest_shortlist_items" in executable
+    assert "decision" in executable and "'pending'" in executable
+    # Comment-only skip/conflict wording must not satisfy the contract.
+    assert "sent_at is not null" not in executable
+    assert "already exists" not in executable
 
 
 def test_migration_007_grants_execute_only_to_service_role() -> None:
