@@ -143,7 +143,9 @@ leaderboard, quiz, PIPE-01 YAML UI, live SMTP, signup mail, Whisper/Foundry ASR,
 
 ## Session Continuity
 
-Last session: 2026-09-27T11:45:00.000Z
-Stopped at: Phase 8 complete, ready to plan Phase 9
-Resume file: None
-Next: `/gsd-discuss-phase 9`
+Last session: 2026-09-27T12:45:00.000Z
+Stopped at: Phase 9 context gathered
+Resume file: `.planning/phases/09-draft-persist-shortlist-enqueue/09-CONTEXT.md`
+Next: `/gsd-plan-phase 9`
+
+Note: `gsd-tools query state.record-session` failed with EPERM on renaming `.planning/STATE.md.tmp.*`; STATE.md updated manually as a fallback.
