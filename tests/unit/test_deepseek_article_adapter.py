@@ -583,3 +583,65 @@ def test_eighty_thousand_cyrillic_chars_call_create() -> None:
     transcript = Transcript(text=text, language="ru", video_id="vid1")
     asyncio.run(generator.process(transcript, TemplateKind.LECTURE))
     assert len(client.chat.completions.calls) == 1
+
+
+def test_process_keeps_valid_roles_from_json_payload() -> None:
+    client = _stub_client(
+        json.dumps(
+            {
+                "title": "t",
+                "dek": "d",
+                "body_markdown": "b",
+                "roles": ["ds", "employee"],
+            }
+        )
+    )
+    draft = asyncio.run(
+        _make_generator(client).process(_make_transcript("ru"), TemplateKind.LECTURE)
+    )
+    assert draft.roles == ["ds", "employee"]
+
+
+def test_process_filters_invalid_roles_from_json_payload() -> None:
+    client = _stub_client(
+        json.dumps(
+            {
+                "title": "t",
+                "dek": "d",
+                "body_markdown": "b",
+                "roles": ["manager", "employee"],
+            }
+        )
+    )
+    draft = asyncio.run(
+        _make_generator(client).process(_make_transcript("ru"), TemplateKind.LECTURE)
+    )
+    assert draft.roles == ["employee"]
+
+
+def test_process_missing_roles_falls_back_to_employee() -> None:
+    client = _stub_client(json.dumps({"title": "t", "dek": "d", "body_markdown": "b"}))
+    draft = asyncio.run(
+        _make_generator(client).process(_make_transcript("ru"), TemplateKind.LECTURE)
+    )
+    assert draft.roles == ["employee"]
+
+
+def test_process_empty_roles_falls_back_to_employee() -> None:
+    client = _stub_client(
+        json.dumps({"title": "t", "dek": "d", "body_markdown": "b", "roles": []})
+    )
+    draft = asyncio.run(
+        _make_generator(client).process(_make_transcript("ru"), TemplateKind.LECTURE)
+    )
+    assert draft.roles == ["employee"]
+
+
+def test_process_single_ds_role_round_trips() -> None:
+    client = _stub_client(
+        json.dumps({"title": "t", "dek": "d", "body_markdown": "b", "roles": ["ds"]})
+    )
+    draft = asyncio.run(
+        _make_generator(client).process(_make_transcript("ru"), TemplateKind.LECTURE)
+    )
+    assert draft.roles == ["ds"]
