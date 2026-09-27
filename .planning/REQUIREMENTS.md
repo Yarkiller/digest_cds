@@ -29,8 +29,8 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Persist and shortlist
 
-- [ ] **PERS-01**: A successful run inserts `materials` with `status=draft` only (never `ready`) and provenance fields `source_url`, `youtube_video_id`, `source_author`, `source_published_at`, `provenance_label`
-- [ ] **PERS-02**: The run enqueues `digest_shortlist_items` on the current unsent batch (`decision=pending`); if that batch already has 5 items, it creates a new unsent batch and enqueues there
+- [x] **PERS-01**: A successful run inserts `materials` with `status=draft` only (never `ready`) and provenance fields `source_url`, `youtube_video_id`, `source_author`, `source_published_at`, `provenance_label`
+- [x] **PERS-02**: The run enqueues `digest_shortlist_items` on the current unsent batch (`decision=pending`); if that batch already has 5 items, it creates a new unsent batch and enqueues there
 
 ### CLI and UAT
 
@@ -83,8 +83,8 @@ Deferred. Not in this milestone's roadmap.
 | LLM-03 | Phase 8 | Complete |
 | LLM-04 | Phase 8 | Complete |
 | LLM-05 | Phase 8 | Complete |
-| PERS-01 | Phase 9 | Pending |
-| PERS-02 | Phase 9 | Pending |
+| PERS-01 | Phase 9 | Complete |
+| PERS-02 | Phase 9 | Complete |
 | CLI-01 | Phase 10 | Pending |
 | CLI-02 | Phase 10 | Pending |
 | CLI-03 | Phase 10 | Pending |

@@ -4,18 +4,18 @@ milestone: v1.1
 milestone_name: YouTube → LLM → Supabase ingestion
 current_phase: 09
 current_phase_name: Draft Persist & Shortlist Enqueue
-status: executing
-stopped_at: Completed 09-03-PLAN.md
-last_updated: "2026-09-27T15:53:40.243Z"
+status: verifying
+stopped_at: Completed 09-04-PLAN.md
+last_updated: "2026-09-27T16:04:01.079Z"
 last_activity: 2026-09-27
-last_activity_desc: Completed 09-03 migration 007 + SupabaseDraftPersister
-state_head: 37b1b00d632c4a9d9dc8331f7476791b3ceed819
+last_activity_desc: Completed 09-04 composition wiring + CAP-02 persist spy
+state_head: 24d95df5e30641ed0902b55c9b4fcbebe0f83721
 progress:
   total_phases: 5
   completed_phases: 8
   total_plans: 14
-  completed_plans: 13
-  percent: 93
+  completed_plans: 14
+  percent: 100
 ---
 
 # Project State
@@ -31,10 +31,10 @@ See: .planning/PROJECT.md (updated 2026-09-27)
 
 Phase: 09 (Draft Persist & Shortlist Enqueue) — EXECUTING
 Plan: 4 of 4
-Status: Ready to execute
-Last activity: 2026-09-27 — Completed 09-03 migration 007 + SupabaseDraftPersister
+Status: Phase complete — ready for verification
+Last activity: 2026-09-27 — Completed 09-04 composition wiring + CAP-02 persist spy
 
-Progress: [█████████░] 93% (3 of 5 v1.1 phases complete)
+Progress: [██████████] 100% (3 of 5 v1.1 phases complete)
 
 ## Performance Metrics
 
@@ -52,7 +52,7 @@ Progress: [█████████░] 93% (3 of 5 v1.1 phases complete)
 | 6. Ports & DTOs | 3/3 | complete | ~3min |
 | 7. Captions Adapter | 3/3 | complete | ~6min |
 | 8. DeepSeek Article & Templates | 4/4 | complete | ~52min inline |
-| 9. Draft Persist & Shortlist Enqueue | - | - | - |
+| 9. Draft Persist & Shortlist Enqueue | 4/4 | complete | ~7min |
 | 10. CLI Composition & UAT | - | - | - |
 
 ### Execution Metrics
@@ -72,6 +72,7 @@ Progress: [█████████░] 93% (3 of 5 v1.1 phases complete)
 | 09 | 01 | 5min | 2 | 14 |
 | 09 | 02 | 5min | 3 | 15 |
 | 09 | 03 | 12min | 4 | 6 |
+| 09 | 04 | 7min | 4 | 9 |
 
 **Per-Plan Metrics:**
 
@@ -80,6 +81,7 @@ Progress: [█████████░] 93% (3 of 5 v1.1 phases complete)
 | Phase 09 P01 | 5 min | 2 tasks | 14 files |
 | Phase 09 P02 | 5 min | 3 tasks | 15 files |
 | Phase 09 P03 | 12min | 4 tasks | 6 files |
+| Phase 09 P04 | 7 min | 4 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -140,10 +142,11 @@ Phase 8 execution (08-01…08-04):
 - [Phase 09]: PersistPort + persist_draft lock slug format `{slugify(title)[:50]}-{video_id}`, locked PERSIST_REASONS, and D-11 no Python video_id pre-check. FakeDraftPersister stores first PersistResult per video_id.
 - [Phase 09 / 09-03]: User replied **proceed** on the one-way schema gate. Accepted as one-way: **D-05** (single persist+enqueue RPC), **D-06** (migration 007 is the canonical record), **D-09** (unique constraint on `materials.youtube_video_id`). Undo requires a follow-up migration. Task 1 recorded before any `007_phase9_persist_draft.sql` authoring.
 - [Phase 09]: D-05/D-06/D-09 proceed; user pushed 007 via Studio; persist_draft_and_enqueue live; unique youtube_video_id — One-way schema gate accepted; shared VM apply confirmed by human (RPC 1, columns 4, unique index, service_role execute).
+- [Phase 09]: Composition owns Supabase service-role wiring; blank url/key raises ConfigurationError before create_client; persist idempotency/overflow proven on the fake port; CAP-02 captions failure leaves persist.calls empty. — Adapters must not read os.environ. D-11 keeps idempotency in the port/RPC, not a Python pre-check. Phase 7 D-14 deferred the persist spy to Phase 9.
 
 ### Pending Todos
 
-None. Next: `/gsd-execute-phase 9` (plan 09-04 composition)
+None. Next: `/gsd-verify-work 9` then `/gsd-plan-phase 10`
 
 ### Blockers/Concerns
 
@@ -158,7 +161,7 @@ leaderboard, quiz, PIPE-01 YAML UI, live SMTP, signup mail, Whisper/Foundry ASR,
 
 ## Session Continuity
 
-Last session: 2026-09-27T15:52:58.323Z
-Stopped at: Completed 09-03-PLAN.md
+Last session: 2026-09-27T16:03:26.641Z
+Stopped at: Completed 09-04-PLAN.md
 Resume file: None
-Next: `/gsd-execute-phase 9` (09-04)
+Next: `/gsd-verify-work 9` then `/gsd-plan-phase 10`

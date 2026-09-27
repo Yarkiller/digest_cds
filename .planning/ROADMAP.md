@@ -121,7 +121,7 @@ Full phase detail: [milestones/v1-ROADMAP.md](milestones/v1-ROADMAP.md)
 - [x] 09-01-PLAN.md
 - [x] 09-02-PLAN.md
 - [x] 09-03-PLAN.md
-- [ ] 09-04-PLAN.md
+- [x] 09-04-PLAN.md
 
 **Wave 1**
 - [x] `09-01-PLAN.md` — Tracer: RoleKind promotion — `roles: list[RoleKind]` on ArticleDraft/MaterialDraft, audience-role instructions in lecture/podcast templates, assembler copy, DeepSeek adapter normalization ✓ 2026-09-27
@@ -133,7 +133,7 @@ Full phase detail: [milestones/v1-ROADMAP.md](milestones/v1-ROADMAP.md)
 - [x] `09-03-PLAN.md` — Migration 007 (provenance columns + unique youtube_video_id + atomic persist_draft_and_enqueue RPC) and SupabaseDraftPersister ✓ 2026-09-27
 
 **Wave 4** *(blocked on Wave 3 completion)*
-- [ ] `09-04-PLAN.md` — Composition (Settings, Supabase client/persister factories, .env.example) plus idempotency/overflow/batch_sent and CAP-02 zero-persist tests
+- [x] `09-04-PLAN.md` — Composition (Settings, Supabase client/persister factories, .env.example) plus idempotency/overflow/batch_sent and CAP-02 zero-persist tests ✓ 2026-09-27
 
 ### Phase 10: CLI Composition & UAT
 
@@ -160,5 +160,5 @@ Full phase detail: [milestones/v1-ROADMAP.md](milestones/v1-ROADMAP.md)
 | 6. Ports & DTOs | v1.1 | 3/3 | Complete | 2026-09-26 |
 | 7. Captions Adapter | v1.1 | 3/3 | Complete | 2026-09-26 |
 | 8. DeepSeek Article & Templates | v1.1 | 4/4 | Complete | 2026-09-27 |
-| 9. Draft Persist & Shortlist Enqueue | v1.1 | 3/4 | In Progress|  |
+| 9. Draft Persist & Shortlist Enqueue | v1.1 | 4/4 | In Progress|  |
 | 10. CLI Composition & UAT | v1.1 | 0/? | Not started | - |
