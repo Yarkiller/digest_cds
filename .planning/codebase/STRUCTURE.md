@@ -1,10 +1,10 @@
 ---
-last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
+last_mapped_commit: 252c024622021ec59fe22abdd251c2047849d1da
 ---
-<!-- refreshed: 2026-09-26 -->
+<!-- refreshed: 2026-09-27 -->
 # Codebase Structure
 
-**Analysis Date:** 2026-09-26
+**Analysis Date:** 2026-09-27
 
 ## Directory Layout
 
@@ -20,8 +20,17 @@ Digital_CDS/
 │       ├── infrastructure/     # JWT, local notebooks, stub mailer
 │       ├── interface/http/     # FastAPI app, deps, middleware, routes/
 │       └── tests_support/      # In-memory port fakes
-├── data-collection/            # External-API DTOs (uv package)
-│   └── src/data_collection/dto/
+├── data-collection/            # External-API DTOs + YouTube adapters (uv package)
+│   └── src/data_collection/
+│       ├── dto/
+│       ├── adapters/           # YouTube fetch adapters (consumed by ingestion)
+│       └── errors/             # Captions/metadata typed errors
+├── ingestion-service/          # Operator CLI package (uv member; own composition)
+│   └── src/ingestion_service/
+│       ├── url.py              # extract_video_id / InvalidYouTubeUrl
+│       ├── domain/             # IngestError (+ Stage Literal)
+│       ├── mapping/            # Adapter/parse → IngestError mappers
+│       └── composition/        # Settings + ready YouTube/httpx clients
 ├── supabase-integration/       # DB adapters + SQL migrations
 │   ├── migrations/             # 001…006
 │   └── src/supabase_integration/
@@ -67,9 +76,16 @@ Digital_CDS/
 - Key files: `backend/src/backend/composition/container.py`, `composition/live.py`, `interface/http/app.py`, `backend/pyproject.toml`.
 
 **`data-collection/`:**
-- Purpose: Bounded context for inbound external data shapes (YouTube, text import, FoundryModels).
-- Contains: Pydantic DTOs only (no live HTTP clients yet; not wired into backend).
-- Key files: `data-collection/src/data_collection/__init__.py`, `dto/youtube.py`, `dto/foundry.py`, `dto/text_import.py`.
+- Purpose: Bounded context for inbound external data (YouTube captions/metadata adapters, DTOs, typed errors).
+- Contains: Pydantic DTOs; adapters/errors consumed by `ingestion-service` mapping; not wired into backend HTTP path.
+- Key files: `data-collection/src/data_collection/__init__.py`, `dto/`, `adapters/`, `errors/`.
+
+**`ingestion-service/`:**
+- Purpose: YouTube → LLM → Supabase operator CLI package (`name = "ingestion-service"`, module `ingestion_service`); separate composition root from FastAPI.
+- Contains: URL allowlist parse, `IngestError` domain diagnostics, error mappers, env-backed Settings + ready client factories.
+- Depends on: `data-collection` only (workspace).
+- Key files: `ingestion-service/pyproject.toml`, `src/ingestion_service/url.py`, `domain/errors.py`, `mapping/{url,captions,metadata}.py`, `composition/{settings,clients}.py`.
+- Status: Scaffold present; no `__main__.py` / Typer CLI entry yet.
 
 **`supabase-integration/`:**
 - Purpose: Postgres/Supabase schema and repository adapters implementing backend ports.
@@ -133,18 +149,20 @@ Digital_CDS/
 - `backend/src/backend/composition/container.py`: Application façade + in-memory builder.
 - `backend/src/backend/composition/live.py`: Live Supabase wiring.
 - `backend/src/backend/__init__.py`: Public domain exports.
-- `data-collection/src/data_collection/__init__.py`: Public DTO exports.
+- `data-collection/src/data_collection/__init__.py`: Public DTO / adapter exports.
+- `ingestion-service/src/ingestion_service/__init__.py`: Package marker (YouTube URL → draft material CLI).
+- `ingestion-service/src/ingestion_service/composition/`: Operator composition (`Settings`, client builders).
 - `supabase-integration/src/supabase_integration/__init__.py`: Adapters + `migrations_dir()`.
 - `design-frontend/index.html`: Static prototype entry.
 
 **Configuration:**
-- `pyproject.toml`: uv workspace members, pytest `testpaths = ["tests/unit"]`.
-- `backend/pyproject.toml`, `data-collection/pyproject.toml`, `supabase-integration/pyproject.toml`: Per-package metadata.
+- `pyproject.toml`: uv workspace members (`backend`, `data-collection`, `ingestion-service`, `supabase-integration`), pytest `testpaths = ["tests/unit"]`.
+- `backend/pyproject.toml`, `data-collection/pyproject.toml`, `ingestion-service/pyproject.toml`, `supabase-integration/pyproject.toml`: Per-package metadata.
 - `package.json`: Root scripts (`dev`, `test`, `test:unit`, `test:web`, `test:design`, `serve:design`, `platform:runbook`).
 - `web/package.json`: Vite/React/Tailwind/oxlint.
 - `playwright.config.js`: E2E projects and webServers.
 - `.python-version`: Python version pin.
-- `.env` / `.env.example`: Local environment (existence only — never quote secrets).
+- `.env` / `.env.example`: Local environment (existence only — never quote secrets). Ingestion-relevant: `YOUTUBE_PROXY_URL`.
 
 **HTTP routes:**
 - `backend/src/backend/interface/http/routes/health.py` — `GET /health`
@@ -161,6 +179,9 @@ Digital_CDS/
 - `backend/src/backend/application/ports/` — 13 ports.
 - `backend/src/backend/application/use_cases/` — scenario modules.
 - `supabase-integration/migrations/` — canonical DB schema + phase RPCs.
+- `ingestion-service/src/ingestion_service/url.py` — video id extraction.
+- `ingestion-service/src/ingestion_service/domain/errors.py` — operator `IngestError`.
+- `ingestion-service/src/ingestion_service/mapping/` — URL/captions/metadata → `IngestError`.
 
 **Frontend logic:**
 - `web/src/services/` — Auth (Supabase), content, voting, knowledge, razbory, me, admin APIs.
@@ -168,7 +189,7 @@ Digital_CDS/
 - `web/src/utils/` — filters, voting helpers, markdown TOC, delay, ruCount.
 
 **Testing:**
-- `tests/unit/` — pytest + Node unit/contract tests.
+- `tests/unit/` — pytest + Node unit/contract tests (includes ingestion helpers such as `test_extract_video_id.py`, `test_ingest_error.py` when present).
 - `tests/*.spec.js` — Playwright against Vite app / design static server.
 - `backend/src/backend/tests_support/in_memory.py` — shared fakes for unit tests / memory container.
 
@@ -181,7 +202,7 @@ Digital_CDS/
 ## Naming Conventions
 
 **Files:**
-- Python modules: `snake_case.py` (e.g. `publish_material.py`, `knowledge_chunk_repository.py`).
+- Python modules: `snake_case.py` (e.g. `publish_material.py`, `knowledge_chunk_repository.py`, `map_captions_error` in `mapping/captions.py`).
 - React components/pages: `PascalCase.jsx` (e.g. `VotingPage.jsx`, `AppShell.jsx`).
 - Frontend utils/services/data: `camelCase.js` (e.g. `votingApi.js`, `mock.js`); Auth helpers may omit `Api` suffix (`authEnv.js`, `emailDomain.js`).
 - SQL migrations: numbered prefix `NNN_description.sql` under `supabase-integration/migrations/`.
@@ -192,6 +213,7 @@ Digital_CDS/
 **Directories:**
 - Python packages under `src/<package_name>/` (src layout for all uv members).
 - Backend layers: `domain/`, `application/`, `composition/`, `infrastructure/`, `interface/http/`, `tests_support/`.
+- Ingestion layers: `domain/` (operator errors), `mapping/` (boundary mappers), `composition/` (settings + clients); URL parse at package root `url.py`.
 - Frontend folders by role: `components/`, `pages/`, `services/`, `data/`, `utils/` — not feature-sliced.
 - Design pages mirror product routes: `design-frontend/pages/issue.html`, `voting.html`, `knowledge.html`, etc.
 
@@ -200,7 +222,8 @@ Digital_CDS/
 - React: default-export page/component functions in `PascalCase`.
 - Ports: noun + capability (`MaterialRepository`, `DigestPublisher`, `QueryEmbedder`).
 - Use-cases: verb phrases as module and function names (`cast_vote`, `send_digest`).
-- Env (frontend): `VITE_*`; backend: `APP_CONTAINER`, `SUPABASE_*`, `ALLOWED_EMAIL_DOMAINS`, `NOTEBOOK_ROOT`, `MAILER`, `API_CORS_ORIGINS`.
+- Ingestion mappers: `map_<stage>_error` returning `IngestError`; reasons are locked string sets per stage.
+- Env (frontend): `VITE_*`; backend: `APP_CONTAINER`, `SUPABASE_*`, `ALLOWED_EMAIL_DOMAINS`, `NOTEBOOK_ROOT`, `MAILER`, `API_CORS_ORIGINS`; ingestion: `YOUTUBE_PROXY_URL`.
 
 ## Where to Add New Code
 
@@ -225,9 +248,18 @@ Digital_CDS/
 
 **New external API (YouTube, FoundryModels, …):**
 - DTOs / validation: `data-collection/src/data_collection/dto/`
-- Export from `data-collection/src/data_collection/__init__.py`
-- Live client/adapter: same package (not backend domain); map errors at adapter edge.
-- Tests: `tests/unit/test_*_dto.py` pattern.
+- Typed adapter errors: `data-collection/src/data_collection/errors/`
+- Live client/adapter: `data-collection/src/data_collection/adapters/` (inject ready clients; no env/proxy reads inside adapters).
+- Operator diagnostics: map in `ingestion-service/src/ingestion_service/mapping/` → `IngestError`.
+- Ready clients / proxy: `ingestion-service/src/ingestion_service/composition/`.
+- Export from package `__init__.py` public barrels.
+- Tests: `tests/unit/test_*_dto.py` / adapter / mapper patterns.
+
+**New ingestion pipeline stage:**
+- Stage name must already exist (or be extended carefully) on `IngestError.Stage`.
+- Mapper + locked reasons under `ingestion-service/.../mapping/` when mapping adapter errors.
+- Orchestration / CLI entry under `ingestion-service` (not FastAPI).
+- Do **not** import `backend.interface.http` or call the web API for persist.
 
 **New UI page or component:**
 - Page: `web/src/pages/<Name>Page.jsx` + route in `web/src/App.jsx`
@@ -243,7 +275,7 @@ Digital_CDS/
 - Glossary: `CONTEXT.md` (single source; see `docs/agents/domain.md`)
 
 **Utilities:**
-- Prefer ownership inside a bounded context (backend / web / data-collection / supabase-integration).
+- Prefer ownership inside a bounded context (backend / web / data-collection / ingestion-service / supabase-integration).
 - Avoid new root-level “common utils” packages without a clear owner.
 - Root `scripts/` is for tooling only, not business logic.
 
@@ -275,7 +307,8 @@ Digital_CDS/
 - Committed: As present in tree.
 
 **Planned / incomplete (do not invent early beyond ports):**
-- Live Foundry/YouTube clients inside `data-collection` (DTOs only today).
+- Full ingestion CLI entry (`python -m ingestion_service`) and pipeline stages `consistency` / `llm` / `llm_truncation` / `persist`.
+- Live Foundry clients beyond current data-collection surface.
 - Real `QueryEmbedder` adapter (live still uses `StubQueryEmbedder`).
 - `SmtpMailer` (`MAILER=smtp` currently fails fast).
 - Dedicated HTTP for standalone publish/index admin APIs.
@@ -294,6 +327,11 @@ Digital_CDS/
 | SQL schema / RPC | `supabase-integration/migrations/` |
 | Supabase port adapter | `supabase-integration/src/supabase_integration/` |
 | External DTO | `data-collection/src/data_collection/dto/` |
+| External adapter / typed fetch error | `data-collection/src/data_collection/adapters/` / `errors/` |
+| Ingestion URL parse | `ingestion-service/src/ingestion_service/url.py` |
+| IngestError / Stage | `ingestion-service/src/ingestion_service/domain/errors.py` |
+| Map adapter → IngestError | `ingestion-service/src/ingestion_service/mapping/` |
+| Ingestion clients / proxy Settings | `ingestion-service/src/ingestion_service/composition/` |
 | React page | `web/src/pages/` |
 | React component | `web/src/components/` |
 | Frontend API call | `web/src/services/` |
@@ -302,4 +340,4 @@ Digital_CDS/
 
 ---
 
-*Structure analysis: 2026-09-26*
+*Structure analysis: 2026-09-27*

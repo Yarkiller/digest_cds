@@ -1,10 +1,10 @@
 ---
-last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
+last_mapped_commit: 252c024622021ec59fe22abdd251c2047849d1da
 ---
-<!-- refreshed: 2026-09-26 -->
+<!-- refreshed: 2026-09-27 -->
 # External Integrations
 
-**Analysis Date:** 2026-09-26
+**Analysis Date:** 2026-09-27
 
 ## APIs & External Services
 
@@ -14,6 +14,7 @@ last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
   - JS SDK: `@supabase/supabase-js` 2.116.0 — browser Auth only (`web/src/services/supabaseClient.js` → `authApi.js`)
   - Auth: `SUPABASE_URL` + `SUPABASE_SECRET_KEY` (server/service_role, composition only); publishable key for SPA (`VITE_SUPABASE_*`); JWKS for FastAPI JWT (`SUPABASE_JWKS_URL`, `SUPABASE_JWT_ISSUER`)
   - Wiring: `APP_CONTAINER=live` → `backend/composition/live.py`; default `memory` keeps unit tests offline
+  - Ingestion package describes target path “YouTube → LLM → Supabase” (`ingestion-service` pyproject); **no Supabase client / persist adapter inside `ingestion-service/` yet** (`IngestError` stages include `persist` for future CLI)
 
 **ML / content pipeline (Cloud.ru) — planned, DTO-only today:**
 - FoundryModels (Cloud.ru) — transcription/import assist, summarization, tagging, embeddings (dim 1024), article assist
@@ -21,12 +22,15 @@ last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
   - Auth: env/secrets on Cloud.ru VM (ADR-0002); no Foundry env vars in `.env.example` yet
   - Decision: ADR-0002 — no public foreign LLM/Whisper APIs; no local Whisper on app VM
   - Runtime stand-in: `StubQueryEmbedder` in live composition (knowledge search embeddings)
+  - Ingestion domain reserves stages `llm` / `llm_truncation` on `IngestError` — no LLM client wired in `ingestion-service/` composition yet
 
-**External content sources — planned, DTO-only today:**
-- YouTube Data API / captions — ingestion metadata (`YoutubeSourceDto` in `data-collection/.../dto/youtube.py`)
-  - SDK/Client: **not installed**
-  - Tests: `tests/unit/test_youtube_source_dto.py`
-- Manual text / URL import — `TextImportDto` (`source_system = "text_import"`)
+**External content sources — YouTube (ingestion live path in progress):**
+- YouTube captions — `youtube-transcript-api` via `ingestion_service.composition.clients.build_youtube_transcript_api` (`YouTubeTranscriptApi`; optional `GenericProxyConfig` when `YOUTUBE_PROXY_URL` set)
+- YouTube metadata HTTP — `httpx.AsyncClient` via `build_httpx_client` (30s timeout; same optional proxy) for adapters that receive an injected client (oEmbed path lives in `data-collection`)
+- URL allowlist / `video_id` extraction — `ingestion_service.url.extract_video_id` (hosts: `youtube.com`, `www.`, `m.`, `youtu.be`; watch / shorts / embed / bare 11-char id)
+- Operator error mapping — `ingestion_service.mapping` maps `InvalidYouTubeUrl`, `data_collection.errors.captions.*`, `data_collection.errors.metadata.*` → staged `IngestError`
+- DTO contract still in `data-collection/.../dto/youtube.py` (`YoutubeSourceDto`); tests under `tests/unit/test_youtube_source_dto.py` and ingest mapping unit tests
+- Manual text / URL import — `TextImportDto` (`source_system = "text_import"`) — unchanged; not part of ingestion-service yet
 
 **Email:**
 - Corporate Sber SMTP — production digest delivery (spec / ADR path)
@@ -78,6 +82,7 @@ last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
   - Admin: `app_role` / claim checks for `/admin/*` (403 for non-admin)
   - Token storage: Supabase JS session (browser); API calls send `Authorization: Bearer …`
   - Mock path: `VITE_USE_MOCKS≠false` — `RequireAuth` bypass / mock session (Playwright offline)
+  - `ingestion-service/` — no auth provider integration in scope (operator CLI composition only)
 
 **OAuth Integrations:**
 - None (email/password only)
@@ -93,6 +98,7 @@ last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
 **Logs:**
 - Backend: `structlog` JSON to stdout with `request_id` (`RequestIdMiddleware`, CORS allow header `X-Request-ID`)
 - Spec also calls for structured admin audit + correlatable ops logs — partial via `activity_events` / shortlist send audit; full NFR-L* ops stack not implemented
+- Ingestion: operator-facing staged errors via `IngestError.to_dict()` (`ok`, `stage`, `reason`, `message`, `exit_code`, optional `context`) — stages: `url`, `captions`, `metadata`, `consistency`, `llm`, `llm_truncation`, `persist`
 - Playwright / pytest console for local verification
 
 ## CI/CD & Deployment
@@ -116,6 +122,7 @@ last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
 | Backend / Supabase | `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `SUPABASE_JWKS_URL`, `SUPABASE_JWT_ISSUER` |
 | Backend / HTTP | `API_CORS_ORIGINS`, `ALLOWED_EMAIL_DOMAINS`, `APP_CONTAINER` (`memory`\|`live`), `NOTEBOOK_ROOT`, `MAILER` (`stub`\|`smtp`) |
 | Vite (publishable only) | `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_API_BASE_URL`, `VITE_USE_MOCKS` |
+| Ingestion composition | `YOUTUBE_PROXY_URL` (optional; HTTP(S) proxy for transcript API + httpx) |
 
 **Secrets location:**
 - Repo-root `.env` (gitignored); template `.env.example`
@@ -127,6 +134,7 @@ last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
 **Do not use:**
 - Hardcoded `knowledge-db.ru` or keys in domain/application layers — adapter + env only (ADR-0004)
 - `SUPABASE_SECRET_KEY` behind any `VITE_` prefix
+- Proxy wiring inside YouTube adapters — proxy only in `ingestion_service.composition.clients` (D-17)
 
 **Mock/stub services:**
 - In-memory repositories (`APP_CONTAINER=memory`)
@@ -140,6 +148,7 @@ last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
 
 **Outgoing:**
 - None detected (digest send is stubbed persistence + log; no webhook publishers)
+- YouTube calls are pull-only (transcript API / httpx metadata); no YouTube push webhooks
 
 ## HTTP surface (internal API, not third-party)
 
@@ -161,13 +170,15 @@ last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
 | Ports (interfaces) | `backend/src/backend/application/ports/` | `Protocol` / ABC |
 | Use-cases | `backend/src/backend/application/use_cases/` | Depend only on domain + ports |
 | Wiring | `backend/src/backend/composition/` (`container.py`, `live.py`, `settings.py`) | Composition root — swap memory ↔ Supabase here |
-| External DTOs | `data-collection/src/data_collection/dto/` | Normalize YouTube / Foundry / text import at the boundary |
+| External DTOs / YouTube adapters | `data-collection/src/data_collection/` | Normalize YouTube / Foundry / text import at the boundary |
+| Ingestion operator CLI package | `ingestion-service/src/ingestion_service/` | URL extract + error mappers + composition (`Settings`, ready clients); depends on `data-collection` |
 | DB schema / SDK adapters | `supabase-integration/` | Migrations + repository adapters |
 | Frontend API | `web/src/services/` | UI must not import Supabase SDK outside `supabaseClient.js` / auth path |
 
 **Public exports:**
 - `data-collection` — DTO barrel (`YoutubeSourceDto`, Foundry result DTOs, `TextImportDto`, `EMBEDDING_DIM`)
 - `supabase-integration` — client factories + repository / publisher adapters
+- `ingestion-service` — composition (`Settings`, `build_youtube_transcript_api`, `build_httpx_client`); mapping (`map_url_error`, `map_captions_error`, `map_metadata_error`); `extract_video_id` / `IngestError`
 
 ## Agent / Developer Tooling Integrations (not product runtime)
 
@@ -178,5 +189,5 @@ last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
 
 ---
 
-*Integration audit: 2026-09-26*
+*Integration audit: 2026-09-27*
 *Update when adding/removing external services*

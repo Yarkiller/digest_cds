@@ -1,18 +1,24 @@
 ---
-last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
+last_mapped_commit: 252c024622021ec59fe22abdd251c2047849d1da
 ---
-<!-- refreshed: 2026-09-26 -->
+<!-- refreshed: 2026-09-27 -->
 # Codebase Concerns
 
-**Analysis Date:** 2026-09-26
+**Analysis Date:** 2026-09-27
 
 ## Tech Debt
 
-**Ingestion / Foundry / YouTube still DTO-only:**
-- Issue: `data-collection` exposes Pydantic DTOs only; no HTTP clients, retries, or port implementations for captions/LLM/embed. v1.1 Phase 6+ is planned (`ingestion-service` CLI) but not shipped.
-- Files: `data-collection/src/data_collection/dto/youtube.py`, `data-collection/src/data_collection/dto/foundry.py`, `data-collection/src/data_collection/dto/text_import.py`, `data-collection/README.md`, `.planning/PROJECT.md` (Active checklist)
-- Impact: Admin shortlist depends on seeded/demo drafts; PIPE-01 ranking pipeline and ADR-0002 FoundryModels path are unrealized. Schema tables `ingestion_*` / `source_texts` have no application writers.
-- Fix approach: Land Phase 6 ports/DTOs → CLI adapter writing drafts via existing Supabase material/shortlist adapters; keep domain free of SDKs.
+**Ingestion CLI spine only partially landed (Phase 7 scaffold):**
+- Issue: `ingestion-service/` is a workspace member with URL parse, `IngestError`, error mappers, and proxy-aware client factories — but no Typer/`__main__` one-shot, no pipeline orchestration, no LLM/persist stages, and no Supabase writers. Requirements CLI-01…CLI-05 remain open.
+- Files: `ingestion-service/src/ingestion_service/` (no `__main__.py`, no `pipeline/`), `ingestion-service/pyproject.toml`, `.planning/REQUIREMENTS.md` (CLI-01…05), `.planning/STATE.md` (Phase 7 complete → plan Phase 8)
+- Impact: Admin shortlist still depends on seeded/demo drafts; operators cannot run YouTube→draft end-to-end; `Stage` Literal already advertises `consistency`/`llm`/`llm_truncation`/`persist` with no production mappers.
+- Fix approach: Phase 8+ DeepSeek/LLM adapters → Phase 9/10 persist + Typer CLI wiring composition → ports only; keep domain free of SDKs.
+
+**`data-collection` YouTube adapters exist; Foundry/LLM still absent (cross-package note):**
+- Issue: Prior map claimed “DTO-only” for YouTube — Phase 7 added real caption/oEmbed adapters behind ports in `data-collection` (out of this remap path). Foundry/DeepSeek LLM + embed clients and draft persist remain unrealized. Schema tables `ingestion_*` / `source_texts` still have no application writers from this package.
+- Files: `ingestion-service/` (consumes ports via future wiring only today), `data-collection/` (adapters — not re-verified in this scoped remap), `.planning/PROJECT.md`
+- Impact: PIPE-01 ranking pipeline and ADR-0002 FoundryModels path still unrealized for production content.
+- Fix approach: Land LLM ports/adapters → CLI persist via Supabase material/shortlist adapters; do not fake PIPE-01 scores.
 
 **Live knowledge search uses StubQueryEmbedder, not FoundryModels:**
 - Issue: `build_live_container()` wires `StubQueryEmbedder` (sha256→1024-d). Seeded chunk embeddings in migration 004 match the stub algorithm — semantic search is honesty-path, not production ML.
@@ -62,11 +68,17 @@ last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
 - Impact: Mapping bugs when ingestion writes roles; UI must never send `sva` as filter (already rejected).
 - Fix approach: Document single glossary; map `sva`→audience tag on materials only; never conflate with `profiles.role`.
 
-**Stale brownfield map docs relative to shipped v1:**
-- Issue: Sibling `.planning/codebase/` docs (e.g. ARCHITECTURE notes on “adapters not connected”) can lag phases 1–5.
-- Files: `.planning/codebase/ARCHITECTURE.md` (and peers), `.planning/PROJECT.md` (“Preserve codebase map”)
-- Impact: Planners may re-open closed gaps (no HTTP, no adapters).
-- Fix approach: Refresh all seven map docs together; treat CONCERNS as current debt source of truth after this refresh.
+**`ingestion-service` depends on `data-collection` only; SDK imports are transitive:**
+- Issue: `composition/clients.py` imports `httpx` and `youtube_transcript_api` directly, but `ingestion-service/pyproject.toml` lists only `data-collection`. Runtime works via workspace transitive deps; packaging/isolation is fragile.
+- Files: `ingestion-service/pyproject.toml`, `ingestion-service/src/ingestion_service/composition/clients.py`
+- Impact: Standalone install of `ingestion-service` alone may miss SOCKS extras or pin drift; dependency graph opaque to auditors.
+- Fix approach: Declare explicit `httpx[socks]` / `youtube-transcript-api` (or re-export factory from `data-collection` public API) before CLI shipping.
+
+**Ingestion Settings is proxy-only (CLI-05 env split deferred):**
+- Issue: `Settings` exposes only `YOUTUBE_PROXY_URL`; no DeepSeek/Supabase/service_role fields, no package-local `.env` loader yet.
+- Files: `ingestion-service/src/ingestion_service/composition/settings.py`, `.planning/REQUIREMENTS.md` (CLI-05)
+- Impact: Fine for Phase 7; Phase 8–10 will concentrate secrets here — risk of copying backend env patterns incorrectly.
+- Fix approach: Grow Settings + dedicated `.env` per CLI-05; never read secrets in adapters (D-17 already enforced).
 
 ## Known Bugs
 
@@ -100,13 +112,29 @@ last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
 - Trigger: CI/local green while live wiring broken.
 - Workaround: Explicit runbook live proof (`VITE_USE_MOCKS=false` + `APP_CONTAINER=live`).
 
+**Deferred YouTube URL forms rejected until later phase:**
+- Symptoms: `/live/`, `/v/`, `/e/` paths raise `InvalidYouTubeUrl` (intentional D-02 allowlist) — operators pasting those URLs get fail-closed errors, not silent accept.
+- Files: `ingestion-service/src/ingestion_service/url.py`, `tests/unit/test_extract_video_id.py`
+- Trigger: Live-stream or legacy embed URLs.
+- Workaround: Convert to `watch?v=` / bare id; extend allowlist when product asks.
+
 ## Security Considerations
 
+**Resolved in `ingestion-service` (Phase 7 CR/WR fixes, 2026-09-27):**
+- **CR-01 / WR-02:** Diagnostic envelopes no longer embed raw credentialed URLs. `InvalidYouTubeUrl` strips userinfo via `_safe_url_for_diagnostics`; `map_url_error` / captions / metadata mappers use context allowlists; messages built from reason + `video_id` only. Coverage in `tests/unit/test_ingest_error.py`, `test_captions_error_mapping.py`, `test_metadata_error_mapping.py`. Commits per `07-REVIEW-FIX.md`: `8e2162a`, `2c06275`.
+- **Related adapter fixes (data-collection, not re-audited here):** WR-01 Cookie/SDK catch-all, WR-03 snippet join, WR-04 oEmbed 5xx/429→network, WR-05 malformed `language_code` — see `07-REVIEW-FIX.md`.
+
+**Proxy URL must stay out of operator JSON:**
+- Risk: `YOUTUBE_PROXY_URL` may contain SOCKS credentials; accidental inclusion in `IngestError.context` would leak to CLI stdout when Phase 10 emits `to_dict()`.
+- Files: `ingestion-service/src/ingestion_service/composition/settings.py`, `mapping/captions.py`, `mapping/metadata.py` (`_CONTEXT_ALLOWLIST`)
+- Current mitigation: Allowlists exclude proxy/env keys; unit tests assert credentialed proxy strings absent from mapped context.
+- Recommendations: Keep allowlists when adding llm/persist mappers; never dump `Settings` into error context.
+
 **Service-role backend bypasses RLS for all product I/O:**
-- Risk: Live adapters use `create_service_role_client`; RLS policies protect only direct PostgREST/authenticated clients. A compromised API process = full DB.
+- Risk: Live adapters use `create_service_role_client`; RLS policies protect only direct PostgREST/authenticated clients. A compromised API process = full DB. Future ingestion CLI persist will likely also use service_role (same blast radius class).
 - Files: `backend/src/backend/composition/live.py`, `supabase-integration/src/supabase_integration/*.py`, `supabase-integration/migrations/001_initial_schema.sql`
 - Current mitigation: Secrets only in server env (never `VITE_`); JWT + corporate email gate on HTTP deps; admin gated via `profiles.role` not JWT claim (`deps.require_admin`).
-- Recommendations: Minimize service_role surface; prefer SECURITY DEFINER RPCs with explicit checks; never expose secret key to browser.
+- Recommendations: Minimize service_role surface; prefer SECURITY DEFINER RPCs with explicit checks; never expose secret key to browser; isolate ingestion CLI env (CLI-05).
 
 **RLS policy coverage still incomplete for product tables:**
 - Risk: Policies cover ready materials/chunks, digests, own votes, own profile SELECT. Authenticated clients lack SELECT on `topics`, `voting_cycles`, `razbors`, `material_tags`, shortlist, etc.
@@ -158,6 +186,12 @@ last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
 - Cause: Prototype honesty harness.
 - Improvement path: No-op delay in CI; keep only for local demos.
 
+**Ingestion I/O latency not yet a product path:**
+- Problem: No CLI pipeline; caption/metadata fetches only exercised in unit/integration stubs. Live YouTube + future LLM will dominate wall time once wired.
+- Files: `ingestion-service/src/ingestion_service/composition/clients.py` (`_DEFAULT_TIMEOUT = 30.0`)
+- Cause: Phase 7 composition-only scope.
+- Improvement path: Timeouts/retries at composition; fail-closed stages already planned; measure after Phase 10 one-shot.
+
 ## Fragile Areas
 
 **Schema / migration contract tests are substring presence checks:**
@@ -190,6 +224,24 @@ last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
 - Safe modification: Record applied date/method in runbook after each file; never wipe.
 - Test coverage: None automated against VM.
 
+**`IngestError.Stage` ahead of pipeline implementation:**
+- Files: `ingestion-service/src/ingestion_service/domain/errors.py`, `mapping/` (url/captions/metadata only)
+- Why fragile: Seven stages locked in Literal; only three mappers exist. Callers can invent `stage="llm"` strings without mapper symmetry tests.
+- Safe modification: Add mapper + reason frozenset + unit table per new stage before CLI emits that stage; keep `to_dict()` contract stable.
+- Test coverage: `test_ingest_error.py` asserts Literal membership; no end-to-end stage sequencing test yet.
+
+**URL parser allowlist vs product URL drift:**
+- Files: `ingestion-service/src/ingestion_service/url.py`
+- Why fragile: Host/path allowlist is explicit; YouTube product URL changes or music.youtube.com will fail closed until code updates.
+- Safe modification: Extend accept matrix + parametrized tests together; never substring-match hosts.
+- Test coverage: Strong unit matrix in `test_extract_video_id.py`; no live URL corpus.
+
+**Composition client factories close responsibility on callers:**
+- Files: `ingestion-service/src/ingestion_service/composition/clients.py`
+- Why fragile: `build_httpx_client` returns open `AsyncClient`; tests must `aclose()`. Future CLI must use context managers or leak FDs under retries.
+- Safe modification: Prefer `async with` in pipeline; document ownership at composition boundary.
+- Test coverage: Settings/client unit tests close clients; no pipeline lifecycle test.
+
 ## Scaling Limits
 
 **Knowledge retrieval:**
@@ -212,12 +264,22 @@ last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
 - Limit: Real SMTP/batch recipients not implemented; no async worker.
 - Scaling path: Queue + SmtpMailer; keep claim+publish atomic.
 
+**Ingestion throughput:**
+- Current capacity: No production CLI; unit-level adapters only.
+- Limit: One-shot sequential YouTube→LLM→persist will be rate-limited by YouTube bot challenges and LLM quotas once Phase 10 ships.
+- Scaling path: Optional proxy (`YOUTUBE_PROXY_URL`); batch/queue deferred; CAP-02 fail-closed writes zero rows on caption failure (persist spy Phase 9/10).
+
 ## Dependencies at Risk
 
 **FoundryModels / DeepSeek (Cloud.ru contour):**
-- Risk: External ML pipeline for transcript/summary/tags/embeddings (ADR-0002); v1.1 temporarily bends toward DeepSeek captions MVP — no client code in-repo yet.
-- Impact: Ingestion and real semantic search blocked; NFR-A3 degradation path unimplemented.
-- Migration plan: Stable ports; swap provider adapter without touching domain.
+- Risk: External ML pipeline for transcript/summary/tags/embeddings (ADR-0002); v1.1 temporarily bends toward DeepSeek captions MVP — no LLM client code in `ingestion-service` yet.
+- Impact: Draft material generation blocked after captions; NFR-A3 degradation path unimplemented.
+- Migration plan: Stable ports; swap provider adapter without touching domain; wire secrets only in ingestion composition.
+
+**YouTube transcript + oEmbed (via composition clients):**
+- Risk: Unofficial `youtube-transcript-api` + public oEmbed; bot challenges / IP blocks common; proxy optional via `YOUTUBE_PROXY_URL`.
+- Impact: CAP-01 fail-closed on blocked/empty captions; operators need SOCKS on restricted networks.
+- Migration plan: Keep adapters in `data-collection`; inject ready clients from `ingestion-service` composition; integration stubs under `tests/integration/`.
 
 **Self-hosted Supabase + pgvector:**
 - Risk: Single shared VM; operator-applied migrations; SDK pinned only in `supabase-integration`.
@@ -236,9 +298,10 @@ last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
 
 ## Missing Critical Features
 
-**Content ingestion spine (v1.1):**
-- Problem: No YouTube→captions→LLM→draft materials CLI; admin UI expects drafts from pipeline/seed.
-- Blocks: Fresh weekly content without manual SQL/seed; PIPE-01 honesty vs demo seed (D-78).
+**Content ingestion end-to-end (v1.1 remaining):**
+- Problem: Phase 7 delivered URL→`video_id`, `IngestError` envelope, captions/metadata error mapping, and proxy composition — not the Typer one-shot, LLM draft generation, or DB persist/shortlist enqueue.
+- Blocks: Fresh weekly content without manual SQL/seed; CLI-01 success print contract; PIPE-01 honesty vs demo seed (D-78).
+- Partial: CAP-01/CAP-02 unit contracts green; live zero-row persist spy deferred Phase 9/10 (D-14).
 
 **Production embeddings + SMTP:**
 - Problem: Stub embedder + StubMailer in live container.
@@ -255,16 +318,17 @@ last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
 ## Test Coverage Gaps
 
 **No live Supabase / RLS integration suite in CI:**
-- What's not tested: Real PostgREST+RLS deny/allow, migration apply on ephemeral DB, Foundry/YouTube HTTP, end-to-end live FE↔BE under `VITE_USE_MOCKS=false`.
+- What's not tested: Real PostgREST+RLS deny/allow, migration apply on ephemeral DB, end-to-end live FE↔BE under `VITE_USE_MOCKS=false`.
 - Files: `tests/unit/test_supabase_*_contract.py` (offline stubs), `tests/*.spec.js` (mostly mocks)
 - Risk: Green unit suite with broken production path or unapplied 006.
 - Priority: High before claiming production readiness
 
-**Ingestion / ranking pipeline untested (absent):**
-- What's not tested: YouTube captions, LLM draft write, shortlist enqueue, PIPE-01 scores.
-- Files: Planned under `.planning/` Phase 6+; `data-collection` DTO unit tests only
-- Risk: First real pipeline lands without regression net.
-- Priority: High for v1.1
+**Ingestion pipeline E2E still absent; package unit surface exists:**
+- What's tested: `extract_video_id` accept/reject matrix, `IngestError.to_dict()`, url/captions/metadata mappers + redaction, Settings/proxy client factories (`tests/unit/test_extract_video_id.py`, `test_ingest_error.py`, `test_captions_error_mapping.py`, `test_metadata_error_mapping.py`, `test_ingestion_settings.py`).
+- What's not tested: Typer CLI exit codes/JSON stdout, LLM truncation stage, persist writers, CAP-02 live `persist.calls == []` spy, consistency stage, full URL→draft happy path.
+- Files: Planned Phases 8–10; optional `tests/integration/test_youtube_oembed_live.py` (network/proxy)
+- Risk: First real CLI lands with thin regression net beyond Stage 7 contracts.
+- Priority: High for v1.1 Phases 8–10
 
 **Auth domain restriction covered in unit; live Auth edge cases thin:**
 - What's tested: `is_allowed_corporate_email`, JWT verify unit, Playwright auth under mocks.
@@ -273,9 +337,9 @@ last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
 - Priority: Medium (raise when live Auth is default)
 
 **Performance / load:**
-- What's not tested: Hybrid search latency at corpus scale; concurrent vote CAS; admin send under contention.
-- Priority: Medium (post-seed)
+- What's not tested: Hybrid search latency at corpus scale; concurrent vote CAS; admin send under contention; ingestion under YouTube rate limits.
+- Priority: Medium (post-seed / post-CLI)
 
 ---
 
-*Concerns analysis: 2026-09-26*
+*Concerns analysis: 2026-09-27*

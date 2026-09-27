@@ -1,10 +1,10 @@
 ---
-last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
+last_mapped_commit: 252c024622021ec59fe22abdd251c2047849d1da
 ---
-<!-- refreshed: 2026-09-26 -->
+<!-- refreshed: 2026-09-27 -->
 # Testing Patterns
 
-**Analysis Date:** 2026-09-26
+**Analysis Date:** 2026-09-27
 
 ## Test Framework
 
@@ -13,6 +13,7 @@ last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
   - Config: `[tool.pytest.ini_options]` in root `pyproject.toml`
   - `testpaths = ["tests/unit"]`, `pythonpath = ["."]`
   - Collects only `tests/unit/*.py` (JS unit files and Playwright specs are not collected)
+  - Marker registered: `integration` — optional live/network tests (kept out of default unit path; D-20)
 - Unit (JavaScript): Node built-in **`node:test`** + `node:assert/strict`
   - **Not** wired into `npm test`; run per file: `node --test <path>`
   - No Vitest / Jest in the repo
@@ -33,6 +34,9 @@ npm run test:design           # Playwright project `design-frontend` only
 npm run test:unit             # uv run pytest (tests/unit/*.py only)
 uv run pytest                 # Same Python unit suite
 uv run pytest tests/unit/test_cast_vote.py   # Single file
+uv run pytest tests/unit/test_extract_video_id.py tests/unit/test_ingest_error.py \
+  tests/unit/test_captions_error_mapping.py tests/unit/test_metadata_error_mapping.py \
+  tests/unit/test_ingestion_settings.py      # ingestion-service-focused slice
 npx playwright test --project=web tests/web-app.spec.js
 node --test tests/unit/test_knowledge_api.js
 node --test web/src/services/emailDomain.test.js
@@ -52,9 +56,11 @@ Browsers cache under `.playwright-browsers` via `PLAYWRIGHT_BROWSERS_PATH` in `p
 - JS unit: `tests/unit/*.js` and occasional colocated `web/src/**/*.test.js`
 - E2E: `tests/*.spec.js`
 - Shared fakes: `backend/src/backend/tests_support/` (importable package, not under `tests/`)
+- Data-collection fakes: `data_collection.tests_support.fakes` (used with ingestion mappers)
 
 **Naming:**
 - Python: `test_<subject>.py` — e.g. `test_cast_vote.py`, `test_http_voting.py`, `test_supabase_vote_repository_contract.py`
+- Ingestion-focused: `test_extract_video_id.py`, `test_ingest_error.py`, `test_captions_error_mapping.py`, `test_metadata_error_mapping.py`, `test_ingestion_settings.py`
 - Functions: `test_<behavior>_...` describing outcome; annotate `-> None`
 - E2E: `<surface>.spec.js` matched by Playwright `testMatch`
 - JS unit: `test_<subject>.js` or `*.test.js`
@@ -63,7 +69,7 @@ Browsers cache under `.playwright-browsers` via `PLAYWRIGHT_BROWSERS_PATH` in `p
 ```
 tests/
 ├── unit/                          # pytest + node:test (mixed)
-│   ├── test_*.py                  # ~43 Python unit / HTTP / contract files
+│   ├── test_*.py                  # Python unit / HTTP / contract / ingestion files
 │   └── test_*.js                  # FE pure-module unit tests
 ├── web-app.spec.js
 ├── auth.spec.js
@@ -84,6 +90,8 @@ web/src/services/emailDomain.test.js   # colocated node:test
 | DTO validation | `test_foundry_dtos.py`, `test_youtube_source_dto.py`, `test_text_import_dto.py` |
 | Auth / JWT infra | `test_jwt_verify.py`, `test_auth_email_domain.py` |
 | Migration / schema | `test_schema_migration_contract.py`, `test_phase5_migration_005.py` |
+| Ingestion-service | `test_extract_video_id.py`, `test_ingest_error.py`, `test_captions_error_mapping.py`, `test_metadata_error_mapping.py`, `test_ingestion_settings.py` |
+| Ingestion + data-collection fakes | `test_fake_transcript_provider_failures.py`, `test_fake_video_metadata_provider.py` (assert mapper reason sets / `map_*_error`) |
 | Meta / env | `test_env_example.py`, `test_stub_mailer.py` |
 
 ## Test Structure
@@ -109,6 +117,32 @@ def test_cast_vote_stores_exactly_one_vote_and_returns_snapshot() -> None:
     votes, cycles = _seeded()
     snapshot = cast_vote(votes, cycles, user_id="u1", topic_id="topic-1", expected_updated_at=None)
     assert snapshot.my_vote.topic_id == "topic-1"
+```
+
+**Suite Organization (ingestion-service):**
+```python
+"""RED→GREEN: CaptionsError → IngestError(stage=captions) locked reasons (CAP-02, D-10, D-13)."""
+
+from __future__ import annotations
+
+import pytest
+from data_collection.errors.captions import CaptionsUnavailable
+
+
+@pytest.mark.parametrize(
+    ("error", "reason"),
+    [
+        (CaptionsUnavailable("dQw4w9WgXcQ"), "no_captions"),
+        # ...
+    ],
+)
+def test_map_captions_error_subtype_to_locked_reason(error, reason) -> None:
+    from ingestion_service.mapping.captions import map_captions_error
+
+    mapped = map_captions_error(error)
+    assert mapped.stage == "captions"
+    assert mapped.reason == reason
+    assert mapped.to_dict()["ok"] is False
 ```
 
 **Suite Organization (Node `node:test`):**
@@ -148,6 +182,11 @@ test.describe("web app main flows", () => {
 - Playwright groups via `test.describe` by flow / UI states / edge cases / responsive
 - Prefer role/label locators; use `getByTestId` for state hooks (`confirm-vote`, harness counters)
 - HTTP tests mint ES256 JWTs and inject `signing_key_resolver` with in-memory `AppContainer`
+- Ingestion tests often **import SUT inside the test body** (keeps collection resilient); use `@pytest.mark.parametrize` for URL accept/reject and error→reason matrices
+- Assert locked reason frozensets equal production constants; assert reasons are snake_case and disjoint from SDK exception class names
+- Credential / proxy redaction: assert secrets and `socks5://` never appear in `IngestError` message/context/`to_dict()`
+- Settings: pass `Settings.from_env({...})` dicts — do not mutate process env; close `httpx.AsyncClient` via `asyncio.run(client.aclose())`
+- Verify-only checks in `test_ingestion_settings.py` (SOCKS deps in `data-collection/pyproject.toml`, `integration` marker in root `pyproject.toml`, adapters must not contain `os.environ` / `os.getenv`)
 
 ## Mocking
 
@@ -174,6 +213,15 @@ class _FakeQuery: ...
 class _FakeTable: ...
 ```
 
+```python
+# Ingestion: real mappers + data-collection error instances / FakeTranscriptProvider
+from data_collection.tests_support.fakes import FakeTranscriptProvider
+from ingestion_service.mapping.captions import map_captions_error
+
+fake = FakeTranscriptProvider(transcript, failures={video_id: CaptionsUnavailable(video_id)})
+mapped = map_captions_error(err)  # no live YouTube
+```
+
 ```javascript
 // Frontend API harness for E2E error paths (not Jest mocks)
 import { armFailNextVoteSubmit, submitVote } from '../services/votingApi.js'
@@ -187,12 +235,15 @@ import { armFailNextVoteSubmit, submitVote } from '../services/votingApi.js'
 - Embedding / external compute → lambda or simple callable injected into use-case
 - Vote / API failure → service harness (`armFailNextVoteSubmit`, query params, `window.__DIGEST_*__`)
 - Playwright web server forces `VITE_USE_MOCKS=true` (offline E2E)
+- YouTube / captions / metadata → construct typed `CaptionsError` / `MetadataError` or `FakeTranscriptProvider` / fake metadata provider; exercise `map_*_error` offline
+- Proxy composition → `Settings.from_env({"YOUTUBE_PROXY_URL": "..."})` and inspect client internals (no live SOCKS required for unit)
 
 **What NOT to Mock:**
 - Domain entities and pure use-case logic — exercise real `Material`, `cast_vote`, etc.
+- Real `extract_video_id`, `IngestError`, and mapper functions under test
 - Pydantic DTO validation — construct real models; assert `ValidationError`
 - Accessibility-visible UI behavior in Playwright — assert real DOM roles/text
-- Do not write “unit” tests that hit live Supabase/network without an explicit integration marker (none configured; live proof is manual via runbook)
+- Do not write “unit” tests that hit live Supabase/network without an explicit integration marker (none configured under `tests/unit`; live proof is manual via runbook)
 
 ## Fixtures and Factories
 
@@ -216,12 +267,19 @@ def _mint(sub: str = "user-1", email: str = "user@example.com") -> str: ...
 def _client(container=None) -> TestClient: ...
 ```
 
+```python
+# Ingestion: shared video id constant + reason frozensets in-module
+VIDEO_ID = "dQw4w9WgXcQ"
+LOCKED_REASONS = frozenset({...})
+```
+
 **Location:**
 - Factories: co-located in the test module
 - Shared fakes: `backend/src/backend/tests_support/in_memory.py`
 - Frontend demo data: `web/src/data/mock.js` (consumed by app + E2E when mocks enabled)
 - Pure FE logic extracted for Node tests: e.g. `web/src/services/adminPreviewComposition.js`
 - Contract fixtures: SQL under `supabase-integration/migrations/` read as text; adapter source read for import-boundary asserts
+- Ingestion verify-only: read `pyproject.toml` / adapter source as text from `Path(__file__).resolve().parents[2]`
 
 ## Coverage
 
@@ -230,7 +288,7 @@ def _client(container=None) -> TestClient: ...
 **View Coverage:**
 ```bash
 # Not configured — if adding later, prefer:
-# uv run pytest --cov=backend --cov=data_collection --cov=supabase_integration
+# uv run pytest --cov=backend --cov=data_collection --cov=supabase_integration --cov=ingestion_service
 ```
 
 **TDD policy (mandatory):** Red → Green → Refactor. No production code without a failing test first (see `.cursor/rules/tdd.mdc`, `AGENTS.md`). Exceptions only for configs/generated/prototypes with explicit agreement.
@@ -240,7 +298,7 @@ def _client(container=None) -> TestClient: ...
 ## Test Types
 
 **Unit Tests (Python):**
-- Scope: domain entities, use-cases with in-memory ports, Pydantic DTOs, JWT verify, composition root, migration SQL contracts, AST/import boundary checks
+- Scope: domain entities, use-cases with in-memory ports, Pydantic DTOs, JWT verify, composition root, migration SQL contracts, AST/import boundary checks, ingestion URL parse / `IngestError` / stage mappers / Settings+clients
 - Approach: real domain code + fakes; no HTTP server for pure use-case tests
 - Files: `tests/unit/test_*.py`
 - Run: `uv run pytest` / `npm run test:unit`
@@ -260,9 +318,16 @@ def _client(container=None) -> TestClient: ...
 - Files: `tests/unit/test_supabase_*_contract.py`, `test_schema_migration_contract.py`, `test_phase5_migration_005.py`
 - Offline; assert no FastAPI imports leak into adapters where checked
 
+**Ingestion / mapper unit tests:**
+- Exercise `ingestion_service` from `tests/unit/` (package has no co-located tests)
+- Key files: `test_extract_video_id.py`, `test_ingest_error.py`, `test_captions_error_mapping.py`, `test_metadata_error_mapping.py`, `test_ingestion_settings.py`
+- Cross-package: `test_fake_transcript_provider_failures.py`, `test_fake_video_metadata_provider.py` import `map_*_error` / `*_REASONS`
+- Assert `Stage` Literal has seven pipeline stages (including future `consistency` / `llm` / `persist`)
+
 **Integration Tests (live DB/network):**
-- Not detected as a separate suite; no pytest markers configured
-- When adding: mark explicitly, keep out of default `tests/unit` path, and do not call them “unit”
+- Marker `integration` registered in root pytest; default `testpaths` stays unit-only so live tests are not collected accidentally
+- Not detected as a populated suite under `tests/unit`
+- When adding: mark `@pytest.mark.integration`, keep out of default `tests/unit` path, and do not call them “unit”
 - Manual live proof: `docs/agents/local-platform-runbook.md` (`VITE_USE_MOCKS=false`)
 
 **E2E Tests:**
@@ -273,6 +338,7 @@ def _client(container=None) -> TestClient: ...
 - Web project env forces `VITE_USE_MOCKS=true`
 - Covers main flows, UI states (loading/success/error), empty/not-found recovery, auth gates, admin, responsive viewports
 - Responsive evidence screenshots under `docs/digest-cds/responsive-evidence/`
+- No Playwright coverage of `ingestion-service` (CLI operator path; not a browser surface)
 
 ## Common Patterns
 
@@ -287,7 +353,7 @@ test("confirms a vote with loading then success state", async ({ page }) => {
   await expect(confirm).toHaveAttribute("data-state", "success");
 });
 ```
-Python unit tests are synchronous; inject `now=` / `embed=` instead of sleeping.
+Python unit tests are mostly synchronous; inject `now=` / `embed=` instead of sleeping. Ingestion client/fake tests use `asyncio.run(...)` for `AsyncClient.aclose()` and async fake providers.
 
 **Error Testing:**
 ```python
@@ -296,6 +362,11 @@ with pytest.raises(VoteConflictError):
 
 with pytest.raises(ValidationError):
     EmbeddingResultDto(vector=[0.1, 0.2], model_id="x", input_hash="y")
+
+with pytest.raises(InvalidYouTubeUrl) as exc_info:
+    extract_video_id("https://example.com/watch?v=dQw4w9WgXcQ")
+mapped = map_url_error(exc_info.value)
+assert mapped.stage == "url"
 ```
 
 ```javascript
@@ -323,10 +394,19 @@ chunks = app.index(42, embedding_model_id="foundry-embed-v1", embed=lambda _t: [
 hits = app.search(query_embedding=[0.0] * 1024, query_text="Alpha")
 ```
 
+**Ingestion Settings / proxy:**
+```python
+settings = Settings.from_env({"YOUTUBE_PROXY_URL": "socks5://192.168.1.68:1080"})
+api = build_youtube_transcript_api(settings)
+assert isinstance(api._fetcher._proxy_config, GenericProxyConfig)
+```
+
 **Import / source boundary:**
 ```python
-# AST or source-text asserts — e.g. test_auth_email_domain.py, contract tests
+# AST or source-text asserts — e.g. test_auth_email_domain.py, contract tests,
+# test_ingestion_settings.py (adapters must not read environ)
 assert "fastapi" not in adapter_source.lower()
+assert "os.environ" not in adapter_body
 ```
 
 ## Where to Add New Tests
@@ -344,6 +424,11 @@ assert "fastapi" not in adapter_source.lower()
 | React user-visible flow | `tests/<feature>.spec.js` (add to `testMatch` if new name) | Playwright roles/labels |
 | Design-frontend static UI | `tests/design-frontend.spec.js` | Playwright against `design-frontend/` |
 | Composition / DI wiring | `test_composition_container.py` / `test_live_container_wiring.py` | pytest |
+| Ingestion URL parse | `tests/unit/test_extract_video_id.py` | parametrize accept/reject + `map_url_error` |
+| IngestError / stage envelope | `tests/unit/test_ingest_error.py` | `to_dict()`, Stage Literal, redaction |
+| Captions/metadata stage mapper | `tests/unit/test_*_error_mapping.py` | subtype→reason matrix + allowlist context |
+| Ingestion Settings / clients | `tests/unit/test_ingestion_settings.py` | `from_env` dict + proxy client asserts |
+| Live YouTube / network ingest | new file outside default unit path, `@pytest.mark.integration` | Not collected by default |
 
 **Prescriptive workflow:**
 1. Write the minimal failing test (unit, Node, or Playwright as appropriate)
@@ -356,4 +441,4 @@ assert "fastapi" not in adapter_source.lower()
 
 ---
 
-*Testing analysis: 2026-09-26*
+*Testing analysis: 2026-09-27*

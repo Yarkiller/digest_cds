@@ -1,10 +1,10 @@
 ---
-last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
+last_mapped_commit: 252c024622021ec59fe22abdd251c2047849d1da
 ---
-<!-- refreshed: 2026-09-26 -->
+<!-- refreshed: 2026-09-27 -->
 # Architecture
 
-**Analysis Date:** 2026-09-26
+**Analysis Date:** 2026-09-27
 
 ## System Overview
 
@@ -34,16 +34,24 @@ last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
 ┌──────────────────────────┐    ┌─────────────────────────────────────────────┐
 │  In-memory fakes         │    │  Adapter modules (workspace packages)       │
 │  `tests_support/`        │    │  `supabase-integration/` — repos + SQL      │
-│  (APP_CONTAINER=memory)  │    │  `data-collection/` — Pydantic DTOs only    │
+│  (APP_CONTAINER=memory)  │    │  `data-collection/` — DTOs + YouTube        │
+│                          │    │    adapters/errors (captions, metadata)     │
 └──────────────────────────┘    └──────────────────┬──────────────────────────┘
                                                    ▼
                                     ┌──────────────────────────────┐
                                     │  Supabase / Postgres         │
                                     │  schema: `migrations/001–006`│
                                     │  Auth JWKS + profiles RLS    │
-                                    │  (+ Foundry/YouTube DTOs —   │
-                                    │   not wired to backend yet)  │
                                     └──────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  Ingestion operator CLI (separate composition root; no FastAPI)              │
+│  `ingestion-service/` → `ingestion_service`                                  │
+│  url parse → mapping(IngestError) → (planned) pipeline stages                │
+│  composition/: Settings + ready YouTube/httpx clients (proxy only here)      │
+│  Depends on: `data-collection` only (workspace)                              │
+│  Boundary: must not import `backend.interface.http` / call FastAPI           │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ## Component Responsibilities
@@ -63,7 +71,8 @@ last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
 | In-memory adapters | Test/local port fakes | `backend/src/backend/tests_support/in_memory.py` |
 | Supabase adapters | Repositories + digest publisher + clients | `supabase-integration/src/supabase_integration/` |
 | SQL schema / RLS / RPCs | Migrations `001`…`006` | `supabase-integration/migrations/` |
-| Data-collection DTOs | YouTube / text-import / FoundryModels shapes | `data-collection/src/data_collection/dto/` |
+| Data-collection | External DTOs + YouTube captions/metadata adapters/errors | `data-collection/src/data_collection/` |
+| Ingestion service | Operator CLI package: URL parse, `IngestError`, error mappers, own composition | `ingestion-service/src/ingestion_service/` |
 | Design prototype | Canonical Editorial UI (static) | `design-frontend/` |
 | Domain glossary | Shared language for agents and product | `CONTEXT.md` |
 | Architecture ADRs | Deployment, auth domain, FoundryModels, leaderboard | `docs/adr/` |
@@ -75,10 +84,11 @@ last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
 **Key Characteristics:**
 - Dependencies point inward: adapters → application → domain; domain has zero FastAPI/httpx/supabase imports.
 - Ports are `typing.Protocol` in `backend/.../application/ports/`.
-- External systems live in sibling workspace packages (`supabase-integration`, `data-collection`), not inside domain/use-cases.
-- Wiring only in `backend/.../composition/` (`AppContainer`, `build_in_memory_container`, `build_live_container`).
+- External systems live in sibling workspace packages (`supabase-integration`, `data-collection`, `ingestion-service`), not inside domain/use-cases.
+- Wiring only in composition roots: `backend/.../composition/` for the HTTP app; `ingestion-service/.../composition/` for the operator CLI (separate root).
 - HTTP layer is thin: routers call use-cases via `app.state.container`; JWT + corporate email gate in `deps.py`.
 - Frontend calls backends only through `web/src/services/`; identity via Supabase Auth client-side; API data via FastAPI with Bearer token.
+- Ingestion is a thin CLI-oriented package: URL allowlist parse lives in `ingestion_service`; fetch adapters and typed errors live in `data-collection`; mappers convert adapter errors into operator `IngestError` envelopes.
 - TDD (Red–Green–Refactor) is mandatory for behavior changes (`.cursor/rules/tdd.mdc`, `AGENTS.md`).
 
 ## Layers
@@ -103,7 +113,7 @@ last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
 - Used by: HTTP routers and `AppContainer` façade methods (`publish` / `index` / `search`).
 
 **Composition (`backend/src/backend/composition/`):**
-- Purpose: Single DI / bootstrap root.
+- Purpose: Single DI / bootstrap root for the FastAPI app.
 - Contains: `AppContainer`, `build_in_memory_container` (`container.py`), `build_live_container` (`live.py`), `Settings` (`settings.py`).
 - Depends on: Ports, use-cases, in-memory fakes, and (live only) `supabase_integration` adapters.
 - Used by: `interface/http/app.py` via `resolve_container`; unit tests.
@@ -126,10 +136,21 @@ last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
 - Depends on: Workspace package `backend` (domain types / `PersistenceError` mapping).
 
 **Adapter — data-collection:**
-- Purpose: External API boundary DTOs (YouTube, text import, FoundryModels).
+- Purpose: External API boundary — DTOs plus YouTube captions/metadata adapters and typed errors.
 - Location: `data-collection/src/data_collection/`
-- Contains: Pydantic models in `dto/`; package exports via `__init__.py`.
-- Depends on: `pydantic` only — no HTTP clients; **not imported by backend** yet.
+- Contains: Pydantic models in `dto/`; captions/metadata error types and adapters consumed by ingestion mapping.
+- Depends on: Declared package deps (e.g. httpx, youtube-transcript-api) — **not imported by backend** for ingest; consumed by `ingestion-service`.
+
+**Ingestion — operator package (`ingestion-service/`):**
+- Purpose: YouTube → (planned LLM) → Supabase draft-material CLI; own composition root, no HTTP app.
+- Location: `ingestion-service/src/ingestion_service/`
+- Contains:
+  - `url.py` — `extract_video_id`, `InvalidYouTubeUrl` (allowlisted hosts/paths; bare 11-char id).
+  - `domain/errors.py` — `IngestError` + `Stage` Literal (`url`, `captions`, `metadata`, `consistency`, `llm`, `llm_truncation`, `persist`).
+  - `mapping/` — `map_url_error`, `map_captions_error`, `map_metadata_error` → operator `IngestError` with locked reasons + context allowlists.
+  - `composition/` — `Settings.from_env` (`YOUTUBE_PROXY_URL`), `build_youtube_transcript_api`, `build_httpx_client` (proxy wiring only here).
+- Depends on: Workspace package `data-collection` only (`ingestion-service/pyproject.toml`).
+- Status: Scaffold + URL/error-mapping + client factories present; full pipeline CLI / LLM / persist stages not yet implemented in this package.
 
 **Frontend delivery (`web/`):**
 - Purpose: Production React UI for Digest CDS.
@@ -190,16 +211,20 @@ last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
 2. Material publish for digest is tied to admin send / `claim_and_publish` RPC, not a public CRUD publish route.
 3. No HTTP routes for `publish_material` / `index_material_chunks` as standalone admin APIs.
 
-### Ingestion path (DTOs + schema; adapters incomplete)
+### Ingestion path (operator CLI; partial)
 
-1. External source shapes exist as DTOs in `data-collection`.
-2. Persistence tables live in migrations (`ingestion_*`, `materials`, `knowledge_chunks`, …).
-3. Writers mapping DTOs → domain → DB are not implemented in production packages yet.
+1. Operator input (URL or bare video id) → `ingestion_service.url.extract_video_id` (allowlist; strips userinfo from diagnostics).
+2. On parse failure: `InvalidYouTubeUrl` → `map_url_error` → `IngestError(stage="url").to_dict()` operator envelope.
+3. Planned fetch stages use `data-collection` adapters; failures map via `map_captions_error` / `map_metadata_error` into `IngestError` with locked reasons and allowlisted context keys.
+4. Composition builds ready clients (`YouTubeTranscriptApi`, `httpx.AsyncClient`) with optional `YOUTUBE_PROXY_URL` — proxy config stays in composition, not in adapters.
+5. Later stages (`consistency`, `llm`, `llm_truncation`, `persist`) are reserved on `Stage` but not implemented in this package yet.
+6. Hard boundary: ingestion writes toward Supabase (planned); must not call FastAPI or import `backend.interface.http`.
 
 **State Management:**
 - Backend: Stateless use-cases; state in repository adapters (in-memory dicts or Supabase).
 - Frontend: Local React state per page; no global store library. Mock/live toggled by `VITE_USE_MOCKS`.
 - Auth session: Supabase client session (live) or mock harness (Playwright / mocks).
+- Ingestion: Stateless CLI-oriented package; operator diagnostics via `IngestError.to_dict()`.
 
 ## Key Abstractions
 
@@ -233,10 +258,20 @@ last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
 - Examples: `web/src/services/contentApi.js`, `votingApi.js`, `adminApi.js`
 - Pattern: Async functions + typed errors; mock/live branch; Playwright harnesses on `window`.
 
-**External DTOs:**
-- Purpose: Validate/normalize boundary payloads from YouTube / text import / FoundryModels.
-- Examples: `data-collection/src/data_collection/dto/*.py`
-- Pattern: Pydantic `BaseModel`; exported via package `__all__`.
+**External DTOs / data-collection errors:**
+- Purpose: Validate/normalize boundary payloads; typed captions/metadata failures for ingestion mapping.
+- Examples: `data-collection/src/data_collection/dto/*.py`, `data_collection.errors.captions`, `data_collection.errors.metadata`
+- Pattern: Pydantic `BaseModel` for DTOs; exception hierarchies mapped at `ingestion_service.mapping`.
+
+**IngestError:**
+- Purpose: Operator-facing staged diagnostic for the ingestion CLI.
+- Examples: `ingestion-service/src/ingestion_service/domain/errors.py`
+- Pattern: Dataclass exception with `stage`, `reason`, `message`, `context`, `exit_code`; `to_dict()` JSON envelope (`ok: false`).
+
+**Video id extraction:**
+- Purpose: Normalize YouTube URL / bare id before adapters see a `video_id`.
+- Examples: `ingestion-service/src/ingestion_service/url.py`
+- Pattern: Allowlisted hosts + path families (`watch`, `shorts`, `embed`, `youtu.be`); reject deferred forms (`live`/`v`/`e`).
 
 ## Entry Points
 
@@ -250,10 +285,16 @@ last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
 - Triggers: `uv run --env-file .env uvicorn backend.interface.http.app:create_default_app --factory --host 127.0.0.1 --port 8000`
 - Responsibilities: Load `Settings`, resolve memory/live container, serve routers.
 
-**Python composition:**
+**Python composition (backend):**
 - Location: `backend/src/backend/composition/container.py`, `live.py`
 - Triggers: App factory, unit tests.
 - Responsibilities: Construct adapters and expose use-case façade.
+
+**Ingestion composition:**
+- Location: `ingestion-service/src/ingestion_service/composition/`
+- Triggers: Future CLI / tests importing `Settings`, `build_youtube_transcript_api`, `build_httpx_client`.
+- Responsibilities: Env-backed settings and ready clients; proxy only at this boundary.
+- Status: No `__main__.py` / Typer entry yet — package is library-shaped scaffolding for the operator CLI.
 
 **Backend public package API:**
 - Location: `backend/src/backend/__init__.py`
@@ -262,8 +303,13 @@ last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
 
 **Data-collection public API:**
 - Location: `data-collection/src/data_collection/__init__.py`
-- Triggers: `from data_collection import YoutubeSourceDto, ...`
-- Responsibilities: Export DTOs and `EMBEDDING_DIM`.
+- Triggers: `from data_collection import …`
+- Responsibilities: Export DTOs / adapter surface used by ingestion.
+
+**Ingestion package:**
+- Location: `ingestion-service/src/ingestion_service/`
+- Triggers: `import ingestion_service`; `from ingestion_service.url import extract_video_id`; mapping / composition imports.
+- Responsibilities: URL parse, operator errors, error mappers, client factories.
 
 **Supabase-integration public API:**
 - Location: `supabase-integration/src/supabase_integration/__init__.py`
@@ -278,15 +324,16 @@ last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
 **Root workspace:**
 - Location: `pyproject.toml` (uv workspace), `package.json` (npm scripts).
 - Triggers: `uv run pytest`, `npm test`, `npm run test:unit`, `npm run platform:runbook`.
-- Responsibilities: Orchestrate multi-package tooling.
+- Responsibilities: Orchestrate multi-package tooling. Workspace members: `backend`, `data-collection`, `ingestion-service`, `supabase-integration`.
 
 ## Architectural Constraints
 
-- **Threading:** Python use-cases are synchronous; FastAPI routes call them directly. Frontend is browser event loop.
+- **Threading:** Python use-cases are synchronous; FastAPI routes call them directly. Frontend is browser event loop. Ingestion composition exposes an async `httpx.AsyncClient` factory alongside sync transcript SDK.
 - **Composition modes:** `APP_CONTAINER=memory` (default) vs `live` (requires `SUPABASE_URL` + `SUPABASE_SECRET_KEY`). Live imports `supabase_integration` from workspace root install (`digest-cds` meta-package); `backend` alone does not declare that dependency.
-- **Circular imports:** `supabase-integration` depends on `backend`; domain/use-cases must not import `supabase_integration` or `data_collection`.
-- **Module boundaries:** No deep-imports into another package’s internals; use package `__init__.py` / ports. uv members: `backend`, `data-collection`, `supabase-integration`.
-- **Secrets:** `.env` at repo root for local config — never import secrets into domain; never commit values.
+- **Circular imports:** `supabase-integration` depends on `backend`; domain/use-cases must not import `supabase_integration` or `data_collection`. `ingestion-service` depends on `data-collection` only — must not import FastAPI edge.
+- **Module boundaries:** No deep-imports into another package’s internals; use package `__init__.py` / ports. uv members: `backend`, `data-collection`, `ingestion-service`, `supabase-integration`.
+- **Ingestion boundary:** Operator path owns URL parse + staged diagnostics; adapters stay in `data-collection`; proxy/env wiring only in `ingestion_service.composition`.
+- **Secrets:** `.env` at repo root for local config — never import secrets into domain; never commit values. Ingestion reads `YOUTUBE_PROXY_URL` via `Settings.from_env`.
 - **Auth split:** JWT issuance is Supabase-only; FastAPI validates tokens and enforces email/role policy.
 - **Notebooks:** Always local filesystem (`LocalNotebookStorage`), not Supabase Storage.
 - **TDD:** No production behavior without a failing automated test first.
@@ -297,7 +344,7 @@ last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
 
 **What happens:** Importing `supabase`, `httpx`, or `requests` in `domain/` or `use_cases/`.
 **Why it's wrong:** Couples business rules to one vendor; breaks unit tests without network/DB.
-**Do this instead:** Define a port in `application/ports/`, implement in `supabase-integration` or `data-collection`, wire in `composition/`.
+**Do this instead:** Define a port in `application/ports/`, implement in `supabase-integration` or `data-collection`, wire in composition.
 
 ### Business rules in React pages or fat FastAPI routers
 
@@ -313,9 +360,15 @@ last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
 
 ### Wiring outside composition root
 
-**What happens:** `create_client(...)` or repository construction scattered in use-cases or routers.
+**What happens:** `create_client(...)` or repository construction scattered in use-cases or routers; or proxy/env reads inside YouTube adapters.
 **Why it's wrong:** Multiple composition points; adapters become undeleteable.
-**Do this instead:** Only construct adapters in `backend/src/backend/composition/`.
+**Do this instead:** Construct adapters in `backend/.../composition/` (HTTP app) or ready clients in `ingestion_service.composition` (CLI); adapters receive injected clients.
+
+### Routing ingestion through FastAPI
+
+**What happens:** CLI or adapters call `backend.interface.http` or browser APIs for ingest writes.
+**Why it's wrong:** Couples operator pipeline to reader/admin HTTP surface; breaks the locked ingest→Supabase boundary.
+**Do this instead:** Keep orchestration in `ingestion-service`; persist via dedicated adapters (planned), not the web API.
 
 ### Treating design-frontend as production app
 
@@ -325,13 +378,14 @@ last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
 
 ## Error Handling
 
-**Strategy:** Domain exceptions for business failures; infrastructure/token errors at the edge; frontend typed errors for UX; adapters map SDK failures into domain/`PersistenceError` at the boundary.
+**Strategy:** Domain exceptions for business failures; infrastructure/token errors at the edge; frontend typed errors for UX; adapters map SDK failures into domain/`PersistenceError` at the boundary; ingestion maps adapter/parse failures into staged `IngestError` for operators.
 
 **Patterns:**
 - Domain: `DomainError` family in `backend/src/backend/domain/errors.py` (material, issue, razbor, notebook, knowledge, voting, shortlist/digest).
 - HTTP: Routers/deps translate domain and `TokenVerificationError` into status codes.
 - Frontend: Service-level error classes (e.g. vote/admin/content failures) surfaced via `ErrorPanel` / `ServiceUnavailable`.
 - DTO validation: Pydantic `ValidationError` at data-collection boundary.
+- Ingestion: `InvalidYouTubeUrl` / `CaptionsError` / `MetadataError` → `map_*_error` → `IngestError.to_dict()` with locked `reason` sets and context allowlists.
 
 ## Cross-Cutting Concerns
 
@@ -341,11 +395,13 @@ last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
 - Domain invariants on entities (e.g. `Material.assert_publishable`).
 - DTOs: Pydantic validators in `data-collection`.
 - SQL: check constraints, enums, RLS in migrations.
+- Ingestion URL: allowlisted hosts/paths + `[A-Za-z0-9_-]{11}` video id.
 
 **Authentication / authorization:**
 - Supabase Auth for identity; FastAPI Bearer JWKS verify.
 - Corporate email allowlist (ADR-0003) in domain helpers + `deps.py` / frontend `emailDomain.js`.
 - Admin: DB `profiles.role=admin` via `require_admin`, not JWT app-role claim alone.
+- Ingestion CLI: operator tool (no FastAPI JWT path in this package).
 
 **CORS / request ID:** `CORSMiddleware` from `Settings.cors_origins`; `RequestIdMiddleware` + `X-Request-ID`.
 
@@ -355,4 +411,4 @@ last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
 
 ---
 
-*Architecture analysis: 2026-09-26*
+*Architecture analysis: 2026-09-27*

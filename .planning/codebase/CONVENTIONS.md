@@ -1,10 +1,10 @@
 ---
-last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
+last_mapped_commit: 252c024622021ec59fe22abdd251c2047849d1da
 ---
-<!-- refreshed: 2026-09-26 -->
+<!-- refreshed: 2026-09-27 -->
 # Coding Conventions
 
-**Analysis Date:** 2026-09-26
+**Analysis Date:** 2026-09-27
 
 ## Naming Patterns
 
@@ -18,6 +18,13 @@ last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
   - Infrastructure: `infrastructure/auth_jwt.py`, `stub_mailer.py`, `local_notebook_storage.py`
 - Supabase adapters: `{entity}_repository.py` with class `Supabase{Port}` — `supabase-integration/.../vote_repository.py`
 - Data-collection DTOs: `dto/{source}.py`, class suffix `Dto` — `YoutubeSourceDto`, `EmbeddingResultDto`
+- Ingestion CLI package (`ingestion-service/src/ingestion_service/`):
+  - Workspace member name `ingestion-service`; importable module `ingestion_service` (`module-root = "src"`)
+  - Package-root helpers: `url.py` — `extract_video_id`, `InvalidYouTubeUrl` (URL parse lives here, not on provider ports)
+  - Domain: `domain/errors.py` — operator `IngestError` + `Stage` Literal
+  - Mappers: `mapping/{url,captions,metadata}.py` — `map_url_error`, `map_captions_error`, `map_metadata_error`
+  - Composition: `composition/settings.py` (`Settings`), `composition/clients.py` (`build_*` factories)
+  - No Typer CLI / HTTP surface yet — composition + mapping only (CLI planned later)
 - React pages: `PascalCase` + `Page` — `web/src/pages/VotingPage.jsx`, `AdminDigestPage.jsx`
 - React components: `PascalCase` — `ActionButton.jsx`, `ErrorPanel.jsx`, `RequireAuth.jsx`
 - Frontend services: camelCase + `Api.js` (or role) — `votingApi.js`, `meApi.js`, `adminApi.js`, `welcomeSession.js`
@@ -29,16 +36,19 @@ last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
 
 **Functions:**
 - Python: snake_case; use-cases are **module-level functions**, not classes — `cast_vote`, `publish_material`, `search_knowledge`
-- Private helpers: leading underscore — `_draft`, `_mint`, `_client`, `_cosine`, `_conflict_detail`
+- Ingestion: module-level `extract_video_id`, `map_*_error`, `Settings.from_env`, `build_youtube_transcript_api`, `build_httpx_client`
+- Private helpers: leading underscore — `_draft`, `_mint`, `_client`, `_cosine`, `_conflict_detail`, `_require_id`, `_forward_context`, `_safe_url_for_diagnostics`
 - React components: default-export `PascalCase` function components — `export default function VotingPage()`
 - Named JS exports: camelCase — `submitVote`, `fetchBallot`, `armFailNextVoteSubmit`, `isMocksEnabled`
 
 **Variables:**
 - Python locals: snake_case; type annotations on public signatures
 - Prefer immutable domain fields: frozen `@dataclass`, `tuple[...]` for collections on entities
+- Ingestion locked reason sets: module-level `CAPTIONS_REASONS` / `METADATA_REASONS` as `frozenset[str]`; context keys via `_CONTEXT_ALLOWLIST`
 - JS: camelCase; interactive button states via `data-state`: `'loading' | 'error' | 'success'` (idle omits attribute)
 - HTTP machine codes: snake_case strings — `voting_unavailable`, `invalid_vote`, `profiles_not_configured`
 - Conflict payloads: UPPER_SNAKE codes — `CYCLE_CLOSED`, `VOTE_CONFLICT`
+- Ingest / captions / metadata reason codes: snake_case — `missing_video_id`, `no_preferred_language`, `metadata_invalid_response` (never SDK exception class names)
 
 **Types:**
 - Domain entities: frozen `@dataclass` — `Material`, `BallotSnapshot`, `KnowledgeHit`, `CurrentUser`
@@ -47,12 +57,13 @@ last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
 - HTTP boundary: Pydantic v2 `BaseModel` with `ConfigDict(extra="forbid")` — `CastVoteRequest`, `BallotSnapshotResponse`
 - External/API payloads: Pydantic DTOs in `data-collection/.../dto/` — suffix `Dto`
 - Domain errors: subclasses of `DomainError` in `backend/src/backend/domain/errors.py`
+- Ingestion operator errors: `@dataclass` `IngestError(Exception)` with `Stage = Literal["url","captions","metadata","consistency","llm","llm_truncation","persist"]` in `ingestion_service/domain/errors.py` (separate from backend `DomainError`)
 - Frontend API errors: `*ApiError` / `*SubmitError` extending `Error` with `code` and `retryable`
 
 ## Code Style
 
 **Formatting:**
-- Python: no Black/Ruff config in repo; follow existing style — `from __future__ import annotations` on nearly all backend/supabase/test modules; blank line after imports; 4-space indent; `X | Y` unions
+- Python: no Black/Ruff config in repo; follow existing style — `from __future__ import annotations` on nearly all backend/supabase/ingestion/test modules; blank line after imports; 4-space indent; `X | Y` unions
 - Frontend (`web/src`): **no semicolons**, single quotes, ESM with **explicit `.js` / `.jsx` extensions** in imports
 - Playwright specs and `playwright.config.js`: CommonJS `require` and **semicolons** / often double quotes — keep that style in E2E files
 - Node unit tests under `tests/unit/*.js`: CommonJS `require('node:test')` / `require('node:assert/strict')`
@@ -70,11 +81,11 @@ last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
 ## Import Organization
 
 **Order (Python):**
-1. Module docstring (often requirement IDs: `VOTE-01`, `D-52`, `ADMIN-01`)
+1. Module docstring (often requirement IDs: `VOTE-01`, `D-52`, `ADMIN-01`, `CAP-01`, `D-11`)
 2. `__future__` annotations (when needed)
-3. stdlib (`datetime`, `uuid`, `pathlib`, …)
-4. third-party (`fastapi`, `pydantic`, `structlog`, `pytest`, `jwt`)
-5. workspace packages (`backend.*`, `data_collection.*`, `supabase_integration.*`)
+3. stdlib (`datetime`, `uuid`, `pathlib`, `os`, `re`, `urllib.parse`, …)
+4. third-party (`fastapi`, `pydantic`, `structlog`, `pytest`, `jwt`, `httpx`, `youtube_transcript_api`)
+5. workspace packages (`backend.*`, `data_collection.*`, `supabase_integration.*`, `ingestion_service.*`)
 6. Absolute imports across packages — avoid deep relative imports between modules
 
 **Order (Frontend):**
@@ -85,14 +96,15 @@ last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
 
 **Path Aliases:**
 - Not detected — relative imports from `web/src/`; Python package names for workspace members
-- Python path for tests: root `pythonpath = ["."]` in `pyproject.toml` so `backend` / `data_collection` resolve under `uv run pytest`
+- Python path for tests: root `pythonpath = ["."]` in `pyproject.toml` so `backend` / `data_collection` / `ingestion_service` resolve under `uv run pytest`
 - No Vite `@/` alias — `web/vite.config.js` is plugins + server only
 
 **Module boundaries (prescriptive):**
 - Domain/use-cases must not import `supabase`, `httpx`, `fastapi`, or React
 - Frontend UI must call APIs only through `web/src/services/` (e.g. `votingApi.js`, `meApi.js`)
 - Wire adapters / `create_client` only in `backend/src/backend/composition/` (`container.py`, `live.py`)
-- Public package surfaces use `__all__` — `supabase_integration/__init__.py`, `data_collection/__init__.py`; backend root `__init__.py` exports a narrow domain surface
+- `ingestion-service` depends on `data-collection` only; maps adapter errors → `IngestError` in `mapping/`; proxy/env only in `composition/` (never in data-collection adapters)
+- Public package surfaces use `__all__` — `supabase_integration/__init__.py`, `data_collection/__init__.py`, `ingestion_service.mapping`, `ingestion_service.composition`; backend root `__init__.py` exports a narrow domain surface
 - HTTP maps domain errors **per-route** (no global `DomainError` exception handler)
 
 ## Error Handling
@@ -105,6 +117,11 @@ last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
 - Admin / digest: `ShortlistNotFoundError`, `InvalidShortlistDecisionError`, `EmptySendPoolError`, `InvalidPreviewCompositionError`, `DraftInSendPoolError`, `InvalidSendOrderError`, `AlreadySentError`
 - Infra boundary: `PersistenceError` (adapters wrap SDK failures)
 
+**Ingestion operator hierarchy** (`ingestion-service/.../domain/errors.py` — not backend `DomainError`):
+- `InvalidYouTubeUrl` — parse failure with `.reason`, `.value`, `.context` (credentials stripped via `_safe_url_for_diagnostics`)
+- `IngestError` — staged diagnostic: `stage`, `reason`, `message`, optional `context`, `exit_code=1`; serialize with `.to_dict()` → `{ ok: false, stage, reason, message, exit_code [, context] }`
+- Mappers (`map_url_error` / `map_captions_error` / `map_metadata_error`) convert parse / `data_collection.errors.*` into `IngestError` with locked snake_case reasons and allowlisted context keys only (redact `proxy_url`, `YOUTUBE_PROXY_URL`, userinfo)
+
 **Patterns:**
 - Raise typed domain exceptions from use-cases/entities — never bare `Exception` for business failures
 - Validation on entities via methods that raise — `Material.assert_publishable()` / `as_ready()`
@@ -113,6 +130,7 @@ last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
 - Auth deps (`interface/http/deps.py`): 401 on JWT failure; 403 `domain_not_allowed` / `forbidden` (admin from DB `profiles.role`, not JWT claim)
 - Frontend: typed error classes — `VoteSubmitError`, `BallotFetchError`, `MeApiError`, `AuthApiError`, `AdminApiError`, `KnowledgeApiError`, `RazboryApiError`, `ContentApiError`
 - UI catches API errors, normalizes unknowns, drives `data-state` and `ErrorPanel` / `role="alert"`
+- Ingestion: data-collection raises typed `CaptionsError` / `MetadataError` subtypes; ingestion-service owns stage vocabulary and operator JSON envelope
 
 **Do this:**
 ```python
@@ -120,6 +138,14 @@ last_mapped_commit: 427615dc0eb6b133900513db4b0f240398db862f
 material = repo.get(material_id)
 if material is None:
     raise MaterialNotFoundError(material_id)
+```
+
+```python
+# ingestion mapper boundary
+from ingestion_service.mapping.captions import map_captions_error
+
+mapped = map_captions_error(captions_error)
+payload = mapped.to_dict()  # operator diagnostic JSON
 ```
 
 ```javascript
@@ -133,19 +159,21 @@ throw new VoteSubmitError(message, { code: 'NETWORK', retryable: true })
 - **structlog** JSON to stdout — configured in `interface/http/middleware.py` via `configure_structlog()` from the app factory
 - **RequestIdMiddleware**: binds `request_id` in contextvars, echoes `X-Request-ID`, logs `request_finished` with method/path/status (**never Authorization**)
 - Sparse stdlib `logging` in a few use-cases/infra helpers (`send_digest`, `stub_mailer`)
+- Ingestion-service: no dedicated logger yet — operator diagnostics via `IngestError.to_dict()` (CLI progress/logging TBD with Typer)
 
 **Patterns:**
 - Prefer domain exceptions + UI error panels for user-facing failures
 - Do not introduce ad-hoc `console.log` / `print` in production paths without an agreed approach
 - Correlation: clients may send `X-Request-ID`; otherwise server generates UUID
+- Never put proxy credentials or URL userinfo into ingest messages/context
 
 ## Comments
 
 **When to Comment:**
-- Module docstrings for intent / requirement IDs — use-cases and routes often cite `VOTE-01`, `D-52`, etc.
+- Module docstrings for intent / requirement IDs — use-cases and routes often cite `VOTE-01`, `D-52`, etc.; ingestion cites `CAP-01`, `D-01…D-05`, `D-10`, `D-11`, `D-13`, `D-16`, `D-17`, `D-23`, `D-25`
 - Unit tests: `"""RED→GREEN: ..."""` or requirement-focused module docstrings; JS headers may include `Run: node --test ...`
-- Composition root docstring — wire adapters into use-cases
-- Non-obvious helpers — markdown split, notebook path rules, score factors
+- Composition root docstring — wire adapters into use-cases / ready clients
+- Non-obvious helpers — markdown split, notebook path rules, score factors, URL credential scrubbing
 - Frontend: JSDoc on public utils/services when harness or types are non-obvious
 
 **JSDoc/TSDoc:**
@@ -157,11 +185,14 @@ throw new VoteSubmitError(message, { code: 'NETWORK', retryable: true })
 **Size:**
 - Keep use-cases focused on one scenario per function file (`cast_vote.py`, `send_digest.py`)
 - Extract pure helpers in the same module when needed
+- Ingestion mappers: one stage per module; thin `map_*_error` + private `_forward_context`
 - React page components may own local state + handlers; push pure logic to `web/src/utils/` or extractable modules under `services/` (e.g. `adminPreviewComposition.js` for Node unit tests)
 
 **Parameters:**
 - Inject ports as early positional parameters; keyword-only for options — `cast_vote(..., *, now: datetime | None = None)`
 - Never construct Supabase/HTTP clients inside use-cases
+- Ingestion: inject ready clients from composition — adapters must not read `os.environ` / `YOUTUBE_PROXY_URL`
+- `Settings.from_env(environ: dict[str, str] | None = None)` — pass a dict in tests; default `os.environ` in production
 - Optional clocks/time: `now=` for testability
 - Callables for side effects: `embed: Callable[[str], list[float]]` rather than embedding SDK inside use-case
 - FastAPI: resolve ports from `request.app.state.container` via thin route helpers
@@ -169,14 +200,17 @@ throw new VoteSubmitError(message, { code: 'NETWORK', retryable: true })
 **Return Values:**
 - Use-cases return domain objects or snapshots (`BallotSnapshot`, `Material`, `list[KnowledgeHit]`, `CurrentUser`)
 - Ports return domain types or `None` for missing
-- Avoid `Any` on ports and module boundaries
+- Ingestion mappers return `IngestError` instances (caller decides raise vs print `to_dict()`)
+- Avoid `Any` on ports and module boundaries (ingest context dicts use `dict[str, Any]` only for the operator envelope)
 
 ## Module Design
 
 **Exports:**
 - Explicit `__all__` on adapter/DTO package public APIs
+- Ingestion: `ingestion_service.mapping.__all__` = mappers; `ingestion_service.composition.__all__` = `Settings` + client builders
 - React: default export for pages/components; named exports for utils/services/errors
 - In-memory fakes live in `backend/src/backend/tests_support/in_memory.py` (structural Protocol duck-typing — no inheritance required)
+- Data-collection fakes: `data_collection.tests_support.fakes` (e.g. `FakeTranscriptProvider`) — used with ingestion mappers in unit tests
 
 **Barrel Files:**
 - Thin package `__init__.py` re-exports only the public surface
@@ -191,7 +225,9 @@ throw new VoteSubmitError(message, { code: 'NETWORK', retryable: true })
 6. New Supabase adapter → `supabase-integration/` + `test_supabase_<port>_contract.py`
 7. New UI feature → page/component under `web/src/`; API calls only via `web/src/services/`
 8. Wiring → only `composition/container.py` (memory) / `composition/live.py` (Supabase)
+9. New ingest pipeline stage → `IngestError` stage already reserved; add `mapping/<stage>.py` mapper + `tests/unit/test_*_error_mapping.py`; keep proxy/env in `ingestion_service.composition` only
+10. YouTube URL parse changes → `ingestion_service/url.py` only (not provider ports)
 
 ---
 
-*Convention analysis: 2026-09-26*
+*Convention analysis: 2026-09-27*
