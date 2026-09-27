@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib
+from pathlib import Path
 
 import pytest
 
@@ -27,6 +28,9 @@ NEGATIVE_ROOT_NAMES = (
     "MetadataError",
     "YouTubeTranscriptAdapter",
     "YouTubeOEmbedAdapter",
+    "DeepSeekArticleGenerator",
+    "ArticleError",
+    "TemplateLoadError",
     "YoutubeSourceDto",
     "TranscriptResultDto",
     "ArticleAssistDto",
@@ -92,3 +96,37 @@ def test_error_bases_importable_from_errors_submodules() -> None:
 
     assert issubclass(CaptionsError, Exception)
     assert issubclass(MetadataError, Exception)
+
+
+def test_stage_set_is_unchanged() -> None:
+    from typing import get_args
+
+    from ingestion_service.domain.errors import Stage
+
+    assert set(get_args(Stage)) == {
+        "url",
+        "captions",
+        "metadata",
+        "consistency",
+        "llm",
+        "llm_truncation",
+        "persist",
+    }
+
+
+def test_ingestion_service_has_no_typer_import() -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+    src_root = repo_root / "ingestion-service" / "src" / "ingestion_service"
+    for path in src_root.rglob("*.py"):
+        body = path.read_text(encoding="utf-8")
+        assert "import typer" not in body, path.name
+        assert "from typer" not in body, path.name
+
+
+def test_data_collection_has_no_supabase_import() -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+    src_root = repo_root / "data-collection" / "src" / "data_collection"
+    for path in src_root.rglob("*.py"):
+        body = path.read_text(encoding="utf-8")
+        assert "import supabase" not in body, path.name
+        assert "from supabase" not in body, path.name

@@ -34,6 +34,14 @@ Step-by-step bring-up for **local Vite + local FastAPI** against the **existing 
    - Never put the full `YOUTUBE_PROXY_URL` (especially credentialed forms) into logs or
      `IngestError.context`.
 
+5. Optional **DeepSeek LLM** vars (Phase 8 article generation — read by `ingestion-service` `Settings`, never by adapters):
+   - `DEEPSEEK_API_KEY` — required only for a live LLM call. Unit tests leave this unset.
+   - `DEEPSEEK_BASE_URL` — default `https://api.deepseek.com`.
+   - `DEEPSEEK_MODEL` — default `deepseek-flash`.
+   - `MAX_TRANSCRIPT_CHARS` — default `80000`; must be a positive integer if set.
+   - Do not paste a real key into this runbook or any committed file. Do not place the key
+     behind a `VITE_` prefix.
+
 Threat note (T-01-13): keep secrets in `.env` only — do not paste keys into markdown, commits, or screenshots.
 
 ---
@@ -277,6 +285,47 @@ select proname from pg_proc where proname = 'claim_and_publish_digest';  -- expe
 Record the apply method in the operator resume signal (or append a one-line note below when confirmed).
 
 **Applied:** 2026-09-21 — operator confirmed applied for `005_phase5_admin_shortlist.sql` on shared VM (method not specified).
+
+---
+
+## 4f. Phase 5 follow-up — ordered send RPC (`006_claim_publish_material_ids.sql`)
+
+Checked-in idempotent SQL: `supabase-integration/migrations/006_claim_publish_material_ids.sql`.
+
+**Why:** Code on `experiment/gsd-framework` passes `p_material_ids` into `claim_and_publish_digest` (CR-01). Until this migration runs, live admin send can fail against the migration-005 function signature (6 args only).
+
+**What it does (safe on shared VM):**
+
+- `DROP FUNCTION` the old 6-argument `claim_and_publish_digest`
+- `CREATE OR REPLACE` with optional `p_material_ids bigint[] default null` — issue item `position` is set inside the same RPC transaction
+- Re-grant `EXECUTE` to **`service_role` only** (revoke from `anon` / `authenticated`)
+
+**Apply once on the shared VM** (`knowledge-db.ru`) **after** `005_phase5_admin_shortlist.sql`:
+
+1. Open Supabase Studio → **SQL Editor** → **New query**  
+   URL (self-hosted): `https://knowledge-db.ru/project/default/sql/new`
+2. Paste the **entire** file [`006_claim_publish_material_ids.sql`](../../supabase-integration/migrations/006_claim_publish_material_ids.sql) and **Run** once. Expect success / no rows returned.
+3. **Supabase MCP (`supabase-self-hosted-mcp`):** `SUPABASE_URL` + `SUPABASE_SERVICE_KEY` (in `.cursor/mcp.json`) are enough for PostgREST tools (`query`, `insert`, `rpc`, …). **`raw_sql` / `transaction` / introspection** need an **additional** `POSTGRES_URL` or `DATABASE_URL` in the same MCP `env` block (direct `pg` pool — see package `loadConfigFromEnv`). Without it, apply 006 via Studio or `psql`, not `raw_sql`.
+4. Optional: add `POSTGRES_URL` to MCP env, restart MCP, then run the file via `raw_sql` or `transaction` (no `db reset`).
+
+**Do not** `TRUNCATE` / wipe batches. Re-running 006 is safe (`CREATE OR REPLACE` + idempotent grants).
+
+**Verify after apply** (Studio SQL):
+
+```sql
+select pg_get_function_identity_arguments(p.oid) as args
+from pg_proc p
+join pg_namespace n on n.oid = p.pronamespace
+where n.nspname = 'public' and p.proname = 'claim_and_publish_digest';
+-- expect args to include p_material_ids bigint[] (7-parameter signature)
+
+select has_function_privilege('service_role', 'public.claim_and_publish_digest(bigint,timestamp with time zone,text,text,text,integer,bigint[])', 'EXECUTE') as service_role_can_execute;
+-- expect true
+```
+
+Record apply method below when confirmed.
+
+**Applied:** _pending — run Studio step 2 above, then set date/method here._
 
 **CI / Playwright honesty gate (ADMIN-01…08, D-77, D-90):** with default `VITE_USE_MOCKS=true`, run:
 
