@@ -33,6 +33,7 @@ Full phase detail: [milestones/v1-ROADMAP.md](milestones/v1-ROADMAP.md)
 ## Phase Details
 
 ### Phase 6: Ports & DTOs
+
 **Goal**: `data-collection` exposes typed ingestion contracts so adapters and the CLI never mix transcript with prepared article
 **Depends on**: Nothing (v1.1 first phase; builds on shipped v1 schema/admin readers)
 **Requirements**: DTO-01, DTO-02
@@ -40,6 +41,7 @@ Full phase detail: [milestones/v1-ROADMAP.md](milestones/v1-ROADMAP.md)
   1. Types `Transcript`, `VideoMetadata`, `MaterialDraft`, and `TemplateKind` exist in `data-collection` and pass unit tests
   2. Ports `TranscriptProvider` and `ArticleGenerator` have in-memory fakes that unit tests can inject without network or DB
   3. A `Transcript` cannot be passed where a `MaterialDraft` is required (type boundary holds in tests)
+
 **Plans**: `06-01-PLAN.md` · `06-02-PLAN.md` · `06-03-PLAN.md`
 
 **Wave 1**
@@ -52,6 +54,7 @@ Full phase detail: [milestones/v1-ROADMAP.md](milestones/v1-ROADMAP.md)
 - [x] `06-03-PLAN.md` — Public `__all__` rewrite + brownfield DTO delete ✓ 2026-09-26
 
 ### Phase 7: Captions Adapter
+
 **Goal**: Operator can resolve a YouTube URL to captions, or get a loud captions-stage failure with no database side effects
 **Depends on**: Phase 6
 **Requirements**: CAP-01, CAP-02
@@ -59,6 +62,7 @@ Full phase detail: [milestones/v1-ROADMAP.md](milestones/v1-ROADMAP.md)
   1. Given a YouTube URL, the captions path resolves `video_id` and returns a `Transcript` preferring `ru` then `en`
   2. Missing, disabled, or blocked captions exit non-zero with `stage=captions`
   3. A captions failure writes zero database rows (no partial materials or shortlist items) — Phase 7 proves at adapter/unit level (D-14); live persist spy in Phase 9/10
+
 **Plans**: `07-01-PLAN.md` · `07-02-PLAN.md` · `07-03-PLAN.md`
 
 **Wave 1**
@@ -77,6 +81,7 @@ Full phase detail: [milestones/v1-ROADMAP.md](milestones/v1-ROADMAP.md)
 - CAP-02 live persist spy deferred to Phase 9/10 (D-14); unit proof only in Phase 7
 
 ### Phase 8: DeepSeek Article & Templates
+
 **Goal**: Operator can turn a transcript into a validated prepared-article draft via lecture or podcast templates, with fail-closed LLM and context-budget behavior
 **Depends on**: Phase 7
 **Requirements**: LLM-01, LLM-02, LLM-03, LLM-04, LLM-05
@@ -85,6 +90,7 @@ Full phase detail: [milestones/v1-ROADMAP.md](milestones/v1-ROADMAP.md)
   2. Operator can choose `--template lecture|podcast` backed by repository markdown templates
   3. Network/5xx/invalid JSON/validation LLM failures exit non-zero with `stage=llm`, zero database rows, and no partial output
   4. System prompt requires honesty (transcript-only facts; output always Russian — `ru` format-only, `en` translated to Russian, terms/names/numbers/units preserved); oversized transcripts fail closed with `stage=llm_truncation` and no silent truncation. Supersedes "output language matches transcript".
+
 **Plans**: `08-01-PLAN.md` · `08-02-PLAN.md` · `08-03-PLAN.md` · `08-04-PLAN.md`
 
 **Wave 1**
@@ -100,6 +106,7 @@ Full phase detail: [milestones/v1-ROADMAP.md](milestones/v1-ROADMAP.md)
 - [x] `08-04-PLAN.md` — English suffix constant, fake LLM failures, and the public API boundary
 
 ### Phase 9: Draft Persist & Shortlist Enqueue
+
 **Goal**: A successful draft write lands as `status=draft` with required provenance and appears on an unsent shortlist batch (creating a new batch when the current one is full)
 **Depends on**: Phase 8
 **Requirements**: PERS-01, PERS-02
@@ -108,10 +115,24 @@ Full phase detail: [milestones/v1-ROADMAP.md](milestones/v1-ROADMAP.md)
   2. The run enqueues `digest_shortlist_items` on the current unsent batch with `decision=pending`
   3. When the current unsent batch already has 5 items, the run creates a new unsent batch and enqueues there (does not fail-if-full)
   4. Persist/enqueue never attaches to a batch with `sent_at` set
+
 **Deferred from Phase 7 (CAP-02 / D-14):** captions failure test — fake failing `TranscriptProvider` + spy `PersistPort` → `persist.calls == []` (Phase 7 proved CAP-02 at unit/adapter level; live zero-row assertion belongs to Phase 9/10).
-**Plans**: TBD
+**Plans**: `09-01-PLAN.md` · `09-02-PLAN.md` · `09-03-PLAN.md` · `09-04-PLAN.md`
+
+**Wave 1**
+- [ ] `09-01-PLAN.md` — Tracer: RoleKind promotion — `roles: list[RoleKind]` on ArticleDraft/MaterialDraft, audience-role instructions in lecture/podcast templates, assembler copy, DeepSeek adapter normalization
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [ ] `09-02-PLAN.md` — PersistPort + persist_draft use-case with generate_slug/estimate_reading_minutes, DraftPersistError mapping, FakeDraftPersister
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [ ] `09-03-PLAN.md` — Migration 007 (provenance columns + unique youtube_video_id + atomic persist_draft_and_enqueue RPC) and SupabaseDraftPersister
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [ ] `09-04-PLAN.md` — Composition (Settings, Supabase client/persister factories, .env.example) plus idempotency/overflow/batch_sent and CAP-02 zero-persist tests
 
 ### Phase 10: CLI Composition & UAT
+
 **Goal**: Operator runs one Typer command end-to-end with staged progress, idempotent re-runs, separate env, and 3–5 real videos visible as drafts in `/admin/digest`
 **Depends on**: Phase 9
 **Requirements**: CLI-01, CLI-02, CLI-03, CLI-04, CLI-05
@@ -120,6 +141,7 @@ Full phase detail: [milestones/v1-ROADMAP.md](milestones/v1-ROADMAP.md)
   2. Re-running the same `video_id` does not create duplicate materials or shortlist rows
   3. CLI prints staged progress (`✓ transcript` / `✓ LLM` / `✓ saved`) and loads secrets from `ingestion-service/.env` (not the backend env file)
   4. UAT: 3–5 real captioned videos appear as drafts in `/admin/digest` with no backend/SPA code changes required, including at least one English source video (draft in Russian)
+
 **Plans**: TBD
 
 ## Progress
