@@ -245,3 +245,70 @@ def test_blank_max_transcript_chars_yields_default() -> None:
 
     settings = Settings.from_env({"MAX_TRANSCRIPT_CHARS": "   "})
     assert settings.max_transcript_chars == 80000
+
+
+def test_settings_from_env_unset_supabase_fields_and_default_batch_size() -> None:
+    from ingestion_service.composition.settings import Settings
+
+    settings = Settings.from_env({})
+    assert settings.supabase_url is None
+    assert settings.supabase_secret_key is None
+    assert settings.shortlist_batch_size == 5
+
+
+def test_settings_from_env_reads_supabase_url_verbatim() -> None:
+    from ingestion_service.composition.settings import Settings
+
+    url = "https://example.supabase.co"
+    settings = Settings.from_env({"SUPABASE_URL": url})
+    assert settings.supabase_url == url
+
+
+def test_settings_from_env_loads_supabase_secret_key_when_set() -> None:
+    from ingestion_service.composition.settings import Settings
+
+    env = {"SUPABASE_SECRET_KEY": "placeholder-service-role"}
+    settings = Settings.from_env(env)
+    assert settings.supabase_secret_key is not None
+    assert settings.supabase_secret_key == env["SUPABASE_SECRET_KEY"]
+
+
+def test_settings_from_env_shortlist_batch_size_three() -> None:
+    from ingestion_service.composition.settings import Settings
+
+    settings = Settings.from_env({"SHORTLIST_BATCH_SIZE": "3"})
+    assert settings.shortlist_batch_size == 3
+
+
+@pytest.mark.parametrize("raw", ["0", "-1", "abc", "5.5"])
+def test_invalid_shortlist_batch_size_raises_configuration_error(raw: str) -> None:
+    from ingestion_service.composition.config_error import ConfigurationError
+    from ingestion_service.composition.settings import Settings
+    from ingestion_service.domain.errors import IngestError
+
+    with pytest.raises(ConfigurationError) as exc_info:
+        Settings.from_env({"SHORTLIST_BATCH_SIZE": raw})
+    assert not isinstance(exc_info.value, IngestError)
+
+
+def test_shortlist_batch_size_trailing_space_yields_five() -> None:
+    from ingestion_service.composition.settings import Settings
+
+    settings = Settings.from_env({"SHORTLIST_BATCH_SIZE": "5 "})
+    assert settings.shortlist_batch_size == 5
+
+
+def test_settings_source_does_not_log_or_print_secret_key() -> None:
+    settings_src = (
+        REPO_ROOT
+        / "ingestion-service"
+        / "src"
+        / "ingestion_service"
+        / "composition"
+        / "settings.py"
+    )
+    body = settings_src.read_text(encoding="utf-8")
+    lowered = body.lower()
+    assert "print(" not in lowered
+    assert "logging" not in lowered
+    assert "logger" not in lowered
