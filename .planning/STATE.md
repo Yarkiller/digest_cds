@@ -5,10 +5,10 @@ milestone_name: YouTube → LLM → Supabase ingestion
 current_phase: 09
 current_phase_name: Draft Persist & Shortlist Enqueue
 status: executing
-stopped_at: Completed 09-02-PLAN.md
-last_updated: "2026-09-27T15:27:43.917Z"
+stopped_at: 09-03 one-way schema gate — user replied proceed (D-05, D-06, D-09)
+last_updated: "2026-09-27T15:40:00.000Z"
 last_activity: 2026-09-27
-last_activity_desc: Phase 09 execution started
+last_activity_desc: Phase 09 plan 03 executing after schema-gate proceed
 state_head: dfdc0ca1ae050ff9f0131e29b09937e2ce355c84
 progress:
   total_phases: 5
@@ -31,8 +31,8 @@ See: .planning/PROJECT.md (updated 2026-09-27)
 
 Phase: 09 (Draft Persist & Shortlist Enqueue) — EXECUTING
 Plan: 3 of 4
-Status: Ready to execute
-Last activity: 2026-09-27 — Completed 09-02 PersistPort + persist_draft
+Status: Executing 09-03 (migration 007 + adapter); VM push not started
+Last activity: 2026-09-27 — 09-03 checkpoint: user selected proceed
 
 Progress: [█████████░] 86% (3 of 5 v1.1 phases complete)
 
@@ -136,10 +136,11 @@ Phase 8 execution (08-01…08-04):
 - Verification passed (73 Phase 8 unit tests green); one unrelated pre-existing `test_http_admin.py` failure noted
 - [Phase 09]: RoleKind is a first-class list on ArticleDraft and MaterialDraft; unknown/empty falls back to employee.
 - [Phase 09]: PersistPort + persist_draft lock slug format `{slugify(title)[:50]}-{video_id}`, locked PERSIST_REASONS, and D-11 no Python video_id pre-check. FakeDraftPersister stores first PersistResult per video_id.
+- [Phase 09 / 09-03]: User replied **proceed** on the one-way schema gate. Accepted as one-way: **D-05** (single persist+enqueue RPC), **D-06** (migration 007 is the canonical record), **D-09** (unique constraint on `materials.youtube_video_id`). Undo requires a follow-up migration. Task 1 recorded before any `007_phase9_persist_draft.sql` authoring.
 
 ### Pending Todos
 
-None. Next: `/gsd-execute-phase 9` (plan 09-03 migration + adapter)
+09-03 tasks 2–3 (migration 007 + SupabaseDraftPersister). Stop before task 4 — do not apply 007 to the shared VM until the migrate checkpoint.
 
 ### Blockers/Concerns
 
@@ -154,7 +155,7 @@ leaderboard, quiz, PIPE-01 YAML UI, live SMTP, signup mail, Whisper/Foundry ASR,
 
 ## Session Continuity
 
-Last session: 2026-09-27T15:27:43.429Z
-Stopped at: Completed 09-02-PLAN.md
+Last session: 2026-09-27T15:40:00.000Z
+Stopped at: 09-03 one-way schema gate recorded (proceed; D-05, D-06, D-09)
 Resume file: None
-Next: `/gsd-execute-phase 9` (09-03)
+Next: author migration 007 + SupabaseDraftPersister; halt at checkpoint:migrate
