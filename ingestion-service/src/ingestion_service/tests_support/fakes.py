@@ -6,7 +6,10 @@ from dataclasses import dataclass, field
 from datetime import datetime
 
 from data_collection.dto.material_draft import MaterialDraft
-from ingestion_service.adapters.persist_errors import DraftPersistError
+from ingestion_service.adapters.persist_errors import (
+    DraftPersistBatchError,
+    DraftPersistError,
+)
 from ingestion_service.application.ports.persist import PersistResult
 
 
@@ -79,6 +82,12 @@ class BatchTrackingFakePersister:
         self.calls.append(material_draft)
         existing = self.stored.get(material_draft.youtube_video_id)
         if existing is not None:
+            batch = self.batches.get(existing.batch_id)
+            if batch is not None and batch.sent_at is not None:
+                raise DraftPersistBatchError(
+                    "batch_creation_failed",
+                    video_id=material_draft.youtube_video_id,
+                )
             return existing
         batch = self._target_unsent_batch()
         rank = len(batch.items) + 1

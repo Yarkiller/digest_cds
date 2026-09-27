@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
+import pytest
+
 from data_collection.dto.material_draft import MaterialDraft
 
 
@@ -90,3 +92,23 @@ def test_batch_sent_skips_latest_sent_batch() -> None:
     assert fake.batches[3].sent_at == sent_at
     assert result.rank == 1
     assert fake.batches[result.batch_id].sent_at is None
+
+
+def test_rerun_when_only_sent_batch_exists_raises_batch_creation_failed() -> None:
+    """WR-02: post-publish re-run must not return the sent batch."""
+    from ingestion_service.adapters.persist_errors import DraftPersistBatchError
+    from ingestion_service.application.ports.persist import PersistResult
+    from ingestion_service.application.use_cases.persist_draft import persist_draft
+
+    fake = _batch_fake(batch_size=5)
+    sent_at = datetime(2026, 9, 20, 12, 0, tzinfo=timezone.utc)
+    fake.seed_batch(batch_id=3, sent_at=sent_at)
+    fake.seed_item(3, decision="pending", video_id="published-vid")
+    fake.stored["published-vid"] = PersistResult(
+        material_id=9, slug="published-vid", batch_id=3, rank=1
+    )
+
+    with pytest.raises(DraftPersistBatchError) as exc:
+        persist_draft(_draft("published-vid"), fake)
+    assert exc.value.reason == "batch_creation_failed"
+    assert exc.value.video_id == "published-vid"

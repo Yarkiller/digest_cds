@@ -83,6 +83,22 @@ def test_migration_007_skips_sent_batches_and_is_idempotent_on_video_id() -> Non
     assert "already exists" not in executable
 
 
+def test_migration_007_conflict_path_does_not_fall_back_to_sent_batch() -> None:
+    """WR-02: existing material returns only an unsent shortlist row, else P0001."""
+    executable = _normalized_executable_sql()
+    assert executable.count("select si.batch_id, si.rank") == 1
+    assert "and b.sent_at is null" in executable
+    assert "has no shortlist row" in executable
+
+
+def test_migration_007_locks_unsent_batch_and_unique_rank() -> None:
+    """WR-05: lock the chosen batch before count; ranks unique per batch."""
+    executable = _normalized_executable_sql()
+    assert "for update" in executable
+    assert "unique (batch_id, rank)" in executable
+    assert "digest_shortlist_items_batch_id_rank_key" in executable
+
+
 def test_migration_007_grants_execute_only_to_service_role() -> None:
     text = _sql()
     lower = text.lower()

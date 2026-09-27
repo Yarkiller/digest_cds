@@ -52,6 +52,20 @@ begin
 end
 $$;
 
+-- WR-05: ranks must be unique within a batch (idempotent on re-apply).
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'digest_shortlist_items_batch_id_rank_key'
+  ) then
+    alter table public.digest_shortlist_items
+      add constraint digest_shortlist_items_batch_id_rank_key unique (batch_id, rank);
+  end if;
+end
+$$;
+
 -- ─── Atomic persist + enqueue (security invoker; service_role only) ──────────
 create or replace function public.persist_draft_and_enqueue(
   p_title text,
@@ -109,6 +123,8 @@ begin
     p_reading_minutes,
     p_provenance_label,
     null,
+    -- IN-01 / decision A: RoleKind is closed in Python (normalize_roles).
+    -- The RPC dumps already-normalized roles; no CHECK here.
     coalesce(p_roles, '{}'::text[]),
     p_source_url,
     p_youtube_video_id,
@@ -141,16 +157,6 @@ begin
     limit 1;
 
     if v_batch_id is null then
-      select si.batch_id, si.rank
-      into v_batch_id, v_rank
-      from public.digest_shortlist_items si
-      join public.digest_shortlist_batches b on b.id = si.batch_id
-      where si.material_id = v_material_id
-      order by b.week_start desc, b.created_at desc
-      limit 1;
-    end if;
-
-    if v_batch_id is null then
       raise exception 'persist_draft_and_enqueue: existing material % has no shortlist row', v_material_id
         using errcode = 'P0001';
     end if;
@@ -170,7 +176,8 @@ begin
   from public.digest_shortlist_batches b
   where b.sent_at is null
   order by b.week_start desc, b.created_at desc
-  limit 1;
+  limit 1
+  for update;
 
   if v_batch_id is not null then
     select count(*)
