@@ -436,6 +436,26 @@ def test_empty_content_raises_article_invalid_json() -> None:
         asyncio.run(generator.process(_make_transcript("ru"), TemplateKind.LECTURE))
 
 
+def test_empty_choices_raises_article_invalid_json() -> None:
+    from data_collection.errors.article import ArticleInvalidJson
+
+    @dataclass
+    class _Response:
+        choices: list[Any]
+
+    class _Completions:
+        async def create(self, **kwargs: Any) -> Any:
+            return _Response(choices=[])
+
+    class _Client:
+        def __init__(self) -> None:
+            self.chat = type("_Chat", (), {"completions": _Completions()})()
+
+    generator = _make_generator(_Client())
+    with pytest.raises(ArticleInvalidJson):
+        asyncio.run(generator.process(_make_transcript("ru"), TemplateKind.LECTURE))
+
+
 def test_json_array_raises_article_invalid_json() -> None:
     from data_collection.errors.article import ArticleInvalidJson
 

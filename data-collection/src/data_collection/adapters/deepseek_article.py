@@ -145,7 +145,7 @@ class DeepSeekArticleGenerator:
                 exception_class=_exception_class(exc),
             ) from exc
 
-        content = response.choices[0].message.content
+        content = response.choices[0].message.content if response.choices else None
         if not isinstance(content, str) or content == "":
             raise ArticleInvalidJson(transcript.video_id)
 
