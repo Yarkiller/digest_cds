@@ -20,7 +20,9 @@ PUBLIC_NAMES = frozenset(
 )
 
 NEGATIVE_ROOT_NAMES = (
+    "RoleKind",
     "ArticleDraft",
+    "normalize_roles",
     "FakeTranscriptProvider",
     "FakeArticleGenerator",
     "FakeVideoMetadataProvider",
