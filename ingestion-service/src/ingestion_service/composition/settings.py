@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from ingestion_service.composition.config_error import ConfigurationError
 
@@ -52,11 +52,11 @@ def _optional_stripped(env: dict[str, str], key: str) -> str | None:
 class Settings:
     youtube_proxy_url: str | None = None
     max_transcript_chars: int = _DEFAULT_MAX_TRANSCRIPT_CHARS
-    deepseek_api_key: str | None = None
+    deepseek_api_key: str | None = field(default=None, repr=False)
     deepseek_base_url: str = "https://api.deepseek.com"
     deepseek_model: str = "deepseek-flash"
     supabase_url: str | None = None
-    supabase_secret_key: str | None = None
+    supabase_secret_key: str | None = field(default=None, repr=False)
     shortlist_batch_size: int = _DEFAULT_SHORTLIST_BATCH_SIZE
 
     @classmethod

@@ -312,3 +312,21 @@ def test_settings_source_does_not_log_or_print_secret_key() -> None:
     assert "print(" not in lowered
     assert "logging" not in lowered
     assert "logger" not in lowered
+
+
+def test_settings_repr_and_str_omit_secret_fields() -> None:
+    from ingestion_service.composition.settings import Settings
+
+    secret = "s3cr3t-k3y-t-09-13"
+    llm_key = "sk-deepseek-t-09-13"
+    settings = Settings.from_env(
+        {
+            "SUPABASE_SECRET_KEY": secret,
+            "DEEPSEEK_API_KEY": llm_key,
+        }
+    )
+    rendered = f"{settings!r} {settings!s}"
+    assert secret not in rendered
+    assert llm_key not in rendered
+    assert settings.supabase_secret_key == secret
+    assert settings.deepseek_api_key == llm_key
