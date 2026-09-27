@@ -5,17 +5,17 @@ milestone_name: YouTube → LLM → Supabase ingestion
 current_phase: 09
 current_phase_name: Draft Persist & Shortlist Enqueue
 status: executing
-stopped_at: Phase 9 planning
-last_updated: "2026-09-27T14:32:50.360Z"
+stopped_at: Completed 09-01-PLAN.md
+last_updated: "2026-09-27T15:16:38.276Z"
 last_activity: 2026-09-27
-last_activity_desc: Phase 8 verified — UAT passed, security review secured, transitioned to Phase 9
-state_head: 5c54491620fd9754dec56aea0457058254fde01b
+last_activity_desc: Phase 09 execution started
+state_head: b571baed3b08bacb1567bc17b097b4831f192c2c
 progress:
   total_phases: 5
-  completed_phases: 3
+  completed_phases: 8
   total_plans: 14
-  completed_plans: 0
-  percent: 71
+  completed_plans: 11
+  percent: 79
 ---
 
 # Project State
@@ -25,16 +25,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-09-27)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Phase 9 — Draft Persist & Shortlist Enqueue (ready to plan)
+**Current focus:** Phase 09 — Draft Persist & Shortlist Enqueue
 
 ## Current Position
 
-Phase: 09 (Draft Persist & Shortlist Enqueue) — READY TO EXECUTE
-Plan: Not started
+Phase: 09 (Draft Persist & Shortlist Enqueue) — EXECUTING
+Plan: 2 of 4
 Status: Ready to execute
-Last activity: 2026-09-27 — Phase 8 verified — UAT passed, security review secured, transitioned to Phase 9
+Last activity: 2026-09-27 — Completed 09-01 RoleKind tracer
 
-Progress: [███████░░░] 71% (3 of 5 v1.1 phases complete)
+Progress: [████████░░] 79% (3 of 5 v1.1 phases complete)
 
 ## Performance Metrics
 
@@ -69,6 +69,13 @@ Progress: [███████░░░] 71% (3 of 5 v1.1 phases complete)
 | 08 | 02 | 15min | 2 | 6 |
 | 08 | 03 | 12min | 2 | 8 |
 | 08 | 04 | 10min | 2 | 6 |
+| 09 | 01 | 5min | 2 | 14 |
+
+**Per-Plan Metrics:**
+
+| Plan | Duration | Tasks | Files |
+|------|----------|-------|-------|
+| Phase 09 P01 | 5 min | 2 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -125,10 +132,11 @@ Phase 8 execution (08-01…08-04):
 - `ENGLISH_TRANSLATION_SUFFIX` locked in `ingestion_service.provenance`
 - Public `data_collection.__all__` remains seven names; runbook documents DeepSeek env names without a live key
 - Verification passed (73 Phase 8 unit tests green); one unrelated pre-existing `test_http_admin.py` failure noted
+- [Phase 09]: RoleKind is a first-class list on ArticleDraft and MaterialDraft; unknown/empty falls back to employee. — Locks the audience-role dimension before persist so the port receives a complete MaterialDraft. admin is excluded from ingestion drafts.
 
 ### Pending Todos
 
-None. Next: `/gsd-execute-phase 8` (optional: `/gsd-code-review 7 --fix` for review findings)
+None. Next: `/gsd-execute-phase 9` (plan 09-02 PersistPort)
 
 ### Blockers/Concerns
 
@@ -143,9 +151,9 @@ leaderboard, quiz, PIPE-01 YAML UI, live SMTP, signup mail, Whisper/Foundry ASR,
 
 ## Session Continuity
 
-Last session: 2026-09-27T12:45:00.000Z
-Stopped at: Phase 9 context gathered
-Resume file: `.planning/phases/09-draft-persist-shortlist-enqueue/09-CONTEXT.md`
-Next: `/gsd-plan-phase 9`
+Last session: 2026-09-27T15:16:37.669Z
+Stopped at: Completed 09-01-PLAN.md
+Resume file: None
+Next: `/gsd-execute-phase 9` (09-02)
 
 Note: `gsd-tools query state.record-session` failed with EPERM on renaming `.planning/STATE.md.tmp.*`; STATE.md updated manually as a fallback.
