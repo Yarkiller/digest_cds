@@ -7,7 +7,7 @@
 
 | Capability | Decision | Reason |
 |---|---|---|
-| Service-role client connection (`supabase.create_client` with `SUPABASE_SECRET_KEY`) | INTEGRATE | Required for RLS-bypass writes to `materials`, `digest_shortlist_batches`, and `digest_shortlist_items` from the ingestion CLI. |
+| Service-role `create_client` (SUPABASE_SECRET_KEY) | INTEGRATE | Required for RLS-bypass writes to `materials`, `digest_shortlist_batches`, and `digest_shortlist_items` from the ingestion CLI. |
 | Postgres RPC `persist_draft_and_enqueue(...)` | INTEGRATE | Atomic persist + enqueue boundary (D-05, D-06); replaces multiple SDK calls that would risk orphan rows. |
 | Schema migration / `supabase db push` for `007_phase9_persist_draft.sql` | INTEGRATE | Adds provenance columns, unique constraint on `youtube_video_id`, and the RPC to the shared VM. |
 | RLS-bypass service_role writes | INTEGRATE | RPC grants execute to `service_role` only; adapter uses a service-role client. |

@@ -125,6 +125,8 @@ v1 is done only when **all** of the following hold:
 | RoleKind is first-class on ArticleDraft/MaterialDraft; unknown/empty → employee | Audience roles travel with the draft; templates instruct the model; assembler copies the list | ✓ Phase 9 |
 | Single persist+enqueue RPC; migration 007 canonical; unique `youtube_video_id` (D-05, D-06, D-09) | Atomic draft + shortlist write; overflow creates a new unsent batch; never attach to `sent_at` set | ✓ Phase 9 |
 | Composition owns service-role wiring; idempotency lives in the RPC (D-11) | Blank url/key raises ConfigurationError before `create_client`; no Python video_id pre-check | ✓ Phase 9 |
+| RoleKind closed only in Python (D-14a / decision A); no RPC CHECK on `p_roles` | Ingest CLI is the only v1 writer; a direct service_role call can persist unknown roles | ✓ Phase 9 |
+| Latest unsent batch locked `FOR UPDATE`; unique `(batch_id, rank)` (WR-05) | Concurrent persist cannot assign the same rank; sent-batch conflict fallback removed (WR-02) | ✓ Phase 9 |
 
 <decisions>
 ## Locked decisions (from ADRs / ingest)
@@ -165,4 +167,4 @@ After each phase transition: move validated/invalidated requirements; log decisi
 After milestone: full review of Core Value, Out of Scope, and Context against shipped reality.
 
 ---
-*Last updated: 2026-09-27 after Phase 9*
+*Last updated: 2026-09-27 after Phase 9 UAT*

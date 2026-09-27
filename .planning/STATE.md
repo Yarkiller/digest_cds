@@ -5,10 +5,10 @@ milestone_name: YouTube → LLM → Supabase ingestion
 current_phase: 10
 current_phase_name: CLI Composition & UAT
 status: planning
-stopped_at: Phase 09 complete, ready to plan Phase 10
-last_updated: "2026-09-27T16:40:51.105Z"
+stopped_at: Phase 09 UAT complete (18/18), ready to plan Phase 10
+last_updated: "2026-09-27T18:40:00Z"
 last_activity: 2026-09-27
-last_activity_desc: Phase 09 complete, transitioned to Phase 10
+last_activity_desc: Phase 09 UAT 18/18 + VERIFICATION refreshed; ready to plan Phase 10
 state_head: 4877502d67f285ddb5331de6944a1dbc6151df2f
 progress:
   total_phases: 5
@@ -32,7 +32,7 @@ See: .planning/PROJECT.md (updated 2026-09-27)
 Phase: 10 — CLI Composition & UAT
 Plan: Not started
 Status: Ready to plan
-Last activity: 2026-09-27 — Phase 09 complete, transitioned to Phase 10
+Last activity: 2026-09-27 — Phase 09 UAT complete, VERIFICATION refreshed, ready to plan Phase 10
 
 Progress: [█████████░] 90% (4 of 5 v1.1 phases complete) — [████████████████████] 14/14 planned plans (100%)
 
@@ -154,7 +154,7 @@ None. Next: `/gsd-discuss-phase 10`
 Signup confirmation mail (`g-01-3b-signup-mailer`) remains open from v1 (not this milestone).
 gsd-tools ROADMAP atomic rename hit EPERM (file lock); ROADMAP already marked Phase 7 Complete — STATE advanced manually.
 Phase 8 `state.planned-phase` rename also hit EPERM; STATE advanced manually to ready to execute.
-Phase 9 advisory review still open (WR-01…05, IN-01…03): live RPC conflict/overflow vs fake, SQL comment-vs-DDL tests, Settings repr secrets. Fix before Phase 10 CLI UAT (`/gsd-code-review 9 --fix`). No `09-SECURITY.md` yet.
+Phase 9 review ledger closed except IN-03 (deferred, low) and leftover advisory: conflict path still returns caller `p_slug` rather than stored slug (CLI-01-adjacent). `09-SECURITY.md` verified, `threats_open: 0`. Human UAT 18/18 including live VM re-apply of migration 007.
 
 ## Deferred Items
 
@@ -163,7 +163,7 @@ leaderboard, quiz, PIPE-01 YAML UI, live SMTP, signup mail, Whisper/Foundry ASR,
 
 ## Session Continuity
 
-Last session: 2026-09-27T16:11:00.705Z
-Stopped at: Phase 09 complete, ready to plan Phase 10
+Last session: 2026-09-27T18:40:00Z
+Stopped at: Phase 09 UAT complete, ready to plan Phase 10
 Resume file: None
 Next: `/gsd-discuss-phase 10`
