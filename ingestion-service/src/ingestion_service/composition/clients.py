@@ -4,12 +4,14 @@ from __future__ import annotations
 
 import httpx
 from openai import AsyncOpenAI, DefaultAsyncHttpxClient
+from supabase import Client, create_client
 from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api.proxies import GenericProxyConfig
 
 from data_collection.adapters.deepseek_article import DeepSeekArticleGenerator
 from data_collection.templates import load_article_templates
 
+from ingestion_service.adapters.supabase_persist import SupabaseDraftPersister
 from ingestion_service.composition.config_error import ConfigurationError
 from ingestion_service.composition.settings import Settings
 
@@ -70,3 +72,16 @@ def build_deepseek_article_generator(
         templates=templates,
         max_transcript_chars=settings.max_transcript_chars,
     )
+
+
+def build_supabase_service_client(settings: Settings) -> Client:
+    url = settings.supabase_url
+    key = settings.supabase_secret_key
+    if not url or not url.strip() or not key or not key.strip():
+        raise ConfigurationError("SUPABASE_URL and SUPABASE_SECRET_KEY are required")
+    return create_client(url, key)
+
+
+def build_supabase_draft_persister(settings: Settings) -> SupabaseDraftPersister:
+    client = build_supabase_service_client(settings)
+    return SupabaseDraftPersister(client, batch_size=settings.shortlist_batch_size)
