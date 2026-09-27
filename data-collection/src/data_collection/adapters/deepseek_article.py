@@ -1,13 +1,33 @@
-"""DeepSeek ArticleGenerator adapter via the official OpenAI SDK (D-11, D-12)."""
+"""DeepSeek ArticleGenerator adapter via the official OpenAI SDK (D-11, D-12, D-13)."""
 
 from __future__ import annotations
 
 import json
 from typing import Any
 
+from openai import (
+    APIConnectionError,
+    APIStatusError,
+    APITimeoutError,
+    AuthenticationError,
+    InternalServerError,
+    PermissionDeniedError,
+    RateLimitError,
+)
+from pydantic import ValidationError
+
 from data_collection.dto.article_draft import ArticleDraft
 from data_collection.dto.template_kind import TemplateKind
 from data_collection.dto.transcript import Transcript
+from data_collection.errors.article import (
+    ArticleAuthError,
+    ArticleContextLengthError,
+    ArticleInvalidDraft,
+    ArticleInvalidJson,
+    ArticleNetworkError,
+    ArticleProviderError,
+    ArticleUnknownError,
+)
 
 
 ARTICLE_SYSTEM_PROMPT = (
@@ -40,6 +60,18 @@ def build_article_messages(
     ]
 
 
+def _exception_class(exc: BaseException) -> str:
+    return type(exc).__name__
+
+
+def _is_context_length_error(exc: APIStatusError) -> bool:
+    if getattr(exc, "status_code", None) != 400:
+        return False
+    code = str(getattr(exc, "code", "") or "").lower()
+    type_token = str(getattr(exc, "type", "") or "").lower()
+    return "context_length" in code or "context_length" in type_token
+
+
 class DeepSeekArticleGenerator:
     """ArticleGenerator implementation over an injected async OpenAI client."""
 
@@ -59,14 +91,69 @@ class DeepSeekArticleGenerator:
         self, transcript: Transcript, template: TemplateKind
     ) -> ArticleDraft:
         messages = build_article_messages(transcript, template, self._templates)
-        response = await self._client.chat.completions.create(
-            model=self._model,
-            messages=messages,
-            response_format={"type": "json_object"},
-            extra_body={"thinking": {"type": "disabled"}},
-        )
+        try:
+            response = await self._client.chat.completions.create(
+                model=self._model,
+                messages=messages,
+                response_format={"type": "json_object"},
+                extra_body={"thinking": {"type": "disabled"}},
+            )
+        except APITimeoutError as exc:
+            raise ArticleNetworkError(
+                transcript.video_id,
+                exception_class=_exception_class(exc),
+            ) from exc
+        except APIConnectionError as exc:
+            raise ArticleNetworkError(
+                transcript.video_id,
+                exception_class=_exception_class(exc),
+            ) from exc
+        except (RateLimitError, InternalServerError) as exc:
+            raise ArticleProviderError(
+                transcript.video_id,
+                exception_class=_exception_class(exc),
+                status_code=getattr(exc, "status_code", None),
+            ) from exc
+        except (AuthenticationError, PermissionDeniedError) as exc:
+            raise ArticleAuthError(
+                transcript.video_id,
+                exception_class=_exception_class(exc),
+                status_code=getattr(exc, "status_code", None),
+            ) from exc
+        except APIStatusError as exc:
+            if _is_context_length_error(exc):
+                raise ArticleContextLengthError(
+                    transcript.video_id,
+                    exception_class=_exception_class(exc),
+                    status_code=getattr(exc, "status_code", None),
+                ) from exc
+            raise ArticleUnknownError(
+                transcript.video_id,
+                exception_class=_exception_class(exc),
+                status_code=getattr(exc, "status_code", None),
+            ) from exc
+        except Exception as exc:
+            raise ArticleUnknownError(
+                transcript.video_id,
+                exception_class=_exception_class(exc),
+            ) from exc
+
         content = response.choices[0].message.content
-        payload = json.loads(content)
+        if not isinstance(content, str) or content == "":
+            raise ArticleInvalidJson(transcript.video_id)
+
+        try:
+            payload = json.loads(content)
+        except (json.JSONDecodeError, ValueError, TypeError) as exc:
+            raise ArticleInvalidJson(transcript.video_id) from exc
+
         if not isinstance(payload, dict):
-            raise ValueError("response JSON is not an object")
-        return ArticleDraft.model_validate(payload)
+            raise ArticleInvalidJson(transcript.video_id)
+
+        try:
+            return ArticleDraft.model_validate(payload)
+        except ValidationError as exc:
+            raise ArticleInvalidDraft(
+                transcript.video_id,
+                exception_class=_exception_class(exc),
+            ) from exc
