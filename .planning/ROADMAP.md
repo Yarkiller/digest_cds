@@ -85,7 +85,19 @@ Full phase detail: [milestones/v1-ROADMAP.md](milestones/v1-ROADMAP.md)
   2. Operator can choose `--template lecture|podcast` backed by repository markdown templates
   3. Network/5xx/invalid JSON/validation LLM failures exit non-zero with `stage=llm`, zero database rows, and no partial output
   4. System prompt requires honesty (transcript-only facts; output always Russian — `ru` format-only, `en` translated to Russian, terms/names/numbers/units preserved); oversized transcripts fail closed with `stage=llm_truncation` and no silent truncation. Supersedes "output language matches transcript".
-**Plans**: TBD
+**Plans**: `08-01-PLAN.md` · `08-02-PLAN.md` · `08-03-PLAN.md` · `08-04-PLAN.md`
+
+**Wave 1**
+- [ ] `08-01-PLAN.md` — Tracer: stubbed DeepSeek JSON becomes an ArticleDraft for lecture and podcast
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [ ] `08-02-PLAN.md` — Fail closed: SDK, JSON, and validation errors map to stage=llm
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [ ] `08-03-PLAN.md` — Over-cap transcripts fail closed with stage=llm_truncation
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [ ] `08-04-PLAN.md` — English suffix constant, fake LLM failures, and the public API boundary
 
 ### Phase 9: Draft Persist & Shortlist Enqueue
 **Goal**: A successful draft write lands as `status=draft` with required provenance and appears on an unsent shortlist batch (creating a new batch when the current one is full)
@@ -121,6 +133,6 @@ Full phase detail: [milestones/v1-ROADMAP.md](milestones/v1-ROADMAP.md)
 | 5. Admin Digest Publish | v1 | 9/9 | Complete | 2026-09-22 |
 | 6. Ports & DTOs | v1.1 | 3/3 | Complete | 2026-09-26 |
 | 7. Captions Adapter | v1.1 | 3/3 | Complete | 2026-09-26 |
-| 8. DeepSeek Article & Templates | v1.1 | 0/? | Not started | - |
+| 8. DeepSeek Article & Templates | v1.1 | 0/4 | Planned | - |
 | 9. Draft Persist & Shortlist Enqueue | v1.1 | 0/? | Not started | - |
 | 10. CLI Composition & UAT | v1.1 | 0/? | Not started | - |

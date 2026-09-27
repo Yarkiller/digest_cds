@@ -4,16 +4,16 @@ milestone: v1.1
 milestone_name: YouTube → LLM → Supabase ingestion
 current_phase: 8
 current_phase_name: DeepSeek Article & Templates
-status: ready_to_plan
-stopped_at: Phase 8 context gathered
-last_updated: "2026-09-27T07:29:29.691Z"
-last_activity: 2026-09-26
-last_activity_desc: Phase 7 Captions Adapter executed and verified (3/3 plans; CAP-01/CAP-02)
+status: ready_to_execute
+stopped_at: Phase 8 planning complete
+last_updated: "2026-09-27T08:16:00.000Z"
+last_activity: 2026-09-27
+last_activity_desc: Phase 8 planning complete — 4 plans ready
 state_head: a5d5e34
 progress:
   total_phases: 5
   completed_phases: 2
-  total_plans: 0
+  total_plans: 4
   completed_plans: 0
   percent: 0
 ---
@@ -25,14 +25,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-09-24)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Phase 8 — DeepSeek Article & Templates (ready to plan)
+**Current focus:** Phase 8 — DeepSeek Article & Templates (ready to execute)
 
 ## Current Position
 
-Phase: 8 of 10 (DeepSeek Article & Templates) — v1.1 phases 6–10
+Phase: 8 (DeepSeek Article & Templates) — READY TO EXECUTE
 Plan: Not started
-Status: Ready to plan — `/gsd-plan-phase 8`
-Last activity: 2026-09-26 — Phase 7 Captions Adapter complete (verified 12/12)
+Status: Ready to execute
+Last activity: 2026-09-27 — Phase 8 planning complete — 4 plans ready
 
 Progress: [░░░░░░░░░░] 0% (phase plans)
 
@@ -111,12 +111,13 @@ Phase 7 execution (07-01…07-03):
 
 ### Pending Todos
 
-None. Next: `/gsd-plan-phase 8` (optional: `/gsd-code-review 7 --fix` for review findings)
+None. Next: `/gsd-execute-phase 8` (optional: `/gsd-code-review 7 --fix` for review findings)
 
 ### Blockers/Concerns
 
 Signup confirmation mail (`g-01-3b-signup-mailer`) remains open from v1 (not this milestone).
 gsd-tools ROADMAP atomic rename hit EPERM (file lock); ROADMAP already marked Phase 7 Complete — STATE advanced manually.
+Phase 8 `state.planned-phase` rename also hit EPERM; STATE advanced manually to ready to execute.
 
 ## Deferred Items
 
@@ -126,6 +127,6 @@ leaderboard, quiz, PIPE-01 YAML UI, live SMTP, signup mail, Whisper/Foundry ASR,
 ## Session Continuity
 
 Last session: 2026-09-27T07:29:29.691Z
-Stopped at: Phase 8 context gathered
-Resume file: .planning/phases/08-deepseek-article-templates/08-CONTEXT.md
-Next: `/gsd-plan-phase 8`
+Stopped at: Phase 8 planning complete
+Resume file: .planning/phases/08-deepseek-article-templates/08-01-PLAN.md
+Next: `/gsd-execute-phase 8`
