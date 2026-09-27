@@ -613,6 +613,7 @@ dependencies = [
     { name = "data-collection" },
     { name = "openai" },
     { name = "python-slugify" },
+    { name = "supabase" },
 ]
 
 [package.metadata]
@@ -620,6 +621,7 @@ requires-dist = [
     { name = "data-collection", editable = "data-collection" },
     { name = "openai", specifier = ">=3.0,<4" },
     { name = "python-slugify", specifier = ">=8.0,<9" },
+    { name = "supabase", specifier = ">=2.0,<3" },
 ]
 
 [[package]]
