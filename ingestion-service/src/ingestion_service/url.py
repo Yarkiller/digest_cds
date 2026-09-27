@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, urlparse, urlunparse
 
 _ID_RE = re.compile(r"^[A-Za-z0-9_-]{11}$")
 _ALLOWED_HOSTS = frozenset(
@@ -17,14 +17,34 @@ _ALLOWED_HOSTS = frozenset(
 )
 
 
+def _safe_url_for_diagnostics(value: str) -> str:
+    """Strip userinfo credentials from URL-like diagnostic values."""
+    parsed = urlparse(value)
+    if not parsed.scheme or not parsed.netloc:
+        return value
+    if parsed.username is None and parsed.password is None:
+        return value
+    host = parsed.hostname or ""
+    port = f":{parsed.port}" if parsed.port is not None else ""
+    netloc = f"{host}{port}"
+    return urlunparse(
+        (parsed.scheme, netloc, parsed.path, parsed.params, parsed.query, parsed.fragment)
+    )
+
+
 class InvalidYouTubeUrl(Exception):
     """Raised when the input is not an allowlisted YouTube URL or bare id."""
 
     def __init__(self, reason: str, value: str, **context: object) -> None:
-        super().__init__(f"{reason}: {value!r}")
+        safe_value = _safe_url_for_diagnostics(value)
+        super().__init__(f"{reason}: {safe_value!r}")
         self.reason = reason
-        self.value = value
-        self.context = {"value": value, **context}
+        self.value = safe_value
+        safe_context = {
+            key: _safe_url_for_diagnostics(val) if isinstance(val, str) else val
+            for key, val in context.items()
+        }
+        self.context = {"value": safe_value, **safe_context}
 
 
 def extract_video_id(value: str) -> str:

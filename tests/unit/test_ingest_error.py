@@ -78,3 +78,40 @@ def test_map_url_error_uses_exception_reason_and_stage_url() -> None:
     assert mapped.reason == err.reason
     assert mapped.reason  # production-owned; not captions stage
     assert mapped.exit_code == 1
+
+
+def test_map_url_error_redacts_userinfo_credentials() -> None:
+    from ingestion_service.mapping.url import map_url_error
+    from ingestion_service.url import InvalidYouTubeUrl, extract_video_id
+
+    credentialed = "https://user:secret@evil.com/watch?v=dQw4w9WgXcQ"
+    with pytest.raises(InvalidYouTubeUrl) as exc_info:
+        extract_video_id(credentialed)
+
+    mapped = map_url_error(exc_info.value)
+    payload = mapped.to_dict()
+
+    assert "secret" not in mapped.message
+    assert "user:secret" not in mapped.message
+    assert "secret" not in str(mapped.context)
+    assert "secret" not in payload["message"]
+    assert "secret" not in str(payload.get("context", {}))
+    assert "secret" not in str(exc_info.value)
+
+
+def test_map_url_error_redacts_userinfo_on_invalid_youtube_id() -> None:
+    from ingestion_service.mapping.url import map_url_error
+    from ingestion_service.url import InvalidYouTubeUrl, extract_video_id
+
+    credentialed = "https://user:passwd@www.youtube.com/watch?v=SHORT"
+    with pytest.raises(InvalidYouTubeUrl) as exc_info:
+        extract_video_id(credentialed)
+
+    mapped = map_url_error(exc_info.value)
+    payload = mapped.to_dict()
+
+    assert "passwd" not in mapped.message
+    assert "passwd" not in str(mapped.context)
+    assert "passwd" not in payload["message"]
+    assert "passwd" not in str(payload.get("context", {}))
+    assert "passwd" not in str(exc_info.value)
