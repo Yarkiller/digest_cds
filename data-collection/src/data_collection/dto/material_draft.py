@@ -5,6 +5,7 @@ from datetime import datetime
 from pydantic import BaseModel, Field, field_validator
 
 from data_collection.dto._validators import strip_non_blank
+from data_collection.dto.role_kind import RoleKind, normalize_roles
 
 
 class MaterialDraft(BaseModel):
@@ -16,6 +17,7 @@ class MaterialDraft(BaseModel):
     source_author: str = Field(min_length=1)
     provenance_label: str = Field(min_length=1)
     source_published_at: datetime | None = None
+    roles: list[RoleKind] = ["employee"]
 
     @field_validator(
         "title",
@@ -36,3 +38,8 @@ class MaterialDraft(BaseModel):
         if value is not None and value.tzinfo is None:
             raise ValueError("source_published_at must be timezone-aware")
         return value
+
+    @field_validator("roles", mode="before")
+    @classmethod
+    def _normalize_roles(cls, value: object) -> list[RoleKind]:
+        return normalize_roles(value)

@@ -10,3 +10,7 @@ Do not invent facts, names, or numbers that are not in the transcript.
 ## Вывод
 
 State the key takeaway for a СВА reader.
+
+## Аудитория
+
+Кто целевая аудитория материала? Верни JSON array ролей из: employee, analyst, ds.

@@ -17,6 +17,7 @@ from openai import (
 from pydantic import ValidationError
 
 from data_collection.dto.article_draft import ArticleDraft
+from data_collection.dto.role_kind import normalize_roles
 from data_collection.dto.template_kind import TemplateKind
 from data_collection.dto.transcript import Transcript
 from data_collection.errors.article import (
@@ -38,7 +39,7 @@ ARTICLE_SYSTEM_PROMPT = (
     "If the transcript language is ru: format only; do not translate.\n"
     "If the transcript language is en: translate into Russian.\n"
     "Preserve technical terms, proper names, library names, numbers, and units as written.\n"
-    "Return one json object with keys title, dek, body_markdown."
+    "Return one json object with keys title, dek, body_markdown, roles."
 )
 
 
@@ -158,9 +159,11 @@ class DeepSeekArticleGenerator:
             raise ArticleInvalidJson(transcript.video_id)
 
         try:
-            return ArticleDraft.model_validate(payload)
+            draft = ArticleDraft.model_validate(payload)
         except ValidationError as exc:
             raise ArticleInvalidDraft(
                 transcript.video_id,
                 exception_class=_exception_class(exc),
             ) from exc
+        draft.roles = normalize_roles(draft.roles)
+        return draft
