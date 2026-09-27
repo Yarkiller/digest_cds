@@ -1,6 +1,6 @@
 ---
 phase: 09-draft-persist-shortlist-enqueue
-verified: 2026-09-27T16:10:00Z
+verified: 2026-09-27T16:39:30Z
 status: passed
 score: 5/5 must-haves verified
 covered_files:
@@ -43,6 +43,7 @@ covered_files:
   - ingestion-service/src/ingestion_service/tests_support/__init__.py
   - ingestion-service/src/ingestion_service/tests_support/fakes.py
   - supabase-integration/migrations/007_phase9_persist_draft.sql
+  - tests/unit/test_article_draft_internal.py
   - tests/unit/test_article_draft_roles.py
   - tests/unit/test_assemble_material_draft.py
   - tests/unit/test_captions_failure_zero_persist.py
@@ -59,7 +60,7 @@ covered_files:
   - tests/unit/test_persist_port.py
   - tests/unit/test_phase9_migration_007.py
   - tests/unit/test_supabase_draft_persister_contract.py
-covered_digest: "v2:sha256:b38528bd84bc19686483ba6c37fb170b631731dbaf023ef542fe51ed625fe182"
+covered_digest: "v2:sha256:46cb669e8e72cda3d95507e6f5c1bce0ed5aed109e7b1e44b964a52b651fd3d4"
 behavior_unverified: 0
 overrides_applied: 0
 decision_coverage:
@@ -67,17 +68,24 @@ decision_coverage:
   total: 19
   not_honored: []
 advisory_review:
-  source: null
-  status: not_run
+  source: .planning/phases/09-draft-persist-shortlist-enqueue/09-REVIEW.md
+  status: issues_found
   critical: 0
-  warning: 0
-  info: 0
-  note: "Code review capability not invoked during inline execution."
-coincidental_reliance_items:
-  - truth: "Migration 007 adds materials.youtube_video_id as text not null unique"
-    reason: fixture-only
-    harden: "SQL contract test matches the comment 'youtube_video_id text not null unique'; production DDL is add-nullable, SET NOT NULL, then UNIQUE constraint materials_youtube_video_id_key. Assert those statements (or live pg_constraint) instead of the comment."
-human_verification: []
+  warning: 5
+  info: 3
+  note: "WR-03 and IN-02 are closed in live code by the Nyquist + Settings secret-repr commits that stale-d this report. WR-01/WR-02/WR-04/WR-05 remain advisory (no failing named test; not prior gaps)."
+re_verification:
+  previous_status: passed
+  previous_score: 5/5
+  previous_verified: 2026-09-27T16:10:00Z
+  stale_reason: "Covered source changed after last verifier run (Nyquist validation tests + Settings secret-repr fix) — #4682"
+  gaps_closed: []
+  gaps_remaining: []
+  regressions: []
+  hardened_since_prior:
+    - "D-09 unique/NOT NULL asserted on comment-stripped DDL (closes review WR-03)"
+    - "Settings secret fields omitted from repr/str (closes review IN-02)"
+    - "Adapter contract now asserts provenance params and never forwards status/ready"
 deferred:
   - truth: "Live CLI persist of real captioned videos appears as drafts in /admin/digest"
     addressed_in: "Phase 10"
@@ -85,16 +93,37 @@ deferred:
   - truth: "Typer one-shot prints material_id, slug, batch_id, and rank"
     addressed_in: "Phase 10"
     evidence: "Phase 10 goal / CLI-01"
+  - truth: "Idempotent CLI re-run does not create duplicate materials/shortlist rows (operator UX)"
+    addressed_in: "Phase 10"
+    evidence: "CLI-02 (RPC ON CONFLICT semantics already locked here)"
+advisory:
+  - finding: "Conflict path returns caller p_slug, not the stored materials.slug (review WR-01)"
+    category: other
+    reason: "Idempotent re-run with a changed LLM title can print a slug that was never written. Not a ROADMAP SC. No named test is red."
+    evidence_status: "none provided"
+  - finding: "Conflict path can return a sent batch_id if no unsent shortlist row remains (review WR-02)"
+    category: other
+    reason: "New-write path still skips sent_at IS NOT NULL. Post-publish re-run fallback is untested and is CLI-02-adjacent. Migration 007 was not modified since the prior verify timestamp."
+    evidence_status: "none provided"
+  - finding: "CAP-02 spy is never passed into an orchestrator (review WR-04)"
+    category: other
+    reason: "Contracted Phase 7/9 boundary simulation; Phase 10 owns the composer. Assertion cannot fail today."
+    evidence_status: "none provided"
+  - finding: "Unlocked overflow can race past p_batch_size / duplicate rank (review WR-05)"
+    category: architectural
+    reason: "No FOR UPDATE; no unique (batch_id, rank). Phase 10 is single-writer. No failing test."
+    evidence_status: "none provided"
+human_verification: []
 next_action: "Phase 9 goal achieved. Proceed to Phase 10 (CLI Composition & UAT)."
 next_command: "/gsd-plan-phase 10"
 ---
 
 # Phase 9: Draft Persist & Shortlist Enqueue Verification Report
 
-**Phase Goal:** A successful draft write lands as `status=draft` with required provenance and appears on an unsent shortlist batch (creating a new batch when the current one is full)  
-**Verified:** 2026-09-27T16:10:00Z  
-**Status:** passed  
-**Re-verification:** No — initial verification
+**Phase Goal:** A successful draft write lands as `status=draft` with required provenance and appears on an unsent shortlist batch (creating a new batch when the current one is full)
+**Verified:** 2026-09-27T16:39:30Z
+**Status:** passed
+**Re-verification:** Yes — stale fingerprint refresh after Nyquist validation tests + Settings secret-repr fix (prior report `passed` 5/5 at 2026-09-27T16:10:00Z; no `gaps:` to close)
 
 ## Goal Achievement
 
@@ -102,11 +131,11 @@ next_command: "/gsd-plan-phase 10"
 
 | # | Truth | Status | Evidence |
 | --- | ------- | ---------- | -------------- |
-| 1 | Successful persist inserts `materials` with `status=draft` only (never `ready`) and required provenance fields `source_url`, `youtube_video_id`, `source_author`, `source_published_at`, `provenance_label` (PERS-01 / ROADMAP SC1) | ✓ VERIFIED | RPC INSERT hard-codes `'draft'` / `'статья'`; `MaterialDraft` requires the five provenance fields; adapter forwards them as `p_*` params; live VM rows expose those columns (Phase 5 seed backfilled to `https://example.invalid/phase5-admin-draft`) |
+| 1 | Successful persist inserts `materials` with `status=draft` only (never `ready`) and required provenance fields `source_url`, `youtube_video_id`, `source_author`, `source_published_at`, `provenance_label` (PERS-01 / ROADMAP SC1) | ✓ VERIFIED | RPC INSERT hard-codes `'draft'` / `'статья'`; `MaterialDraft` requires the five provenance fields; adapter forwards them as `p_*` and omits `status`/`ready` (`test_persist_never_forwards_status_or_ready_to_rpc`); live PostgREST rows expose those columns; Phase 5 seed matches 007 backfill (`https://example.invalid/phase5-admin-draft` / `phase5-seed`) |
 | 2 | The run enqueues `digest_shortlist_items` on the current unsent batch with `decision=pending` (PERS-02 / ROADMAP SC2) | ✓ VERIFIED | RPC inserts `decision='pending'` and `rank = max(rank)+1` on the latest `sent_at IS NULL` batch; `test_persist_idempotency_overflow.py` + SQL contract |
-| 3 | When the current unsent batch already has 5 items, the run creates a new unsent batch and enqueues there (ROADMAP SC3) | ✓ VERIFIED | RPC: `v_item_count >= p_batch_size` → new `digest_shortlist_batches`; Settings default `shortlist_batch_size=5`; `test_overflow_creates_new_unsent_batch_at_capacity` ranks 1–5 then new batch rank 1 |
-| 4 | Persist/enqueue never attaches to a batch with `sent_at` set (ROADMAP SC4) | ✓ VERIFIED | Batch select is `where b.sent_at is null`; `test_batch_sent_skips_latest_sent_batch`; SQL contract asserts the predicate |
-| 5 | CAP-02 deferred proof: captions (or article) failure leaves `persist.calls == []` (Phase 7 D-14 / 09-04) | ✓ VERIFIED | `test_captions_failure_zero_persist.py` — failing `FakeTranscriptProvider` / `FakeArticleGenerator` never reaches `FakeDraftPersister` |
+| 3 | When the current unsent batch already has 5 items, the run creates a new unsent batch and enqueues there (ROADMAP SC3) | ✓ VERIFIED | RPC: `v_item_count >= p_batch_size` → new `digest_shortlist_batches`; Settings default `shortlist_batch_size=5`; named test `test_overflow_creates_new_unsent_batch_at_capacity` ranks 1–5 then new batch rank 1 |
+| 4 | Persist/enqueue never attaches to a batch with `sent_at` set (ROADMAP SC4) | ✓ VERIFIED | New-material batch select is `where b.sent_at is null`; named test `test_batch_sent_skips_latest_sent_batch`; SQL contract asserts the predicate. Conflict-path sent-batch fallback is advisory (WR-02), not a new-write attach |
+| 5 | CAP-02 deferred proof: captions (or article) failure leaves `persist.calls == []` (Phase 7 D-14 / 09-04) | ✓ VERIFIED | Named test `test_captions_failure_leaves_persist_calls_empty` plus `test_article_failure_leaves_persist_calls_empty` — failing `FakeTranscriptProvider` / `FakeArticleGenerator` never reaches `FakeDraftPersister`. Spy is a contracted boundary simulation (see Advisory WR-04) |
 
 **Score:** 5/5 roadmap + CAP-02 must-haves verified (supporting PLAN truths below all VERIFIED)
 
@@ -114,18 +143,18 @@ next_command: "/gsd-plan-phase 10"
 
 | Area | Truth | Status | Evidence |
 | ---- | ----- | ------ | -------- |
-| 09-01 roles | `ArticleDraft` / `MaterialDraft` `roles: list[RoleKind]`; unknown filtered; empty/`{}` → `["employee"]`; assembler copies `article.roles` | ✓ VERIFIED | `role_kind.normalize_roles`; `test_article_draft_roles.py`; `test_material_draft_roles.py`; `test_assemble_material_draft_copies_article_roles` |
-| 09-01 templates | `lecture.md` and `podcast.md` name `employee`, `analyst`, `ds` and ask for a JSON array | ✓ VERIFIED | `## Аудитория` section; template test |
+| 09-01 roles | `ArticleDraft` / `MaterialDraft` `roles: list[RoleKind]`; unknown filtered; empty/`{}` → `["employee"]`; assembler copies `article.roles` | ✓ VERIFIED | `role_kind.normalize_roles`; `test_article_draft_roles.py`; `test_material_draft_roles.py`; `assemble.py` `roles=article.roles` |
+| 09-01 templates | `lecture.md` and `podcast.md` name `employee`, `analyst`, `ds` and ask for a JSON array | ✓ VERIFIED | `## Аудитория` section in both templates |
 | 09-01 adapter | DeepSeek `process()` validates then `normalize_roles`; `["ds","employee"]` round-trips | ✓ VERIFIED | `deepseek_article.py` after `model_validate`; adapter role tests |
 | 09-01 public API | `data_collection.__all__` is exactly the seven existing names; `RoleKind` / `ArticleDraft` off root | ✓ VERIFIED | `__init__.py`; `NEGATIVE_ROOT_NAMES` |
 | 09-02 port | `PersistPort.persist(MaterialDraft) -> PersistResult` with frozen `material_id/slug/batch_id/rank` | ✓ VERIFIED | `application/ports/persist.py`; `test_persist_port.py` |
-| 09-02 completion | `generate_slug` = `{slugify(title)[:50]}-{video_id}`; `reading_minutes = max(1, ceil(words/200))`; `persist_draft` overwrites both and always calls the port (no video_id pre-check) | ✓ VERIFIED | `material_completion.py`; `persist_draft.py`; completion + use-case tests |
+| 09-02 completion | `generate_slug` = `{slugify(title)[:50]}-{video_id}`; `reading_minutes = max(1, ceil(words/200))`; `persist_draft` overwrites both and always calls the port (no video_id pre-check) | ✓ VERIFIED | `material_completion.py`; `persist_draft.py`; `test_persist_draft_has_no_video_id_precheck_or_environ` |
 | 09-02 fake | `FakeDraftPersister` records `calls`, stores one result per `youtube_video_id`, supports scripted failures | ✓ VERIFIED | `tests_support/fakes.py`; port + use-case tests |
 | 09-02 mapper | `PERSIST_REASONS` exact five; `stage=persist`, `exit_code=1`; context ⊆ `{video_id,slug,batch_id,reason}`; no secret / raw Postgres / traceback | ✓ VERIFIED | `mapping/persist.py`; planted-secret tests |
-| 09-03 migration | 007 is idempotent; provenance columns; unique `youtube_video_id`; atomic `persist_draft_and_enqueue`; `security invoker`; revoke public/anon/authenticated; grant `service_role` | ✓ VERIFIED | Migration file + `test_phase9_migration_007.py`; live column/backfill fingerprint |
+| 09-03 migration | 007 is idempotent; provenance columns; unique `youtube_video_id`; atomic `persist_draft_and_enqueue`; `security invoker`; revoke public/anon/authenticated; grant `service_role` | ✓ VERIFIED | Migration file + `test_phase9_migration_007.py` (comment-stripped D-09 DDL); live column/backfill fingerprint |
 | 09-03 adapter | `SupabaseDraftPersister` is the only non-composition `supabase` import; single `client.rpc(...).execute()`; SDK errors map to `DraftPersistError` subtypes without leaking secrets | ✓ VERIFIED | Grep: only `supabase_persist.py` + `composition/clients.py`; contract tests |
-| 09-03 live apply | Migration 007 applied to the shared VM (RPC, columns, unique index, grants) | ✓ VERIFIED | PostgREST read: provenance columns present; Phase 5 row matches 007 backfill (`phase5-admin-draft` / `phase5-seed`); operator Studio confirmation. MCP `describe_table` / `list_functions` / `raw_sql` need `POSTGRES_URL` (unavailable); opaque `rpc` errors do not distinguish missing vs raising functions |
-| 09-04 settings | `Settings.from_env({})` keeps supabase fields `None` and `shortlist_batch_size=5`; invalid `SHORTLIST_BATCH_SIZE` raises `ConfigurationError` | ✓ VERIFIED | `test_ingestion_settings.py` |
+| 09-03 live apply | Migration 007 applied to the shared VM (RPC, columns, unique index, grants) | ✓ VERIFIED | PostgREST read: provenance columns present; Phase 5 row matches 007 backfill. MCP `describe_table` / `list_functions` / `list_indexes` need `POSTGRES_URL` (unavailable) |
+| 09-04 settings | `Settings.from_env({})` keeps supabase fields `None` and `shortlist_batch_size=5`; invalid `SHORTLIST_BATCH_SIZE` raises `ConfigurationError`; secret fields omitted from `repr`/`str` | ✓ VERIFIED | `test_ingestion_settings.py` including `test_settings_repr_and_str_omit_secret_fields`; `repr=False` on `supabase_secret_key` and `deepseek_api_key` |
 | 09-04 factories | Blank url/key raises before `create_client`; factories exported; `.env.example` documents empty secrets + `SHORTLIST_BATCH_SIZE=5` | ✓ VERIFIED | `test_ingestion_clients.py`; `.env.example` |
 | 09-04 idempotency | Two `persist_draft` calls with the same `youtube_video_id` return identical ids; one stored row; `persist()` may run twice; no content refresh (`ON CONFLICT DO NOTHING`) | ✓ VERIFIED | Fake + RPC conflict path; overflow suite |
 
@@ -136,6 +165,17 @@ next_command: "/gsd-plan-phase 10"
 | 1 | Live CLI persist of real videos (operator one-shot against the live RPC) | Phase 10 | ROADMAP Phase 10 SC / CLI-01…CLI-03 |
 | 2 | Typer prints `material_id`, `slug`, `batch_id`, `rank` + staged progress + separate `.env` | Phase 10 | CLI-01, CLI-04, CLI-05 |
 | 3 | Idempotent CLI re-run does not create duplicate materials/shortlist rows (operator UX) | Phase 10 | CLI-02 (RPC semantics already locked here) |
+
+### Advisory (New Scope, Unevidenced)
+
+New-scope findings from Step 7 / the post-verify code review with no deterministic red test — reported, not blocking. WR-03 and IN-02 from that review are **closed in live code** by the commits that stale-d this report.
+
+| # | Finding | Category | Why Advisory |
+|---|---------|----------|--------------|
+| 1 | Conflict path returns caller `p_slug` (WR-01) | other | new-scope, no deterministic evidence; CLI-01-adjacent |
+| 2 | Conflict path can return a sent `batch_id` (WR-02) | other | new-scope; 007 SQL unchanged since prior verify; new-write path still skips `sent_at` |
+| 3 | CAP-02 spy never composed with persist (WR-04) | other | contracted Phase 9 spy; composer is Phase 10 |
+| 4 | Unlocked overflow race (WR-05) | architectural | single-writer until Phase 10; no failing test |
 
 ### Required Artifacts
 
@@ -156,9 +196,11 @@ next_command: "/gsd-plan-phase 10"
 | `ingestion-service/.../tests_support/fakes.py` | `FakeDraftPersister` + `BatchTrackingFakePersister` | ✓ VERIFIED | Overflow + sent-batch skip |
 | `supabase-integration/migrations/007_phase9_persist_draft.sql` | columns + unique + RPC | ✓ VERIFIED | Exists, substantive, applied (live backfill) |
 | `ingestion-service/.../adapters/supabase_persist.py` | `SupabaseDraftPersister` | ✓ VERIFIED | Single named RPC |
-| `ingestion-service/.../composition/settings.py` | supabase + batch size | ✓ VERIFIED | Positive-int validation |
+| `ingestion-service/.../composition/settings.py` | supabase + batch size + secret-safe repr | ✓ VERIFIED | `repr=False` on secret fields; positive-int validation |
 | `ingestion-service/.../composition/clients.py` | service client + persister factories | ✓ VERIFIED | Blank credentials fail closed |
 | `ingestion-service/.env.example` | empty URL/key + batch size 5 | ✓ VERIFIED | No `s3cr3t` / JWT-looking value |
+
+`gsd-tools verify artifacts` on 09-01…09-04: all `valid`.
 
 ### Key Link Verification
 
@@ -172,6 +214,8 @@ next_command: "/gsd-plan-phase 10"
 | Postgres/SDK exception | `IngestError(stage=persist)` | subtype then mapper | ✓ WIRED | Mocked-client contract tests |
 | `Settings.from_env` | `SupabaseDraftPersister` | `build_supabase_service_client` → `build_supabase_draft_persister` | ✓ WIRED | Composition owns wiring |
 | `CaptionsError` | `PersistPort` | CAP-02 spy test | ✓ WIRED | Failure path never calls persist |
+
+`gsd-tools verify key-links` reports `invalid` because PLAN `from:` values are symbols, not file paths (`Source file not found`). Manual code trace above is the wiring evidence.
 
 ### Data-Flow Trace (Level 4)
 
@@ -191,15 +235,14 @@ No hollow stubs on the persist happy path. The adapter is a thin RPC caller; bat
 
 | Behavior | Command | Result | Status |
 | -------- | ------- | ------ | ------ |
-| Phase 9 targeted unit suite (16 files) | `uv run pytest tests/unit/test_article_draft_roles.py tests/unit/test_material_draft_roles.py tests/unit/test_assemble_material_draft.py tests/unit/test_deepseek_article_adapter.py tests/unit/test_fake_article_generator.py tests/unit/test_data_collection_public_api.py tests/unit/test_persist_port.py tests/unit/test_persist_error_mapping.py tests/unit/test_material_completion.py tests/unit/test_persist_draft_use_case.py tests/unit/test_phase9_migration_007.py tests/unit/test_supabase_draft_persister_contract.py tests/unit/test_ingestion_settings.py tests/unit/test_ingestion_clients.py tests/unit/test_persist_idempotency_overflow.py tests/unit/test_captions_failure_zero_persist.py -q` | **156 passed** | ✓ PASS |
-| Named overflow test | `test_overflow_creates_new_unsent_batch_at_capacity` (included above) | ranks 1–5 then new batch rank 1 | ✓ PASS |
+| Phase 9 targeted unit suite (16 files) | `uv run pytest tests/unit/test_article_draft_roles.py tests/unit/test_material_draft_roles.py tests/unit/test_assemble_material_draft.py tests/unit/test_deepseek_article_adapter.py tests/unit/test_fake_article_generator.py tests/unit/test_data_collection_public_api.py tests/unit/test_persist_port.py tests/unit/test_persist_error_mapping.py tests/unit/test_material_completion.py tests/unit/test_persist_draft_use_case.py tests/unit/test_phase9_migration_007.py tests/unit/test_supabase_draft_persister_contract.py tests/unit/test_ingestion_settings.py tests/unit/test_ingestion_clients.py tests/unit/test_persist_idempotency_overflow.py tests/unit/test_captions_failure_zero_persist.py -q` | **160 passed** (was 156 at prior verify) | ✓ PASS |
+| Named overflow test | `test_overflow_creates_new_unsent_batch_at_capacity` | ranks 1–5 then new batch rank 1 | ✓ PASS |
 | Named sent-batch skip | `test_batch_sent_skips_latest_sent_batch` | enqueue lands on unsent batch | ✓ PASS |
 | Named CAP-02 spy | `test_captions_failure_leaves_persist_calls_empty` | `spy.calls == []` | ✓ PASS |
+| Named D-09 DDL (Nyquist) | `test_migration_007_youtube_video_id_unique_is_ddl_not_comment` | ALTER/CONSTRAINT required; comment alone fails | ✓ PASS |
+| Named secret-repr | `test_settings_repr_and_str_omit_secret_fields` | `s3cr3t-k3y-t-09-13` absent from `repr`/`str` | ✓ PASS |
+| Named no-status forward | `test_persist_never_forwards_status_or_ready_to_rpc` | no `status`/`ready` in RPC params | ✓ PASS |
 | Live provenance columns | Supabase MCP `query` `materials` select provenance + status | Columns present; seed backfill matches 007 | ✓ PASS |
-| Full unit suite | `uv run pytest` | **576 passed, 1 failed** | ⚠️ ADVISORY |
-| Pre-existing failure | `tests/unit/test_http_admin.py::test_admin_shortlist_empty_batch_returns_200_empty_items` | Extra `sent_at` / `week_label` keys | ⚠️ UNRELATED |
-
-The single failing test is the backend admin shortlist empty-batch contract (pre-existing since Phase 8 verification). It is not on the ingestion persist path.
 
 ### Probe Execution
 
@@ -211,7 +254,7 @@ The single failing test is the backend admin shortlist empty-batch contract (pre
 
 | Requirement | Source Plan | Description | Status | Evidence |
 | ----------- | ---------- | ----------- | ------ | -------- |
-| PERS-01 | 09-01, 09-02, 09-03, 09-04 | Successful run inserts `materials` with `status=draft` only and provenance fields | ✓ SATISFIED | RPC hard-codes draft; DTO + adapter + live columns |
+| PERS-01 | 09-01, 09-02, 09-03, 09-04 | Successful run inserts `materials` with `status=draft` only and provenance fields | ✓ SATISFIED | RPC hard-codes draft; DTO + adapter + live columns; Nyquist no-status-forward test |
 | PERS-02 | 09-01, 09-02, 09-03, 09-04 | Enqueue on current unsent batch (`decision=pending`); overflow creates a new unsent batch | ✓ SATISFIED | RPC + `BatchTrackingFakePersister` overflow/sent tests |
 | CAP-02 | 09-04 (deferred from Phase 7) | Captions failure writes zero DB rows | ✓ SATISFIED | Spy proof `persist.calls == []` (orchestrator is Phase 10) |
 
@@ -220,6 +263,8 @@ The single failing test is the backend admin shortlist empty-batch contract (pre
 PLAN frontmatter `requirements:` on 09-01 through 09-04 is `{PERS-01, PERS-02}` in every plan. Cross-check against REQUIREMENTS.md: every ID accounted for.
 
 ### Decision Coverage (09-CONTEXT.md)
+
+`gsd-tools check decision-coverage-verify`: **19/19 honored.**
 
 | Decision | Status | Evidence |
 | -------- | ------ | -------- |
@@ -231,7 +276,7 @@ PLAN frontmatter `requirements:` on 09-01 through 09-04 is `{PERS-01, PERS-02}` 
 | D-06 Migration 007 is canonical | ✓ Honored | Tracked SQL file; applied on VM |
 | D-07 Slug/minutes in Python | ✓ Honored | `persist_draft` enriches before port |
 | D-08 Latest unsent batch; full → new | ✓ Honored | RPC `week_start desc, created_at desc` + overflow |
-| D-09 Unique `youtube_video_id` | ✓ Honored | `materials_youtube_video_id_key` |
+| D-09 Unique `youtube_video_id` | ✓ Honored | `materials_youtube_video_id_key` + comment-stripped DDL test |
 | D-10 Re-run no-op (no refresh, no second shortlist row) | ✓ Honored | `ON CONFLICT DO NOTHING` + existing-item lookup |
 | D-11 No Python video_id pre-check | ✓ Honored | AST test on `persist_draft.py` |
 | D-12 Slug `{slugify(title)[:50]}-{video_id}` | ✓ Honored | `kak-ispolzovat-pgvector-dQw4w9WgXcQ` |
@@ -249,44 +294,63 @@ PLAN frontmatter `requirements:` on 09-01 through 09-04 is `{PERS-01, PERS-02}` 
 | ----------- | ---- | ------ | -------- |
 | MUST NOT export `RoleKind` / `ArticleDraft` from package root | test | ✓ Held | `NEGATIVE_ROOT_NAMES` |
 | MUST NOT allow invalid/empty roles to reach persist without `["employee"]` fallback | test | ✓ Held | Validators + adapter tests |
-| MUST NOT persist `status=ready` or any status other than `draft` | test | ✓ Held | RPC literal `'draft'`; no caller `status` param |
-| MUST NOT enqueue on a batch with `sent_at` set | test | ✓ Held | `sent_at IS NULL` + batch_sent test |
-| MUST NOT expose `SUPABASE_SECRET_KEY`, raw Postgres, or stack traces in `IngestError` context | test | ✓ Held | Planted-secret mapping + adapter tests |
+| MUST NOT persist `status=ready` or any status other than `draft` | test | ✓ Held | RPC literal `'draft'`; adapter never forwards `status` |
+| MUST NOT enqueue on a batch with `sent_at` set | test | ✓ Held | `sent_at IS NULL` + batch_sent test (new-write path) |
+| MUST NOT expose `SUPABASE_SECRET_KEY`, raw Postgres, or stack traces in `IngestError` context | test | ✓ Held | Planted-secret mapping + adapter tests + Settings `repr=False` |
 | MUST NOT refresh/overwrite existing material content on re-run | test | ✓ Held | `ON CONFLICT DO NOTHING`; fake stores first result |
+
+### Test Quality Audit
+
+| Test File | Linked Req | Active | Skipped | Circular | Assertion Level | Verdict |
+|-----------|-----------|--------|---------|----------|-----------------|---------|
+| `test_article_draft_roles.py` / `test_material_draft_roles.py` | PERS-01 | yes | 0 | no | value | PASS |
+| `test_phase9_migration_007.py` | PERS-01 / D-09 | yes | 0 | no | value (comment-stripped DDL) | PASS |
+| `test_supabase_draft_persister_contract.py` | PERS-01 | yes | 0 | no | value (provenance + no status) | PASS |
+| `test_persist_idempotency_overflow.py` | PERS-02 | yes | 0 | no | behavioral | PASS |
+| `test_captions_failure_zero_persist.py` | CAP-02 | yes | 0 | no | existence (vacuous spy) | WARNING |
+| `test_ingestion_settings.py` | PERS-01 / T-09-13 | yes | 0 | no | value (repr omit) | PASS |
+
+**Disabled tests on requirements:** 0
+**Circular patterns detected:** 0
+**Insufficient assertions:** 1 (CAP-02 spy — see Advisory WR-04; not the only PERS-01/PERS-02 proof)
 
 ### Anti-Patterns Found
 
 | File | Line | Pattern | Severity | Impact |
 | ---- | ---- | ------- | -------- | ------ |
-| `tests/unit/test_phase9_migration_007.py` | 20 | Contract string `youtube_video_id text not null unique` is satisfied by a comment, not the ALTER | 📋 Advisory | Unique+NOT NULL are real (staged DDL). Coincidental-reliance only — see frontmatter |
-| `tests/unit/test_captions_failure_zero_persist.py` | 45–55 | Spy is never passed to an orchestrator (Phase 10 does not exist yet) | ℹ️ Info | Matches the contracted Phase 7/9 spy shape; CLI wiring is Phase 10 |
+| `tests/unit/test_captions_failure_zero_persist.py` | 45–69 | Spy is never passed to an orchestrator | 📋 Advisory | Matches contracted Phase 7/9 spy shape; CLI wiring is Phase 10 |
+| `supabase-integration/migrations/007_phase9_persist_draft.sql` | 143–151 | Conflict fallback may return a sent batch | 📋 Advisory | New-write path still filters `sent_at IS NULL`; see WR-02 |
+| `supabase-integration/migrations/007_phase9_persist_draft.sql` | 158–163 | Returns `p_slug` not stored slug | 📋 Advisory | CLI-01-adjacent; see WR-01 |
 
 No `TBD` / `FIXME` / `XXX` in phase-modified production files. Adapters do not read `os.environ` (`Settings.from_env` in composition is the allowed seam). `supabase` imports are only in `supabase_persist.py` and `composition/clients.py`.
 
+Prior coincidental-reliance on the D-09 comment string is **gone**: `test_migration_007_youtube_video_id_unique_is_ddl_not_comment` strips `--` comments and requires `ALTER COLUMN … SET NOT NULL` plus `ADD CONSTRAINT materials_youtube_video_id_key UNIQUE`.
+
 ### Human Verification Required
 
-None. Live CLI persist of real videos is Phase 10. Migration 007 apply was a human Studio checkpoint already completed; this pass independently confirmed provenance columns and the 007 backfill fingerprint on the shared VM.
+N/A — Infrastructure/foundation phase with no user-facing elements.
+All acceptance criteria are verifiable programmatically. Live CLI persist of real videos is Phase 10. Migration 007 apply was a human Studio checkpoint already completed; this pass independently confirmed provenance columns and the 007 backfill fingerprint on the shared VM via PostgREST.
 
 ### Gaps Summary
 
 No gaps found against the phase goal / PERS-01 / PERS-02 / ROADMAP success criteria / CAP-02 deferred spy.
 
-Advisory notes:
-- One unrelated pre-existing unit failure in `test_http_admin.py` remains (same as Phase 8).
-- SQL contract uniqueness assertion leans on a comment; production constraint is `materials_youtube_video_id_key`.
-- MCP introspection (`describe_table`, `list_functions`, `raw_sql`) is unavailable without `POSTGRES_URL`; unique-index and grant bits rest on the applied-migration fingerprint plus the operator Studio check.
+Stale-refresh deltas vs 2026-09-27T16:10:00Z:
+- Phase 9 suite grew **156 → 160** passing tests (Nyquist D-09 DDL, adapter no-status-forward, Settings secret-repr).
+- `covered_digest` regenerated: `v2:sha256:46cb669e8e72cda3d95507e6f5c1bce0ed5aed109e7b1e44b964a52b651fd3d4`.
+- Review WR-03 and IN-02 are closed in live code; remaining review warnings stay advisory.
 
 ---
 
 ## Verification Metadata
 
-**Verification approach:** Goal-backward (ROADMAP SCs + PLAN must_haves from 09-01…09-04 + CAP-02 deferred proof)  
-**Must-haves source:** `.planning/ROADMAP.md` Phase 9 Success Criteria + four PLAN frontmatters  
-**Automated checks:** 156 phase-9 tests passed; full suite 576 passed, 1 unrelated failure  
-**Live checks:** PostgREST sample of `materials` provenance columns + 007 backfill values  
-**Human checks required:** 0  
-**Advisory review:** Not run (inline execution)
+**Verification approach:** Goal-backward (ROADMAP SCs + PLAN must_haves from 09-01…09-04 + CAP-02 deferred proof)
+**Must-haves source:** `.planning/ROADMAP.md` Phase 9 Success Criteria + four PLAN frontmatters (reused from prior report; no `gaps:` to re-scope)
+**Automated checks:** 160 phase-9 tests passed; 6 named behavioral tests passed
+**Live checks:** PostgREST sample of `materials` provenance columns + 007 backfill values
+**Human checks required:** 0
+**Advisory review:** 09-REVIEW.md present (0 critical; 2 of 5 warnings closed in code)
 
 ---
-_Verified: 2026-09-27T16:10:00Z_  
+_Verified: 2026-09-27T16:39:30Z_
 _Verifier: Claude (gsd-verifier)_
