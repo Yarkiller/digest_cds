@@ -84,7 +84,7 @@ Full phase detail: [milestones/v1-ROADMAP.md](milestones/v1-ROADMAP.md)
   1. DeepSeek (OpenAI-compatible SDK) returns a validated `MaterialDraft` with `title`, `dek`, `body_markdown`, and provenance fields
   2. Operator can choose `--template lecture|podcast` backed by repository markdown templates
   3. Network/5xx/invalid JSON/validation LLM failures exit non-zero with `stage=llm`, zero database rows, and no partial output
-  4. System prompt requires honesty (transcript-only facts; output language matches transcript); oversized transcripts fail closed with `stage=llm_truncation` and no silent truncation
+  4. System prompt requires honesty (transcript-only facts; output always Russian — `ru` format-only, `en` translated to Russian, terms/names/numbers/units preserved); oversized transcripts fail closed with `stage=llm_truncation` and no silent truncation. Supersedes "output language matches transcript".
 **Plans**: TBD
 
 ### Phase 9: Draft Persist & Shortlist Enqueue
@@ -107,7 +107,7 @@ Full phase detail: [milestones/v1-ROADMAP.md](milestones/v1-ROADMAP.md)
   1. `ingestion-service` Typer one-shot prints `material_id`, `slug`, `batch_id`, and `rank` on success
   2. Re-running the same `video_id` does not create duplicate materials or shortlist rows
   3. CLI prints staged progress (`✓ transcript` / `✓ LLM` / `✓ saved`) and loads secrets from `ingestion-service/.env` (not the backend env file)
-  4. UAT: 3–5 real captioned videos appear as drafts in `/admin/digest` with no backend/SPA code changes required
+  4. UAT: 3–5 real captioned videos appear as drafts in `/admin/digest` with no backend/SPA code changes required, including at least one English source video (draft in Russian)
 **Plans**: TBD
 
 ## Progress
