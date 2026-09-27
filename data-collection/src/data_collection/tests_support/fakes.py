@@ -8,6 +8,7 @@ from data_collection.dto.article_draft import ArticleDraft
 from data_collection.dto.template_kind import TemplateKind
 from data_collection.dto.transcript import Transcript
 from data_collection.dto.video_metadata import VideoMetadata
+from data_collection.errors.article import ArticleError
 from data_collection.errors.captions import CaptionsError
 from data_collection.errors.metadata import MetadataError
 
@@ -52,12 +53,20 @@ class FakeVideoMetadataProvider:
 
 
 class FakeArticleGenerator:
-    def __init__(self, result: ArticleDraft) -> None:
+    def __init__(
+        self,
+        result: ArticleDraft,
+        failures: dict[str, ArticleError] | None = None,
+    ) -> None:
         self._result = result
+        self._failures = failures or {}
         self.calls: list[ArticleGeneratorCall] = []
 
     async def process(
         self, transcript: Transcript, template: TemplateKind
     ) -> ArticleDraft:
         self.calls.append({"transcript": transcript, "template": template})
+        failure = self._failures.get(transcript.video_id)
+        if failure is not None:
+            raise failure
         return self._result
