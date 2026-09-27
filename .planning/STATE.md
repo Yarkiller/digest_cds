@@ -5,10 +5,10 @@ milestone_name: YouTube → LLM → Supabase ingestion
 current_phase: 09
 current_phase_name: Draft Persist & Shortlist Enqueue
 status: executing
-stopped_at: 09-03 one-way schema gate — user replied proceed (D-05, D-06, D-09)
-last_updated: "2026-09-27T15:40:00.000Z"
+stopped_at: 09-03 checkpoint:migrate — await push of 007 to the shared VM
+last_updated: "2026-09-27T15:50:00.000Z"
 last_activity: 2026-09-27
-last_activity_desc: Phase 09 plan 03 executing after schema-gate proceed
+last_activity_desc: Phase 09 plan 03 halted before applying migration 007
 state_head: dfdc0ca1ae050ff9f0131e29b09937e2ce355c84
 progress:
   total_phases: 5
@@ -31,8 +31,8 @@ See: .planning/PROJECT.md (updated 2026-09-27)
 
 Phase: 09 (Draft Persist & Shortlist Enqueue) — EXECUTING
 Plan: 3 of 4
-Status: Executing 09-03 (migration 007 + adapter); VM push not started
-Last activity: 2026-09-27 — 09-03 checkpoint: user selected proceed
+Status: Halted at 09-03 checkpoint:migrate (007 authored, not applied)
+Last activity: 2026-09-27 — 09-03 tasks 1–3 committed; await pushed or abort
 
 Progress: [█████████░] 86% (3 of 5 v1.1 phases complete)
 
@@ -140,7 +140,7 @@ Phase 8 execution (08-01…08-04):
 
 ### Pending Todos
 
-09-03 tasks 2–3 (migration 007 + SupabaseDraftPersister). Stop before task 4 — do not apply 007 to the shared VM until the migrate checkpoint.
+09-03 task 4: human must apply migration 007 to the shared VM, then reply pushed or abort. Do not run supabase db push from the executor.
 
 ### Blockers/Concerns
 
@@ -155,7 +155,7 @@ leaderboard, quiz, PIPE-01 YAML UI, live SMTP, signup mail, Whisper/Foundry ASR,
 
 ## Session Continuity
 
-Last session: 2026-09-27T15:40:00.000Z
-Stopped at: 09-03 one-way schema gate recorded (proceed; D-05, D-06, D-09)
+Last session: 2026-09-27T15:50:00.000Z
+Stopped at: 09-03 checkpoint:migrate — 007 + SupabaseDraftPersister committed; VM unchanged
 Resume file: None
-Next: author migration 007 + SupabaseDraftPersister; halt at checkpoint:migrate
+Next: apply 007 on the shared VM, then resume with pushed or abort
