@@ -23,6 +23,7 @@ from youtube_transcript_api import (
     YouTubeDataUnparsable,
     YouTubeRequestFailed,
 )
+from youtube_transcript_api._errors import CookieInvalid
 
 
 VIDEO_ID = "dQw4w9WgXcQ"
@@ -204,6 +205,11 @@ def _video_unplayable(video_id: str) -> VideoUnplayable:
             "CaptionsError",
             "FailedToCreateConsentCookie",
         ),
+        (
+            CookieInvalid("bad-cookie-path"),
+            "CaptionsError",
+            "CookieInvalid",
+        ),
     ],
 )
 def test_adapter_maps_sdk_exception_to_captions_subtype(
@@ -228,6 +234,9 @@ def test_adapter_maps_sdk_exception_to_captions_subtype(
     assert type(err) is expected_cls
     assert not isinstance(err, CouldNotRetrieveTranscript)
     assert not isinstance(err, RequestException)
+    from youtube_transcript_api import YouTubeTranscriptApiException
+
+    assert not isinstance(err, YouTubeTranscriptApiException)
     if expected_type == "CaptionsBlocked":
         assert not isinstance(err, captions_errors.CaptionsDisabled)
         assert not isinstance(err, captions_errors.CaptionsUnavailable)

@@ -18,6 +18,7 @@ from youtube_transcript_api import (
     VideoUnavailable,
     VideoUnplayable,
     YouTubeRequestFailed,
+    YouTubeTranscriptApiException,
 )
 
 from data_collection.dto.transcript import Transcript
@@ -85,6 +86,10 @@ class YouTubeTranscriptAdapter:
                 video_id, exception_class=_exception_class(exc)
             ) from exc
         except CouldNotRetrieveTranscript as exc:
+            raise CaptionsError(
+                video_id, exception_class=_exception_class(exc)
+            ) from exc
+        except YouTubeTranscriptApiException as exc:
             raise CaptionsError(
                 video_id, exception_class=_exception_class(exc)
             ) from exc
