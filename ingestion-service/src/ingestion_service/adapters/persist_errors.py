@@ -19,3 +19,23 @@ class DraftPersistError(Exception):
         self.video_id = video_id
         self.context = context or {}
         super().__init__(f"persist {reason}")
+
+
+class DraftPersistConflictError(DraftPersistError):
+    """Unexpected unique violation or data conflict."""
+
+
+class DraftPersistBatchError(DraftPersistError):
+    """RPC could not create or select an unsent batch."""
+
+
+class DraftPersistNetworkError(DraftPersistError):
+    """Could not reach Supabase."""
+
+
+class DraftPersistRpcError(DraftPersistError):
+    """RPC raised a PostgREST or Postgres exception."""
+
+
+class DraftPersistUnknownError(DraftPersistError):
+    """Fallback persist failure."""
