@@ -2,39 +2,39 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: YouTube → LLM → Supabase ingestion
-current_phase: 8
-current_phase_name: DeepSeek Article & Templates
-status: ready_to_execute
+current_phase: 9
+current_phase_name: Draft Persist & Shortlist Enqueue
+status: ready_to_plan
 stopped_at: Phase 9 planning
-last_updated: "2026-09-27T09:35:00.000Z"
+last_updated: "2026-09-27T11:45:00.000Z"
 last_activity: 2026-09-27
-last_activity_desc: Phase 8 complete — 4 plans executed, verification passed (inline, gsd-tools EPERM on Windows)
+last_activity_desc: Phase 8 verified — UAT passed, security review secured, transitioned to Phase 9
 state_head: a5d5e34
 progress:
   total_phases: 5
   completed_phases: 3
-  total_plans: 4
-  completed_plans: 4
-  percent: 100
+  total_plans: 0
+  completed_plans: 0
+  percent: 60
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-09-24)
+See: .planning/PROJECT.md (updated 2026-09-27)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Phase 8 — DeepSeek Article & Templates (ready to execute)
+**Current focus:** Phase 9 — Draft Persist & Shortlist Enqueue (ready to plan)
 
 ## Current Position
 
 Phase: 9 (Draft Persist & Shortlist Enqueue) — READY TO PLAN
 Plan: Not started
-Status: Phase 8 complete; awaiting Phase 9 planning
-Last activity: 2026-09-27 — Phase 8 complete — 4 plans executed, verification passed
+Status: Phase 8 complete; ready to plan Phase 9
+Last activity: 2026-09-27 — Phase 8 verified — UAT passed, security review secured, transitioned to Phase 9
 
-Progress: [████████░░░░░░░░░░░░] 60% (3 of 5 v1.1 phases complete)
+Progress: [████████████░░░░░░░░] 60% (3 of 5 v1.1 phases complete)
 
 ## Performance Metrics
 
@@ -143,7 +143,7 @@ leaderboard, quiz, PIPE-01 YAML UI, live SMTP, signup mail, Whisper/Foundry ASR,
 
 ## Session Continuity
 
-Last session: 2026-09-27T07:29:29.691Z
-Stopped at: Phase 8 planning complete
-Resume file: .planning/phases/08-deepseek-article-templates/08-01-PLAN.md
-Next: `/gsd-execute-phase 8`
+Last session: 2026-09-27T11:45:00.000Z
+Stopped at: Phase 8 complete, ready to plan Phase 9
+Resume file: None
+Next: `/gsd-discuss-phase 9`

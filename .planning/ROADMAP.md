@@ -133,6 +133,6 @@ Full phase detail: [milestones/v1-ROADMAP.md](milestones/v1-ROADMAP.md)
 | 5. Admin Digest Publish | v1 | 9/9 | Complete | 2026-09-22 |
 | 6. Ports & DTOs | v1.1 | 3/3 | Complete | 2026-09-26 |
 | 7. Captions Adapter | v1.1 | 3/3 | Complete | 2026-09-26 |
-| 8. DeepSeek Article & Templates | v1.1 | 0/4 | Planned | - |
+| 8. DeepSeek Article & Templates | v1.1 | 4/4 | Complete | 2026-09-27 |
 | 9. Draft Persist & Shortlist Enqueue | v1.1 | 0/? | Not started | - |
 | 10. CLI Composition & UAT | v1.1 | 0/? | Not started | - |

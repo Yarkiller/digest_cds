@@ -59,11 +59,11 @@ v1 is done only when **all** of the following hold:
 - ✓ `data-collection` ports/DTOs: Transcript, VideoMetadata, MaterialDraft, TemplateKind + TranscriptProvider/ArticleGenerator fakes (DTO-01, DTO-02) — Phase 6
 - ✓ YouTube URL → `video_id` + captions (`ru`/`en`) via injected `youtube-transcript-api`; fail-closed `stage=captions` at unit/adapter level (CAP-01, CAP-02) — Phase 7
 - ✓ `VideoMetadataProvider` + oEmbed + `ingestion-service` Settings/proxy composition (no Typer yet) — Phase 7
+- ✓ DeepSeek article generation via lecture/podcast templates with fail-closed LLM errors, budget check, and redacted diagnostics (LLM-01…LLM-05) — Phase 8
 
 ### Active
 
 - [ ] `ingestion-service` CLI one-shot: YouTube URL → captions → DeepSeek → materials draft + shortlist enqueue
-- [ ] Lecture + podcast prompt templates
 - [ ] UAT: 3–5 real videos visible as drafts in `/admin/digest`
 
 ### Out of Scope
@@ -117,6 +117,10 @@ v1 is done only when **all** of the following hold:
 | Phase 6 six-name public `__all__`; brownfield YouTube/Foundry/text-import DTOs deleted (D-01…D-03) | Single ingestion contract; no parallel public DTO names | ✓ Phase 6 |
 | Captions list-then-pick + CaptionsError→locked reasons; CAP-02 live persist spy deferred (D-14) | Adapter-boundary SDK mapping; zero-row proof at unit level until Phase 9/10 | ✓ Phase 7 |
 | Phase 7 seven-name public `__all__` (+ VideoMetadataProvider); proxy only in composition | Adapters take ready clients; no `os.environ` in adapters (D-17) | ✓ Phase 7 |
+| DeepSeek via OpenAI-compatible SDK with injected client, `response_format=json_object`, disabled thinking, and composition-only env | No `os.environ` in adapters; caller controls client and secrets (D-07, D-11, D-14) | ✓ Phase 8 |
+| `ArticleDraft` validation + `ArticleError` taxonomy; redacted diagnostics and locked `LLM_REASONS` | Provenance label caller-supplied; no transcript/key in operator JSON (D-12, D-13) | ✓ Phase 8 |
+| Character cap enforced before DeepSeek call; `ArticleBudgetError` maps to `stage=llm_truncation` | No silent truncation; context limited to `char_count`/`max_chars` (D-08, D-09, D-10) | ✓ Phase 8 |
+| Public `data_collection.__all__` stays seven names; new symbols negative-rooted | Adapter/error/template loader are module-private; `Stage` set unchanged (D-04, D-06) | ✓ Phase 8 |
 
 <decisions>
 ## Locked decisions (from ADRs / ingest)
@@ -157,4 +161,4 @@ After each phase transition: move validated/invalidated requirements; log decisi
 After milestone: full review of Core Value, Out of Scope, and Context against shipped reality.
 
 ---
-*Last updated: 2026-09-26 after Phase 7*
+*Last updated: 2026-09-27 after Phase 8*
