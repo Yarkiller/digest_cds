@@ -18,6 +18,8 @@ class MaterialDraft(BaseModel):
     provenance_label: str = Field(min_length=1)
     source_published_at: datetime | None = None
     roles: list[RoleKind] = ["employee"]
+    slug: str = ""
+    reading_minutes: int = 1
 
     @field_validator(
         "title",
