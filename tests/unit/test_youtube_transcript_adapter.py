@@ -74,6 +74,17 @@ def test_adapter_prefers_ru_over_en_and_returns_transcript() -> None:
     assert api.listed_ids == [VIDEO_ID]
 
 
+def test_adapter_joins_multi_snippet_text_with_spaces() -> None:
+    from data_collection.adapters.youtube_transcript import YouTubeTranscriptAdapter
+
+    api = _FakeApi([_Track("en", ["Hello", "world"])])
+    adapter = YouTubeTranscriptAdapter(api)
+
+    out = asyncio.run(adapter.get(VIDEO_ID))
+
+    assert out.text == "Hello world"
+
+
 def test_adapter_normalizes_ru_ru_dialect_to_ru() -> None:
     from data_collection.adapters.youtube_transcript import YouTubeTranscriptAdapter
 

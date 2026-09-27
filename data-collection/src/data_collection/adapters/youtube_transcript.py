@@ -118,7 +118,8 @@ class YouTubeTranscriptAdapter:
             )
 
         snippets = chosen.fetch()
-        joined = "".join(getattr(s, "text", str(s)) for s in snippets).strip()
+        joined = " ".join(getattr(s, "text", str(s)) for s in snippets)
+        joined = " ".join(joined.split())
         if not joined:
             raise CaptionsEmpty(video_id=video_id)
 
