@@ -21,6 +21,7 @@ from data_collection.dto.template_kind import TemplateKind
 from data_collection.dto.transcript import Transcript
 from data_collection.errors.article import (
     ArticleAuthError,
+    ArticleBudgetError,
     ArticleContextLengthError,
     ArticleInvalidDraft,
     ArticleInvalidJson,
@@ -90,6 +91,12 @@ class DeepSeekArticleGenerator:
     async def process(
         self, transcript: Transcript, template: TemplateKind
     ) -> ArticleDraft:
+        if len(transcript.text) > self._max_transcript_chars:
+            raise ArticleBudgetError(
+                transcript.video_id,
+                char_count=len(transcript.text),
+                max_chars=self._max_transcript_chars,
+            )
         messages = build_article_messages(transcript, template, self._templates)
         try:
             response = await self._client.chat.completions.create(

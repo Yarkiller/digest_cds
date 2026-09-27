@@ -488,3 +488,78 @@ def test_gather_of_raising_and_successful_process_returns_only_success_draft() -
     assert isinstance(results[0], ArticleNetworkError)
     assert isinstance(results[1], ArticleDraft)
     assert results[1].title == "T"
+
+
+def test_exactly_max_chars_calls_create() -> None:
+    from data_collection.adapters.deepseek_article import DeepSeekArticleGenerator
+    from data_collection.templates import load_article_templates
+
+    templates = load_article_templates(importlib.resources.files("data_collection.templates"))
+    client = _stub_client('{"title":"T","dek":"D","body_markdown":"B"}')
+    generator = DeepSeekArticleGenerator(
+        client=client,
+        model="deepseek-flash",
+        templates=templates,
+        max_transcript_chars=5,
+    )
+
+    transcript = Transcript(text="12345", language="ru", video_id="vid1")
+    asyncio.run(generator.process(transcript, TemplateKind.LECTURE))
+    assert len(client.chat.completions.calls) == 1
+
+
+def test_over_max_chars_does_not_call_create() -> None:
+    from data_collection.adapters.deepseek_article import DeepSeekArticleGenerator
+    from data_collection.errors.article import ArticleBudgetError
+    from data_collection.templates import load_article_templates
+
+    templates = load_article_templates(importlib.resources.files("data_collection.templates"))
+    client = _stub_client('{"title":"T","dek":"D","body_markdown":"B"}')
+    generator = DeepSeekArticleGenerator(
+        client=client,
+        model="deepseek-flash",
+        templates=templates,
+        max_transcript_chars=5,
+    )
+
+    transcript = Transcript(text="123456", language="ru", video_id="vid1")
+    with pytest.raises(ArticleBudgetError):
+        asyncio.run(generator.process(transcript, TemplateKind.LECTURE))
+    assert len(client.chat.completions.calls) == 0
+
+
+def test_long_template_with_short_transcript_does_not_raise_budget_error() -> None:
+    from data_collection.adapters.deepseek_article import DeepSeekArticleGenerator
+    from data_collection.templates import load_article_templates
+
+    templates = load_article_templates(importlib.resources.files("data_collection.templates"))
+    client = _stub_client('{"title":"T","dek":"D","body_markdown":"B"}')
+    generator = DeepSeekArticleGenerator(
+        client=client,
+        model="deepseek-flash",
+        templates={kind: "x" * 1000 for kind in templates},
+        max_transcript_chars=10,
+    )
+
+    transcript = Transcript(text="1234567890", language="ru", video_id="vid1")
+    asyncio.run(generator.process(transcript, TemplateKind.LECTURE))
+    assert len(client.chat.completions.calls) == 1
+
+
+def test_eighty_thousand_cyrillic_chars_call_create() -> None:
+    from data_collection.adapters.deepseek_article import DeepSeekArticleGenerator
+    from data_collection.templates import load_article_templates
+
+    templates = load_article_templates(importlib.resources.files("data_collection.templates"))
+    client = _stub_client('{"title":"T","dek":"D","body_markdown":"B"}')
+    generator = DeepSeekArticleGenerator(
+        client=client,
+        model="deepseek-flash",
+        templates=templates,
+        max_transcript_chars=80000,
+    )
+
+    text = "я" * 80000
+    transcript = Transcript(text=text, language="ru", video_id="vid1")
+    asyncio.run(generator.process(transcript, TemplateKind.LECTURE))
+    assert len(client.chat.completions.calls) == 1

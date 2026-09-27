@@ -6,6 +6,7 @@ from typing import Any
 
 from data_collection.errors.article import (
     ArticleAuthError,
+    ArticleBudgetError,
     ArticleContextLengthError,
     ArticleError,
     ArticleInvalidDraft,
@@ -58,8 +59,16 @@ def _forward_context(error: ArticleError) -> dict[str, Any]:
 
 
 def map_article_error(error: ArticleError) -> IngestError:
-    if type(error).__name__ == "ArticleBudgetError":
-        raise TypeError("ArticleBudgetError is not mapped to stage=llm; use 08-03 branch")
+    if isinstance(error, ArticleBudgetError):
+        return IngestError(
+            stage="llm_truncation",
+            reason="transcript_too_long",
+            message="llm_truncation transcript_too_long",
+            context={
+                "char_count": error.context["char_count"],
+                "max_chars": error.context["max_chars"],
+            },
+        )
     reason = _REASON_BY_TYPE.get(type(error), "unknown_llm_error")
     return IngestError(
         stage="llm",

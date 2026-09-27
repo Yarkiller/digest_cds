@@ -84,12 +84,25 @@ def test_article_unknown_error_maps_to_unknown_llm_error() -> None:
     assert ingest.reason == "unknown_llm_error"
 
 
-def test_article_budget_error_raises_type_error_before_08_03() -> None:
+def test_article_budget_error_maps_to_llm_truncation() -> None:
     from data_collection.errors.article import ArticleBudgetError
 
-    error = ArticleBudgetError("vid1", char_count=100000, max_chars=80000)
-    with pytest.raises(TypeError):
-        map_article_error(error)
+    forbidden_transcript = "planted transcript text that must not appear"
+    error = ArticleBudgetError(
+        "vid1",
+        char_count=100000,
+        max_chars=80000,
+        forbidden_transcript=forbidden_transcript,
+    )
+    ingest = map_article_error(error)
+    assert ingest.stage == "llm_truncation"
+    assert ingest.reason == "transcript_too_long"
+    assert ingest.message == "llm_truncation transcript_too_long"
+    assert ingest.exit_code == 1
+    assert ingest.context == {"char_count": 100000, "max_chars": 80000}
+    full = ingest.message + str(ingest.to_dict())
+    assert forbidden_transcript not in full
+    assert "video_id" not in ingest.context
 
 
 def test_context_allowlist_excludes_transcript_and_key() -> None:

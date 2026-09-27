@@ -227,3 +227,21 @@ def test_build_deepseek_article_generator_does_not_construct_async_openai_for_bl
         assert constructed == []
     finally:
         clients_module.AsyncOpenAI = original
+
+
+@pytest.mark.parametrize("raw", ["0", "-1", "abc", "80.5"])
+def test_invalid_max_transcript_chars_raises_configuration_error(raw: str) -> None:
+    from ingestion_service.composition.config_error import ConfigurationError
+    from ingestion_service.composition.settings import Settings
+    from ingestion_service.domain.errors import IngestError
+
+    with pytest.raises(ConfigurationError) as exc_info:
+        Settings.from_env({"MAX_TRANSCRIPT_CHARS": raw})
+    assert not isinstance(exc_info.value, IngestError)
+
+
+def test_blank_max_transcript_chars_yields_default() -> None:
+    from ingestion_service.composition.settings import Settings
+
+    settings = Settings.from_env({"MAX_TRANSCRIPT_CHARS": "   "})
+    assert settings.max_transcript_chars == 80000
