@@ -5,17 +5,17 @@ milestone_name: YouTube → LLM → Supabase ingestion
 current_phase: 09
 current_phase_name: Draft Persist & Shortlist Enqueue
 status: executing
-stopped_at: 09-03 checkpoint:migrate — await push of 007 to the shared VM
-last_updated: "2026-09-27T15:50:00.000Z"
+stopped_at: Completed 09-03-PLAN.md
+last_updated: "2026-09-27T15:53:40.243Z"
 last_activity: 2026-09-27
-last_activity_desc: Phase 09 plan 03 halted before applying migration 007
-state_head: dfdc0ca1ae050ff9f0131e29b09937e2ce355c84
+last_activity_desc: Completed 09-03 migration 007 + SupabaseDraftPersister
+state_head: 37b1b00d632c4a9d9dc8331f7476791b3ceed819
 progress:
   total_phases: 5
   completed_phases: 8
   total_plans: 14
-  completed_plans: 12
-  percent: 86
+  completed_plans: 13
+  percent: 93
 ---
 
 # Project State
@@ -30,11 +30,11 @@ See: .planning/PROJECT.md (updated 2026-09-27)
 ## Current Position
 
 Phase: 09 (Draft Persist & Shortlist Enqueue) — EXECUTING
-Plan: 3 of 4
-Status: Halted at 09-03 checkpoint:migrate (007 authored, not applied)
-Last activity: 2026-09-27 — 09-03 tasks 1–3 committed; await pushed or abort
+Plan: 4 of 4
+Status: Ready to execute
+Last activity: 2026-09-27 — Completed 09-03 migration 007 + SupabaseDraftPersister
 
-Progress: [█████████░] 86% (3 of 5 v1.1 phases complete)
+Progress: [█████████░] 93% (3 of 5 v1.1 phases complete)
 
 ## Performance Metrics
 
@@ -71,6 +71,7 @@ Progress: [█████████░] 86% (3 of 5 v1.1 phases complete)
 | 08 | 04 | 10min | 2 | 6 |
 | 09 | 01 | 5min | 2 | 14 |
 | 09 | 02 | 5min | 3 | 15 |
+| 09 | 03 | 12min | 4 | 6 |
 
 **Per-Plan Metrics:**
 
@@ -78,6 +79,7 @@ Progress: [█████████░] 86% (3 of 5 v1.1 phases complete)
 |------|----------|-------|-------|
 | Phase 09 P01 | 5 min | 2 tasks | 14 files |
 | Phase 09 P02 | 5 min | 3 tasks | 15 files |
+| Phase 09 P03 | 12min | 4 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -137,10 +139,11 @@ Phase 8 execution (08-01…08-04):
 - [Phase 09]: RoleKind is a first-class list on ArticleDraft and MaterialDraft; unknown/empty falls back to employee.
 - [Phase 09]: PersistPort + persist_draft lock slug format `{slugify(title)[:50]}-{video_id}`, locked PERSIST_REASONS, and D-11 no Python video_id pre-check. FakeDraftPersister stores first PersistResult per video_id.
 - [Phase 09 / 09-03]: User replied **proceed** on the one-way schema gate. Accepted as one-way: **D-05** (single persist+enqueue RPC), **D-06** (migration 007 is the canonical record), **D-09** (unique constraint on `materials.youtube_video_id`). Undo requires a follow-up migration. Task 1 recorded before any `007_phase9_persist_draft.sql` authoring.
+- [Phase 09]: D-05/D-06/D-09 proceed; user pushed 007 via Studio; persist_draft_and_enqueue live; unique youtube_video_id — One-way schema gate accepted; shared VM apply confirmed by human (RPC 1, columns 4, unique index, service_role execute).
 
 ### Pending Todos
 
-09-03 task 4: human must apply migration 007 to the shared VM, then reply pushed or abort. Do not run supabase db push from the executor.
+None. Next: `/gsd-execute-phase 9` (plan 09-04 composition)
 
 ### Blockers/Concerns
 
@@ -155,7 +158,7 @@ leaderboard, quiz, PIPE-01 YAML UI, live SMTP, signup mail, Whisper/Foundry ASR,
 
 ## Session Continuity
 
-Last session: 2026-09-27T15:50:00.000Z
-Stopped at: 09-03 checkpoint:migrate — 007 + SupabaseDraftPersister committed; VM unchanged
+Last session: 2026-09-27T15:52:58.323Z
+Stopped at: Completed 09-03-PLAN.md
 Resume file: None
-Next: apply 007 on the shared VM, then resume with pushed or abort
+Next: `/gsd-execute-phase 9` (09-04)
