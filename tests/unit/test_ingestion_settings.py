@@ -106,3 +106,124 @@ def test_adapters_do_not_read_environ() -> None:
         body = path.read_text(encoding="utf-8")
         assert "os.environ" not in body, path.name
         assert "os.getenv" not in body, path.name
+
+
+def test_settings_from_env_defaults() -> None:
+    from ingestion_service.composition.settings import Settings
+
+    settings = Settings.from_env({})
+    assert settings.max_transcript_chars == 80000
+    assert settings.deepseek_api_key is None
+    assert settings.deepseek_base_url == "https://api.deepseek.com"
+    assert settings.deepseek_model == "deepseek-flash"
+
+
+def test_settings_from_env_blank_max_transcript_chars_defaults() -> None:
+    from ingestion_service.composition.settings import Settings
+
+    settings = Settings.from_env({"MAX_TRANSCRIPT_CHARS": "  "})
+    assert settings.max_transcript_chars == 80000
+
+
+def test_settings_from_env_reads_deepseek_values() -> None:
+    from ingestion_service.composition.settings import Settings
+
+    settings = Settings.from_env(
+        {
+            "DEEPSEEK_API_KEY": "sk-test-key",
+            "DEEPSEEK_BASE_URL": "https://custom.example.com",
+            "DEEPSEEK_MODEL": "deepseek-v4-pro",
+            "MAX_TRANSCRIPT_CHARS": "5000",
+        }
+    )
+    assert settings.deepseek_api_key == "sk-test-key"
+    assert settings.deepseek_base_url == "https://custom.example.com"
+    assert settings.deepseek_model == "deepseek-v4-pro"
+    assert settings.max_transcript_chars == 5000
+
+
+def test_build_async_deepseek_client_rejects_blank_key() -> None:
+    from ingestion_service.composition.clients import build_async_deepseek_client
+    from ingestion_service.composition.config_error import ConfigurationError
+
+    with pytest.raises(ConfigurationError):
+        build_async_deepseek_client("", "https://api.deepseek.com", 120.0)
+
+
+def test_build_async_deepseek_client_rejects_blank_key_without_constructing() -> None:
+    from ingestion_service.composition.clients import build_async_deepseek_client
+    from ingestion_service.composition.config_error import ConfigurationError
+
+    constructed: list[object] = []
+    sentinel_key = "sk-sentinel-key-for-construction-test"
+
+    real_async_openai = None
+    try:
+        from openai import AsyncOpenAI
+
+        real_async_openai = AsyncOpenAI
+    except ImportError:
+        pass
+
+    if real_async_openai is not None:
+        import ingestion_service.composition.clients as clients_module
+
+        original = clients_module.AsyncOpenAI
+
+        class _SpyAsyncOpenAI(AsyncOpenAI):
+            def __init__(self, **kwargs: object) -> None:
+                constructed.append(kwargs)
+                super().__init__(**kwargs)
+
+        clients_module.AsyncOpenAI = _SpyAsyncOpenAI
+        try:
+            with pytest.raises(ConfigurationError):
+                build_async_deepseek_client("", "https://api.deepseek.com", 120.0)
+            assert constructed == []
+            # valid key should construct
+            build_async_deepseek_client(sentinel_key, "https://api.deepseek.com", 120.0)
+            assert len(constructed) == 1
+            assert constructed[0]["api_key"] == sentinel_key
+            assert constructed[0]["max_retries"] == 0
+            assert constructed[0]["timeout"] == 120.0
+            assert constructed[0]["http_client"]._trust_env is False
+        finally:
+            clients_module.AsyncOpenAI = original
+
+
+def test_build_deepseek_article_generator_rejects_blank_key() -> None:
+    from ingestion_service.composition.clients import build_deepseek_article_generator
+    from ingestion_service.composition.config_error import ConfigurationError
+    from ingestion_service.composition.settings import Settings
+
+    settings = Settings.from_env({})
+    with pytest.raises(ConfigurationError):
+        build_deepseek_article_generator(settings)
+
+
+def test_build_deepseek_article_generator_does_not_construct_async_openai_for_blank_key() -> None:
+    from ingestion_service.composition.clients import build_deepseek_article_generator
+    from ingestion_service.composition.config_error import ConfigurationError
+    from ingestion_service.composition.settings import Settings
+
+    constructed: list[object] = []
+
+    from openai import AsyncOpenAI
+
+    import ingestion_service.composition.clients as clients_module
+
+    original = clients_module.AsyncOpenAI
+
+    class _SpyAsyncOpenAI(AsyncOpenAI):
+        def __init__(self, **kwargs: object) -> None:
+            constructed.append(kwargs)
+            super().__init__(**kwargs)
+
+    clients_module.AsyncOpenAI = _SpyAsyncOpenAI
+    try:
+        settings = Settings.from_env({})
+        with pytest.raises(ConfigurationError):
+            build_deepseek_article_generator(settings)
+        assert constructed == []
+    finally:
+        clients_module.AsyncOpenAI = original

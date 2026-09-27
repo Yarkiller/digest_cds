@@ -5,6 +5,7 @@ description = "YouTube → LLM → Supabase ingestion CLI for Digest CDS"
 requires-python = ">=3.12"
 dependencies = [
     "data-collection",
+    "openai>=3.0,<4",
 ]
 
 [build-system]

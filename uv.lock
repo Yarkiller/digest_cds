@@ -611,10 +611,14 @@ version = "0.1.0"
 source = { editable = "ingestion-service" }
 dependencies = [
     { name = "data-collection" },
+    { name = "openai" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "data-collection", editable = "data-collection" }]
+requires-dist = [
+    { name = "data-collection", editable = "data-collection" },
+    { name = "openai", specifier = ">=3.0,<4" },
+]
 
 [[package]]
 name = "iniconfig"
