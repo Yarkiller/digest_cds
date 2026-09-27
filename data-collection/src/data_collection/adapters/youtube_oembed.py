@@ -55,6 +55,11 @@ class YouTubeOEmbedAdapter:
                 video_id, status_code=response.status_code
             )
 
+        if response.status_code == 429 or response.status_code >= 500:
+            raise MetadataNetworkError(
+                video_id, status_code=response.status_code
+            )
+
         if response.status_code != 200:
             raise MetadataUnavailable(
                 video_id, status_code=response.status_code

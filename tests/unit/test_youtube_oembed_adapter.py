@@ -87,6 +87,25 @@ def test_http_404_and_403_raise_metadata_unavailable(status_code: int) -> None:
     assert not isinstance(err, VideoMetadata)
 
 
+@pytest.mark.parametrize("status_code", [429, 500, 502, 503])
+def test_http_5xx_and_429_raise_metadata_network_error(status_code: int) -> None:
+    from data_collection.adapters.youtube_oembed import YouTubeOEmbedAdapter
+    from data_collection.dto.video_metadata import VideoMetadata
+    from data_collection.errors.metadata import MetadataNetworkError, MetadataUnavailable
+
+    client = _StubClient(_StubResponse(status_code=status_code, text="upstream"))
+    adapter = YouTubeOEmbedAdapter(client)
+
+    with pytest.raises(MetadataNetworkError) as exc_info:
+        asyncio.run(adapter.get(VIDEO_ID))
+
+    err = exc_info.value
+    assert err.video_id == VIDEO_ID
+    assert err.context.get("status_code") == status_code
+    assert not isinstance(err, MetadataUnavailable)
+    assert not isinstance(err, VideoMetadata)
+
+
 @pytest.mark.parametrize(
     "exc",
     [
