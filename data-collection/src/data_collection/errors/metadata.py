@@ -13,7 +13,7 @@ class MetadataError(Exception):
         self.context = context
         for key, value in context.items():
             setattr(self, key, value)
-        super().__init__(f"metadata error for {video_id}: {context}")
+        super().__init__(f"metadata error for {video_id}")
 
 
 class MetadataUnavailable(MetadataError):

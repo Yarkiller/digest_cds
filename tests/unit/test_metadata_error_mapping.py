@@ -68,6 +68,7 @@ def test_map_metadata_error_redacts_credentialed_proxy_context() -> None:
     )
 
     mapped = map_metadata_error(error)
+    payload = mapped.to_dict()
 
     assert mapped.context.get("video_id") == VIDEO_ID
     assert mapped.context.get("exception_class") == "ConnectError"
@@ -75,6 +76,12 @@ def test_map_metadata_error_redacts_credentialed_proxy_context() -> None:
     assert "YOUTUBE_PROXY_URL" not in mapped.context
     assert "secret" not in str(mapped.context)
     assert "socks5://" not in str(mapped.context)
+    assert "secret" not in mapped.message
+    assert "socks5://" not in mapped.message
+    assert "secret" not in payload["message"]
+    assert "socks5://" not in payload["message"]
+    assert "secret" not in str(error)
+    assert "socks5://" not in str(error)
 
 
 def test_map_metadata_error_forwards_status_code_allowlist() -> None:

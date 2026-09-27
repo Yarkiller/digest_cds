@@ -67,6 +67,6 @@ def map_captions_error(error: CaptionsError) -> IngestError:
     return IngestError(
         stage="captions",
         reason=reason,
-        message=str(error),
+        message=f"captions {reason} for {error.video_id}",
         context=_forward_context(error),
     )

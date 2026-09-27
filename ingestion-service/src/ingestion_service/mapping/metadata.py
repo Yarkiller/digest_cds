@@ -51,6 +51,6 @@ def map_metadata_error(error: MetadataError) -> IngestError:
     return IngestError(
         stage="metadata",
         reason=reason,
-        message=str(error),
+        message=f"metadata {reason} for {error.video_id}",
         context=_forward_context(error),
     )
