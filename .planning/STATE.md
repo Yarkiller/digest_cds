@@ -2,20 +2,20 @@
 gsd_state_version: "1.0"
 milestone: v1.1
 milestone_name: YouTube → LLM → Supabase ingestion
-current_phase: 09
-current_phase_name: Draft Persist & Shortlist Enqueue
-status: verifying
-stopped_at: Completed 09-04-PLAN.md
-last_updated: "2026-09-27T16:04:01.079Z"
+current_phase: 10
+current_phase_name: CLI Composition & UAT
+status: planning
+stopped_at: Phase 09 complete, ready to plan Phase 10
+last_updated: "2026-09-27T16:11:00.705Z"
 last_activity: 2026-09-27
-last_activity_desc: Completed 09-04 composition wiring + CAP-02 persist spy
-state_head: 24d95df5e30641ed0902b55c9b4fcbebe0f83721
+last_activity_desc: Phase 09 complete, transitioned to Phase 10
+state_head: b704755760689050273ca3736a35e33ebcbc27d5
 progress:
   total_phases: 5
-  completed_phases: 8
+  completed_phases: 9
   total_plans: 14
   completed_plans: 14
-  percent: 100
+  percent: 90
 ---
 
 # Project State
@@ -25,22 +25,22 @@ progress:
 See: .planning/PROJECT.md (updated 2026-09-27)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Phase 09 — Draft Persist & Shortlist Enqueue
+**Current focus:** Phase 10 — CLI Composition & UAT
 
 ## Current Position
 
-Phase: 09 (Draft Persist & Shortlist Enqueue) — EXECUTING
-Plan: 4 of 4
-Status: Phase complete — ready for verification
-Last activity: 2026-09-27 — Completed 09-04 composition wiring + CAP-02 persist spy
+Phase: 10 — CLI Composition & UAT
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-09-27 — Phase 09 complete, transitioned to Phase 10
 
-Progress: [██████████] 100% (3 of 5 v1.1 phases complete)
+Progress: [████████░░] 80% (4 of 5 v1.1 phases complete) — [████████████████████] 14/14 planned plans (100%)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 43 (37 v1 + 6 v1.1)
+- Total plans completed: 51 (37 v1 + 14 v1.1)
 - Average duration: ~7min (plans 01–05 timed); 06 ≈ 3min; 07-01 = 4min; 07-02 = 5min; 07-03 = 8min
 - Total execution time: ~44min + Phase 6 ~9min + Phase 7 ~17min
 
@@ -146,13 +146,14 @@ Phase 8 execution (08-01…08-04):
 
 ### Pending Todos
 
-None. Next: `/gsd-verify-work 9` then `/gsd-plan-phase 10`
+None. Next: `/gsd-discuss-phase 10`
 
 ### Blockers/Concerns
 
 Signup confirmation mail (`g-01-3b-signup-mailer`) remains open from v1 (not this milestone).
 gsd-tools ROADMAP atomic rename hit EPERM (file lock); ROADMAP already marked Phase 7 Complete — STATE advanced manually.
 Phase 8 `state.planned-phase` rename also hit EPERM; STATE advanced manually to ready to execute.
+Phase 9 advisory review still open (WR-01…05, IN-01…03): live RPC conflict/overflow vs fake, SQL comment-vs-DDL tests, Settings repr secrets. Fix before Phase 10 CLI UAT (`/gsd-code-review 9 --fix`). No `09-SECURITY.md` yet.
 
 ## Deferred Items
 
@@ -161,7 +162,7 @@ leaderboard, quiz, PIPE-01 YAML UI, live SMTP, signup mail, Whisper/Foundry ASR,
 
 ## Session Continuity
 
-Last session: 2026-09-27T16:03:26.641Z
-Stopped at: Completed 09-04-PLAN.md
+Last session: 2026-09-27T16:11:00.705Z
+Stopped at: Phase 09 complete, ready to plan Phase 10
 Resume file: None
-Next: `/gsd-verify-work 9` then `/gsd-plan-phase 10`
+Next: `/gsd-discuss-phase 10`

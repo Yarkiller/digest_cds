@@ -27,7 +27,7 @@ Full phase detail: [milestones/v1-ROADMAP.md](milestones/v1-ROADMAP.md)
 - [x] **Phase 6: Ports & DTOs** - Typed Transcript / MaterialDraft boundaries and in-memory port fakes
 - [x] **Phase 7: Captions Adapter** - YouTube URL → captions with fail-closed, zero-row exits
 - [x] **Phase 8: DeepSeek Article & Templates** - Validated MaterialDraft via lecture/podcast templates, honesty and fail-closed LLM errors (2026-09-27)
-- [ ] **Phase 9: Draft Persist & Shortlist Enqueue** - materials draft + provenance + overflow-safe shortlist enqueue
+- [x] **Phase 9: Draft Persist & Shortlist Enqueue** - materials draft + provenance + overflow-safe shortlist enqueue (completed 2026-09-27)
 - [ ] **Phase 10: CLI Composition & UAT** - Typer one-shot, idempotency, staged progress, separate env, 3–5 video UAT
 
 ## Phase Details
@@ -160,5 +160,5 @@ Full phase detail: [milestones/v1-ROADMAP.md](milestones/v1-ROADMAP.md)
 | 6. Ports & DTOs | v1.1 | 3/3 | Complete | 2026-09-26 |
 | 7. Captions Adapter | v1.1 | 3/3 | Complete | 2026-09-26 |
 | 8. DeepSeek Article & Templates | v1.1 | 4/4 | Complete | 2026-09-27 |
-| 9. Draft Persist & Shortlist Enqueue | v1.1 | 4/4 | In Progress|  |
+| 9. Draft Persist & Shortlist Enqueue | v1.1 | 4/4 | Complete    | 2026-09-27 |
 | 10. CLI Composition & UAT | v1.1 | 0/? | Not started | - |

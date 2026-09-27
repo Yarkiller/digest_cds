@@ -60,6 +60,7 @@ v1 is done only when **all** of the following hold:
 - ✓ YouTube URL → `video_id` + captions (`ru`/`en`) via injected `youtube-transcript-api`; fail-closed `stage=captions` at unit/adapter level (CAP-01, CAP-02) — Phase 7
 - ✓ `VideoMetadataProvider` + oEmbed + `ingestion-service` Settings/proxy composition (no Typer yet) — Phase 7
 - ✓ DeepSeek article generation via lecture/podcast templates with fail-closed LLM errors, budget check, and redacted diagnostics (LLM-01…LLM-05) — Phase 8
+- ✓ Persist `materials` as `status=draft` with provenance + overflow-safe shortlist enqueue via `persist_draft_and_enqueue` (PERS-01, PERS-02); RoleKind on drafts; CAP-02 persist spy empty — Phase 9
 
 ### Active
 
@@ -79,7 +80,7 @@ v1 is done only when **all** of the following hold:
 ## Context
 
 - **Shipped v1:** Auth, issue/materials/archive, voting, knowledge search, разборы, and admin digest publish. Live adapters through migration 005. Mail is StubMailer.
-- **v1.1 focus:** Separate ingestion path (`data-collection` contracts + `ingestion-service` CLI) writes drafts into the same Supabase DB; backend/SPA unchanged as readers. DeepSeek MVP bends ADR-0002 temporarily (documented revisit → FoundryModels).
+- **v1.1 focus:** Separate ingestion path (`data-collection` contracts + `ingestion-service` CLI) writes drafts into the same Supabase DB; backend/SPA unchanged as readers. DeepSeek MVP bends ADR-0002 temporarily (documented revisit → FoundryModels). Migration 007 is live on the shared VM (`persist_draft_and_enqueue`, provenance columns, unique `youtube_video_id`).
 - **Product framing:** Concept 3 Editorial UI («Digest CDS: издание»); personas and journeys J1–J6 in ingest context.
 - **Known debt at close:** Nyquist drafts for phases 1–3; live FE↔BE smoke still human-gated under mocks in CI; rank rewrite before `claim_and_publish_digest` is non-atomic (CR-01); four debug sessions acknowledged 2026-09-22 (see STATE.md Deferred Items).
 - **Domain language:** `CONTEXT.md` + `docs/adr/` are canonical for agents.
@@ -121,6 +122,9 @@ v1 is done only when **all** of the following hold:
 | `ArticleDraft` validation + `ArticleError` taxonomy; redacted diagnostics and locked `LLM_REASONS` | Provenance label caller-supplied; no transcript/key in operator JSON (D-12, D-13) | ✓ Phase 8 |
 | Character cap enforced before DeepSeek call; `ArticleBudgetError` maps to `stage=llm_truncation` | No silent truncation; context limited to `char_count`/`max_chars` (D-08, D-09, D-10) | ✓ Phase 8 |
 | Public `data_collection.__all__` stays seven names; new symbols negative-rooted | Adapter/error/template loader are module-private; `Stage` set unchanged (D-04, D-06) | ✓ Phase 8 |
+| RoleKind is first-class on ArticleDraft/MaterialDraft; unknown/empty → employee | Audience roles travel with the draft; templates instruct the model; assembler copies the list | ✓ Phase 9 |
+| Single persist+enqueue RPC; migration 007 canonical; unique `youtube_video_id` (D-05, D-06, D-09) | Atomic draft + shortlist write; overflow creates a new unsent batch; never attach to `sent_at` set | ✓ Phase 9 |
+| Composition owns service-role wiring; idempotency lives in the RPC (D-11) | Blank url/key raises ConfigurationError before `create_client`; no Python video_id pre-check | ✓ Phase 9 |
 
 <decisions>
 ## Locked decisions (from ADRs / ingest)
@@ -161,4 +165,4 @@ After each phase transition: move validated/invalidated requirements; log decisi
 After milestone: full review of Core Value, Out of Scope, and Context against shipped reality.
 
 ---
-*Last updated: 2026-09-27 after Phase 8*
+*Last updated: 2026-09-27 after Phase 9*
