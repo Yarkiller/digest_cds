@@ -5,17 +5,17 @@ milestone_name: YouTube → LLM → Supabase ingestion
 current_phase: 8
 current_phase_name: DeepSeek Article & Templates
 status: ready_to_execute
-stopped_at: Phase 8 planning complete
-last_updated: "2026-09-27T08:16:00.000Z"
+stopped_at: Phase 9 planning
+last_updated: "2026-09-27T09:35:00.000Z"
 last_activity: 2026-09-27
-last_activity_desc: Phase 8 planning complete — 4 plans ready
+last_activity_desc: Phase 8 complete — 4 plans executed, verification passed (inline, gsd-tools EPERM on Windows)
 state_head: a5d5e34
 progress:
   total_phases: 5
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 4
-  completed_plans: 0
-  percent: 0
+  completed_plans: 4
+  percent: 100
 ---
 
 # Project State
@@ -29,12 +29,12 @@ See: .planning/PROJECT.md (updated 2026-09-24)
 
 ## Current Position
 
-Phase: 8 (DeepSeek Article & Templates) — READY TO EXECUTE
+Phase: 9 (Draft Persist & Shortlist Enqueue) — READY TO PLAN
 Plan: Not started
-Status: Ready to execute
-Last activity: 2026-09-27 — Phase 8 planning complete — 4 plans ready
+Status: Phase 8 complete; awaiting Phase 9 planning
+Last activity: 2026-09-27 — Phase 8 complete — 4 plans executed, verification passed
 
-Progress: [░░░░░░░░░░] 0% (phase plans)
+Progress: [████████░░░░░░░░░░░░] 60% (3 of 5 v1.1 phases complete)
 
 ## Performance Metrics
 
@@ -51,7 +51,7 @@ Progress: [░░░░░░░░░░] 0% (phase plans)
 | 1–5 (v1 shipped) | 40 | complete | see MILESTONES |
 | 6. Ports & DTOs | 3/3 | complete | ~3min |
 | 7. Captions Adapter | 3/3 | complete | ~6min |
-| 8. DeepSeek Article & Templates | - | - | - |
+| 8. DeepSeek Article & Templates | 4/4 | complete | ~52min inline |
 | 9. Draft Persist & Shortlist Enqueue | - | - | - |
 | 10. CLI Composition & UAT | - | - | - |
 
@@ -65,6 +65,10 @@ Progress: [░░░░░░░░░░] 0% (phase plans)
 | 07 | 01 | 4min | 3 | 17 |
 | 07 | 02 | 5min | 4 | 9 |
 | 07 | 03 | 8min | 4 | 19 |
+| 08 | 01 | 15min | 2 | 13 |
+| 08 | 02 | 15min | 2 | 6 |
+| 08 | 03 | 12min | 2 | 8 |
+| 08 | 04 | 10min | 2 | 6 |
 
 ## Accumulated Context
 
@@ -108,6 +112,19 @@ Phase 7 execution (07-01…07-03):
 - VideoMetadataProvider + YouTubeOEmbedAdapter + MetadataError/map_metadata_error + FakeVideoMetadataProvider (D-21…D-26)
 - Seven-name public barrel; Settings.youtube_proxy_url + clients; runbook live stubs (D-16…D-20)
 - Advisory review (07-REVIEW.md): CR-01 message may embed context secrets; WR-01 Cookie* SDK escape; harden before Phase 10 CLI emits to_dict()
+
+Phase 8 execution (08-01…08-04):
+
+- `openai>=3.0,<4` on `data-collection` and `ingestion-service`; `uv.lock` updated
+- `DeepSeekArticleGenerator` with injected `AsyncOpenAI`, `response_format=json_object`, thinking disabled, and `ArticleDraft.model_validate`
+- `lecture.md` / `podcast.md` with D-16 headings; `load_article_templates` fails at startup via `TemplateLoadError`
+- `ArticleError` taxonomy (8 subtypes) maps to `IngestError(stage=llm)` with locked `LLM_REASONS`
+- `ArticleBudgetError` → `stage=llm_truncation` with `char_count`/`max_chars` only
+- `Settings` DeepSeek fields + `ConfigurationError`; `build_async_deepseek_client` with timeout 120.0, max_retries 0, trust_env False
+- `FakeArticleGenerator.failures` keyed by `video_id`
+- `ENGLISH_TRANSLATION_SUFFIX` locked in `ingestion_service.provenance`
+- Public `data_collection.__all__` remains seven names; runbook documents DeepSeek env names without a live key
+- Verification passed (73 Phase 8 unit tests green); one unrelated pre-existing `test_http_admin.py` failure noted
 
 ### Pending Todos
 

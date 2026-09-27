@@ -26,7 +26,7 @@ Full phase detail: [milestones/v1-ROADMAP.md](milestones/v1-ROADMAP.md)
 
 - [x] **Phase 6: Ports & DTOs** - Typed Transcript / MaterialDraft boundaries and in-memory port fakes
 - [x] **Phase 7: Captions Adapter** - YouTube URL → captions with fail-closed, zero-row exits
-- [ ] **Phase 8: DeepSeek Article & Templates** - Validated MaterialDraft via lecture/podcast templates, honesty and fail-closed LLM errors
+- [x] **Phase 8: DeepSeek Article & Templates** - Validated MaterialDraft via lecture/podcast templates, honesty and fail-closed LLM errors (2026-09-27)
 - [ ] **Phase 9: Draft Persist & Shortlist Enqueue** - materials draft + provenance + overflow-safe shortlist enqueue
 - [ ] **Phase 10: CLI Composition & UAT** - Typer one-shot, idempotency, staged progress, separate env, 3–5 video UAT
 
@@ -81,23 +81,23 @@ Full phase detail: [milestones/v1-ROADMAP.md](milestones/v1-ROADMAP.md)
 **Depends on**: Phase 7
 **Requirements**: LLM-01, LLM-02, LLM-03, LLM-04, LLM-05
 **Success Criteria** (what must be TRUE):
-  1. DeepSeek (OpenAI-compatible SDK) returns a validated `MaterialDraft` with `title`, `dek`, `body_markdown`, and provenance fields
+  1. DeepSeek (OpenAI-compatible SDK) returns a validated `ArticleDraft` with `title`, `dek`, `body_markdown`; provenance label is caller-supplied in Phase 10
   2. Operator can choose `--template lecture|podcast` backed by repository markdown templates
   3. Network/5xx/invalid JSON/validation LLM failures exit non-zero with `stage=llm`, zero database rows, and no partial output
   4. System prompt requires honesty (transcript-only facts; output always Russian — `ru` format-only, `en` translated to Russian, terms/names/numbers/units preserved); oversized transcripts fail closed with `stage=llm_truncation` and no silent truncation. Supersedes "output language matches transcript".
 **Plans**: `08-01-PLAN.md` · `08-02-PLAN.md` · `08-03-PLAN.md` · `08-04-PLAN.md`
 
 **Wave 1**
-- [ ] `08-01-PLAN.md` — Tracer: stubbed DeepSeek JSON becomes an ArticleDraft for lecture and podcast
+- [x] `08-01-PLAN.md` — Tracer: stubbed DeepSeek JSON becomes an ArticleDraft for lecture and podcast
 
 **Wave 2** *(blocked on Wave 1 completion)*
-- [ ] `08-02-PLAN.md` — Fail closed: SDK, JSON, and validation errors map to stage=llm
+- [x] `08-02-PLAN.md` — Fail closed: SDK, JSON, and validation errors map to stage=llm
 
 **Wave 3** *(blocked on Wave 2 completion)*
-- [ ] `08-03-PLAN.md` — Over-cap transcripts fail closed with stage=llm_truncation
+- [x] `08-03-PLAN.md` — Over-cap transcripts fail closed with stage=llm_truncation
 
 **Wave 4** *(blocked on Wave 3 completion)*
-- [ ] `08-04-PLAN.md` — English suffix constant, fake LLM failures, and the public API boundary
+- [x] `08-04-PLAN.md` — English suffix constant, fake LLM failures, and the public API boundary
 
 ### Phase 9: Draft Persist & Shortlist Enqueue
 **Goal**: A successful draft write lands as `status=draft` with required provenance and appears on an unsent shortlist batch (creating a new batch when the current one is full)

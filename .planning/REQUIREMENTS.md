@@ -21,11 +21,11 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Article generation
 
-- [ ] **LLM-01**: DeepSeek via an OpenAI-compatible SDK returns a validated `MaterialDraft` (`title`, `dek`, `body_markdown`, provenance fields)
-- [ ] **LLM-02**: Operator can choose `--template lecture|podcast` backed by repository markdown templates
-- [ ] **LLM-03**: LLM failures (network, 5xx, invalid JSON, validation) exit non-zero with `stage=llm`, zero database rows, and no partial output
-- [ ] **LLM-04**: System prompt enforces honesty — use only transcript content, no invented facts/names/numbers; output is always Russian (`ru` transcript: format only, do not translate; `en` transcript: translate to Russian). Preserve technical terms, proper names, library names, numbers, and units as written. Caller appends a translation marker to `provenance_label` when `language != "ru"`. Supersedes "output language matches the transcript language".
-- [ ] **LLM-05**: Transcripts that exceed the context budget fail closed with `stage=llm_truncation` and no silent truncation (chunking deferred)
+- [x] **LLM-01**: DeepSeek via an OpenAI-compatible SDK returns a validated `ArticleDraft` (`title`, `dek`, `body_markdown`)
+- [x] **LLM-02**: Operator can choose `--template lecture|podcast` backed by repository markdown templates
+- [x] **LLM-03**: LLM failures (network, 5xx, invalid JSON, validation) exit non-zero with `stage=llm`, zero database rows, and no partial output
+- [x] **LLM-04**: System prompt enforces honesty — use only transcript content, no invented facts/names/numbers; output is always Russian (`ru` transcript: format only, do not translate; `en` transcript: translate to Russian). Preserve technical terms, proper names, library names, numbers, and units as written. Caller appends a translation marker to `provenance_label` when `language != "ru"`. Supersedes "output language matches the transcript language".
+- [x] **LLM-05**: Transcripts that exceed the context budget fail closed with `stage=llm_truncation` and no silent truncation (chunking deferred)
 
 ### Persist and shortlist
 
@@ -78,11 +78,11 @@ Deferred. Not in this milestone's roadmap.
 | DTO-02 | Phase 6 | Complete |
 | CAP-01 | Phase 7 | Complete |
 | CAP-02 | Phase 7 | Complete |
-| LLM-01 | Phase 8 | Pending |
-| LLM-02 | Phase 8 | Pending |
-| LLM-03 | Phase 8 | Pending |
-| LLM-04 | Phase 8 | Pending |
-| LLM-05 | Phase 8 | Pending |
+| LLM-01 | Phase 8 | Complete |
+| LLM-02 | Phase 8 | Complete |
+| LLM-03 | Phase 8 | Complete |
+| LLM-04 | Phase 8 | Complete |
+| LLM-05 | Phase 8 | Complete |
 | PERS-01 | Phase 9 | Pending |
 | PERS-02 | Phase 9 | Pending |
 | CLI-01 | Phase 10 | Pending |
