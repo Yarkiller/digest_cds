@@ -34,7 +34,7 @@ The single remaining warning from iteration 2 is closed. No blockers, no warning
 | 09-04 | L258 | L259 | L277 |
 
 - `rg '^#{1,6}\s*[Tt]hreat\s*[Mm]odel'` returns no matches across all four plans — no residual markdown heading.
-- Each block carries the STRIDE register with digit-suffixed IDs `T-09-01…T-09-04`, so the framework's `extractThreatRegisterIds` will now detect them.
+- Each block carries a unique STRIDE register (`T-09-01…T-09-04` in 09-01, `T-09-05…T-09-08` in 09-02, `T-09-09…T-09-12` in 09-03, `T-09-13…T-09-16` in 09-04) so `extractThreatRegisterIds` detects them without cross-plan collisions (#4683).
 - No `high`-severity row is marked `accept` (09-01: LOW/N/A accept only; 09-02: LOW/N/A accept only; 09-03: HIGH mitigate ×4; 09-04: HIGH mitigate, LOW accept, MEDIUM mitigate ×2).
 
 ## Global checks (re-run)
