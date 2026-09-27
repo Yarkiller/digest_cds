@@ -7,13 +7,13 @@ status: validated
 nyquist_compliant: true
 wave_0_complete: true
 created: "2026-09-27"
-updated: "2026-09-27"
+updated: "2026-09-27T19:29"
 ---
 
 # Phase 09 — Validation Strategy
 
 > Per-phase validation contract for feedback sampling during execution.
-> Audited by `/gsd-validate-phase` on 2026-09-27. PERS-01, PERS-02, and the Phase 7 CAP-02 deferred spy are covered by unit tests. Live Studio apply of migration 007 stays manual-only.
+> Audited by `/gsd-validate-phase` on 2026-09-27 (initial + re-audit). PERS-01, PERS-02, and the Phase 7 CAP-02 deferred spy are covered by unit tests. Live Studio apply of migration 007 stays manual-only.
 
 ---
 
@@ -114,3 +114,21 @@ Requirement classification (COVERED = test exists, targets the behavior, and ran
 | CAP-02 (deferred from Phase 7) | COVERED | `test_captions_failure_zero_persist.py` — captions/article failure → `persist.calls == []` |
 
 Nyquist auditor: 16 targeted tests passed on `test_phase9_migration_007.py` + `test_supabase_draft_persister_contract.py`. Implementation files unchanged.
+
+## Validation Audit 2026-09-27 (re-audit)
+
+| Metric | Count |
+|--------|-------|
+| Gaps found | 0 |
+| Resolved | 0 |
+| Escalated | 0 |
+
+Re-audit of State A (`09-VALIDATION.md` already validated). PLAN/SUMMARY artifacts, per-task map, and live tests were cross-checked. Phase 9 mapped suite: **160 passed**. No new MISSING/PARTIAL automated gaps. Live Studio apply of migration 007 remains the only manual-only item.
+
+Requirement classification (COVERED = test exists, targets the behavior, and ran green):
+
+| Requirement | Status | Evidence |
+|-------------|--------|----------|
+| PERS-01 | COVERED | Role normalization + public-API negatives; persist mapper redaction; comment-stripped D-09 DDL; adapter forwards `p_source_url` / `p_source_author` / `p_provenance_label` and omits `status`/`ready`; CAP-02 spy |
+| PERS-02 | COVERED | persist_draft enrichment + no video_id pre-check; overflow / rejected-capacity / batch_sent; SQL `sent_at IS NULL` contract |
+| CAP-02 (deferred from Phase 7) | COVERED | `test_captions_failure_zero_persist.py` — captions/article failure → `persist.calls == []` |
