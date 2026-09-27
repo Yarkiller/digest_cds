@@ -13,14 +13,45 @@ def _sql() -> str:
     return MIGRATION.read_text(encoding="utf-8")
 
 
+def _sql_without_line_comments() -> str:
+    """Executable SQL only — `--` comments cannot satisfy D-09 assertions."""
+    kept: list[str] = []
+    for raw in _sql().splitlines():
+        kept.append(raw.split("--", 1)[0])
+    return "\n".join(kept)
+
+
+def _normalized_executable_sql() -> str:
+    return " ".join(_sql_without_line_comments().lower().split())
+
+
 def test_migration_007_exists_and_adds_provenance_columns() -> None:
     text = _sql()
-    lower = text.lower()
-    assert "alter table materials add column if not exists source_url text not null" in lower
-    assert "youtube_video_id text not null unique" in lower
-    assert "source_author text not null" in lower
-    assert "source_published_at timestamptz" in lower
+    executable = _normalized_executable_sql()
+    assert "alter table materials add column if not exists source_url text not null" in executable
+    assert "add column if not exists youtube_video_id text" in executable
+    assert "alter column youtube_video_id set not null" in executable
+    assert "add constraint materials_youtube_video_id_key unique (youtube_video_id)" in executable
+    assert "source_author text not null" in executable
+    assert "source_published_at timestamptz" in executable
     assert "phase5-admin-draft" in text
+
+
+def test_migration_007_youtube_video_id_unique_is_ddl_not_comment() -> None:
+    """D-09 / PERS-01: unique NOT NULL must be ALTER/CONSTRAINT statements, not a comment."""
+    executable = _normalized_executable_sql()
+    comments = "\n".join(
+        raw.split("--", 1)[1] for raw in _sql().splitlines() if "--" in raw
+    )
+    comments_norm = " ".join(comments.lower().split())
+
+    assert "add column if not exists youtube_video_id text" in executable
+    assert "alter column youtube_video_id set not null" in executable
+    assert "add constraint materials_youtube_video_id_key unique (youtube_video_id)" in executable
+    assert "materials_youtube_video_id_key" in executable
+    # The plan phrase may live in a comment; executable SQL must still carry the ALTER/constraint.
+    if "youtube_video_id text not null unique" in comments_norm:
+        assert "youtube_video_id text not null unique" not in executable
 
 
 def test_migration_007_creates_persist_draft_and_enqueue_rpc() -> None:

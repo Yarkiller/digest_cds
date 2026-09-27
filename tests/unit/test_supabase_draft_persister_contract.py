@@ -95,11 +95,57 @@ def test_persist_returns_result_from_mocked_rpc() -> None:
     assert result == PersistResult(101, SLUG, 7, 3)
     assert client.calls[0][0] == "persist_draft_and_enqueue"
     params = client.calls[0][1]
+    draft = _draft()
     assert params["p_youtube_video_id"] == VIDEO_ID
     assert params["p_slug"] == SLUG
     assert params["p_roles"] == ["employee", "ds"]
     assert params["p_batch_size"] == 5
     assert params["p_source_published_at"] == "2026-03-20T12:00:00+00:00"
+    assert params["p_source_url"] == draft.source_url
+    assert params["p_source_author"] == draft.source_author
+    assert params["p_provenance_label"] == draft.provenance_label
+    assert params["p_title"] == draft.title
+    assert params["p_dek"] == draft.dek
+    assert params["p_body_markdown"] == draft.body_markdown
+    assert params["p_reading_minutes"] == draft.reading_minutes
+
+
+def test_persist_forwards_required_provenance_params() -> None:
+    """PERS-01: a successful persist must carry source_url, video id, author, published_at, label."""
+    from ingestion_service.adapters.supabase_persist import SupabaseDraftPersister
+
+    draft = _draft()
+    client = _FakeClient(_happy_data())
+    SupabaseDraftPersister(client, batch_size=5).persist(draft)
+
+    assert client.calls[0][0] == "persist_draft_and_enqueue"
+    params = client.calls[0][1]
+    assert params["p_source_url"] == draft.source_url
+    assert params["p_youtube_video_id"] == draft.youtube_video_id
+    assert params["p_source_author"] == draft.source_author
+    assert params["p_source_published_at"] == "2026-03-20T12:00:00+00:00"
+    assert params["p_provenance_label"] == draft.provenance_label
+    assert params["p_title"] == draft.title
+    assert params["p_dek"] == draft.dek
+    assert params["p_body_markdown"] == draft.body_markdown
+    assert params["p_reading_minutes"] == draft.reading_minutes
+
+
+def test_persist_never_forwards_status_or_ready_to_rpc() -> None:
+    """PERS-01: status is hard-coded to draft inside Postgres; adapter must not send it."""
+    from ingestion_service.adapters.supabase_persist import SupabaseDraftPersister
+
+    client = _FakeClient(_happy_data())
+    SupabaseDraftPersister(client, batch_size=5).persist(_draft())
+
+    params = client.calls[0][1]
+    keys = {key.lower() for key in params}
+    assert "status" not in keys
+    assert "p_status" not in keys
+    assert "ready" not in keys
+    assert "p_ready" not in keys
+    assert not any("status" in key.lower() for key in params)
+    assert all(str(value).lower() != "ready" for value in params.values())
 
 
 def test_persist_passes_none_published_at() -> None:
