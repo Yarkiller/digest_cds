@@ -11,6 +11,7 @@ import typer
 from data_collection.adapters.youtube_oembed import YouTubeOEmbedAdapter
 from data_collection.adapters.youtube_transcript import YouTubeTranscriptAdapter
 from data_collection.dto.template_kind import TemplateKind
+from data_collection.templates import TemplateLoadError
 
 from ingestion_service.application.use_cases.ingest_pipeline import run_ingest_pipeline
 from ingestion_service.composition.clients import (
@@ -69,7 +70,8 @@ def main(
                 on_stage=_on_stage,
             )
         )
-    except ConfigurationError as err:
+    except (ConfigurationError, TemplateLoadError) as err:
+        # D-08: pre-video failures stay human text — never mint a new IngestError stage.
         typer.echo(str(err), err=True)
         raise typer.Exit(code=1) from err
     except IngestError as err:
