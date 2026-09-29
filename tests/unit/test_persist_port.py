@@ -32,21 +32,28 @@ def test_concrete_persist_port_returns_persist_result() -> None:
     from ingestion_service.application.ports.persist import PersistPort, PersistResult
     from ingestion_service.tests_support.fakes import FakeDraftPersister
 
-    result = PersistResult(material_id=1, slug="s", batch_id=2, rank=3)
+    result = PersistResult(
+        material_id=1, slug="s", batch_id=2, rank=3, already_saved=False
+    )
     port: PersistPort = FakeDraftPersister(result)
     returned = port.persist(_draft())
-    assert returned == PersistResult(material_id=1, slug="s", batch_id=2, rank=3)
+    assert returned == PersistResult(
+        material_id=1, slug="s", batch_id=2, rank=3, already_saved=False
+    )
     assert returned.material_id == 1
     assert returned.slug == "s"
     assert returned.batch_id == 2
     assert returned.rank == 3
+    assert returned.already_saved is False
 
 
 def test_fake_records_call_and_returns_scripted_result() -> None:
     from ingestion_service.application.ports.persist import PersistResult
     from ingestion_service.tests_support.fakes import FakeDraftPersister
 
-    result = PersistResult(material_id=1, slug="s", batch_id=2, rank=3)
+    result = PersistResult(
+        material_id=1, slug="s", batch_id=2, rank=3, already_saved=False
+    )
     fake = FakeDraftPersister(result)
     draft = _draft()
     assert fake.persist(draft) == result
@@ -59,7 +66,9 @@ def test_fake_raises_scripted_error_and_still_records_call() -> None:
     from ingestion_service.application.ports.persist import PersistResult
     from ingestion_service.tests_support.fakes import FakeDraftPersister
 
-    result = PersistResult(material_id=1, slug="s", batch_id=2, rank=3)
+    result = PersistResult(
+        material_id=1, slug="s", batch_id=2, rank=3, already_saved=False
+    )
     error = DraftPersistError("persist_conflict", video_id=VIDEO_ID)
     fake = FakeDraftPersister(result, failures={VIDEO_ID: error})
     draft = _draft()
@@ -69,16 +78,24 @@ def test_fake_raises_scripted_error_and_still_records_call() -> None:
     assert fake.calls == [draft]
 
 
-def test_fake_repeat_video_id_returns_stored_result_without_second_entry() -> None:
+def test_fake_repeat_video_id_returns_already_saved_true_without_second_entry() -> None:
     from ingestion_service.application.ports.persist import PersistResult
     from ingestion_service.tests_support.fakes import FakeDraftPersister
 
-    result = PersistResult(material_id=1, slug="s", batch_id=2, rank=3)
+    result = PersistResult(
+        material_id=1, slug="s", batch_id=2, rank=3, already_saved=False
+    )
     fake = FakeDraftPersister(result)
     first = fake.persist(_draft())
     second = fake.persist(_draft(title="other title"))
-    assert first == second == result
+    assert first.already_saved is False
+    assert second.already_saved is True
+    assert second.material_id == first.material_id
+    assert second.slug == first.slug
+    assert second.batch_id == first.batch_id
+    assert second.rank == first.rank
     assert list(fake.stored.keys()) == [VIDEO_ID]
+    assert len(fake.stored) == 1
     assert len(fake.calls) == 2
 
 
@@ -86,7 +103,11 @@ def test_persist_port_is_runtime_checkable() -> None:
     from ingestion_service.application.ports.persist import PersistPort, PersistResult
     from ingestion_service.tests_support.fakes import FakeDraftPersister
 
-    fake = FakeDraftPersister(PersistResult(material_id=1, slug="s", batch_id=2, rank=3))
+    fake = FakeDraftPersister(
+        PersistResult(
+            material_id=1, slug="s", batch_id=2, rank=3, already_saved=False
+        )
+    )
     assert isinstance(fake, PersistPort)
 
 
