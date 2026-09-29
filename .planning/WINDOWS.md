@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 12
+open_count: 13
 waived_count: 0
 fixed_count: 3
-total_count: 15
-last_updated: 2026-09-21T18:31:58.934Z
+total_count: 16
+last_updated: 2026-09-29T17:58:41.951Z
 ---
 
 # Broken Windows Ledger
@@ -30,6 +30,7 @@ last_updated: 2026-09-21T18:31:58.934Z
 | 13 | 04 | stub | tests/web-app.spec.js |  | Playwright notebook enable/disable proofs deferred to 04-09 | fixed |  | 2026-09-21T05:25:32.263Z | 2026-09-21T09:25:01.654Z |
 | 14 | 04 | unmet-truth | .planning/phases/04-knowledge-razbory/04-VALIDATION.md |  | UI-SPEC overflow/long-text backstops held for verify-work (pagination has_more, many chronology, visual wrap) | open |  | 2026-09-21T09:25:10.848Z |  |
 | 15 | 05 | deviation | web/src/services/adminPreviewComposition.js |  | Extracted pure composition helpers for node --test (Vite import.meta boundary) | open |  | 2026-09-21T18:31:58.934Z |  |
+| 16 | 10 | deviation | ingestion-service/src/ingestion_service/application/ports/persist.py |  | already_saved defaults False for deferred 10-05 call sites | open |  | 2026-09-29T17:58:41.951Z |  |
 
 ````json
 [
@@ -212,6 +213,19 @@ last_updated: 2026-09-21T18:31:58.934Z
     "reason": "",
     "recorded_at": "2026-09-21T18:31:58.934Z",
     "resolved_at": null
+  },
+  {
+    "id": 16,
+    "kind": "deviation",
+    "phase": "10",
+    "file": "ingestion-service/src/ingestion_service/application/ports/persist.py",
+    "line": null,
+    "description": "already_saved defaults False for deferred 10-05 call sites",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-29T17:58:41.951Z",
+    "resolved_at": null,
+    "milestone": "v1.1"
   }
 ]
 ````

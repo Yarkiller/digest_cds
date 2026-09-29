@@ -5,17 +5,17 @@ milestone_name: YouTube → LLM → Supabase ingestion
 current_phase: 10
 current_phase_name: CLI Composition & UAT
 status: executing
-stopped_at: Phase 10 context gathered
-last_updated: "2026-09-29T17:32:27.799Z"
-last_activity: 2026-09-27
-last_activity_desc: Phase 09 UAT 18/18 + VERIFICATION refreshed; ready to plan Phase 10
-state_head: 24f0adcf89f5992afef1ff25e6f90b1f54eefda9
+stopped_at: Completed 10-01-PLAN.md
+last_updated: "2026-09-29T17:58:39.841Z"
+last_activity: 2026-09-29
+last_activity_desc: Phase 10 execution started
+state_head: 6b0f1beb01bcfc466d42dd74292c0df4bba758e0
 progress:
   total_phases: 5
   completed_phases: 9
   total_plans: 19
-  completed_plans: 14
-  percent: 74
+  completed_plans: 15
+  percent: 79
 ---
 
 # Project State
@@ -29,12 +29,12 @@ See: .planning/PROJECT.md (updated 2026-09-27)
 
 ## Current Position
 
-Phase: 10 (CLI Composition & UAT) — READY TO EXECUTE
-Plan: Not started
+Phase: 10 (CLI Composition & UAT) — EXECUTING
+Plan: 2 of 5
 Status: Ready to execute
-Last activity: 2026-09-27 — Phase 09 UAT complete, VERIFICATION refreshed, ready to plan Phase 10
+Last activity: 2026-09-29 — Phase 10 execution started
 
-Progress: [███████░░░] 74% (4 of 5 v1.1 phases complete) — [████████████████████] 14/14 planned plans (100%)
+Progress: [████████░░] 79% (4 of 5 v1.1 phases complete) — [████████████████████] 14/14 planned plans (100%)
 
 ## Performance Metrics
 
@@ -83,6 +83,7 @@ Progress: [███████░░░] 74% (4 of 5 v1.1 phases complete) —
 | Phase 09 P02 | 5 min | 3 tasks | 15 files |
 | Phase 09 P03 | 12min | 4 tasks | 6 files |
 | Phase 09 P04 | 7 min | 4 tasks | 9 files |
+| Phase 10 P01 | 12min | 3 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -144,6 +145,8 @@ Phase 8 execution (08-01…08-04):
 - [Phase 09 / 09-03]: User replied **proceed** on the one-way schema gate. Accepted as one-way: **D-05** (single persist+enqueue RPC), **D-06** (migration 007 is the canonical record), **D-09** (unique constraint on `materials.youtube_video_id`). Undo requires a follow-up migration. Task 1 recorded before any `007_phase9_persist_draft.sql` authoring.
 - [Phase 09]: D-05/D-06/D-09 proceed; user pushed 007 via Studio; persist_draft_and_enqueue live; unique youtube_video_id — One-way schema gate accepted; shared VM apply confirmed by human (RPC 1, columns 4, unique index, service_role execute).
 - [Phase 09]: Composition owns Supabase service-role wiring; blank url/key raises ConfigurationError before create_client; persist idempotency/overflow proven on the fake port; CAP-02 captions failure leaves persist.calls empty. — Adapters must not read os.environ. D-11 keeps idempotency in the port/RPC, not a Python pre-check. Phase 7 D-14 deferred the persist spy to Phase 9.
+- [Phase 10]: build_ingest_deps SimpleNamespace seam for CliRunner monkeypatch
+- [Phase 10]: PersistResult.already_saved defaults False until 10-05 live RPC parse
 
 ### Pending Todos
 
@@ -163,7 +166,7 @@ leaderboard, quiz, PIPE-01 YAML UI, live SMTP, signup mail, Whisper/Foundry ASR,
 
 ## Session Continuity
 
-Last session: 2026-09-29T16:41:48.169Z
-Stopped at: Phase 10 context gathered
-Resume file: .planning/phases/10-cli-composition-uat/10-CONTEXT.md
+Last session: 2026-09-29T17:58:39.271Z
+Stopped at: Completed 10-01-PLAN.md
+Resume file: None
 Next: `/gsd-discuss-phase 10`

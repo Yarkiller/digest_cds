@@ -34,10 +34,10 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### CLI and UAT
 
-- [ ] **CLI-01**: `ingestion-service` Typer one-shot prints `material_id`, `slug`, `batch_id`, and `rank` on success
+- [x] **CLI-01**: `ingestion-service` Typer one-shot prints `material_id`, `slug`, `batch_id`, and `rank` on success
 - [ ] **CLI-02**: Re-running the same `video_id` does not create duplicate materials or shortlist rows (upsert / conflict-safe)
 - [ ] **CLI-03**: UAT: 3–5 real captioned videos appear as drafts in `/admin/digest`, including at least one English source video (draft in Russian)
-- [ ] **CLI-04**: CLI prints staged progress (`✓ transcript` / `✓ LLM` / `✓ saved`)
+- [x] **CLI-04**: CLI prints staged progress (`✓ transcript` / `✓ LLM` / `✓ saved`)
 - [ ] **CLI-05**: `ingestion-service` has its own `.env`, separate from the backend env file
 
 ## v2 Requirements
@@ -85,10 +85,10 @@ Deferred. Not in this milestone's roadmap.
 | LLM-05 | Phase 8 | Complete |
 | PERS-01 | Phase 9 | Complete |
 | PERS-02 | Phase 9 | Complete |
-| CLI-01 | Phase 10 | Pending |
+| CLI-01 | Phase 10 | Complete |
 | CLI-02 | Phase 10 | Pending |
 | CLI-03 | Phase 10 | Pending |
-| CLI-04 | Phase 10 | Pending |
+| CLI-04 | Phase 10 | Complete |
 | CLI-05 | Phase 10 | Pending |
 
 **Coverage:**
