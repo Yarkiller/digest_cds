@@ -94,3 +94,36 @@ def test_cli_requires_template_flag(monkeypatch) -> None:
     result = CliRunner().invoke(cli_mod.app, [URL])
     assert result.exit_code != 0
     assert "material_id:" not in result.stdout
+
+
+def test_cli_rerun_prints_already_saved_true_with_stored_ids(monkeypatch) -> None:
+    """D-09, D-10: second invoke exits 0 with already_saved: true and same id lines."""
+    from typer.testing import CliRunner
+
+    from ingestion_service import cli as cli_mod
+
+    persist = FakeDraftPersister(_persist_result())
+    deps = _fake_deps(persist)
+    monkeypatch.setattr(cli_mod, "build_ingest_deps", lambda: deps)
+
+    runner = CliRunner()
+    first = runner.invoke(cli_mod.app, [URL, "--template", "lecture"])
+    assert first.exit_code == 0
+    assert first.stdout.splitlines() == EXPECTED_SUCCESS_LINES
+
+    second = runner.invoke(cli_mod.app, [URL, "--template", "lecture"])
+    assert second.exit_code == 0
+    assert second.stderr == ""
+    second_lines = second.stdout.splitlines()
+    assert second_lines == [
+        "✓ transcript",
+        "✓ LLM",
+        "✓ saved",
+        "material_id: 42",
+        f"slug: {EXPECTED_SLUG}",
+        "batch_id: 7",
+        "rank: 1",
+        "already_saved: true",
+    ]
+    assert len(persist.stored) == 1
+    assert list(persist.stored.keys()) == [VIDEO_ID]
