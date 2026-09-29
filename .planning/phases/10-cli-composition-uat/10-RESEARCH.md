@@ -467,20 +467,18 @@ if existing is not None:
 
 **If empty were required:** N/A — table has discretionary items needing plan locks.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Migration number and apply ritual**
+1. **Migration number and apply ritual** — RESOLVED: New `008_phase10_persist_already_saved.sql` with `CREATE OR REPLACE` of `persist_draft_and_enqueue` (idempotent); never edit applied `007` in place; one-way `checkpoint:decision` then author in 10-03; `[BLOCKING]` `supabase db push` in 10-05 after the migration file exists (D-09, D-12).
    - What we know: Phase 9 used `007` + human Studio apply + checkpoint.
-   - What's unclear: Whether planner names `008_phase10_persist_already_saved.sql` vs editing docs-only note.
-   - Recommendation: **New `008` file** with `CREATE OR REPLACE` (idempotent); never edit applied `007` in place on the VM narrative; human checkpoint before apply.
+   - Recommendation (honored): **New `008` file** with `CREATE OR REPLACE`; human checkpoint before apply.
 
-2. **Composition seam for CliRunner**
+2. **Composition seam for CliRunner** — RESOLVED: Injectable async `run_ingest_pipeline(...)` plus thin `cli.py` `build_ingest_deps()` (or equivalent); CliRunner monkeypatches the builder with fakes (locked in 10-01 tracer; no env-flag override).
    - What we know: Need to inject fakes without network.
-   - What's unclear: Override via env flag vs optional `build_pipeline(...)` injectable from `cli.py`.
-   - Recommendation: Pure `run_ingest_pipeline(deps, url, template, on_stage=...)` + thin `cli.py` that builds live deps; tests call use-case + separately CliRunner with monkeypatched builder.
+   - Recommendation (honored): Pure `run_ingest_pipeline` + thin CLI; tests monkeypatch builder.
 
-3. **Exact consistency `reason` string**
-   - Recommendation: Lock `video_id_mismatch` in PLAN with context keys `transcript_video_id`, `metadata_video_id` only (no transcript text).
+3. **Exact consistency `reason` string** — RESOLVED: `reason=video_id_mismatch` with context keys only `transcript_video_id`, `metadata_video_id` (locked in 10-02; CONSISTENCY-01; A1).
+   - Recommendation (honored): Lock `video_id_mismatch` in PLAN tests; no transcript text in context.
 
 ## Environment Availability
 
