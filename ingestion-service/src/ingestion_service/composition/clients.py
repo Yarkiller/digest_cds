@@ -9,6 +9,8 @@ from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api.proxies import GenericProxyConfig
 
 from data_collection.adapters.deepseek_article import DeepSeekArticleGenerator
+from data_collection.adapters.youtube_oembed import YouTubeOEmbedAdapter
+from data_collection.adapters.youtube_transcript import YouTubeTranscriptAdapter
 from data_collection.templates import load_article_templates
 
 from ingestion_service.adapters.supabase_persist import SupabaseDraftPersister
@@ -33,6 +35,16 @@ def build_httpx_client(settings: Settings) -> httpx.AsyncClient:
     if proxy:
         return httpx.AsyncClient(proxy=proxy, timeout=_DEFAULT_TIMEOUT)
     return httpx.AsyncClient(timeout=_DEFAULT_TIMEOUT)
+
+
+def build_youtube_captions(settings: Settings) -> YouTubeTranscriptAdapter:
+    """Wire YouTube captions adapter from Settings (D-02; adapters never read os.environ)."""
+    return YouTubeTranscriptAdapter(build_youtube_transcript_api(settings))
+
+
+def build_youtube_metadata_provider(settings: Settings) -> YouTubeOEmbedAdapter:
+    """Wire YouTube oEmbed metadata adapter from Settings (D-02)."""
+    return YouTubeOEmbedAdapter(build_httpx_client(settings))
 
 
 def build_async_deepseek_client(

@@ -8,17 +8,15 @@ from types import SimpleNamespace
 from typing import Annotated, Any
 
 import typer
-from data_collection.adapters.youtube_oembed import YouTubeOEmbedAdapter
-from data_collection.adapters.youtube_transcript import YouTubeTranscriptAdapter
 from data_collection.dto.template_kind import TemplateKind
 from data_collection.templates import TemplateLoadError
 
 from ingestion_service.application.use_cases.ingest_pipeline import run_ingest_pipeline
 from ingestion_service.composition.clients import (
     build_deepseek_article_generator,
-    build_httpx_client,
     build_supabase_draft_persister,
-    build_youtube_transcript_api,
+    build_youtube_captions,
+    build_youtube_metadata_provider,
 )
 from ingestion_service.composition.config_error import ConfigurationError
 from ingestion_service.composition.settings import Settings
@@ -37,8 +35,8 @@ def build_ingest_deps() -> Any:
     """Composition seam for live adapters; CliRunner monkeypatches this with fakes."""
     settings = Settings.from_env()
     return SimpleNamespace(
-        captions=YouTubeTranscriptAdapter(build_youtube_transcript_api(settings)),
-        metadata_provider=YouTubeOEmbedAdapter(build_httpx_client(settings)),
+        captions=build_youtube_captions(settings),
+        metadata_provider=build_youtube_metadata_provider(settings),
         article=build_deepseek_article_generator(settings),
         persist=build_supabase_draft_persister(settings),
     )

@@ -390,3 +390,18 @@ RUN_YOUTUBE_INTEGRATION=1 uv run pytest tests/integration -m integration
 ```
 
 Use `YOUTUBE_PROXY_URL` from §1 when egress to YouTube is blocked (Cloud.ru → `youtube_blocked`). Pipeline order captions-then-metadata is Phase 10 policy (D-24) — these stubs do not implement the orchestrator.
+
+---
+
+## 5d. Phase 10 CLI UAT (`ingest` — CLI-03 / CLI-05 / D-02)
+
+Manual four-video proof that live composition wires YouTube → DeepSeek → Supabase drafts into `/admin/digest`. Checklist: [`.planning/phases/10-cli-composition-uat/10-UAT.md`](../../.planning/phases/10-cli-composition-uat/10-UAT.md).
+
+**Env (CLI-05 / D-02):** copy `ingestion-service/.env.example` → `ingestion-service/.env` with live `DEEPSEEK_API_KEY`, `SUPABASE_URL`, `SUPABASE_SECRET_KEY` (service_role). Do not point UAT at the root backend `.env`. Optional: `YOUTUBE_PROXY_URL` when YouTube egress is blocked.
+
+```bash
+# from repo root — process-scoped secrets only via --env-file
+uv run --env-file ingestion-service/.env ingest <url> --template lecture|podcast
+```
+
+Pick four captioned URLs at UAT time (lecture+ru, lecture+en, podcast+ru, podcast+en). Record `material_id` / `slug` / `already_saved` in `10-UAT.md`. Confirm each draft in `/admin/digest` (unsent shortlist, `status=draft`, Russian body, EN provenance suffix when applicable). Do not paste service_role or DeepSeek keys into UAT notes (T-10-11). No Playwright for this UAT; no backend/SPA edits required for drafts to appear.
