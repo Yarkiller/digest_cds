@@ -97,7 +97,12 @@ def test_persist_draft_twice_same_video_id_returns_same_result() -> None:
     draft = _draft()
     first = persist_draft(draft, fake)
     second = persist_draft(draft, fake)
-    assert first == second == result
+    assert first.already_saved is False
+    assert second.already_saved is True
+    assert second.material_id == first.material_id == result.material_id
+    assert second.slug == first.slug == result.slug
+    assert second.batch_id == first.batch_id == result.batch_id
+    assert second.rank == first.rank == result.rank
     assert list(fake.stored.keys()) == [VIDEO_ID]
     assert len(fake.calls) == 2
 

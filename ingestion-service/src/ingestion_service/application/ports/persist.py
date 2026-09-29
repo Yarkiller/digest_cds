@@ -14,7 +14,7 @@ class PersistResult:
     slug: str
     batch_id: int
     rank: int
-    already_saved: bool
+    already_saved: bool = False
 
 
 @runtime_checkable

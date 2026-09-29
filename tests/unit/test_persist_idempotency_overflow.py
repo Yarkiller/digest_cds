@@ -42,7 +42,8 @@ def test_persist_draft_twice_same_video_id_is_idempotent() -> None:
     draft = _draft("dQw4w9WgXcQ")
     first = persist_draft(draft, fake)
     second = persist_draft(draft, fake)
-    assert first == second
+    assert first.already_saved is False
+    assert second.already_saved is True
     assert first.material_id == second.material_id
     assert first.slug == second.slug
     assert first.batch_id == second.batch_id
