@@ -146,7 +146,24 @@ Full phase detail: [milestones/v1-ROADMAP.md](milestones/v1-ROADMAP.md)
   3. CLI prints staged progress (`✓ transcript` / `✓ LLM` / `✓ saved`) and loads secrets from `ingestion-service/.env` (not the backend env file)
   4. UAT: 3–5 real captioned videos appear as drafts in `/admin/digest` with no backend/SPA code changes required, including at least one English source video (draft in Russian)
 
-**Plans**: TBD
+**Plans**: 5 plans
+
+Plans:
+**Wave 1**
+- [ ] 10-01-PLAN.md — Tracer: Typer `ingest` happy path + PersistResult.already_saved on fakes (CLI-01, CLI-04)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [ ] 10-02-PLAN.md — Pipeline edges, D-08 errors, ingestion `.env.example` (CLI-04, CLI-05)
+- [ ] 10-03-PLAN.md — Migration 008 decision gate + SQL authoring (CLI-02)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [ ] 10-05-PLAN.md — Adapter already_saved parse + blocking schema push (CLI-02)
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [ ] 10-04-PLAN.md — Live composition + four-video manual UAT (CLI-03)
+
+**Cross-cutting constraints:**
+- Edge CLI-02 concurrency: guarantees are Postgres `ON CONFLICT DO NOTHING` atomicity; no Python pre-check; parallel CLI processes may race but only one material row exists.
 
 ## Progress
 
@@ -161,4 +178,4 @@ Full phase detail: [milestones/v1-ROADMAP.md](milestones/v1-ROADMAP.md)
 | 7. Captions Adapter | v1.1 | 3/3 | Complete | 2026-09-26 |
 | 8. DeepSeek Article & Templates | v1.1 | 4/4 | Complete | 2026-09-27 |
 | 9. Draft Persist & Shortlist Enqueue | v1.1 | 4/4 | Complete    | 2026-09-27 |
-| 10. CLI Composition & UAT | v1.1 | 0/? | Not started | - |
+| 10. CLI Composition & UAT | v1.1 | 0/5 | Planned | - |
