@@ -14,6 +14,7 @@ class PersistResult:
     slug: str
     batch_id: int
     rank: int
+    already_saved: bool
 
 
 @runtime_checkable

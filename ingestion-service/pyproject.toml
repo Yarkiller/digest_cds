@@ -21,3 +21,6 @@ module-root = "src"
 
 [tool.uv.sources]
 data-collection = { workspace = true }
+
+[project.scripts]
+ingest = "ingestion_service.cli:app"

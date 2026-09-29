@@ -31,9 +31,22 @@ class FakeDraftPersister:
             raise failure
         existing = self.stored.get(material_draft.youtube_video_id)
         if existing is not None:
-            return existing
-        self.stored[material_draft.youtube_video_id] = self._result
-        return self._result
+            return PersistResult(
+                material_id=existing.material_id,
+                slug=existing.slug,
+                batch_id=existing.batch_id,
+                rank=existing.rank,
+                already_saved=True,
+            )
+        stored = PersistResult(
+            material_id=self._result.material_id,
+            slug=self._result.slug,
+            batch_id=self._result.batch_id,
+            rank=self._result.rank,
+            already_saved=False,
+        )
+        self.stored[material_draft.youtube_video_id] = stored
+        return stored
 
 
 @dataclass
@@ -88,7 +101,13 @@ class BatchTrackingFakePersister:
                     "batch_creation_failed",
                     video_id=material_draft.youtube_video_id,
                 )
-            return existing
+            return PersistResult(
+                material_id=existing.material_id,
+                slug=existing.slug,
+                batch_id=existing.batch_id,
+                rank=existing.rank,
+                already_saved=True,
+            )
         batch = self._target_unsent_batch()
         rank = len(batch.items) + 1
         result = PersistResult(
@@ -96,6 +115,7 @@ class BatchTrackingFakePersister:
             slug=material_draft.slug,
             batch_id=batch.batch_id,
             rank=rank,
+            already_saved=False,
         )
         self._next_material_id += 1
         batch.items.append(

@@ -1,0 +1,74 @@
+"""run_ingest_pipeline — URL → captions → metadata → LLM → persist (CLI-01)."""
+
+from __future__ import annotations
+
+from collections.abc import Callable
+
+from data_collection.assemble import assemble_material_draft
+from data_collection.dto.template_kind import TemplateKind
+from data_collection.errors.article import ArticleError
+from data_collection.errors.captions import CaptionsError
+from data_collection.errors.metadata import MetadataError
+from data_collection.ports.article_generator import ArticleGenerator
+from data_collection.ports.transcript_provider import TranscriptProvider
+from data_collection.ports.video_metadata_provider import VideoMetadataProvider
+from ingestion_service.adapters.persist_errors import DraftPersistError
+from ingestion_service.application.ports.persist import PersistPort, PersistResult
+from ingestion_service.application.use_cases.persist_draft import persist_draft
+from ingestion_service.mapping.article import map_article_error
+from ingestion_service.mapping.captions import map_captions_error
+from ingestion_service.mapping.metadata import map_metadata_error
+from ingestion_service.mapping.persist import map_persist_error
+from ingestion_service.mapping.url import map_url_error
+from ingestion_service.provenance import ENGLISH_TRANSLATION_SUFFIX
+from ingestion_service.url import InvalidYouTubeUrl, extract_video_id
+
+OnStage = Callable[[str], None]
+
+
+async def run_ingest_pipeline(
+    url: str,
+    template: TemplateKind,
+    *,
+    captions: TranscriptProvider,
+    metadata_provider: VideoMetadataProvider,
+    article: ArticleGenerator,
+    persist: PersistPort,
+    on_stage: OnStage | None = None,
+) -> PersistResult:
+    try:
+        video_id = extract_video_id(url)
+    except InvalidYouTubeUrl as err:
+        raise map_url_error(err) from err
+
+    try:
+        transcript = await captions.get(video_id)
+    except CaptionsError as err:
+        raise map_captions_error(err) from err
+    if on_stage is not None:
+        on_stage("transcript")
+
+    try:
+        metadata = await metadata_provider.get(video_id)
+    except MetadataError as err:
+        raise map_metadata_error(err) from err
+
+    provenance = f"YouTube · {metadata.author}"
+    if transcript.language != "ru":
+        provenance = f"{provenance}{ENGLISH_TRANSLATION_SUFFIX}"
+
+    try:
+        article_draft = await article.process(transcript, template)
+    except ArticleError as err:
+        raise map_article_error(err) from err
+    if on_stage is not None:
+        on_stage("llm")
+
+    material = assemble_material_draft(article_draft, metadata, provenance)
+    try:
+        result = persist_draft(material, persist)
+    except DraftPersistError as err:
+        raise map_persist_error(err) from err
+    if on_stage is not None:
+        on_stage("saved")
+    return result
