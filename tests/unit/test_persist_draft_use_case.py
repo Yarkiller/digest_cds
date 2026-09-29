@@ -62,7 +62,9 @@ def test_persist_draft_returns_port_result_and_enriches_draft() -> None:
     from ingestion_service.application.use_cases.persist_draft import persist_draft
     from ingestion_service.tests_support.fakes import FakeDraftPersister
 
-    result = PersistResult(material_id=11, slug="s", batch_id=4, rank=1)
+    result = PersistResult(
+        material_id=11, slug="s", batch_id=4, rank=1, already_saved=False
+    )
     fake = FakeDraftPersister(result)
     draft = _draft()
     assert persist_draft(draft, fake) == result
@@ -79,7 +81,9 @@ def test_persist_draft_overwrites_existing_slug_and_reading_minutes() -> None:
     from ingestion_service.tests_support.fakes import FakeDraftPersister
 
     fake = FakeDraftPersister(
-        PersistResult(material_id=1, slug="s", batch_id=2, rank=3)
+        PersistResult(
+            material_id=1, slug="s", batch_id=2, rank=3, already_saved=False
+        )
     )
     persist_draft(_draft(slug="old-slug", reading_minutes=99), fake)
     passed = fake.calls[0]
@@ -92,7 +96,9 @@ def test_persist_draft_twice_same_video_id_returns_same_result() -> None:
     from ingestion_service.application.use_cases.persist_draft import persist_draft
     from ingestion_service.tests_support.fakes import FakeDraftPersister
 
-    result = PersistResult(material_id=11, slug="s", batch_id=4, rank=1)
+    result = PersistResult(
+        material_id=11, slug="s", batch_id=4, rank=1, already_saved=False
+    )
     fake = FakeDraftPersister(result)
     draft = _draft()
     first = persist_draft(draft, fake)

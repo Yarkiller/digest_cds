@@ -72,13 +72,16 @@ def _draft(**overrides: object) -> MaterialDraft:
     return MaterialDraft(**base)
 
 
-def _happy_data() -> dict[str, object]:
-    return {
+def _happy_data(**overrides: object) -> dict[str, object]:
+    data: dict[str, object] = {
         "material_id": 101,
         "slug": SLUG,
         "batch_id": 7,
         "rank": 3,
+        "already_saved": False,
     }
+    data.update(overrides)
+    return data
 
 
 def test_persist_returns_result_from_mocked_rpc() -> None:
@@ -92,7 +95,7 @@ def test_persist_returns_result_from_mocked_rpc() -> None:
     persister = SupabaseDraftPersister(client, batch_size=5)
     result = persister.persist(_draft())
 
-    assert result == PersistResult(101, SLUG, 7, 3)
+    assert result == PersistResult(101, SLUG, 7, 3, already_saved=False)
     assert client.calls[0][0] == "persist_draft_and_enqueue"
     params = client.calls[0][1]
     draft = _draft()
@@ -108,6 +111,40 @@ def test_persist_returns_result_from_mocked_rpc() -> None:
     assert params["p_dek"] == draft.dek
     assert params["p_body_markdown"] == draft.body_markdown
     assert params["p_reading_minutes"] == draft.reading_minutes
+
+
+def test_persist_maps_already_saved_true_with_stored_slug() -> None:
+    """D-09 / D-12: conflict RPC returns stored slug + already_saved true (CLI-02)."""
+    from ingestion_service.adapters.supabase_persist import SupabaseDraftPersister
+    from ingestion_service.application.ports.persist import PersistResult
+
+    stored_slug = "stored-slug-from-materials"
+    client = _FakeClient(_happy_data(slug=stored_slug, already_saved=True))
+    result = SupabaseDraftPersister(client, batch_size=5).persist(_draft())
+
+    assert result == PersistResult(101, stored_slug, 7, 3, already_saved=True)
+
+
+def test_persist_missing_already_saved_raises_rpc_error() -> None:
+    """Adapter requires already_saved in RPC payload (CLI-02)."""
+    from ingestion_service.adapters.persist_errors import DraftPersistRpcError
+    from ingestion_service.adapters.supabase_persist import SupabaseDraftPersister
+
+    payload = {
+        "material_id": 101,
+        "slug": SLUG,
+        "batch_id": 7,
+        "rank": 3,
+    }
+    client = _FakeClient(payload)
+    try:
+        SupabaseDraftPersister(client, batch_size=5).persist(_draft())
+    except DraftPersistRpcError as exc:
+        assert "rpc_error" in str(exc) or (
+            exc.args and exc.args[0] == "rpc_error"
+        )
+        return
+    raise AssertionError("expected DraftPersistRpcError")
 
 
 def test_persist_forwards_required_provenance_params() -> None:

@@ -106,7 +106,11 @@ def test_rerun_when_only_sent_batch_exists_raises_batch_creation_failed() -> Non
     fake.seed_batch(batch_id=3, sent_at=sent_at)
     fake.seed_item(3, decision="pending", video_id="published-vid")
     fake.stored["published-vid"] = PersistResult(
-        material_id=9, slug="published-vid", batch_id=3, rank=1
+        material_id=9,
+        slug="published-vid",
+        batch_id=3,
+        rank=1,
+        already_saved=False,
     )
 
     with pytest.raises(DraftPersistBatchError) as exc:

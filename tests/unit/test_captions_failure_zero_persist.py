@@ -40,7 +40,9 @@ def _metadata() -> VideoMetadata:
 
 def _persist_spy() -> FakeDraftPersister:
     return FakeDraftPersister(
-        PersistResult(material_id=1, slug="unused", batch_id=1, rank=1)
+        PersistResult(
+            material_id=1, slug="unused", batch_id=1, rank=1, already_saved=False
+        )
     )
 
 
