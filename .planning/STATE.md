@@ -5,17 +5,17 @@ milestone_name: YouTube → LLM → Supabase ingestion
 current_phase: 10
 current_phase_name: CLI Composition & UAT
 status: executing
-stopped_at: Completed 10-01-PLAN.md
-last_updated: "2026-09-29T17:58:39.841Z"
+stopped_at: Completed 10-02-PLAN.md
+last_updated: "2026-09-29T18:05:54.141Z"
 last_activity: 2026-09-29
 last_activity_desc: Phase 10 execution started
-state_head: 6b0f1beb01bcfc466d42dd74292c0df4bba758e0
+state_head: dea13a9748546dc2d8c530b4eb2f47a694505053
 progress:
   total_phases: 5
   completed_phases: 9
   total_plans: 19
-  completed_plans: 15
-  percent: 79
+  completed_plans: 16
+  percent: 84
 ---
 
 # Project State
@@ -30,11 +30,11 @@ See: .planning/PROJECT.md (updated 2026-09-27)
 ## Current Position
 
 Phase: 10 (CLI Composition & UAT) — EXECUTING
-Plan: 2 of 5
+Plan: 3 of 5
 Status: Ready to execute
 Last activity: 2026-09-29 — Phase 10 execution started
 
-Progress: [████████░░] 79% (4 of 5 v1.1 phases complete) — [████████████████████] 14/14 planned plans (100%)
+Progress: [████████░░] 84% (4 of 5 v1.1 phases complete) — [████████████████████] 14/14 planned plans (100%)
 
 ## Performance Metrics
 
@@ -84,6 +84,7 @@ Progress: [████████░░] 79% (4 of 5 v1.1 phases complete) —
 | Phase 09 P03 | 12min | 4 tasks | 6 files |
 | Phase 09 P04 | 7 min | 4 tasks | 9 files |
 | Phase 10 P01 | 12min | 3 tasks | 11 files |
+| Phase 10 P02 | 20min | 3 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -147,6 +148,8 @@ Phase 8 execution (08-01…08-04):
 - [Phase 09]: Composition owns Supabase service-role wiring; blank url/key raises ConfigurationError before create_client; persist idempotency/overflow proven on the fake port; CAP-02 captions failure leaves persist.calls empty. — Adapters must not read os.environ. D-11 keeps idempotency in the port/RPC, not a Python pre-check. Phase 7 D-14 deferred the persist spy to Phase 9.
 - [Phase 10]: build_ingest_deps SimpleNamespace seam for CliRunner monkeypatch
 - [Phase 10]: PersistResult.already_saved defaults False until 10-05 live RPC parse
+- [Phase 10]: Consistency context allowlist is only transcript_video_id + metadata_video_id (T-10-04)
+- [Phase 10]: TemplateLoadError shares ConfigurationError D-08 human branch — no new IngestError stage
 
 ### Pending Todos
 
@@ -166,7 +169,7 @@ leaderboard, quiz, PIPE-01 YAML UI, live SMTP, signup mail, Whisper/Foundry ASR,
 
 ## Session Continuity
 
-Last session: 2026-09-29T17:58:39.271Z
-Stopped at: Completed 10-01-PLAN.md
+Last session: 2026-09-29T18:05:53.612Z
+Stopped at: Completed 10-02-PLAN.md
 Resume file: None
 Next: `/gsd-discuss-phase 10`
