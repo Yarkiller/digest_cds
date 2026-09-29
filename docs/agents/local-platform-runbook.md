@@ -42,6 +42,17 @@ Step-by-step bring-up for **local Vite + local FastAPI** against the **existing 
    - Do not paste a real key into this runbook or any committed file. Do not place the key
      behind a `VITE_` prefix.
 
+6. **Ingestion CLI env (CLI-05 / D-02):** copy
+   [`ingestion-service/.env.example`](../../ingestion-service/.env.example) →
+   `ingestion-service/.env` (gitignored). Do **not** point UAT at the root backend `.env`.
+   Keys are process-scoped via `uv run --env-file` — the CLI never mutates a shared dotenv
+   file on disk.
+
+```bash
+# from repo root — separate env file from backend FastAPI
+uv run --env-file ingestion-service/.env ingest <url> --template lecture|podcast
+```
+
 Threat note (T-01-13): keep secrets in `.env` only — do not paste keys into markdown, commits, or screenshots.
 
 ---
