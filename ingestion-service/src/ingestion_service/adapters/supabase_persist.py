@@ -20,7 +20,7 @@ from ingestion_service.adapters.persist_errors import (
 from ingestion_service.application.ports.persist import PersistResult
 
 _RPC_NAME = "persist_draft_and_enqueue"
-_RESULT_KEYS = ("material_id", "slug", "batch_id", "rank")
+_RESULT_KEYS = ("material_id", "slug", "batch_id", "rank", "already_saved")
 _CONFLICT_CODES = frozenset({"23505"})
 _BATCH_CODES = frozenset({"P0001", "check_violation"})
 
@@ -70,6 +70,7 @@ def _persist_result(data: object) -> PersistResult:
         slug=str(payload["slug"]),
         batch_id=int(payload["batch_id"]),
         rank=int(payload["rank"]),
+        already_saved=bool(payload["already_saved"]),
     )
 
 
