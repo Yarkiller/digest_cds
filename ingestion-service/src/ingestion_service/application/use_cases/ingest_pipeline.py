@@ -19,6 +19,7 @@ from ingestion_service.mapping.article import map_article_error
 from ingestion_service.mapping.captions import map_captions_error
 from ingestion_service.mapping.metadata import map_metadata_error
 from ingestion_service.mapping.persist import map_persist_error
+from ingestion_service.domain.errors import IngestError
 from ingestion_service.mapping.url import map_url_error
 from ingestion_service.provenance import ENGLISH_TRANSLATION_SUFFIX
 from ingestion_service.url import InvalidYouTubeUrl, extract_video_id
@@ -52,6 +53,18 @@ async def run_ingest_pipeline(
         metadata = await metadata_provider.get(video_id)
     except MetadataError as err:
         raise map_metadata_error(err) from err
+
+    # CONSISTENCY-01: fail closed before LLM when DTO video ids diverge.
+    if transcript.video_id != metadata.video_id:
+        raise IngestError(
+            stage="consistency",
+            reason="video_id_mismatch",
+            message="transcript and metadata video_id mismatch",
+            context={
+                "transcript_video_id": transcript.video_id,
+                "metadata_video_id": metadata.video_id,
+            },
+        )
 
     provenance = f"YouTube · {metadata.author}"
     if transcript.language != "ru":
