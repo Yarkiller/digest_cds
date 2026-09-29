@@ -5,17 +5,17 @@ milestone_name: YouTube → LLM → Supabase ingestion
 current_phase: 10
 current_phase_name: CLI Composition & UAT
 status: executing
-stopped_at: Completed 10-03-PLAN.md
-last_updated: "2026-09-29T18:14:51.561Z"
+stopped_at: Completed 10-05-PLAN.md
+last_updated: "2026-09-29T18:24:21.073Z"
 last_activity: 2026-09-29
 last_activity_desc: Phase 10 execution started
-state_head: 5404a4dfae7bede37f8b57a1f6c494130d33d1dd
+state_head: a0868d47f1e60ca537a74106c3305ac0b9bddfc9
 progress:
   total_phases: 5
   completed_phases: 9
   total_plans: 19
-  completed_plans: 17
-  percent: 89
+  completed_plans: 18
+  percent: 95
 ---
 
 # Project State
@@ -30,11 +30,11 @@ See: .planning/PROJECT.md (updated 2026-09-27)
 ## Current Position
 
 Phase: 10 (CLI Composition & UAT) — EXECUTING
-Plan: 4 of 5
+Plan: 5 of 5
 Status: Ready to execute
 Last activity: 2026-09-29 — Phase 10 execution started
 
-Progress: [█████████░] 89% (4 of 5 v1.1 phases complete) — [████████████████████] 14/14 planned plans (100%)
+Progress: [█████████░] 95% (4 of 5 v1.1 phases complete) — [████████████████████] 14/14 planned plans (100%)
 
 ## Performance Metrics
 
@@ -86,6 +86,7 @@ Progress: [█████████░] 89% (4 of 5 v1.1 phases complete) —
 | Phase 10 P01 | 12min | 3 tasks | 11 files |
 | Phase 10 P02 | 20min | 3 tasks | 7 files |
 | Phase 10 P03 | 15min | 2 tasks | 2 files |
+| Phase 10 P05 | 25min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -153,6 +154,8 @@ Phase 8 execution (08-01…08-04):
 - [Phase 10]: TemplateLoadError shares ConfigurationError D-08 human branch — no new IngestError stage
 - [Phase 10]: Proceed with one-way RPC amend for stored slug + already_saved (D-09, D-12)
 - [Phase 10]: Conflict slug via select m.slug into v_slug; insert path keeps p_slug
+- [Phase 10]: Migration 008 applied via Studio SQL; human verified RPC already_saved and service_role-only execute
+- [Phase 10]: Adapter maps bool(payload already_saved); missing key raises DraftPersistRpcError
 
 ### Pending Todos
 
@@ -172,7 +175,7 @@ leaderboard, quiz, PIPE-01 YAML UI, live SMTP, signup mail, Whisper/Foundry ASR,
 
 ## Session Continuity
 
-Last session: 2026-09-29T18:14:51.039Z
-Stopped at: Completed 10-03-PLAN.md
+Last session: 2026-09-29T18:24:20.342Z
+Stopped at: Completed 10-05-PLAN.md
 Resume file: None
 Next: `/gsd-discuss-phase 10`

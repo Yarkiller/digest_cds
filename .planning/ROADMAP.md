@@ -146,7 +146,7 @@ Full phase detail: [milestones/v1-ROADMAP.md](milestones/v1-ROADMAP.md)
   3. CLI prints staged progress (`✓ transcript` / `✓ LLM` / `✓ saved`) and loads secrets from `ingestion-service/.env` (not the backend env file)
   4. UAT: 3–5 real captioned videos appear as drafts in `/admin/digest` with no backend/SPA code changes required, including at least one English source video (draft in Russian)
 
-**Plans**: 3/5 plans executed
+**Plans**: 4/5 plans executed
 
 Plans:
 **Wave 1**
@@ -157,7 +157,7 @@ Plans:
 - [x] 10-03-PLAN.md — Migration 008 decision gate + SQL authoring (CLI-02)
 
 **Wave 3** *(blocked on Wave 2 completion)*
-- [ ] 10-05-PLAN.md — Adapter already_saved parse + blocking schema push (CLI-02)
+- [x] 10-05-PLAN.md — Adapter already_saved parse + blocking schema push (CLI-02)
 
 **Wave 4** *(blocked on Wave 3 completion)*
 - [ ] 10-04-PLAN.md — Live composition + four-video manual UAT (CLI-03)
@@ -178,4 +178,4 @@ Plans:
 | 7. Captions Adapter | v1.1 | 3/3 | Complete | 2026-09-26 |
 | 8. DeepSeek Article & Templates | v1.1 | 4/4 | Complete | 2026-09-27 |
 | 9. Draft Persist & Shortlist Enqueue | v1.1 | 4/4 | Complete    | 2026-09-27 |
-| 10. CLI Composition & UAT | v1.1 | 3/5 | In Progress|  |
+| 10. CLI Composition & UAT | v1.1 | 4/5 | In Progress|  |
