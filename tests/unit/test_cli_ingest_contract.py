@@ -127,3 +127,94 @@ def test_cli_rerun_prints_already_saved_true_with_stored_ids(monkeypatch) -> Non
     ]
     assert len(persist.stored) == 1
     assert list(persist.stored.keys()) == [VIDEO_ID]
+
+
+def test_cli_mid_pipeline_llm_error_keeps_transcript_checkmark_json_stderr(
+    monkeypatch,
+) -> None:
+    """D-05, D-07: after ✓ transcript, IngestError(stage=llm) → JSON stderr, no later marks."""
+    import json
+
+    from data_collection.errors.article import ArticleNetworkError
+    from typer.testing import CliRunner
+
+    from ingestion_service import cli as cli_mod
+
+    deps = _fake_deps()
+    deps.article = FakeArticleGenerator(
+        result=_article(),
+        failures={VIDEO_ID: ArticleNetworkError(VIDEO_ID)},
+    )
+    monkeypatch.setattr(cli_mod, "build_ingest_deps", lambda: deps)
+
+    result = CliRunner().invoke(cli_mod.app, [URL, "--template", "lecture"])
+    assert result.exit_code != 0
+    stdout_lines = [line for line in result.stdout.splitlines() if line.strip()]
+    assert stdout_lines == ["✓ transcript"]
+    assert "✓ LLM" not in result.stdout
+    assert "✓ saved" not in result.stdout
+    payload = json.loads(result.stderr.strip())
+    assert payload["ok"] is False
+    assert payload["stage"] == "llm"
+
+
+def test_cli_configuration_error_is_human_stderr_without_json_envelope(
+    monkeypatch,
+) -> None:
+    """D-08: ConfigurationError before video work → human stderr, no checkmarks, no stage/ok JSON."""
+    import json
+
+    from typer.testing import CliRunner
+
+    from ingestion_service import cli as cli_mod
+    from ingestion_service.composition.config_error import ConfigurationError
+
+    def _raise_config() -> object:
+        raise ConfigurationError("SUPABASE_URL is required")
+
+    monkeypatch.setattr(cli_mod, "build_ingest_deps", _raise_config)
+
+    result = CliRunner().invoke(cli_mod.app, [URL, "--template", "lecture"])
+    assert result.exit_code != 0
+    assert "✓ transcript" not in result.stdout
+    assert "✓ LLM" not in result.stdout
+    assert "✓ saved" not in result.stdout
+    err = result.stderr.strip()
+    assert err
+    assert "SUPABASE_URL" in err
+    try:
+        payload = json.loads(err)
+    except json.JSONDecodeError:
+        payload = None
+    if payload is not None:
+        assert "stage" not in payload or "ok" not in payload
+
+
+def test_cli_template_load_error_is_human_stderr_without_json_envelope(
+    monkeypatch,
+) -> None:
+    """D-08: TemplateLoadError before video work → human stderr, no IngestError stage."""
+    import json
+
+    from data_collection.templates import TemplateLoadError
+    from typer.testing import CliRunner
+
+    from ingestion_service import cli as cli_mod
+
+    def _raise_template() -> object:
+        raise TemplateLoadError("lecture")
+
+    monkeypatch.setattr(cli_mod, "build_ingest_deps", _raise_template)
+
+    result = CliRunner().invoke(cli_mod.app, [URL, "--template", "lecture"])
+    assert result.exit_code != 0
+    assert "✓ transcript" not in result.stdout
+    err = result.stderr.strip()
+    assert err
+    assert "lecture" in err.lower() or "template" in err.lower()
+    try:
+        payload = json.loads(err)
+    except json.JSONDecodeError:
+        payload = None
+    if isinstance(payload, dict):
+        assert not ({"stage", "ok"} <= set(payload.keys()))
