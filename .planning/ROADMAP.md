@@ -83,18 +83,19 @@ Plans:
   3. Interstitial connecting text preserves paragraph breaks so `\n\n` is visible as whitespace / separate paragraphs
   4. Leaked `test-header` (and equivalent seed/test chrome) does not appear on admin preview surfaces after cleanup
 
-**Plans**: 5 plans
+**Plans**: 6 plans
 
 Plans:
 **Wave 1**
 - [ ] 13-01-PLAN.md — Tracer: enriched GET /admin/shortlist full-item DTO + FIX-01 lock growth (ADUX-01)
 
 **Wave 2** *(blocked on Wave 1)*
-- [ ] 13-02-PLAN.md — Shared email HTML + interstitial + ban unit asserts (ADUX-02/03/04)
+- [ ] 13-02-PLAN.md — Shared email HTML + interstitial + preview wire + ban unit asserts (ADUX-02/03/04)
 - [ ] 13-03-PLAN.md — Material modal markdown honesty UI (ADUX-01)
 
 **Wave 3** *(blocked on Wave 2)*
 - [ ] 13-04-PLAN.md — Email iframe + connecting-text hint (ADUX-02/03)
+- [ ] 13-06-PLAN.md — Send/mailer HTML parity + D-12 proof (ADUX-02)
 
 **Wave 4** *(blocked on Wave 3)*
 - [ ] 13-05-PLAN.md — Ban-list sync + migration 010 scrub + shared-VM apply gate (ADUX-04)

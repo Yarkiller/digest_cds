@@ -406,22 +406,19 @@ def contains_forbidden_chrome(text: str) -> bool:
 
 **If this table is empty:** N/A — several discretionary items remain.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Exact live root of `test-header`**
+1. **Exact live root of `test-header`** — RESOLVED
    - What we know: not in checked-in seeds; not in current MCP title/dek/provenance sample; UAT recorded leak in Phase 10.
-   - What's unclear: which column/row/session introduced it; whether connecting-text (non-persisted) was the source.
-   - Recommendation: migration `010_phase13_scrub_test_header.sql` scrubbing materials text columns + runbook verify query; if 0 rows, still land asserts.
+   - **Answer (Plans 13-05):** Ship idempotent migration `010_phase13_scrub_test_header.sql` scrubbing `materials` `title`/`dek`/`body_markdown`/`provenance_label` for the closed ban tokens + runbook `## 4f` verify/apply. Historical row may be gone (0-row apply OK); green asserts + SQL artifact satisfy local DoD; shared-VM apply via preferred gate `apply-after-sql` for live goal criterion 4 (D-20).
 
-2. **`SITE_URL` env name**
+2. **`SITE_URL` env name** — RESOLVED
    - What we know: CONTEXT says settings, default `http://127.0.0.1:5173`; `.env.example` has no site URL today.
-   - What's unclear: `SITE_URL` vs `PUBLIC_SITE_URL`.
-   - Recommendation: `SITE_URL` with fallback default; document in `.env.example` + runbook.
+   - **Answer (Plan 13-02):** Primary env `SITE_URL`, fallback `PUBLIC_SITE_URL`, then default `http://127.0.0.1:5173` on `Settings.site_url`; document `SITE_URL` in `.env.example` (D-11).
 
-3. **Plain-body material segment richness**
+3. **Plain-body material segment richness** — RESOLVED
    - What we know: HTML must be title+dek+link; plain `body` kept (D-10/D-14).
-   - What's unclear: whether plain material lines stay `- {title}` or also include dek/URL.
-   - Recommendation: enrich plain material segments to title + optional dek + absolute URL for StubMailer log honesty; do not require FE to show plain body.
+   - **Answer (Plans 13-02 / 13-06):** Preserve internal `\n\n` after outer strip on intro/interstitial plain segments (D-14; Plan 02). Enrich plain material segments to title + optional dek + absolute `{site_url}/materials/{slug}` for StubMailer log honesty (Plan 02 compose + Plan 06 send parity). FE continues to render `html` only (D-10); plain body is not the user-visible preview surface.
 
 ## Environment Availability
 
