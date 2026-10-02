@@ -158,6 +158,44 @@ def test_cli_mid_pipeline_llm_error_keeps_transcript_checkmark_json_stderr(
     assert payload["stage"] == "llm"
 
 
+def test_cli_captions_cookie_invalid_unknown_json_stderr_no_traceback(
+    monkeypatch,
+) -> None:
+    """D-01, D-04, D-05; CAP-02: CookieInvalid-mapped CaptionsError → JSON stderr, no Traceback."""
+    import json
+
+    from data_collection.errors.captions import CaptionsError
+    from typer.testing import CliRunner
+
+    from ingestion_service import cli as cli_mod
+
+    deps = _fake_deps()
+    deps.captions = FakeTranscriptProvider(
+        result=_transcript(),
+        failures={
+            VIDEO_ID: CaptionsError(
+                VIDEO_ID,
+                exception_class="CookieInvalid",
+            ),
+        },
+    )
+    monkeypatch.setattr(cli_mod, "build_ingest_deps", lambda: deps)
+
+    result = CliRunner().invoke(cli_mod.app, [URL, "--template", "lecture"])
+    assert result.exit_code != 0
+    assert "✓ transcript" not in result.stdout
+    assert "✓ LLM" not in result.stdout
+    assert "✓ saved" not in result.stdout
+    combined = f"{result.stdout}{result.stderr}"
+    assert "Traceback" not in combined
+    payload = json.loads(result.stderr.strip())
+    assert payload["ok"] is False
+    assert payload["stage"] == "captions"
+    assert payload["reason"] == "unknown_captions_error"
+    assert payload["message"] == f"captions unknown_captions_error for {VIDEO_ID}"
+    assert "CookieInvalid" not in payload["message"]
+
+
 def test_cli_configuration_error_is_human_stderr_without_json_envelope(
     monkeypatch,
 ) -> None:
