@@ -2,15 +2,16 @@
 gsd_state_version: "1.0"
 milestone: v1.1
 milestone_name: YouTube → LLM → Supabase ingestion
-current_phase: 09
-status: completed
-stopped_at: Phase 09 complete — all phases complete
-last_updated: "2026-10-02T05:56:11.354Z"
+current_phase: 11
+current_phase_name: "Address tech debt: captions diagnostics and persist error classification"
+status: executing
+stopped_at: Phase 11 context gathered
+last_updated: "2026-10-02T10:32:28.720Z"
 last_activity: 2026-10-02
-last_activity_desc: Phase 09 complete
-state_head: 80dff086245df869552b730a98de3f6414edf4a9
+last_activity_desc: Phase 11 execution started
+state_head: 711f2191dd1ff967e1358225992a86aa18b0d50c
 progress:
-  total_phases: 5
+  total_phases: 6
   completed_phases: 10
   total_plans: 19
   completed_plans: 19
@@ -24,14 +25,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-09-27)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Phase 09 — Draft Persist & Shortlist Enqueue
+**Current focus:** Phase 11 — Address tech debt: captions diagnostics and persist error classification
 
 ## Current Position
 
-Phase: 09
-Plan: Not started
-Status: All phases complete
-Last activity: 2026-10-02 — Phase 09 complete
+Phase: 11 (Address tech debt: captions diagnostics and persist error classification) — EXECUTING
+Plan: 1 of ?
+Status: Executing Phase 11
+Last activity: 2026-10-02 — Phase 11 execution started
 
 Progress: [██████████] 100% (4 of 5 v1.1 phases complete) — [████████████████████] 14/14 planned plans (100%)
 
@@ -172,6 +173,10 @@ gsd-tools ROADMAP atomic rename hit EPERM (file lock); ROADMAP already marked Ph
 Phase 8 `state.planned-phase` rename also hit EPERM; STATE advanced manually to ready to execute.
 Phase 9 review ledger closed except IN-03 (deferred, low) and leftover advisory: conflict path still returns caller `p_slug` rather than stored slug (CLI-01-adjacent). `09-SECURITY.md` verified, `threats_open: 0`. Human UAT 18/18 including live VM re-apply of migration 007.
 
+### Roadmap Evolution
+
+- Phase 11 added: Address tech debt: captions diagnostics and persist error classification
+
 ## Deferred Items
 
 Carried from v1 close — see prior STATE / MILESTONES. Not in v1.1 scope:
@@ -179,7 +184,7 @@ leaderboard, quiz, PIPE-01 YAML UI, live SMTP, signup mail, Whisper/Foundry ASR,
 
 ## Session Continuity
 
-Last session: 2026-10-01T19:09:36.128Z
-Stopped at: Phase 09 complete — all phases complete
-Resume file: None
+Last session: 2026-10-02T10:32:27.727Z
+Stopped at: Phase 11 context gathered
+Resume file: .planning/phases/11-address-tech-debt-captions-diagnostics-and-persist-error-cla/11-CONTEXT.md
 Next: `/gsd-verify-work 10`
