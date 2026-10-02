@@ -22,7 +22,7 @@ from ingestion_service.application.ports.persist import PersistResult
 _RPC_NAME = "persist_draft_and_enqueue"
 _RESULT_KEYS = ("material_id", "slug", "batch_id", "rank", "already_saved")
 _CONFLICT_CODES = frozenset({"23505"})
-_BATCH_CODES = frozenset({"P0001", "check_violation"})
+_BATCH_CODES = frozenset({"P0001", "check_violation", "23514"})
 
 
 class SupabaseDraftPersister:
