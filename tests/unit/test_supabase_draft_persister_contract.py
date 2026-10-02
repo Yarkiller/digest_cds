@@ -254,6 +254,32 @@ def test_check_violation_maps_to_batch_error() -> None:
     raise AssertionError("expected DraftPersistBatchError")
 
 
+def test_sqlstate_23514_maps_to_batch_error() -> None:
+    """D-06 / PERS-02: SQLSTATE 23514 classifies like check_violation → batch_creation_failed."""
+    from ingestion_service.adapters.persist_errors import DraftPersistBatchError
+    from ingestion_service.adapters.supabase_persist import (
+        _BATCH_CODES,
+        SupabaseDraftPersister,
+    )
+
+    assert "check_violation" in _BATCH_CODES
+    assert "23514" in _BATCH_CODES
+    assert "P0001" in _BATCH_CODES
+
+    client = _FakeClient(
+        _happy_data(),
+        error=PostgrestAPIError("23514", RAW_POSTGRES),
+    )
+    try:
+        SupabaseDraftPersister(client, batch_size=5).persist(_draft())
+    except DraftPersistBatchError as exc:
+        _assert_safe_error(exc)
+        assert exc.reason == "batch_creation_failed"
+        assert exc.context.get("reason") == "batch_creation_failed"
+        return
+    raise AssertionError("expected DraftPersistBatchError")
+
+
 def test_other_sdk_error_maps_to_rpc_error() -> None:
     from ingestion_service.adapters.persist_errors import DraftPersistRpcError
     from ingestion_service.adapters.supabase_persist import SupabaseDraftPersister
