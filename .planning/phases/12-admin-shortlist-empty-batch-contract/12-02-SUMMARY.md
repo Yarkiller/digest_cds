@@ -91,7 +91,7 @@ status: complete
 1. **Task 1: Author 12-FIX-01-LOCK.md contract tables** - `d932652` (docs)
 2. **Task 2: Update REQUIREMENTS ROADMAP PROJECT proof strings** - `8a40e0e` (docs)
 
-**Plan metadata:** final `docs(12-02): complete` commit (SUMMARY/STATE/ROADMAP)
+**Plan metadata:** `7b3317a` (docs: complete plan)
 
 ## Files Created/Modified
 
