@@ -20,9 +20,9 @@ class APIConnectionError(Exception):
 
 
 class PostgrestAPIError(Exception):
-    """Mock PostgREST/Postgres error with a SQLSTATE `.code`."""
+    """Mock PostgREST/Postgres error with a SQLSTATE or HTTP `.code`."""
 
-    def __init__(self, code: str, message: str = RAW_POSTGRES) -> None:
+    def __init__(self, code: str | int, message: str = RAW_POSTGRES) -> None:
         self.code = code
         super().__init__(message)
 
@@ -291,6 +291,35 @@ def test_other_sdk_error_maps_to_rpc_error() -> None:
         SupabaseDraftPersister(client, batch_size=5).persist(_draft())
     except DraftPersistRpcError as exc:
         _assert_safe_error(exc)
+        return
+    raise AssertionError("expected DraftPersistRpcError")
+
+
+def test_int_http_503_maps_to_rpc_error_not_network() -> None:
+    """D-06 / PERS-02: numeric HTTP gateway status → rpc_error (not network_error)."""
+    from ingestion_service.adapters import supabase_persist as persist_mod
+    from ingestion_service.adapters.persist_errors import (
+        DraftPersistNetworkError,
+        DraftPersistRpcError,
+    )
+    from ingestion_service.adapters.supabase_persist import SupabaseDraftPersister
+
+    err = PostgrestAPIError(503, RAW_POSTGRES)
+    http_status = getattr(persist_mod, "_http_status_code", None)
+    assert callable(http_status), "D-06: _http_status_code must recognize int HTTP status"
+    assert http_status(err) == 503
+
+    client = _FakeClient(_happy_data(), error=err)
+    try:
+        SupabaseDraftPersister(client, batch_size=5).persist(_draft())
+    except DraftPersistNetworkError as exc:
+        raise AssertionError(
+            "D-06: int HTTP must be rpc_error, not network_error"
+        ) from exc
+    except DraftPersistRpcError as exc:
+        _assert_safe_error(exc)
+        assert exc.reason == "rpc_error"
+        assert exc.context.get("reason") == "rpc_error"
         return
     raise AssertionError("expected DraftPersistRpcError")
 
