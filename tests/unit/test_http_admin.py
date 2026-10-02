@@ -184,8 +184,8 @@ def test_admin_shortlist_admin_returns_ranked_items_with_factor_honesty() -> Non
     assert second["factor_labels"] == []
 
 
-def test_admin_shortlist_empty_batch_returns_200_empty_items() -> None:
-    """D-80: empty current batch → 200 items=[] (not 404)."""
+def test_admin_shortlist_no_batches_returns_null_batch_id() -> None:
+    """FIX-01 / D-04 #1: no batches → 200 with null batch_id and empty items."""
     private_key = ec.generate_private_key(ec.SECP256R1())
     jwk = _public_jwk(private_key)
     container = build_in_memory_container()
@@ -205,14 +205,22 @@ def test_admin_shortlist_empty_batch_returns_200_empty_items() -> None:
     )
 
     assert response.status_code == 200
-    assert response.json() == {
-        "batch_id": None,
-        "items": [],
-        "digest_rest": False,
-        "days_until_next_batch": None,
-        "week_label": None,
-        "sent_at": None,
-    }
+    body = response.json()
+    for key in (
+        "batch_id",
+        "items",
+        "week_label",
+        "sent_at",
+        "digest_rest",
+        "days_until_next_batch",
+    ):
+        assert key in body
+    assert body["batch_id"] is None
+    assert body["items"] == []
+    assert body["week_label"] is None
+    assert body["sent_at"] is None
+    assert body["digest_rest"] is False
+    assert body["days_until_next_batch"] is None
 
 
 def test_admin_shortlist_empty_unsent_batch_returns_batch_id() -> None:
