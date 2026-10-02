@@ -4,18 +4,19 @@ milestone: v1.1
 milestone_name: YouTube → LLM → Supabase ingestion
 current_phase: 11
 current_phase_name: "Address tech debt: captions diagnostics and persist error classification"
+current_plan: 2
 status: executing
-stopped_at: Phase 11 context gathered
-last_updated: "2026-10-02T10:32:28.720Z"
+stopped_at: Completed 11-01-PLAN.md
+last_updated: "2026-10-02T11:03:19.263Z"
 last_activity: 2026-10-02
 last_activity_desc: Phase 11 execution started
-state_head: 711f2191dd1ff967e1358225992a86aa18b0d50c
+state_head: e8b20a116738e375b7367e1e352ae9d41fd66649
 progress:
   total_phases: 6
   completed_phases: 10
-  total_plans: 19
-  completed_plans: 19
-  percent: 100
+  total_plans: 23
+  completed_plans: 20
+  percent: 87
 ---
 
 # Project State
@@ -30,11 +31,12 @@ See: .planning/PROJECT.md (updated 2026-09-27)
 ## Current Position
 
 Phase: 11 (Address tech debt: captions diagnostics and persist error classification) — EXECUTING
-Plan: 1 of ?
-Status: Executing Phase 11
-Last activity: 2026-10-02 — Phase 11 execution started
+Current Plan: 2
+Total Plans in Phase: 4
+Status: Ready to execute
+Last activity: 2026-10-02 — Completed 11-01-PLAN.md
 
-Progress: [██████████] 100% (4 of 5 v1.1 phases complete) — [████████████████████] 14/14 planned plans (100%)
+Progress: [█████████░] 87%
 
 ## Performance Metrics
 
@@ -89,6 +91,7 @@ Progress: [██████████] 100% (4 of 5 v1.1 phases complete) �
 | Phase 10 P03 | 15min | 2 tasks | 2 files |
 | Phase 10 P05 | 25min | 2 tasks | 5 files |
 | Phase 10 P04 | 48h | 3 tasks | 5 files |
+| Phase 11 P01 | 4min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -161,6 +164,8 @@ Phase 8 execution (08-01…08-04):
 - [Phase 10]: CLI-03 closed on the D-14 four-video matrix; D-16 body, provenance, and headings confirmed on /materials/<slug>
 - [Phase 10]: Admin preview and email-HTML gaps are Phase 11 follow-ups, not CLI-03 failures, and were not implemented in 10-04
 - [Phase 10]: Approval note omitted full watch URLs; 10-UAT.md keeps the operator ellipsized slugs and material ids 9-12
+- [Phase 11]: No production edits: Phase 7 catch/mapper already satisfy D-01…D-05; 11-01 added regression tests only
+- [Phase 11]: CookieInvalid CliRunner path injected via FakeTranscriptProvider CaptionsError(exception_class=CookieInvalid)
 
 ### Pending Todos
 
@@ -184,7 +189,7 @@ leaderboard, quiz, PIPE-01 YAML UI, live SMTP, signup mail, Whisper/Foundry ASR,
 
 ## Session Continuity
 
-Last session: 2026-10-02T10:32:27.727Z
-Stopped at: Phase 11 context gathered
-Resume file: .planning/phases/11-address-tech-debt-captions-diagnostics-and-persist-error-cla/11-CONTEXT.md
+Last session: 2026-10-02T11:03:18.623Z
+Stopped at: Completed 11-01-PLAN.md
+Resume file: None
 Next: `/gsd-verify-work 10`
