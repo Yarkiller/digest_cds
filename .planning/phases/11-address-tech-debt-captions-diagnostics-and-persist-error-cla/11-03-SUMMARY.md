@@ -18,10 +18,10 @@ affects:
 actuals:
   tokens: 5173
   tasks: 3
-  commits: 8
+  commits: 9
 
 plan_head_before: 7762d382be357126044211767ab73122635c82ff
-plan_head_after: 209c1d51b4fa067e24a4b2c69d159412280ef1af
+plan_head_after: 33b3a5f4da6091978cc2e8f77820b3c4e98a9039
 
 tech-stack:
   added: []
@@ -114,9 +114,9 @@ status: complete
 4. **Task 3 RED: inverted overflow expectation** - `b4b0212` (test)
 5. **Task 3 GREEN: fake already_saved return** - `37552ff` (feat)
 
-**Plan metadata:** (pending final docs commit)
+**Plan metadata:** `33b3a5f` (docs: complete plan)
 
-_Note: `git rev-list` from plan ledger → HEAD counts **8** commits because concurrent 11-01/11-02 docs commits landed in the same window; plan-owned production commits are the five listed above._
+_Note: `git rev-list` from plan ledger → metadata HEAD counts **9** commits because concurrent 11-01/11-02 docs commits landed in the same window; plan-owned commits are the five task commits plus this metadata commit._
 
 ## Files Created/Modified
 
