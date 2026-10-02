@@ -31,7 +31,9 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Test debt
 
-- [x] **FIX-01**: `tests/unit/test_http_admin.py::test_admin_shortlist_empty_batch_returns_200_empty_items` passes (schema extras / `sent_at` / `week_label` response contract aligned)
+- [x] **FIX-01**: no-batch + empty-unsent HTTP contracts (D-04) green under required-key asserts —
+  `test_admin_shortlist_no_batches_returns_null_batch_id` and
+  `test_admin_shortlist_empty_unsent_batch_returns_batch_id`
 
 ## v1.3+ Requirements
 

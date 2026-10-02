@@ -27,7 +27,7 @@ Stack: FastAPI, React/Vite, self-hosted Supabase + pgvector, `data-collection` +
 - `score_factors` / justification honesty (fill via config MVP or honest empty)
 - CLI `--debug` richer secret-safe operator diagnostics
 - PIPE-01 MVP: YAML pipeline config + validation + admin UI (execution deferred to v1.3)
-- Fix `test_admin_shortlist_empty_batch_returns_200_empty_items` (Phase 10 carry)
+- Fix admin shortlist empty-batch HTTP contract (Phase 10 carry): `test_admin_shortlist_no_batches_returns_null_batch_id` + `test_admin_shortlist_empty_unsent_batch_returns_batch_id`
 
 **Deferred to v1.3:** Live SMTP (MAIL-01), signup confirmation mail (MAIL-02), PIPE full pipeline execution. Ingestion HTTP/scheduler (ING-*) still later.
 
@@ -93,7 +93,7 @@ v1 is done only when **all** of the following hold:
 - [ ] score_factors / justification honesty (config MVP or honest empty)
 - [ ] CLI `--debug` secret-safe operator diagnostics
 - [ ] PIPE-01 MVP: YAML config + validation + admin UI (no execution)
-- [ ] Fix `test_admin_shortlist_empty_batch_returns_200_empty_items`
+- [ ] Fix admin shortlist empty-batch HTTP contract — `test_admin_shortlist_no_batches_returns_null_batch_id` + `test_admin_shortlist_empty_unsent_batch_returns_batch_id`
 
 ### Out of Scope
 

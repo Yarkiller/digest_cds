@@ -58,7 +58,7 @@ Full phase detail: [milestones/v1.1-ROADMAP.md](milestones/v1.1-ROADMAP.md)
 **Depends on**: Nothing (first v1.2 phase; v1.1 complete)
 **Requirements**: FIX-01
 **Success Criteria** (what must be TRUE):
-  1. `test_admin_shortlist_empty_batch_returns_200_empty_items` passes under the unit suite
+  1. `test_admin_shortlist_no_batches_returns_null_batch_id` and `test_admin_shortlist_empty_unsent_batch_returns_batch_id` pass under the unit suite (D-05)
   2. An empty unsent batch returns HTTP 200 with an empty `items` list (not a schema/validation 500)
   3. Response fields required by the contract (`sent_at`, `week_label`, and related extras) align so clients are not blocked by missing/extra schema noise
 
