@@ -103,7 +103,7 @@ Each task was committed atomically:
 1. **Task 1: End-to-end captions CookieInvalid → JSON stderr unknown_captions_error** - `e87dadf` (test)
 2. **Task 2: Lock captions mapper redaction and adapter CookieInvalid coverage** - `172feba` (test)
 
-**Plan metadata:** (pending docs commit)
+**Plan metadata:** `7762d38` (docs: complete plan)
 
 _Note: `git rev-list` from `plan_head_before`..HEAD counts 4 commits because parallel 11-02 work landed on the same branch between the two 11-01 commits (`9375314`, `4c3e8a7`). This plan’s own commits are `e87dadf` and `172feba`._
 
