@@ -4,17 +4,17 @@ milestone: v1.2
 milestone_name: Admin UX + diagnostics + PIPE-01 MVP
 current_phase: 12
 current_phase_name: Admin shortlist empty-batch contract
-status: executing
-stopped_at: Completed 12-02-PLAN.md
-last_updated: "2026-10-02T16:16:35.690Z"
+status: verifying
+stopped_at: Completed 12-03-PLAN.md
+last_updated: "2026-10-02T16:25:40.913Z"
 last_activity: 2026-10-02
 last_activity_desc: Phase 12 execution started
-state_head: 8a40e0eefc4a00d11951304b903df9159d412282
+state_head: 57e3ca96f24ea94f37aeae4d2118b86f217920c0
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 3
-  completed_plans: 2
+  completed_plans: 3
   percent: 40
 ---
 
@@ -31,7 +31,7 @@ See: .planning/PROJECT.md (updated 2026-10-02 — v1.2 milestone)
 
 Phase: 12 (Admin shortlist empty-batch contract) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-10-02 — Phase 12 execution started
 
 Progress: [████░░░░░░] 40%
@@ -61,6 +61,7 @@ Progress: [████░░░░░░] 40%
 |------|----------|-------|-------|
 | Phase 12 P01 | 2min | 2 tasks | 1 files |
 | Phase 12 P02 | 5min | 2 tasks | 4 files |
+| Phase 12-03 P03 | 6min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -78,6 +79,8 @@ v1.2 roadmap locks:
 - [Phase 12]: Both empty proofs use required-key asserts (D-08); AdminShortlistResponse keeps extra=forbid (D-09)
 - [Phase 12]: D-10 lock tables mirror D-04 #1/#2; digest_rest called out as third non-empty shape (G-05-2)
 - [Phase 12]: REQUIREMENTS FIX-01 rephrased per RESEARCH Q2: no-batch + empty-unsent under required-key asserts
+- [Phase 12]: D-13: no AdminDigestPage chrome — empty-unsent reuses D-80 empty UI
+- [Phase 12]: Playwright RED authorized emptyUnsentDto GREEN (RED_EVIDENCE_OK)
 
 ### Pending Todos
 
@@ -101,7 +104,7 @@ Carried product deferrals to v1.3+: leaderboard, quiz, live SMTP, signup mail, W
 
 ## Session Continuity
 
-Last session: 2026-10-02T16:16:35.662Z
-Stopped at: Completed 12-02-PLAN.md
+Last session: 2026-10-02T16:25:40.883Z
+Stopped at: Completed 12-03-PLAN.md
 Resume file: None
 Next: `/gsd-plan-phase 12`
