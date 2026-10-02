@@ -40,10 +40,12 @@ created: "2026-10-02"
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 12-01-01 | 01 | 1 | FIX-01 | T-12-01 | Required-key asserts; no schema 500 | unit | `uv run pytest tests/unit/test_http_admin.py::test_admin_shortlist_no_batches_returns_null_batch_id -x` | ❌ W0 rename | ⬜ pending |
-| 12-01-02 | 01 | 1 | FIX-01 | T-12-01 | Empty unsent shape locked | unit | `uv run pytest tests/unit/test_http_admin.py::test_admin_shortlist_empty_unsent_batch_returns_batch_id -x` | ❌ W0 | ⬜ pending |
-| 12-02-01 | 02 | 2 | FIX-01 | T-12-02 | Harness flags reset; no cross-test leak | e2e | Playwright empty-unsent case | ❌ W0 | ⬜ pending |
-| 12-03-01 | 03 | 2 | FIX-01 | — | Lock doc + REQUIREMENTS/ROADMAP proof names | docs | file presence / string grep | ❌ W0 | ⬜ pending |
+| 12-01-01 | 01 | 1 | FIX-01 | T-12-01 / T-12-03 | Empty-unsent HTTP 200; required keys; no schema 500 | unit | `uv run pytest tests/unit/test_http_admin.py::test_admin_shortlist_empty_unsent_batch_returns_batch_id -x` | ❌ W0 | ⬜ pending |
+| 12-01-02 | 01 | 1 | FIX-01 | T-12-01 | No-batch rename + required-key asserts; both proofs green | unit | `uv run pytest tests/unit/test_http_admin.py::test_admin_shortlist_no_batches_returns_null_batch_id tests/unit/test_http_admin.py::test_admin_shortlist_empty_unsent_batch_returns_batch_id -x` | ❌ W0 rename | ⬜ pending |
+| 12-02-01 | 02 | 2 | FIX-01 | T-12-04 | Lock doc both shapes + D-08/D-09 + both D-05 names | docs | `rg -n "test_admin_shortlist_no_batches_returns_null_batch_id\|test_admin_shortlist_empty_unsent_batch_returns_batch_id\|extra=.forbid\|week_start.isoformat" .planning/phases/12-admin-shortlist-empty-batch-contract/12-FIX-01-LOCK.md` | ❌ W0 | ⬜ pending |
+| 12-02-02 | 02 | 2 | FIX-01 | T-12-05 | REQUIREMENTS/ROADMAP/PROJECT cite both D-05 proof names | docs | `rg -n "test_admin_shortlist_no_batches_returns_null_batch_id\|test_admin_shortlist_empty_unsent_batch_returns_batch_id" .planning/REQUIREMENTS.md .planning/ROADMAP.md .planning/PROJECT.md` | ❌ W0 | ⬜ pending |
+| 12-03-01 | 03 | 2 | FIX-01 | T-12-06 / T-12-07 | emptyUnsentDto + EMPTY_UNSENT branch + reset clear | docs/static | `rg -n "emptyUnsentDto\|__DIGEST_ADMIN_EMPTY_UNSENT__" web/src/services/adminApi.js` | ❌ W0 | ⬜ pending |
+| 12-03-02 | 03 | 2 | FIX-01 | T-12-06 / T-12-07 | Playwright empty-unsent mirrors D-80; digest_rest absent | e2e | `npm run test:web -- tests/admin.spec.js -g "EMPTY_UNSENT\|empty unsent\|empty-unsent"` | ❌ W0 | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 

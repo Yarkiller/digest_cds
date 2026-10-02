@@ -383,17 +383,19 @@ Order in `fetchShortlist` mock path: `DIGEST_REST` → `EMPTY_UNSENT` → `EMPTY
 
 **If production empty-unsent HTTP path somehow 500s:** not assumed — will be proven by the new failing test under TDD (discretion item). Use-case probe this session already matches D-04 #2.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Should use-case layer also gain `test_get_admin_shortlist_empty_unsent_batch`?**
+1. **Should use-case layer also gain `test_get_admin_shortlist_empty_unsent_batch`?** — RESOLVED
    - What we know: D-07 locks FIX-01 HTTP surface to `test_http_admin.py`; use-case already behaves correctly.
    - What's unclear: whether planner wants a cheap domain-level twin for faster feedback.
    - Recommendation: optional, not required for FIX-01; HTTP unit is the proof.
+   - **Resolution:** No use-case twin. Per D-07 and 12-01, FIX-01 proofs are HTTP in-memory units only (`test_http_admin.py`); do not add `test_get_admin_shortlist_empty_unsent_batch`.
 
-2. **REQUIREMENTS FIX-01 wording rewrite scope**
+2. **REQUIREMENTS FIX-01 wording rewrite scope** — RESOLVED
    - What we know: D-05 requires citing both new test names.
    - What's unclear: whether to keep checkbox text mentioning “schema extras” historically or rephrase to taxonomy lock.
    - Recommendation: rephrase to “no-batch + empty-unsent HTTP contracts (D-04) green under required-key asserts.”
+   - **Resolution:** Per 12-02 task 2 / D-05, rephrase FIX-01 to cite both proof names as no-batch + empty-unsent HTTP contracts (D-04) green under required-key asserts (D-08).
 
 ## Environment Availability
 
