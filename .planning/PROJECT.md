@@ -10,24 +10,39 @@ Authorized СВА staff can read a trustworthy weekly issue of prepared articles
 
 ## Current State
 
-v1 MVP shipped 2026-09-22. Five phases are verified: corporate auth on live Supabase, the current issue and archive, one honest vote, knowledge search and разборы, and admin shortlist → preview → send. Outbound mail stays on StubMailer. Signup confirmation mail on the shared VM is still unresolved (`g-01-3b-signup-mailer`).
+v1.1 YouTube → LLM → Supabase ingestion shipped 2026-10-02 (Phases 6–11). Operator CLI turns a YouTube URL into a `materials` draft + shortlist row via captions → DeepSeek → `persist_draft_and_enqueue` (migrations 007–009). Backend/SPA remain readers; four-video UAT confirmed drafts in `/admin/digest`. Mail still StubMailer; signup confirmation mail unresolved.
 
-About 11,100 lines of Python and 8,400 lines of JS/JSX. Stack: FastAPI, React/Vite, self-hosted Supabase + pgvector, Playwright, pytest. Git range `cabd7eb` → `ba8be89` (330 commits, 2026-08-23 → 2026-09-22).
+v1 MVP (Phases 1–5) remains the editorial read/vote/admin publish surface (shipped 2026-09-22).
 
-## Current Milestone: v1.1 YouTube → LLM → Supabase ingestion
+Stack: FastAPI, React/Vite, self-hosted Supabase + pgvector, `data-collection` + `ingestion-service`, Playwright, pytest. v1.1 git range ~`45db99f` → `fff73a3` (218 commits, 2026-09-26 → 2026-10-02; +30.5k / −0.5k LOC across 225 files).
 
-**Goal:** Operator can run a CLI one-shot that turns a YouTube URL into a `materials` draft and a shortlist row — without touching backend/SPA read paths.
+## Next Milestone Goals: v1.2
 
-**Target features:**
-- Expand `data-collection/` ports/DTOs: Transcript, VideoMetadata, MaterialDraft, TemplateKind
-- New thin `ingestion-service/` CLI runner (no HTTP API, no scheduler)
-- YouTube captions via `youtube-transcript-api` (no Whisper / FoundryModels transcription)
+**Working title:** Admin UX polish + operator diagnostics + PIPE-01
+
+**Target themes (to refine in `/gsd-new-milestone`):**
+- Admin UX observations from Phase 10 UAT (preview title+dek only, email titles-only, draft→ready control, score_factors, interstitial whitespace, leaked test-header)
+- CLI `--debug` / richer operator diagnostics (secret-safe)
+- **PIPE-01**: Admin YAML pipeline config UI
+- Carry: Phase 10 deferred unit flake (`test_admin_shortlist_empty_batch`), remaining advisory WR notes / Nyquist reconcile for phases 6–8
+
+## Prior Milestone: v1.1 YouTube → LLM → Supabase ingestion (SHIPPED)
+
+**Goal achieved:** Operator can run a CLI one-shot that turns a YouTube URL into a `materials` draft and a shortlist row — without touching backend/SPA read paths.
+
+<details>
+<summary>v1.1 target features (shipped)</summary>
+
+- `data-collection/` ports/DTOs: Transcript, VideoMetadata, MaterialDraft, TemplateKind
+- Thin `ingestion-service/` Typer CLI (no HTTP API, no scheduler)
+- YouTube captions via `youtube-transcript-api` (no Whisper)
 - DeepSeek via OpenAI-compatible SDK — MVP LLM; FoundryModels revisit later
-- 1–2 prompt templates (`lecture.md`, `podcast.md`)
-- Pipeline: URL → transcript → LLM → markdown → Supabase `materials` (`status=draft`) + enqueue `digest_shortlist_items`
-- UAT: 3–5 real videos appear as drafts in `/admin/digest`
+- Templates `lecture.md`, `podcast.md`
+- Pipeline: URL → transcript → LLM → markdown → Supabase draft + shortlist enqueue
+- UAT: 3–5 real videos as drafts in `/admin/digest`
+- Phase 11: captions diagnostics hardening + persist error classification + sent-batch `already_saved`
 
-**Deferred from this milestone (still post-v1):** Public leaderboard, quiz cards, admin YAML pipeline UI, live SMTP, signup confirmation mail.
+</details>
 
 ## Success Criteria (v1 — developer-facing)
 
@@ -61,28 +76,33 @@ v1 is done only when **all** of the following hold:
 - ✓ `VideoMetadataProvider` + oEmbed + `ingestion-service` Settings/proxy composition (no Typer yet) — Phase 7
 - ✓ DeepSeek article generation via lecture/podcast templates with fail-closed LLM errors, budget check, and redacted diagnostics (LLM-01…LLM-05) — Phase 8
 - ✓ Persist `materials` as `status=draft` with provenance + overflow-safe shortlist enqueue via `persist_draft_and_enqueue` (PERS-01, PERS-02); RoleKind on drafts; CAP-02 persist spy empty — Phase 9
+- ✓ `ingestion-service` Typer one-shot: staged progress, idempotent re-runs, separate `.env`, material_id/slug/batch_id/rank on success (CLI-01…CLI-05) — Phase 10
+- ✓ Four-video live UAT: drafts visible in `/admin/digest` including English→Russian (CLI-03) — Phase 10
+- ✓ Captions/persist diagnostics hardening: secret-safe envelopes, `23514`/int HTTP classification, sent-batch `already_saved` (migration 009) — Phase 11
 
 ### Active
 
-- [ ] `ingestion-service` CLI one-shot: YouTube URL → captions → DeepSeek → materials draft + shortlist enqueue
-- [ ] UAT: 3–5 real videos visible as drafts in `/admin/digest`
+- [ ] Admin UX polish from Phase 10 UAT observations (preview/email/draft→ready/score_factors)
+- [ ] CLI `--debug` / richer secret-safe operator diagnostics
+- [ ] PIPE-01: Admin YAML pipeline config UI
 
 ### Out of Scope
 
 - XP, streaks, anonymous average comparison — rejected for v1 and still rejected as the participation driver
 - Storing or publishing video/audio/raw transcript as material — content contract
-- Whisper / FoundryModels transcription this milestone — captions-only; FoundryModels revisit after DeepSeek MVP
-- Ingestion HTTP API, scheduler/batch, auto-publish/send — later milestones
-- Public leaderboard, quiz cards, admin YAML pipeline UI, live SMTP, signup mail — deferred (not this milestone)
+- Whisper / FoundryModels transcription — captions-only until FoundryModels revisit
+- Ingestion HTTP API, scheduler/batch, auto-publish/send — later milestones (ING-*)
+- Public leaderboard, quiz cards, live SMTP, signup mail — still deferred unless pulled into v1.2 scope
 - Managed Supabase Cloud / managed PostgreSQL Cloud.ru as primary DB — ADR-0004
 - Dynamic admin-managed email domain list — ADR-0003 (fixed two domains only)
 
 ## Context
 
 - **Shipped v1:** Auth, issue/materials/archive, voting, knowledge search, разборы, and admin digest publish. Live adapters through migration 005. Mail is StubMailer.
-- **v1.1 focus:** Separate ingestion path (`data-collection` contracts + `ingestion-service` CLI) writes drafts into the same Supabase DB; backend/SPA unchanged as readers. DeepSeek MVP bends ADR-0002 temporarily (documented revisit → FoundryModels). Migration 007 is live on the shared VM (`persist_draft_and_enqueue`, provenance columns, unique `youtube_video_id`).
+- **Shipped v1.1:** Ingestion path (`data-collection` + `ingestion-service`) writes drafts into the same Supabase DB; backend/SPA unchanged as readers. DeepSeek MVP bends ADR-0002 temporarily. Migrations 007–009 live (`persist_draft_and_enqueue`, provenance, unique `youtube_video_id`, decision gate, sent-batch `already_saved`).
+- **v1.2 focus:** Admin UX observations, CLI `--debug`, PIPE-01 — scoped in `/gsd-new-milestone`.
 - **Product framing:** Concept 3 Editorial UI («Digest CDS: издание»); personas and journeys J1–J6 in ingest context.
-- **Known debt at close:** Nyquist drafts for phases 1–3; live FE↔BE smoke still human-gated under mocks in CI; rank rewrite before `claim_and_publish_digest` is non-atomic (CR-01); four debug sessions acknowledged 2026-09-22 (see STATE.md Deferred Items).
+- **Known debt at v1.1 close:** Nyquist drafts for phases 6–8; Phase 10 deferred admin unit flake; UAT polish items; advisory WR notes in milestone audit; four v1 debug sessions still suppressed (see STATE.md Deferred Items).
 - **Domain language:** `CONTEXT.md` + `docs/adr/` are canonical for agents.
 - **Intel source:** `.planning/intel/` (ingest MODE=new, READY, 0 blockers).
 - **Preserve:** `.planning/codebase/` brownfield map — do not delete.
@@ -113,8 +133,11 @@ v1 is done only when **all** of the following hold:
 | Typography-only issue hero (D-26) | Current issue shows number, period, and title | ✓ Phase 2 |
 | StubMailer until SMTP is configured | Publish and the issue link must exist before live mail | ✓ Phase 5 |
 | Four debug sessions acknowledged at v1 close | Diagnosis files stayed open after the gap-closure plans; signup mailer is still unknown | — Deferred |
-| DeepSeek MVP for ingestion LLM (ADR-0002 bend) | Captions-only pipeline first; one external LLM; FoundryModels revisit later | — Pending |
-| Ingestion writes Supabase only; no backend coupling | Backend/SPA stay readers; CLI owns YouTube + LLM + shortlist enqueue | — Pending |
+| DeepSeek MVP for ingestion LLM (ADR-0002 bend) | Captions-only pipeline first; one external LLM; FoundryModels revisit later | ✓ v1.1 (revisit still open) |
+| Ingestion writes Supabase only; no backend coupling | Backend/SPA stay readers; CLI owns YouTube + LLM + shortlist enqueue | ✓ v1.1 |
+| Phase 11 secret-safe captions diagnostics + persist SQLSTATE/HTTP classify | Operator stderr must not leak SDK/proxy; PERSIST_REASONS closed set | ✓ Phase 11 |
+| Sent-batch re-run returns already_saved via RPC (migration 009) | Idempotent CLI after shortlist send; no duplicate materials | ✓ Phase 11 |
+| Phase 10 UAT admin polish deferred to v1.2 | Preview/email/draft→ready/score_factors out of CLI milestone DoD | — Deferred → v1.2 |
 | Phase 6 six-name public `__all__`; brownfield YouTube/Foundry/text-import DTOs deleted (D-01…D-03) | Single ingestion contract; no parallel public DTO names | ✓ Phase 6 |
 | Captions list-then-pick + CaptionsError→locked reasons; CAP-02 live persist spy deferred (D-14) | Adapter-boundary SDK mapping; zero-row proof at unit level until Phase 9/10 | ✓ Phase 7 |
 | Phase 7 seven-name public `__all__` (+ VideoMetadataProvider); proxy only in composition | Adapters take ready clients; no `os.environ` in adapters (D-17) | ✓ Phase 7 |
@@ -167,4 +190,4 @@ After each phase transition: move validated/invalidated requirements; log decisi
 After milestone: full review of Core Value, Out of Scope, and Context against shipped reality.
 
 ---
-*Last updated: 2026-09-27 after Phase 9 UAT*
+*Last updated: 2026-10-02 after v1.1 milestone*

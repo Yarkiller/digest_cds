@@ -1,5 +1,35 @@
 # Milestones
 
+## v1.1 YouTube → LLM → Supabase ingestion (Shipped: 2026-10-02)
+
+**Phases completed:** 6 phases (6–11), 23 plans, 60 tasks
+
+**Delivered:** Operator CLI one-shot: YouTube URL → captions → DeepSeek article → Supabase `materials` draft + shortlist enqueue, with idempotent re-runs and four-video UAT on `/admin/digest`. Phase 11 hardened captions diagnostics and persist error classification (migrations 007–009).
+
+**Git range:** `45db99f` → `fff73a3` (218 commits, 2026-09-26 → 2026-10-02). 225 files, +30507 / −549.
+
+**Closeout type:** override_closeout
+
+**Known verification overrides:** 1 newly acknowledged, 4 carried forward from a prior close (see STATE.md Deferred Items)
+
+**Known Gaps / Deferred to v1.2:**
+- Admin UX UAT polish (preview/email/draft→ready/score_factors)
+- Phase 10 deferred-items.md (admin shortlist empty-batch unit flake)
+- Nyquist VALIDATION.md drafts for phases 6–8; advisory WR notes in v1.1-MILESTONE-AUDIT
+- PIPE-01 admin YAML pipeline UI; CLI `--debug`
+
+**Key accomplishments:**
+- Typed ingestion contracts (`Transcript` ≠ `MaterialDraft`) + port fakes in `data-collection`
+- YouTube captions + oEmbed adapters with fail-closed `stage=captions` / metadata errors
+- DeepSeek lecture/podcast templates with honesty, budget fail-closed, redacted diagnostics
+- Atomic `persist_draft_and_enqueue` + overflow-safe shortlist (migrations 007–009 live)
+- Typer `ingest` CLI: staged progress, separate `.env`, idempotent `already_saved`, four-video UAT
+- Phase 11: secret-safe captions stderr; `23514`/int HTTP persist classify; sent-batch `already_saved`
+
+Archives: [roadmap](milestones/v1.1-ROADMAP.md) · [requirements](milestones/v1.1-REQUIREMENTS.md) · [audit](milestones/v1.1-MILESTONE-AUDIT.md) · [phases](milestones/v1.1-phases/)
+
+---
+
 ## v1 MVP (Shipped: 2026-09-22)
 
 **Phases completed:** 5 phases, 40 plans, 94 tasks

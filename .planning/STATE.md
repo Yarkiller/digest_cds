@@ -2,41 +2,37 @@
 gsd_state_version: "1.0"
 milestone: v1.1
 milestone_name: YouTube → LLM → Supabase ingestion
-current_phase: 11
-current_phase_name: "Address tech debt: captions diagnostics and persist error classification"
-current_plan: 4
-status: verifying
-stopped_at: Completed 11-04-PLAN.md
-last_updated: "2026-10-02T13:36:29.952Z"
+status: Awaiting next milestone
+stopped_at: Phase 11 verified — tech debt captions/persist closed
+last_updated: "2026-10-02T13:51:38.530Z"
 last_activity: 2026-10-02
-last_activity_desc: Phase 11 execution started
-state_head: 0e68b4d1ddb702e448ff9ca6a88dd7486fa477ba
+last_activity_desc: Milestone v1.1 completed and archived
+state_head: fff73a371a3be485295c51568a3c6007d1c3ffaa
 progress:
   total_phases: 6
   completed_phases: 10
   total_plans: 23
   completed_plans: 23
   percent: 100
+current_phase: 11
+current_phase_name: "Address tech debt: captions diagnostics and persist error classification"
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-09-27)
+See: .planning/PROJECT.md (updated 2026-10-02 after v1.1)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Phase 11 — Address tech debt: captions diagnostics and persist error classification
+**Current focus:** Planning next milestone — v1.2 (admin UX, `--debug`, PIPE-01)
 
 ## Current Position
 
-Phase: 11 (Address tech debt: captions diagnostics and persist error classification) — EXECUTING
-Current Plan: 4
-Total Plans in Phase: 4
-Status: Phase complete — ready for verification
-Last activity: 2026-10-02 — Completed 11-01-PLAN.md
-
-Progress: [██████████] 100%
+Phase: Milestone v1.1 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-10-02 — Milestone v1.1 archived (phases 6–11)
 
 ## Performance Metrics
 
@@ -195,12 +191,22 @@ Phase 9 review ledger closed except IN-03 (deferred, low) and leftover advisory:
 
 ## Deferred Items
 
-Carried from v1 close — see prior STATE / MILESTONES. Not in v1.1 scope:
-leaderboard, quiz, PIPE-01 YAML UI, live SMTP, signup mail, Whisper/Foundry ASR, ingest HTTP/scheduler.
+Items acknowledged and deferred at milestone close, most recent first:
+
+| Category | Item | Status | Deferred At | Milestone |
+|----------|------|--------|-------------|-----------|
+| deferred_items | 10/deferred-items.md: pre-existing test_admin_shortlist_empty_batch failure; already_saved parse noted as 10-05-owned | acknowledged | 2026-10-02 | v1.1 |
+| debug_sessions | (4 items from v1 close — see MILESTONES.md) | acknowledged | 2026-09-22 | v1 |
+
+Carried product deferrals (not open audit artifacts): leaderboard, quiz, PIPE-01 YAML UI, live SMTP, signup mail, Whisper/Foundry ASR, ingest HTTP/scheduler → candidate v1.2+.
 
 ## Session Continuity
 
-Last session: 2026-10-02T13:36:29.406Z
-Stopped at: Completed 11-04-PLAN.md
-Resume file: None
-Next: `/gsd-verify-work 10`
+Last session: 2026-10-02
+Stopped at: Milestone v1.1 archived
+Resume file: .planning/MILESTONES.md
+Next: `/gsd-new-milestone` — v1.2 (admin UX, `--debug`, PIPE-01)
+
+## Operator Next Steps
+
+- Start the next milestone with `/gsd-new-milestone`
