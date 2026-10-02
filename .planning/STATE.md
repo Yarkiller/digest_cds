@@ -7,16 +7,16 @@ current_phase_name: "Address tech debt: captions diagnostics and persist error c
 current_plan: 2
 status: executing
 stopped_at: Completed 11-01-PLAN.md
-last_updated: "2026-10-02T11:03:19.263Z"
+last_updated: "2026-10-02T11:04:10.473Z"
 last_activity: 2026-10-02
 last_activity_desc: Phase 11 execution started
-state_head: e8b20a116738e375b7367e1e352ae9d41fd66649
+state_head: 2c4442f0342359f661dc308040095183cfc274b7
 progress:
   total_phases: 6
   completed_phases: 10
   total_plans: 23
-  completed_plans: 20
-  percent: 87
+  completed_plans: 21
+  percent: 91
 ---
 
 # Project State
@@ -36,7 +36,7 @@ Total Plans in Phase: 4
 Status: Ready to execute
 Last activity: 2026-10-02 — Completed 11-01-PLAN.md
 
-Progress: [█████████░] 87%
+Progress: [█████████░] 91%
 
 ## Performance Metrics
 
@@ -166,6 +166,8 @@ Phase 8 execution (08-01…08-04):
 - [Phase 10]: Approval note omitted full watch URLs; 10-UAT.md keeps the operator ellipsized slugs and material ids 9-12
 - [Phase 11]: No production edits: Phase 7 catch/mapper already satisfy D-01…D-05; 11-01 added regression tests only
 - [Phase 11]: CookieInvalid CliRunner path injected via FakeTranscriptProvider CaptionsError(exception_class=CookieInvalid)
+- [Phase 11]: D-09 one-way RPC amend accepted (proceed): migration 009 will return already_saved true on sent-batch-only conflict instead of P0001; consistency with D-08/D-09/D-10; live apply deferred to 11-04
+- [Phase 11]: D-09 one-way: migration 009 CREATE OR REPLACE persist_draft_and_enqueue for sent-batch already_saved (user proceed) — Q4/D-08/D-09; undo needs follow-up migration; Studio apply in 11-04
 
 ### Pending Todos
 
