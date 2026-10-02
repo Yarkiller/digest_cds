@@ -29,7 +29,7 @@ Stack: FastAPI, React/Vite, self-hosted Supabase + pgvector, `data-collection` +
 - PIPE-01 MVP: YAML pipeline config + validation + admin UI (execution deferred to v1.3)
 - Fix `test_admin_shortlist_empty_batch_returns_200_empty_items` (Phase 10 carry)
 
-**Deferred from v1.2:** Live SMTP (MAIL-01), signup confirmation mail (MAIL-02), PIPE full pipeline execution (v1.3), ingestion HTTP/scheduler (ING-*).
+**Deferred to v1.3:** Live SMTP (MAIL-01), signup confirmation mail (MAIL-02), PIPE full pipeline execution. Ingestion HTTP/scheduler (ING-*) still later.
 
 ## Prior Milestone: v1.1 YouTube → LLM → Supabase ingestion (SHIPPED)
 
@@ -102,7 +102,7 @@ v1 is done only when **all** of the following hold:
 - Whisper / FoundryModels transcription — captions-only until FoundryModels revisit
 - Ingestion HTTP API, scheduler/batch, auto-publish/send — later milestones (ING-*)
 - PIPE-01 full pipeline execution — deferred to v1.3 (v1.2 is config + validation + UI only)
-- Live SMTP (MAIL-01) and signup confirmation mail (MAIL-02) — deferred past v1.2
+- Live SMTP (MAIL-01) and signup confirmation mail (MAIL-02) — deferred to v1.3
 - Public leaderboard, quiz cards — still deferred
 - Managed Supabase Cloud / managed PostgreSQL Cloud.ru as primary DB — ADR-0004
 - Dynamic admin-managed email domain list — ADR-0003 (fixed two domains only)

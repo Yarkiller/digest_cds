@@ -61,7 +61,7 @@ Deferred. Not in this milestone's roadmap.
 | Feature | Reason |
 |---------|--------|
 | PIPE full pipeline execution | Explicitly v1.3 — v1.2 is config + validation + UI only |
-| Live SMTP / signup confirmation mail | Deferred past v1.2 to keep milestone closable |
+| Live SMTP / signup confirmation mail | Deferred to v1.3 (MAIL-01, MAIL-02) |
 | Auto-`ready` without admin action | Editorial trust; ADUX-05 is explicit admin control |
 | Whisper / local ASR on the app VM | ADR-0002; captions-only until Foundry revisit |
 | Ingestion talking to FastAPI for write path | Shared database remains the ingest contract; admin UX may call backend read/write APIs for triage |

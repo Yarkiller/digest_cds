@@ -40,7 +40,7 @@ Full phase detail: [milestones/v1.1-ROADMAP.md](milestones/v1.1-ROADMAP.md)
 **Milestone Goal:** Admin can honestly review and promote ingested drafts; operators get secret-safe `--debug` diagnostics; PIPE-01 ships as config + validation + UI only (no full pipeline execution).
 
 **Non-goals (explicit):**
-- Live SMTP / signup confirmation mail — deferred past v1.2 (MAIL-01, MAIL-02)
+- Live SMTP / signup confirmation mail — deferred to v1.3 (MAIL-01, MAIL-02)
 - PIPE full pipeline execution — deferred to v1.3 (PIPE-EXEC-*)
 - Ingestion HTTP/scheduler / Whisper-on-VM — still out of scope (ING-*)
 
