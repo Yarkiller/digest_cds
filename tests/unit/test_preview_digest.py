@@ -23,6 +23,8 @@ def _item(
     title: str,
     material_status: str,
     decision: str,
+    dek: str | None = None,
+    slug: str | None = None,
 ) -> ShortlistItem:
     return ShortlistItem(
         material_id=material_id,
@@ -32,6 +34,8 @@ def _item(
         decision=decision,
         score=0.5,
         score_factors={"factors": [{"label": "A"}, {"label": "B"}]},
+        dek=dek,
+        slug=slug,
     )
 
 
@@ -240,3 +244,113 @@ def test_preview_material_outside_pool_raises_invalid_composition() -> None:
         )
 
     assert repo.get_current_batch().sent_at is None
+
+
+def test_preview_html_present_with_interstitial_paragraphs() -> None:
+    """ADUX-02/D-10: additive html; ADUX-03/D-13: interstitial \\n\\n → <p> tags."""
+    repo = InMemoryShortlistRepository(
+        batch=_batch(
+            _item(
+                material_id=301,
+                rank=1,
+                title="HTML Title",
+                material_status="ready",
+                decision="approved",
+                dek="HTML dek",
+                slug="html-title",
+            ),
+        )
+    )
+
+    preview = preview_digest_email(
+        repo,
+        intro="Para one\n\nPara two",
+        blocks=(
+            PreviewMaterialBlock(material_id=301),
+            PreviewTextBlock(text="Bridge A\n\nBridge B"),
+        ),
+        site_url="http://127.0.0.1:5173",
+    )
+
+    assert isinstance(preview.html, str)
+    assert preview.html
+    assert "<p>Para one</p><p>Para two</p>" in preview.html
+    assert "<p>Bridge A</p><p>Bridge B</p>" in preview.html
+    assert "HTML Title" in preview.html
+    assert 'href="http://127.0.0.1:5173/materials/html-title"' in preview.html
+    assert "Читать →" in preview.html
+    assert "/issues/" not in preview.html
+
+
+def test_preview_plain_preserves_internal_blank_lines() -> None:
+    """ADUX-03/D-14: plain body keeps internal \\n\\n after outer strip."""
+    repo = InMemoryShortlistRepository(
+        batch=_batch(
+            _item(
+                material_id=302,
+                rank=1,
+                title="Plain Mat",
+                material_status="ready",
+                decision="approved",
+                slug="plain-mat",
+            ),
+        )
+    )
+
+    preview = preview_digest_email(
+        repo,
+        intro="  Intro A\n\nIntro B  ",
+        blocks=(
+            PreviewTextBlock(text="  Mid A\n\nMid B  "),
+            PreviewMaterialBlock(material_id=302),
+        ),
+    )
+
+    assert "Intro A\n\nIntro B" in preview.body
+    assert "Mid A\n\nMid B" in preview.body
+
+
+def test_preview_plain_material_includes_dek_and_absolute_url() -> None:
+    """RESEARCH Q3: plain material segments = title + optional dek + absolute URL."""
+    repo = InMemoryShortlistRepository(
+        batch=_batch(
+            _item(
+                material_id=303,
+                rank=1,
+                title="Enriched",
+                material_status="ready",
+                decision="approved",
+                dek="A dek line",
+                slug="enriched",
+            ),
+        )
+    )
+
+    preview = preview_digest_email(
+        repo,
+        site_url="http://127.0.0.1:5173",
+    )
+
+    assert "Enriched" in preview.body
+    assert "A dek line" in preview.body
+    assert "http://127.0.0.1:5173/materials/enriched" in preview.body
+
+
+def test_settings_site_url_from_site_url_then_public_then_default() -> None:
+    """D-11 / RESEARCH Q2: SITE_URL → PUBLIC_SITE_URL → default."""
+    from backend.composition.settings import Settings
+
+    assert Settings.from_env({}).site_url == "http://127.0.0.1:5173"
+    assert (
+        Settings.from_env({"PUBLIC_SITE_URL": "http://public.example"}).site_url
+        == "http://public.example"
+    )
+    assert (
+        Settings.from_env(
+            {
+                "SITE_URL": "http://primary.example",
+                "PUBLIC_SITE_URL": "http://public.example",
+            }
+        ).site_url
+        == "http://primary.example"
+    )
