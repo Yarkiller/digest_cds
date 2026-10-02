@@ -86,6 +86,7 @@ class DigestPreviewResponse(BaseModel):
     batch_id: int
     subject: str
     body: str
+    html: str
     items: list[DigestPreviewItemResponse] = []
 
 
@@ -277,11 +278,14 @@ def post_shortlist_preview(
     shortlist = _require_shortlist(request)
     payload = body or DigestPreviewRequest()
     uc_blocks = _to_preview_blocks(payload.blocks)
+    settings = getattr(request.app.state, "settings", None)
+    site_url = getattr(settings, "site_url", None) or "http://127.0.0.1:5173"
     try:
         preview = preview_digest_email(
             shortlist,
             intro=payload.intro,
             blocks=uc_blocks,
+            site_url=site_url,
         )
     except EmptySendPoolError as exc:
         raise HTTPException(
@@ -302,6 +306,7 @@ def post_shortlist_preview(
         batch_id=preview.batch_id,
         subject=preview.subject,
         body=preview.body,
+        html=preview.html,
         items=[
             DigestPreviewItemResponse(
                 material_id=item.material_id,

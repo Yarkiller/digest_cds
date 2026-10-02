@@ -25,6 +25,8 @@ class Settings:
     notebook_root: str = ""
     # stub (default, D-87) | smtp (fail-fast at resolve — not implemented)
     mailer: str = "stub"
+    # Absolute site origin for email material links (D-11 / RESEARCH Q2)
+    site_url: str = "http://127.0.0.1:5173"
 
     @property
     def cors_origins(self) -> tuple[str, ...]:
@@ -41,6 +43,12 @@ class Settings:
         if mode not in ("memory", "live"):
             mode = "memory"
         mailer = (env.get("MAILER") or "stub").strip().lower() or "stub"
+        default_site = "http://127.0.0.1:5173"
+        site_url = (
+            (env.get("SITE_URL") or "").strip()
+            or (env.get("PUBLIC_SITE_URL") or "").strip()
+            or default_site
+        )
         return cls(
             api_cors_origins=env.get("API_CORS_ORIGINS", ""),
             allowed_email_domains=env.get("ALLOWED_EMAIL_DOMAINS", ""),
@@ -52,4 +60,5 @@ class Settings:
             app_container=mode,
             notebook_root=env.get("NOTEBOOK_ROOT", ""),
             mailer=mailer,
+            site_url=site_url,
         )
