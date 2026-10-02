@@ -179,3 +179,13 @@ Plans:
 | 8. DeepSeek Article & Templates | v1.1 | 4/4 | Complete | 2026-09-27 |
 | 9. Draft Persist & Shortlist Enqueue | v1.1 | 4/4 | Complete    | 2026-09-27 |
 | 10. CLI Composition & UAT | v1.1 | 5/5 | Complete    | 2026-10-01 |
+
+### Phase 11: Address tech debt: captions diagnostics and persist error classification
+
+**Goal:** Operator CLI diagnostics stay secret-safe and classified correctly: captions/URL envelopes never leak SDK text; out-of-catalog SDK maps to `unknown_captions_error`; persist recognizes `23514` and numeric HTTP statuses without changing `PERSIST_REASONS`; sent-batch re-run returns `already_saved: true` via RPC
+**Requirements**: CAP-02, PERS-02, CLI-02, CLI-04 (hardening; already satisfied at milestone level)
+**Depends on:** Phase 10
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 11 to break down)
