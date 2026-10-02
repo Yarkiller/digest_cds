@@ -84,6 +84,7 @@ v1 is done only when **all** of the following hold:
 - ✓ `ingestion-service` Typer one-shot: staged progress, idempotent re-runs, separate `.env`, material_id/slug/batch_id/rank on success (CLI-01…CLI-05) — Phase 10
 - ✓ Four-video live UAT: drafts visible in `/admin/digest` including English→Russian (CLI-03) — Phase 10
 - ✓ Captions/persist diagnostics hardening: secret-safe envelopes, `23514`/int HTTP classification, sent-batch `already_saved` (migration 009) — Phase 11
+- ✓ Admin shortlist empty-batch HTTP contract — `test_admin_shortlist_no_batches_returns_null_batch_id` + `test_admin_shortlist_empty_unsent_batch_returns_batch_id` (FIX-01) — Phase 12
 
 ### Active
 
@@ -93,7 +94,6 @@ v1 is done only when **all** of the following hold:
 - [ ] score_factors / justification honesty (config MVP or honest empty)
 - [ ] CLI `--debug` secret-safe operator diagnostics
 - [ ] PIPE-01 MVP: YAML config + validation + admin UI (no execution)
-- [ ] Fix admin shortlist empty-batch HTTP contract — `test_admin_shortlist_no_batches_returns_null_batch_id` + `test_admin_shortlist_empty_unsent_batch_returns_batch_id`
 
 ### Out of Scope
 
@@ -201,4 +201,4 @@ After each phase transition: move validated/invalidated requirements; log decisi
 After milestone: full review of Core Value, Out of Scope, and Context against shipped reality.
 
 ---
-*Last updated: 2026-10-02 after starting v1.2 milestone*
+*Last updated: 2026-10-02 after Phase 12*

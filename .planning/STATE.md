@@ -25,7 +25,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-02 — v1.2 milestone)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Phase 12 — Admin shortlist empty-batch contract
+**Current focus:** Phase 13 — Admin material & email preview honesty
 
 ## Current Position
 
@@ -50,12 +50,11 @@ Progress: [████░░░░░░] 43%
 |-------|-------|-------|----------|
 | 1–5 (v1 shipped) | 40/40 | complete | see MILESTONES |
 | 6–11 (v1.1 shipped) | 23/23 | complete | see MILESTONES |
-| 12. Empty-batch contract | 0/? | not started | - |
+| 12. Empty-batch contract | 3/3 | complete | see per-plan |
 | 13. Preview honesty | 0/? | not started | - |
 | 14. Draft→ready & justification | 0/? | not started | - |
 | 15. CLI --debug | 0/? | not started | - |
 | 16. PIPE-01 MVP UI | 0/? | not started | - |
-| 12 | 3 | - | - |
 **Per-Plan Metrics:**
 
 | Plan | Duration | Tasks | Files |
@@ -85,7 +84,7 @@ v1.2 roadmap locks:
 
 ### Pending Todos
 
-None. Next: `/gsd-plan-phase 12`
+None. Next: `/gsd-discuss-phase 13` or `/gsd-plan-phase 13`
 
 ### Blockers/Concerns
 
