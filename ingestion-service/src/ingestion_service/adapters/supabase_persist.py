@@ -80,7 +80,14 @@ def _safe_context(draft: MaterialDraft, reason: str) -> dict[str, Any]:
 
 def _sdk_code(exc: BaseException) -> str | None:
     code = getattr(exc, "code", None)
-    return code if isinstance(code, str) and code else None
+    if isinstance(code, str) and code:
+        return code
+    return None
+
+
+def _http_status_code(exc: BaseException) -> int | None:
+    code = getattr(exc, "code", None)
+    return code if isinstance(code, int) else None
 
 
 def _is_network_error(exc: BaseException) -> bool:
@@ -115,6 +122,13 @@ def _map_exception(exc: BaseException, draft: MaterialDraft) -> DraftPersistErro
             "batch_creation_failed",
             video_id=video_id,
             context=_safe_context(draft, "batch_creation_failed"),
+        )
+    # D-06: numeric HTTP gateway statuses (int code) → rpc_error, not network_error
+    if _http_status_code(exc) is not None and _is_sdk_error(exc):
+        return DraftPersistRpcError(
+            "rpc_error",
+            video_id=video_id,
+            context=_safe_context(draft, "rpc_error"),
         )
     if _is_sdk_error(exc):
         return DraftPersistRpcError(
