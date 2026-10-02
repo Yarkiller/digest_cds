@@ -200,7 +200,7 @@ All copy is **Russian**, calm editorial/ops tone. Carry forward Phase 5 admin co
 
 > Shape-rooted state coverage for Phase 13 delta surfaces (probe kinds confirmed: E1 media+static-content+interactive-control · E2 media+interactive-control · E3 form+static-content · E4 interactive-control+nav). Empty/error **copy** lives in `## Copywriting Contract`; rows reference those rows.
 
-Applicable: **21** · resolved explicit: **12** · resolved backstop: **4** · dismissed: **5** · unresolved: **0**.
+Applicable: **21** · resolved explicit: **10** · resolved backstop: **4** · dismissed: **7** · unresolved: **0**.
 
 Surfaces: **E1** Material preview modal · **E2** Email preview iframe · **E3** Connecting-text / intro hint · **E4** Material reader link.
 
@@ -220,7 +220,6 @@ Surfaces: **E1** Material preview modal · **E2** Email preview iframe · **E3**
 | long-text | E1 title / provenance | 🧪 backstop | { statement: "Long titles and provenance wrap with break-words in the material modal", verification: backstop } |
 | long-text | E2 email subject / iframe | 🧪 backstop | { statement: "Long email subject wraps; long HTML scrolls via modal/iframe without clipping the close control", verification: backstop } |
 | long-text | E3 connecting textarea | 🧪 backstop | { statement: "Long connecting text wraps/scrolls in the textarea; hint remains visible below", verification: backstop } |
-| loading | E3 connecting text | � "Long connecting text wraps/scrolls in the textarea; hint remains visible below", verification: backstop } |
 | loading | E3 connecting text | ✗ dismissed | Static hint + local textarea — no async load |
 | error | E3 connecting text | ✗ dismissed | No network/submit on this surface this phase |
 | overflow | E3 connecting text | ✗ dismissed | Covered by E3 long-text backstop (textarea wrap/scroll) |
