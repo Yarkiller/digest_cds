@@ -185,7 +185,12 @@ Plans:
 **Goal:** Operator CLI diagnostics stay secret-safe and classified correctly: captions/URL envelopes never leak SDK text; out-of-catalog SDK maps to `unknown_captions_error`; persist recognizes `23514` and numeric HTTP statuses without changing `PERSIST_REASONS`; sent-batch re-run returns `already_saved: true` via RPC
 **Requirements**: CAP-02, PERS-02, CLI-02, CLI-04 (hardening; already satisfied at milestone level)
 **Depends on:** Phase 10
-**Plans:** 0 plans
+**Plans:** 4 plans
 
-Plans:
-- [ ] TBD (run /gsd-plan-phase 11 to break down)
+**Wave 1**
+- [ ] `11-01-PLAN.md` — Tracer: captions CookieInvalid → JSON stderr + mapper/adapter locks (CAP-02)
+- [ ] `11-02-PLAN.md` — Persist classification: `23514` + int HTTP → existing reasons (PERS-02)
+- [ ] `11-03-PLAN.md` — Decision gate + migration 009 + fake/overflow invert (CLI-02)
+
+**Wave 2** *(blocked on Wave 1 plans 11-01 and 11-03)*
+- [ ] `11-04-PLAN.md` — CLI sent-batch checkmarks + `[BLOCKING]` Studio/psql apply 009 (CLI-02, CLI-04)
