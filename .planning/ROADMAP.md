@@ -60,7 +60,12 @@ Full phase detail: [milestones/v1.1-ROADMAP.md](milestones/v1.1-ROADMAP.md)
   1. `test_admin_shortlist_empty_batch_returns_200_empty_items` passes under the unit suite
   2. An empty unsent batch returns HTTP 200 with an empty `items` list (not a schema/validation 500)
   3. Response fields required by the contract (`sent_at`, `week_label`, and related extras) align so clients are not blocked by missing/extra schema noise
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 12-01-PLAN.md — HTTP tracer: rename no-batch + empty-unsent required-key proofs
+- [ ] 12-02-PLAN.md — 12-FIX-01-LOCK.md + REQUIREMENTS/ROADMAP/PROJECT proof strings
+- [ ] 12-03-PLAN.md — FE emptyUnsentDto harness + Playwright empty-unsent
 
 ### Phase 13: Admin material & email preview honesty
 **Goal**: Admin can inspect a real material body and a real email HTML preview before send
@@ -113,7 +118,7 @@ Full phase detail: [milestones/v1.1-ROADMAP.md](milestones/v1.1-ROADMAP.md)
 |-------|-----------|----------------|--------|-----------|
 | 1–5 | v1 | 40/40 | Complete | 2026-09-22 |
 | 6–11 | v1.1 | 23/23 | Complete | 2026-10-02 |
-| 12. Admin shortlist empty-batch contract | v1.2 | 0/? | Not started | - |
+| 12. Admin shortlist empty-batch contract | v1.2 | 0/3 | Not started | - |
 | 13. Admin material & email preview honesty | v1.2 | 0/? | Not started | - |
 | 14. Draft→ready & justification honesty | v1.2 | 0/? | Not started | - |
 | 15. CLI --debug diagnostics | v1.2 | 0/? | Not started | - |
