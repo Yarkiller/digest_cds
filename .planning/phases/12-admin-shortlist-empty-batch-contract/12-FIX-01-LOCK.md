@@ -9,6 +9,9 @@
 - `test_admin_shortlist_no_batches_returns_null_batch_id`
 - `test_admin_shortlist_empty_unsent_batch_returns_batch_id`
 
+**Full-item enrichment (Phase 13 / ADUX-01 / D-03):**
+- `test_admin_shortlist_returns_full_items` — non-empty items carry additive material preview fields (required-key asserts; no full-body equality).
+
 ---
 
 ## Shape 1 — No batches (D-04 #1)
@@ -45,6 +48,26 @@ When a current unsent batch exists (`sent_at IS NULL`) but `items` is empty:
 
 ---
 
+## Shape 3 — Non-empty items (full AdminShortlistItem DTO)
+
+When `items` is non-empty, each element is an `AdminShortlistItemResponse` (`extra="forbid"`). Phase 13 (ADUX-01 / D-02 / D-03) grows the item schema **additively** — empty-batch shapes above stay `items=[]` and are unchanged.
+
+| Item field | Source / notes |
+|------------|----------------|
+| `material_id`, `rank`, `title`, `material_status`, `decision`, `score`, `factor_labels`, `dek` | Pre-Phase-13 fields (unchanged) |
+| `body_markdown` | From materials join; may be `null`/empty — never invent prose (D-06) |
+| `provenance_label` | From materials join; may be `null` |
+| `slug` | From materials join; may be `null` |
+| `reading_minutes` | Stored estimate from materials join; may be `null` |
+| `char_count` | `len(body_markdown or "")` (Python code-unit length) |
+| `word_count` | `len((body_markdown or "").split())` — whitespace tokens aligned with `estimate_reading_minutes` |
+
+Enrichment is via `ShortlistRepository.get_current_batch` join only — **no** second fetch / `/admin/materials/:id` (D-01).
+
+**Named proof:** `tests/unit/test_http_admin.py::test_admin_shortlist_returns_full_items` — required-key asserts for the six additive fields plus critical seeded values; not full-body JSON equality (D-08 carry).
+
+---
+
 ## Assert rules (D-08)
 
 HTTP / unit proofs MUST assert **required keys + critical values only**:
@@ -52,6 +75,7 @@ HTTP / unit proofs MUST assert **required keys + critical values only**:
 - Status `200`
 - Required keys present: `batch_id`, `items`, `week_label`, `sent_at`, `digest_rest`, `days_until_next_batch`
 - Critical values per shape tables above (`items == []`, `batch_id` null-vs-int, `week_label` null-vs-`week_start.isoformat()`, `sent_at is null`, `digest_rest is false`, `days_until_next_batch is null`)
+- For non-empty items: required keys include `body_markdown`, `provenance_label`, `slug`, `reading_minutes`, `char_count`, `word_count` (plus existing rank/title/dek/decision fields)
 
 **Forbidden:** brittle full-body JSON equality such as `response.json() == {…}`. Additive *declared* fields must not force rewriting the whole blob.
 
@@ -59,7 +83,7 @@ HTTP / unit proofs MUST assert **required keys + critical values only**:
 
 ## Response model posture (D-09)
 
-Keep `AdminShortlistResponse` with `extra="forbid"` (`ConfigDict(extra="forbid")`). Undeclared extras fail construction. Additive API fields require explicit model + test + PR — not silent accept.
+Keep `AdminShortlistResponse` (and `AdminShortlistItemResponse`) with `extra="forbid"` (`ConfigDict(extra="forbid")`). Undeclared extras fail construction. Additive API fields require explicit model + test + PR — not silent accept. Phase 13 item growth is additive under this posture (D-03).
 
 ---
 
@@ -69,6 +93,7 @@ Keep `AdminShortlistResponse` with `extra="forbid"` (`ConfigDict(extra="forbid")
 |-------|----------------|
 | No batches (D-04 #1) | `tests/unit/test_http_admin.py::test_admin_shortlist_no_batches_returns_null_batch_id` |
 | Empty unsent (D-04 #2) | `tests/unit/test_http_admin.py::test_admin_shortlist_empty_unsent_batch_returns_batch_id` |
+| Full items (ADUX-01) | `tests/unit/test_http_admin.py::test_admin_shortlist_returns_full_items` |
 
 Surface: in-memory HTTP units only (`InMemoryShortlistRepository`) — D-07.
 
@@ -82,9 +107,10 @@ After-send rest is a **third** distinct shape (`digest_rest=true`, typically nul
 
 ## Citations
 
-D-04, D-05, D-08, D-09, D-10; FIX-01. Prior wave: `12-01-SUMMARY.md`.
+D-04, D-05, D-08, D-09, D-10; FIX-01. Prior wave: `12-01-SUMMARY.md`.  
+Phase 13 carry: D-01, D-02, D-03, D-06; ADUX-01 (`13-01-SUMMARY.md`).
 
 ---
 
 *Phase: 12-admin-shortlist-empty-batch-contract*  
-*Lock authored for plan 12-02*
+*Lock authored for plan 12-02; item schema grown in plan 13-01 (D-03)*
