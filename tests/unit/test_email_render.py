@@ -138,3 +138,13 @@ def test_clean_render_email_html_fixture_has_no_forbidden_chrome() -> None:
         site_url="http://127.0.0.1:5173",
     )
     assert not contains_forbidden_chrome(html)
+
+
+def test_email_render_module_does_not_import_or_call_ban_helper() -> None:
+    """D-17: renderers must not filter via contains_forbidden_chrome (assert-only)."""
+    from pathlib import Path
+
+    src = Path(render_email_html.__code__.co_filename).read_text(encoding="utf-8")
+    assert "email_chrome" not in src
+    assert "contains_forbidden_chrome" not in src
+    assert "FORBIDDEN_LOWER" not in src
