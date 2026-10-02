@@ -125,6 +125,23 @@ test.describe("Admin Digest — shortlist triage (ADMIN-01…03, ADMIN-05, D-79,
     await expect(page.getByTestId("admin-digest-rest")).toHaveCount(0);
   });
 
+  // D-12 / D-13 / FIX-01: empty-unsent mock (batch_id present) must reuse D-80 empty UI, not digest_rest
+  test("empty-unsent shortlist shows Кандидатов пока нет without пайплайн (EMPTY_UNSENT)", async ({
+    page,
+  }) => {
+    await gotoAsRole(page, "admin", "/admin/digest", {
+      __DIGEST_ADMIN_EMPTY_UNSENT__: true,
+    });
+    await expect(
+      page.getByRole("heading", { name: "Кандидатов пока нет", exact: true }),
+    ).toBeVisible();
+    await expect(page.getByRole("button", { name: /обновить список/i })).toBeVisible();
+    await expect(page.getByText(/пайплайн/i)).toHaveCount(0);
+    await expect(page.getByTestId("admin-shortlist-row")).toHaveCount(0);
+    await expect(page.getByText(/дайджест успешно выпущен/i)).toHaveCount(0);
+    await expect(page.getByTestId("admin-digest-rest")).toHaveCount(0);
+  });
+
   test("loading shortlist does not flash empty success", async ({ page }) => {
     await gotoAsRole(page, "admin", "/admin/digest");
     // After harness reset+reload, assert we never land on empty copy while rows exist.
