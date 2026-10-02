@@ -396,17 +396,19 @@ def map_captions_error(error: CaptionsError) -> IngestError:
 
 **If this table is empty:** All claims in this research were verified or cited — no user confirmation needed.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Human Studio apply timing for migration 009**
    - What we know: Phase 10 used offline contract tests + human apply gate for 008.
    - What's unclear: Whether planner should put apply in the same plan as SQL authoring or a follow-up checkpoint.
    - Recommendation: Mirror Phase 10 — author + offline tests first; explicit `checkpoint:human-verify` for Studio apply before calling live CLI UAT done.
+   - **RESOLVED:** Split — `11-03` authors migration 009 + offline SQL/fake invert after one-way decision gate; `11-04` owns `[BLOCKING]` Studio/psql apply (`checkpoint:human-verify`) before live CLI-02 claim.
 
 2. **Bare `Exception` wrap in captions adapter**
    - What we know: CookieInvalid already maps via `YouTubeTranscriptApiException`; CLI traceback risk remains for non-SDK exceptions.
    - What's unclear: Whether D-04’s “any other base SDK exception” requires a final `except Exception → CaptionsError`.
    - Recommendation: Discretion — add only if a RED test shows an escape; prefer narrow SDK base catch over swallowing `KeyboardInterrupt` (exclude `BaseException`).
+   - **RESOLVED:** RED-only — `11-01` adds production catch only if CliRunner/adapter RED proves an escape; no blanket `except Exception`.
 
 ## Environment Availability
 
