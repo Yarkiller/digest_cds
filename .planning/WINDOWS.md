@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 13
+open_count: 14
 waived_count: 0
 fixed_count: 3
-total_count: 16
-last_updated: 2026-09-29T17:58:41.951Z
+total_count: 17
+last_updated: 2026-10-02T13:36:12.392Z
 ---
 
 # Broken Windows Ledger
@@ -31,6 +31,7 @@ last_updated: 2026-09-29T17:58:41.951Z
 | 14 | 04 | unmet-truth | .planning/phases/04-knowledge-razbory/04-VALIDATION.md |  | UI-SPEC overflow/long-text backstops held for verify-work (pagination has_more, many chronology, visual wrap) | open |  | 2026-09-21T09:25:10.848Z |  |
 | 15 | 05 | deviation | web/src/services/adminPreviewComposition.js |  | Extracted pure composition helpers for node --test (Vite import.meta boundary) | open |  | 2026-09-21T18:31:58.934Z |  |
 | 16 | 10 | deviation | ingestion-service/src/ingestion_service/application/ports/persist.py |  | already_saved defaults False for deferred 10-05 call sites | open |  | 2026-09-29T17:58:41.951Z |  |
+| 17 | 11 | deviation | tests/unit/test_cli_ingest_contract.py |  | Unexpected GREEN Task1: CLI sent-batch contract passed without cli.py change (prior plans) | open |  | 2026-10-02T13:36:12.392Z |  |
 
 ````json
 [
@@ -224,6 +225,19 @@ last_updated: 2026-09-29T17:58:41.951Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-09-29T17:58:41.951Z",
+    "resolved_at": null,
+    "milestone": "v1.1"
+  },
+  {
+    "id": 17,
+    "kind": "deviation",
+    "phase": "11",
+    "file": "tests/unit/test_cli_ingest_contract.py",
+    "line": null,
+    "description": "Unexpected GREEN Task1: CLI sent-batch contract passed without cli.py change (prior plans)",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-02T13:36:12.392Z",
     "resolved_at": null,
     "milestone": "v1.1"
   }

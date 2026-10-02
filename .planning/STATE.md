@@ -5,18 +5,18 @@ milestone_name: YouTube → LLM → Supabase ingestion
 current_phase: 11
 current_phase_name: "Address tech debt: captions diagnostics and persist error classification"
 current_plan: 4
-status: executing
-stopped_at: Completed 11-03-PLAN.md
-last_updated: "2026-10-02T11:11:25.144Z"
+status: verifying
+stopped_at: Completed 11-04-PLAN.md
+last_updated: "2026-10-02T13:36:29.952Z"
 last_activity: 2026-10-02
 last_activity_desc: Phase 11 execution started
-state_head: 209c1d51b4fa067e24a4b2c69d159412280ef1af
+state_head: 0e68b4d1ddb702e448ff9ca6a88dd7486fa477ba
 progress:
   total_phases: 6
   completed_phases: 10
   total_plans: 23
-  completed_plans: 22
-  percent: 96
+  completed_plans: 23
+  percent: 100
 ---
 
 # Project State
@@ -33,10 +33,10 @@ See: .planning/PROJECT.md (updated 2026-09-27)
 Phase: 11 (Address tech debt: captions diagnostics and persist error classification) — EXECUTING
 Current Plan: 4
 Total Plans in Phase: 4
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-10-02 — Completed 11-01-PLAN.md
 
-Progress: [█████████░] 96%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -94,6 +94,7 @@ Progress: [█████████░] 96%
 | Phase 11 P01 | 4min | 2 tasks | 3 files |
 | Phase 11 P02 | 6min | 2 tasks | 2 files |
 | Phase 11 P03 | 8min | 3 tasks | 5 files |
+| Phase 11 P04 | 140min | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -173,6 +174,9 @@ Phase 8 execution (08-01…08-04):
 - [Phase 11]: Keep PERSIST_REASONS unchanged (D-07); classification-only fix for 23514 + int HTTP
 - [Phase 11]: Int HTTP → rpc_error per D-06 (not network_error)
 - [Phase 11]: Live Studio apply of migration 009 deferred to plan 11-04 (not applied in 11-03)
+- [Phase 11]: Migration 009 applied via Studio SQL (sent-batch already_saved); grants service_role+postgres only — Human verified prosrc length 4092, three legit P0001 raises, no sent-batch raise, already_saved return present
+- [Phase 11]: Unexpected GREEN on 11-04 Task1: no cli.py change — Phase 10 stdout + 11-03 fake invert already satisfied sent-batch CLI contract
+- [Phase 11]: Human pushed: migration 009 live on knowledge-db.ru; grants postgres+service_role only; already_saved path verified
 
 ### Pending Todos
 
@@ -196,7 +200,7 @@ leaderboard, quiz, PIPE-01 YAML UI, live SMTP, signup mail, Whisper/Foundry ASR,
 
 ## Session Continuity
 
-Last session: 2026-10-02T11:11:24.582Z
-Stopped at: Completed 11-03-PLAN.md
+Last session: 2026-10-02T13:36:29.406Z
+Stopped at: Completed 11-04-PLAN.md
 Resume file: None
 Next: `/gsd-verify-work 10`
