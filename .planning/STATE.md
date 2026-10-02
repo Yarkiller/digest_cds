@@ -4,19 +4,19 @@ milestone: v1.1
 milestone_name: YouTube → LLM → Supabase ingestion
 current_phase: 11
 current_phase_name: "Address tech debt: captions diagnostics and persist error classification"
-current_plan: 3
+current_plan: 4
 status: executing
-stopped_at: Completed 11-02-PLAN.md
-last_updated: "2026-10-02T11:07:26.392Z"
+stopped_at: Completed 11-03-PLAN.md
+last_updated: "2026-10-02T11:11:25.144Z"
 last_activity: 2026-10-02
 last_activity_desc: Phase 11 execution started
-state_head: 08dd9d4a61c1e5141bd4615ef6771ac9b23f6fa2
+state_head: 209c1d51b4fa067e24a4b2c69d159412280ef1af
 progress:
   total_phases: 6
   completed_phases: 10
   total_plans: 23
-  completed_plans: 21
-  percent: 91
+  completed_plans: 22
+  percent: 96
 ---
 
 # Project State
@@ -31,12 +31,12 @@ See: .planning/PROJECT.md (updated 2026-09-27)
 ## Current Position
 
 Phase: 11 (Address tech debt: captions diagnostics and persist error classification) — EXECUTING
-Current Plan: 3
+Current Plan: 4
 Total Plans in Phase: 4
 Status: Ready to execute
 Last activity: 2026-10-02 — Completed 11-01-PLAN.md
 
-Progress: [█████████░] 91%
+Progress: [█████████░] 96%
 
 ## Performance Metrics
 
@@ -93,6 +93,7 @@ Progress: [█████████░] 91%
 | Phase 10 P04 | 48h | 3 tasks | 5 files |
 | Phase 11 P01 | 4min | 2 tasks | 3 files |
 | Phase 11 P02 | 6min | 2 tasks | 2 files |
+| Phase 11 P03 | 8min | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -171,6 +172,7 @@ Phase 8 execution (08-01…08-04):
 - [Phase 11]: D-09 one-way: migration 009 CREATE OR REPLACE persist_draft_and_enqueue for sent-batch already_saved (user proceed) — Q4/D-08/D-09; undo needs follow-up migration; Studio apply in 11-04
 - [Phase 11]: Keep PERSIST_REASONS unchanged (D-07); classification-only fix for 23514 + int HTTP
 - [Phase 11]: Int HTTP → rpc_error per D-06 (not network_error)
+- [Phase 11]: Live Studio apply of migration 009 deferred to plan 11-04 (not applied in 11-03)
 
 ### Pending Todos
 
@@ -194,7 +196,7 @@ leaderboard, quiz, PIPE-01 YAML UI, live SMTP, signup mail, Whisper/Foundry ASR,
 
 ## Session Continuity
 
-Last session: 2026-10-02T11:07:25.827Z
-Stopped at: Completed 11-02-PLAN.md
+Last session: 2026-10-02T11:11:24.582Z
+Stopped at: Completed 11-03-PLAN.md
 Resume file: None
 Next: `/gsd-verify-work 10`

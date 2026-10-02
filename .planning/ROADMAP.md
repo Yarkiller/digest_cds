@@ -185,10 +185,10 @@ Plans:
 **Goal:** Operator CLI diagnostics stay secret-safe and classified correctly: captions/URL envelopes never leak SDK text; out-of-catalog SDK maps to `unknown_captions_error`; persist recognizes `23514` and numeric HTTP statuses without changing `PERSIST_REASONS`; sent-batch re-run returns `already_saved: true` via RPC
 **Requirements**: CAP-02, PERS-02, CLI-02, CLI-04 (hardening; already satisfied at milestone level)
 **Depends on:** Phase 10
-**Plans:** 2/4 plans executed
+**Plans:** 3/4 plans executed
 - [x] 11-01-PLAN.md
 - [x] 11-02-PLAN.md
-- [ ] 11-03-PLAN.md
+- [x] 11-03-PLAN.md
 - [ ] 11-04-PLAN.md
 
 **Wave 1**
