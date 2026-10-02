@@ -16,15 +16,20 @@ v1 MVP (Phases 1–5) remains the editorial read/vote/admin publish surface (shi
 
 Stack: FastAPI, React/Vite, self-hosted Supabase + pgvector, `data-collection` + `ingestion-service`, Playwright, pytest. v1.1 git range ~`45db99f` → `fff73a3` (218 commits, 2026-09-26 → 2026-10-02; +30.5k / −0.5k LOC across 225 files).
 
-## Next Milestone Goals: v1.2
+## Current Milestone: v1.2 Admin UX + diagnostics + PIPE-01 MVP
 
-**Working title:** Admin UX polish + operator diagnostics + PIPE-01
+**Goal:** Admin can honestly review and promote ingested drafts, operators get secret-safe `--debug` diagnostics, and PIPE-01 ships as config + validation + UI only (no full pipeline execution).
 
-**Target themes (to refine in `/gsd-new-milestone`):**
-- Admin UX observations from Phase 10 UAT (preview title+dek only, email titles-only, draft→ready control, score_factors, interstitial whitespace, leaked test-header)
-- CLI `--debug` / richer operator diagnostics (secret-safe)
-- **PIPE-01**: Admin YAML pipeline config UI
-- Carry: Phase 10 deferred unit flake (`test_admin_shortlist_empty_batch`), remaining advisory WR notes / Nyquist reconcile for phases 6–8
+**Target features:**
+- Admin material preview shows body, provenance, counts, reader link (not title+dek only)
+- Email preview honesty (HTML / intro / summaries) + interstitial whitespace + purge leaked `test-header`
+- Admin draft → ready control (remove SQL workaround for D-85 send gate)
+- `score_factors` / justification honesty (fill via config MVP or honest empty)
+- CLI `--debug` richer secret-safe operator diagnostics
+- PIPE-01 MVP: YAML pipeline config + validation + admin UI (execution deferred to v1.3)
+- Fix `test_admin_shortlist_empty_batch_returns_200_empty_items` (Phase 10 carry)
+
+**Deferred from v1.2:** Live SMTP (MAIL-01), signup confirmation mail (MAIL-02), PIPE full pipeline execution (v1.3), ingestion HTTP/scheduler (ING-*).
 
 ## Prior Milestone: v1.1 YouTube → LLM → Supabase ingestion (SHIPPED)
 
@@ -82,9 +87,13 @@ v1 is done only when **all** of the following hold:
 
 ### Active
 
-- [ ] Admin UX polish from Phase 10 UAT observations (preview/email/draft→ready/score_factors)
-- [ ] CLI `--debug` / richer secret-safe operator diagnostics
-- [ ] PIPE-01: Admin YAML pipeline config UI
+- [ ] Admin material preview honesty (body, provenance, counts, reader link)
+- [ ] Email preview honesty + interstitial whitespace + `test-header` cleanup
+- [ ] Admin draft → ready control for D-85 send gate
+- [ ] score_factors / justification honesty (config MVP or honest empty)
+- [ ] CLI `--debug` secret-safe operator diagnostics
+- [ ] PIPE-01 MVP: YAML config + validation + admin UI (no execution)
+- [ ] Fix `test_admin_shortlist_empty_batch_returns_200_empty_items`
 
 ### Out of Scope
 
@@ -92,7 +101,9 @@ v1 is done only when **all** of the following hold:
 - Storing or publishing video/audio/raw transcript as material — content contract
 - Whisper / FoundryModels transcription — captions-only until FoundryModels revisit
 - Ingestion HTTP API, scheduler/batch, auto-publish/send — later milestones (ING-*)
-- Public leaderboard, quiz cards, live SMTP, signup mail — still deferred unless pulled into v1.2 scope
+- PIPE-01 full pipeline execution — deferred to v1.3 (v1.2 is config + validation + UI only)
+- Live SMTP (MAIL-01) and signup confirmation mail (MAIL-02) — deferred past v1.2
+- Public leaderboard, quiz cards — still deferred
 - Managed Supabase Cloud / managed PostgreSQL Cloud.ru as primary DB — ADR-0004
 - Dynamic admin-managed email domain list — ADR-0003 (fixed two domains only)
 
@@ -100,7 +111,7 @@ v1 is done only when **all** of the following hold:
 
 - **Shipped v1:** Auth, issue/materials/archive, voting, knowledge search, разборы, and admin digest publish. Live adapters through migration 005. Mail is StubMailer.
 - **Shipped v1.1:** Ingestion path (`data-collection` + `ingestion-service`) writes drafts into the same Supabase DB; backend/SPA unchanged as readers. DeepSeek MVP bends ADR-0002 temporarily. Migrations 007–009 live (`persist_draft_and_enqueue`, provenance, unique `youtube_video_id`, decision gate, sent-batch `already_saved`).
-- **v1.2 focus:** Admin UX observations, CLI `--debug`, PIPE-01 — scoped in `/gsd-new-milestone`.
+- **v1.2 focus:** Admin UX honesty, CLI `--debug`, PIPE-01 MVP (config/validation/UI), admin shortlist unit fix. Live SMTP and PIPE execution deferred.
 - **Product framing:** Concept 3 Editorial UI («Digest CDS: издание»); personas and journeys J1–J6 in ingest context.
 - **Known debt at v1.1 close:** Nyquist drafts for phases 6–8; Phase 10 deferred admin unit flake; UAT polish items; advisory WR notes in milestone audit; four v1 debug sessions still suppressed (see STATE.md Deferred Items).
 - **Domain language:** `CONTEXT.md` + `docs/adr/` are canonical for agents.
@@ -190,4 +201,4 @@ After each phase transition: move validated/invalidated requirements; log decisi
 After milestone: full review of Core Value, Out of Scope, and Context against shipped reality.
 
 ---
-*Last updated: 2026-10-02 after v1.1 milestone*
+*Last updated: 2026-10-02 after starting v1.2 milestone*

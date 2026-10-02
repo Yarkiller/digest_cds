@@ -1,21 +1,16 @@
 ---
 gsd_state_version: "1.0"
-milestone: v1.1
-milestone_name: YouTube → LLM → Supabase ingestion
-status: Awaiting next milestone
-stopped_at: Phase 11 verified — tech debt captions/persist closed
-last_updated: "2026-10-02T13:51:38.530Z"
+milestone: v1.2
+milestone_name: Admin UX + diagnostics + PIPE-01 MVP
+status: planning
+last_updated: "2026-10-02T14:00:58.218Z"
 last_activity: 2026-10-02
-last_activity_desc: Milestone v1.1 completed and archived
-state_head: fff73a371a3be485295c51568a3c6007d1c3ffaa
 progress:
-  total_phases: 6
-  completed_phases: 10
-  total_plans: 23
-  completed_plans: 23
-  percent: 100
-current_phase: 11
-current_phase_name: "Address tech debt: captions diagnostics and persist error classification"
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -29,10 +24,10 @@ See: .planning/PROJECT.md (updated 2026-10-02 after v1.1)
 
 ## Current Position
 
-Phase: Milestone v1.1 complete
+Phase: Not started (defining requirements)
 Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-10-02 — Milestone v1.1 archived (phases 6–11)
+Status: Defining requirements
+Last activity: 2026-10-02 — Milestone v1.2 started
 
 ## Performance Metrics
 
