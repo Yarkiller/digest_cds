@@ -129,6 +129,48 @@ def test_cli_rerun_prints_already_saved_true_with_stored_ids(monkeypatch) -> Non
     assert list(persist.stored.keys()) == [VIDEO_ID]
 
 
+def test_cli_sent_batch_rerun_prints_checkmarks_and_already_saved(monkeypatch) -> None:
+    """D-08; CLI-02; CLI-04: sent-batch-only shortlist re-run exits 0 with checkmarks + already_saved."""
+    from datetime import datetime, timezone
+
+    from typer.testing import CliRunner
+
+    from ingestion_service import cli as cli_mod
+    from ingestion_service.application.ports.persist import PersistResult
+    from ingestion_service.tests_support.fakes import BatchTrackingFakePersister
+
+    persist = BatchTrackingFakePersister(batch_size=5)
+    sent_at = datetime(2026, 9, 20, 12, 0, tzinfo=timezone.utc)
+    persist.seed_batch(batch_id=3, sent_at=sent_at)
+    persist.seed_item(3, decision="pending", video_id=VIDEO_ID)
+    persist.stored[VIDEO_ID] = PersistResult(
+        material_id=9,
+        slug=EXPECTED_SLUG,
+        batch_id=3,
+        rank=1,
+        already_saved=False,
+    )
+
+    deps = _fake_deps(persist)
+    monkeypatch.setattr(cli_mod, "build_ingest_deps", lambda: deps)
+
+    result = CliRunner().invoke(cli_mod.app, [URL, "--template", "lecture"])
+    assert result.exit_code == 0
+    assert result.stderr == ""
+    assert result.stdout.splitlines() == [
+        "✓ transcript",
+        "✓ LLM",
+        "✓ saved",
+        "material_id: 9",
+        f"slug: {EXPECTED_SLUG}",
+        "batch_id: 3",
+        "rank: 1",
+        "already_saved: true",
+    ]
+    assert len(persist.stored) == 1
+    assert list(persist.stored.keys()) == [VIDEO_ID]
+
+
 def test_cli_mid_pipeline_llm_error_keeps_transcript_checkmark_json_stderr(
     monkeypatch,
 ) -> None:
