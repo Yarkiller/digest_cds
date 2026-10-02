@@ -5,17 +5,17 @@ milestone_name: Admin UX + diagnostics + PIPE-01 MVP
 current_phase: 13
 current_phase_name: Admin material & email preview honesty
 status: executing
-stopped_at: Completed 13-01-PLAN.md
-last_updated: "2026-10-02T19:24:35.500Z"
+stopped_at: Completed 13-02-PLAN.md
+last_updated: "2026-10-02T19:33:51.759Z"
 last_activity: 2026-10-02
 last_activity_desc: Phase 13 execution started
-state_head: 314afa0b5ad9e029653976c5f5197772a0e4e002
+state_head: 557aefe33c41a8b36994bb2d7e5599b3dcbd391d
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 9
-  completed_plans: 4
-  percent: 44
+  completed_plans: 5
+  percent: 56
 ---
 
 # Project State
@@ -30,11 +30,11 @@ See: .planning/PROJECT.md (updated 2026-10-02 — v1.2 milestone)
 ## Current Position
 
 Phase: 13 (Admin material & email preview honesty) — EXECUTING
-Plan: 2 of 6
+Plan: 3 of 6
 Status: Ready to execute
 Last activity: 2026-10-02 — Phase 13 execution started
 
-Progress: [████░░░░░░] 44%
+Progress: [██████░░░░] 56%
 
 ## Performance Metrics
 
@@ -63,6 +63,7 @@ Progress: [████░░░░░░] 44%
 | Phase 12 P02 | 5min | 2 tasks | 4 files |
 | Phase 12-03 P03 | 6min | 2 tasks | 2 files |
 | Phase 13 P01 | 7min | 2 tasks | 7 files |
+| Phase 13 P02 | 8min | 3 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -84,6 +85,7 @@ v1.2 roadmap locks:
 - [Phase 12]: Playwright RED authorized emptyUnsentDto GREEN (RED_EVIDENCE_OK)
 - [Phase 13]: Counts computed in get_admin_shortlist from body_markdown; reading_minutes from stored join
 - [Phase 13]: Enrich shortlist via get_current_batch join only — no /admin/materials/:id (D-01)
+- [Phase 13]: render_email_html blocks as kind maps; site_url defaults until Plan 06; ban assert-only
 
 ### Pending Todos
 
@@ -107,7 +109,7 @@ Carried product deferrals to v1.3+: leaderboard, quiz, live SMTP, signup mail, W
 
 ## Session Continuity
 
-Last session: 2026-10-02T19:24:35.450Z
-Stopped at: Completed 13-01-PLAN.md
+Last session: 2026-10-02T19:33:51.707Z
+Stopped at: Completed 13-02-PLAN.md
 Resume file: None
 Next: `/gsd-plan-phase 12`
