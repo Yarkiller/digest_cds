@@ -122,6 +122,10 @@ class InMemoryShortlistRepository:
                         decided_by=actor_user_id,
                         decided_at=decided_at,
                         dek=item.dek,
+                        body_markdown=item.body_markdown,
+                        provenance_label=item.provenance_label,
+                        slug=item.slug,
+                        reading_minutes=item.reading_minutes,
                     )
                 )
             else:

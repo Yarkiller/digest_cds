@@ -64,6 +64,17 @@ class ShortlistBatch:
     items: tuple[ShortlistItem, ...]
 
 
+def material_counts(body_markdown: str | None) -> tuple[int, int]:
+    """Return (char_count, word_count) for admin preview (ADUX-01; RESEARCH A1).
+
+    ``char_count`` is ``len(body_markdown or "")`` (Python code-unit length).
+    ``word_count`` uses ``str.split()`` whitespace tokens — same split as
+    ``estimate_reading_minutes`` in ingestion material_completion.
+    """
+    text = body_markdown or ""
+    return len(text), len(text.split())
+
+
 @dataclass(frozen=True)
 class AdminShortlistItem:
     material_id: int
@@ -74,6 +85,12 @@ class AdminShortlistItem:
     score: float | None
     factor_labels: tuple[str, ...]
     dek: str | None = None
+    body_markdown: str | None = None
+    provenance_label: str | None = None
+    slug: str | None = None
+    reading_minutes: int | None = None
+    char_count: int = 0
+    word_count: int = 0
 
 
 @dataclass(frozen=True)

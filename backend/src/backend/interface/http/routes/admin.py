@@ -43,6 +43,12 @@ class AdminShortlistItemResponse(BaseModel):
     score: float | None = None
     factor_labels: list[str] = []
     dek: str | None = None
+    body_markdown: str | None = None
+    provenance_label: str | None = None
+    slug: str | None = None
+    reading_minutes: int | None = None
+    char_count: int = 0
+    word_count: int = 0
 
 
 class AdminShortlistResponse(BaseModel):
@@ -170,6 +176,12 @@ def _to_response(dto: AdminShortlist) -> AdminShortlistResponse:
                 score=item.score,
                 factor_labels=list(item.factor_labels),
                 dek=item.dek,
+                body_markdown=item.body_markdown,
+                provenance_label=item.provenance_label,
+                slug=item.slug,
+                reading_minutes=item.reading_minutes,
+                char_count=item.char_count,
+                word_count=item.word_count,
             )
             for item in dto.items
         ],

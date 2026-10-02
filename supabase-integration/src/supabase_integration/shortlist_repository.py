@@ -42,6 +42,7 @@ def _item_from_row(row: dict[str, Any]) -> ShortlistItem:
     if not isinstance(factors, Mapping):
         factors = {}
     score_raw = row.get("score")
+    reading_raw = material.get("reading_minutes")
     return ShortlistItem(
         material_id=int(row["material_id"]),
         rank=int(row["rank"]),
@@ -53,6 +54,18 @@ def _item_from_row(row: dict[str, Any]) -> ShortlistItem:
         decided_by=str(row["decided_by"]) if row.get("decided_by") else None,
         decided_at=_parse_dt(row.get("decided_at")),
         dek=(str(material["dek"]) if material.get("dek") is not None else None),
+        body_markdown=(
+            str(material["body_markdown"])
+            if material.get("body_markdown") is not None
+            else None
+        ),
+        provenance_label=(
+            str(material["provenance_label"])
+            if material.get("provenance_label") is not None
+            else None
+        ),
+        slug=(str(material["slug"]) if material.get("slug") is not None else None),
+        reading_minutes=int(reading_raw) if reading_raw is not None else None,
     )
 
 
@@ -204,7 +217,9 @@ class SupabaseShortlistRepository:
                 self._client.table("digest_shortlist_items")
                 .select(
                     "batch_id,material_id,rank,score,score_factors,decision,"
-                    "decided_by,decided_at,materials(title,status,dek)"
+                    "decided_by,decided_at,"
+                    "materials(title,status,dek,body_markdown,slug,"
+                    "provenance_label,reading_minutes)"
                 )
                 .eq("batch_id", batch_id)
                 .order("rank")

@@ -8,6 +8,7 @@ from backend.domain.shortlist import (
     AdminShortlist,
     AdminShortlistItem,
     honest_factor_labels,
+    material_counts,
     visible_shortlist_items,
 )
 
@@ -35,19 +36,28 @@ def get_admin_shortlist(shortlist: ShortlistRepository) -> AdminShortlist:
         )
 
     ranked = visible_shortlist_items(batch.items)
-    items = tuple(
-        AdminShortlistItem(
-            material_id=item.material_id,
-            rank=item.rank,
-            title=item.title,
-            material_status=item.material_status,
-            decision=item.decision,
-            score=float(item.score) if item.score is not None else None,
-            factor_labels=tuple(honest_factor_labels(item.score_factors)),
-            dek=item.dek,
+    mapped: list[AdminShortlistItem] = []
+    for item in ranked:
+        char_count, word_count = material_counts(item.body_markdown)
+        mapped.append(
+            AdminShortlistItem(
+                material_id=item.material_id,
+                rank=item.rank,
+                title=item.title,
+                material_status=item.material_status,
+                decision=item.decision,
+                score=float(item.score) if item.score is not None else None,
+                factor_labels=tuple(honest_factor_labels(item.score_factors)),
+                dek=item.dek,
+                body_markdown=item.body_markdown,
+                provenance_label=item.provenance_label,
+                slug=item.slug,
+                reading_minutes=item.reading_minutes,
+                char_count=char_count,
+                word_count=word_count,
+            )
         )
-        for item in ranked
-    )
+    items = tuple(mapped)
     return AdminShortlist(
         batch_id=batch.id,
         items=items,
