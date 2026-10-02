@@ -88,7 +88,7 @@ status: complete
 1. **Task 1: End-to-end empty-unsent GET /admin/shortlist HTTP 200 contract** - `7b29da2` (test)
 2. **Task 2: Rename no-batch proof to required-key asserts** - `4e1e40d` (test)
 
-**Plan metadata:** (pending docs commit)
+**Plan metadata:** `838b8b8` (SUMMARY) / `8d46661` (STATE/ROADMAP/REQUIREMENTS)
 
 ## TDD Cycle
 
