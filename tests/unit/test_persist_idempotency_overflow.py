@@ -4,8 +4,6 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-import pytest
-
 from data_collection.dto.material_draft import MaterialDraft
 
 
@@ -95,9 +93,8 @@ def test_batch_sent_skips_latest_sent_batch() -> None:
     assert fake.batches[result.batch_id].sent_at is None
 
 
-def test_rerun_when_only_sent_batch_exists_raises_batch_creation_failed() -> None:
-    """WR-02: post-publish re-run must not return the sent batch."""
-    from ingestion_service.adapters.persist_errors import DraftPersistBatchError
+def test_rerun_when_only_sent_batch_exists_returns_already_saved() -> None:
+    """D-08 / CLI-02: sent-batch-only conflict returns already_saved with stored ids."""
     from ingestion_service.application.ports.persist import PersistResult
     from ingestion_service.application.use_cases.persist_draft import persist_draft
 
@@ -113,7 +110,11 @@ def test_rerun_when_only_sent_batch_exists_raises_batch_creation_failed() -> Non
         already_saved=False,
     )
 
-    with pytest.raises(DraftPersistBatchError) as exc:
-        persist_draft(_draft("published-vid"), fake)
-    assert exc.value.reason == "batch_creation_failed"
-    assert exc.value.video_id == "published-vid"
+    result = persist_draft(_draft("published-vid"), fake)
+    assert result.already_saved is True
+    assert result.material_id == 9
+    assert result.slug == "published-vid"
+    assert result.batch_id == 3
+    assert result.rank == 1
+    assert fake.batches[3].sent_at == sent_at
+    assert len(fake.calls) == 1
