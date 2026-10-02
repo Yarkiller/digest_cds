@@ -4,6 +4,7 @@
 
 - ✅ **[v1 MVP](milestones/v1-ROADMAP.md)** — Phases 1-5 (shipped 2026-09-22)
 - ✅ **[v1.1 YouTube → LLM → Supabase ingestion](milestones/v1.1-ROADMAP.md)** — Phases 6-11 (shipped 2026-10-02)
+- 🚧 **v1.2 Admin UX + diagnostics + PIPE-01 MVP** — Phases 12-16 (in progress)
 
 ## Phases
 
@@ -34,11 +35,88 @@ Full phase detail: [milestones/v1.1-ROADMAP.md](milestones/v1.1-ROADMAP.md)
 
 </details>
 
+### 🚧 v1.2 Admin UX + diagnostics + PIPE-01 MVP (In Progress)
+
+**Milestone Goal:** Admin can honestly review and promote ingested drafts; operators get secret-safe `--debug` diagnostics; PIPE-01 ships as config + validation + UI only (no full pipeline execution).
+
+**Non-goals (explicit):**
+- Live SMTP / signup confirmation mail — deferred past v1.2 (MAIL-01, MAIL-02)
+- PIPE full pipeline execution — deferred to v1.3 (PIPE-EXEC-*)
+- Ingestion HTTP/scheduler / Whisper-on-VM — still out of scope (ING-*)
+
+- [ ] **Phase 12: Admin shortlist empty-batch contract** - Fix Phase 10 carry unit so empty shortlist returns 200 with empty items
+- [ ] **Phase 13: Admin material & email preview honesty** - Preview shows body/provenance/counts/reader link; email HTML + interstitial + no test chrome
+- [ ] **Phase 14: Draft→ready & justification honesty** - Admin promotes draft→ready in UI; Обоснование is real or honestly empty
+- [ ] **Phase 15: CLI --debug diagnostics** - Richer secret-safe stage diagnostics; default progress contracts unchanged
+- [ ] **Phase 16: PIPE-01 MVP config UI** - View/edit/validate/persist pipeline YAML; no run/trigger execution
+
+## Phase Details
+
+### Phase 12: Admin shortlist empty-batch contract
+**Goal**: Empty admin shortlist responses match the locked HTTP contract so the Phase 10 carry unit passes
+**Depends on**: Nothing (first v1.2 phase; v1.1 complete)
+**Requirements**: FIX-01
+**Success Criteria** (what must be TRUE):
+  1. `test_admin_shortlist_empty_batch_returns_200_empty_items` passes under the unit suite
+  2. An empty unsent batch returns HTTP 200 with an empty `items` list (not a schema/validation 500)
+  3. Response fields required by the contract (`sent_at`, `week_label`, and related extras) align so clients are not blocked by missing/extra schema noise
+**Plans**: TBD
+
+### Phase 13: Admin material & email preview honesty
+**Goal**: Admin can inspect a real material body and a real email HTML preview before send
+**Depends on**: Phase 12
+**Requirements**: ADUX-01, ADUX-02, ADUX-03, ADUX-04
+**Success Criteria** (what must be TRUE):
+  1. On `/admin/digest`, material preview shows `body_markdown`, `provenance_label`, char/word counts, and a working link to `/materials/<slug>` (not title+dek only)
+  2. «Превью письма» renders real email HTML including intro, summaries, and links (not titles-only)
+  3. Interstitial connecting text preserves paragraph breaks so `\n\n` is visible as whitespace / separate paragraphs
+  4. Leaked `test-header` (and equivalent seed/test chrome) does not appear on admin preview surfaces after cleanup
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 14: Draft→ready & justification honesty
+**Goal**: Admin can unblock send without SQL and see honest shortlist justification
+**Depends on**: Phase 13
+**Requirements**: ADUX-05, ADUX-06
+**Success Criteria** (what must be TRUE):
+  1. Admin can set a material from `draft` → `ready` in the admin UI without a direct SQL workaround
+  2. After promotion, D-85 send gate no longer blocks that material solely for still being draft
+  3. Shortlist «Обоснование» shows populated `score_factors` when available from pipeline config MVP, or an explicit empty/unavailable state (never a silent fake justification)
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 15: CLI --debug diagnostics
+**Goal**: Operators can opt into richer ingest diagnostics without secret leakage or regressing default progress
+**Depends on**: Phase 14
+**Requirements**: DBG-01, DBG-02
+**Success Criteria** (what must be TRUE):
+  1. `ingestion-service` CLI accepts `--debug` and prints richer stage diagnostics on stderr/stdout
+  2. Debug output never leaks secrets, proxy credentials, cookies, or full transcript bodies
+  3. With `--debug` off, existing staged progress and `IngestError.to_dict()` contracts remain unchanged
+**Plans**: TBD
+
+### Phase 16: PIPE-01 MVP config UI
+**Goal**: Admin can view, validate, and persist pipeline config without running the pipeline
+**Depends on**: Phase 15
+**Requirements**: PIPE-01, PIPE-02, PIPE-03
+**Success Criteria** (what must be TRUE):
+  1. Admin can view and edit YAML (or equivalent structured) pipeline config through an admin UI
+  2. Invalid config is rejected before save with field-level or structured errors (no silent accept)
+  3. Validated config persists and is readable on subsequent admin sessions (storage behind a port; UI has no deep Supabase coupling)
+  4. No run/trigger/scheduler execution of the pipeline ships in this phase (execution stays v1.3)
+**Plans**: TBD
+**UI hint**: yes
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 1–5 | v1 | 40/40 | Complete | 2026-09-22 |
 | 6–11 | v1.1 | 23/23 | Complete | 2026-10-02 |
+| 12. Admin shortlist empty-batch contract | v1.2 | 0/? | Not started | - |
+| 13. Admin material & email preview honesty | v1.2 | 0/? | Not started | - |
+| 14. Draft→ready & justification honesty | v1.2 | 0/? | Not started | - |
+| 15. CLI --debug diagnostics | v1.2 | 0/? | Not started | - |
+| 16. PIPE-01 MVP config UI | v1.2 | 0/? | Not started | - |
 
-Next: define v1.2 phases via `/gsd-new-milestone`.
+**Coverage:** 12/12 v1.2 requirements mapped (FIX-01, ADUX-01…06, DBG-01…02, PIPE-01…03). No orphans.

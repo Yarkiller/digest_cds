@@ -71,24 +71,24 @@ Deferred. Not in this milestone's roadmap.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FIX-01 | TBD | Pending |
-| ADUX-01 | TBD | Pending |
-| ADUX-02 | TBD | Pending |
-| ADUX-03 | TBD | Pending |
-| ADUX-04 | TBD | Pending |
-| ADUX-05 | TBD | Pending |
-| ADUX-06 | TBD | Pending |
-| DBG-01 | TBD | Pending |
-| DBG-02 | TBD | Pending |
-| PIPE-01 | TBD | Pending |
-| PIPE-02 | TBD | Pending |
-| PIPE-03 | TBD | Pending |
+| FIX-01 | Phase 12 | Pending |
+| ADUX-01 | Phase 13 | Pending |
+| ADUX-02 | Phase 13 | Pending |
+| ADUX-03 | Phase 13 | Pending |
+| ADUX-04 | Phase 13 | Pending |
+| ADUX-05 | Phase 14 | Pending |
+| ADUX-06 | Phase 14 | Pending |
+| DBG-01 | Phase 15 | Pending |
+| DBG-02 | Phase 15 | Pending |
+| PIPE-01 | Phase 16 | Pending |
+| PIPE-02 | Phase 16 | Pending |
+| PIPE-03 | Phase 16 | Pending |
 
 **Coverage:**
 - v1.2 requirements: 12 total
-- Mapped to phases: 0 (filled by roadmap)
-- Unmapped: 12
+- Mapped to phases: 12
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-10-02*
-*Last updated: 2026-10-02 after v1.2 scope lock*
+*Last updated: 2026-10-02 after v1.2 roadmap (Phases 12–16)*
