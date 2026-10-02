@@ -87,11 +87,13 @@ def test_map_captions_error_subtype_to_locked_reason(
 
     assert mapped.stage == "captions"
     assert mapped.reason == reason
+    assert mapped.message == f"captions {reason} for {VIDEO_ID}"
     assert mapped.context.get("video_id") == VIDEO_ID
     payload = mapped.to_dict()
     assert payload["ok"] is False
     assert payload["stage"] == "captions"
     assert payload["exit_code"] == 1
+    assert payload["message"] == mapped.message
 
 
 def test_locked_reason_set_equals_d10_exactly() -> None:
@@ -132,6 +134,47 @@ def test_map_captions_error_redacts_credentialed_proxy_context() -> None:
     assert "socks5://" not in payload["message"]
     assert "secret" not in str(error)
     assert "socks5://" not in str(error)
+
+
+def test_map_captions_error_cookie_invalid_message_is_reason_and_video_id_only() -> None:
+    """D-01, D-03, D-04: CookieInvalid path → unknown_captions_error; SDK text discarded."""
+    from ingestion_service.mapping.captions import map_captions_error
+
+    sdk_leak = (
+        "CookieInvalid: https://user:proxy-secret@192.168.1.68:1080 "
+        "could not load cookies from /tmp/cookies.txt"
+    )
+    error = CaptionsError(
+        VIDEO_ID,
+        exception_class="CookieInvalid",
+        sdk_message=sdk_leak,
+        raw_url="https://user:proxy-secret@youtube.com/api",
+    )
+
+    mapped = map_captions_error(error)
+
+    assert mapped.reason == "unknown_captions_error"
+    assert mapped.message == f"captions unknown_captions_error for {VIDEO_ID}"
+    assert mapped.context.get("exception_class") == "CookieInvalid"
+    assert "sdk_message" not in mapped.context
+    assert "raw_url" not in mapped.context
+    assert "proxy-secret" not in mapped.message
+    assert "proxy-secret" not in str(mapped.context)
+    assert "cookies.txt" not in mapped.message
+    assert "https://" not in mapped.message
+
+
+def test_captions_context_allowlist_frozen() -> None:
+    """D-02: captions diagnostic context allowlist stays Phase-7 locked."""
+    from ingestion_service.mapping import captions as captions_mapping
+
+    assert frozenset(captions_mapping._CONTEXT_ALLOWLIST) == frozenset(
+        {
+            "video_id",
+            "available_languages",
+            "exception_class",
+        }
+    )
 
 
 def test_map_captions_error_forwards_available_languages() -> None:

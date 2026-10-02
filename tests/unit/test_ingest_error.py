@@ -80,6 +80,15 @@ def test_map_url_error_uses_exception_reason_and_stage_url() -> None:
     assert mapped.exit_code == 1
 
 
+def test_url_context_allowlist_frozen() -> None:
+    """D-02: URL diagnostic context allowlist stays Phase-7 locked."""
+    from ingestion_service.mapping import url as url_mapping
+
+    assert frozenset(url_mapping._CONTEXT_ALLOWLIST) == frozenset(
+        {"value", "candidate"}
+    )
+
+
 def test_map_url_error_redacts_userinfo_credentials() -> None:
     from ingestion_service.mapping.url import map_url_error
     from ingestion_service.url import InvalidYouTubeUrl, extract_video_id
