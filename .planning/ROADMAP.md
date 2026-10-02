@@ -83,11 +83,11 @@ Plans:
   3. Interstitial connecting text preserves paragraph breaks so `\n\n` is visible as whitespace / separate paragraphs
   4. Leaked `test-header` (and equivalent seed/test chrome) does not appear on admin preview surfaces after cleanup
 
-**Plans**: 6 plans
+**Plans**: 1/6 plans executed
 
 Plans:
 **Wave 1**
-- [ ] 13-01-PLAN.md — Tracer: enriched GET /admin/shortlist full-item DTO + FIX-01 lock growth (ADUX-01)
+- [x] 13-01-PLAN.md — Tracer: enriched GET /admin/shortlist full-item DTO + FIX-01 lock growth (ADUX-01)
 
 **Wave 2** *(blocked on Wave 1)*
 - [ ] 13-02-PLAN.md — Shared email HTML + interstitial + preview wire + ban unit asserts (ADUX-02/03/04)
@@ -148,7 +148,7 @@ Plans:
 | 1–5 | v1 | 40/40 | Complete | 2026-09-22 |
 | 6–11 | v1.1 | 23/23 | Complete | 2026-10-02 |
 | 12. Admin shortlist empty-batch contract | v1.2 | 3/3 | Complete    | 2026-10-02 |
-| 13. Admin material & email preview honesty | v1.2 | 0/? | Not started | - |
+| 13. Admin material & email preview honesty | v1.2 | 1/6 | In Progress|  |
 | 14. Draft→ready & justification honesty | v1.2 | 0/? | Not started | - |
 | 15. CLI --debug diagnostics | v1.2 | 0/? | Not started | - |
 | 16. PIPE-01 MVP config UI | v1.2 | 0/? | Not started | - |

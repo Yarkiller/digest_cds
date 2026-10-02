@@ -5,17 +5,17 @@ milestone_name: Admin UX + diagnostics + PIPE-01 MVP
 current_phase: 13
 current_phase_name: Admin material & email preview honesty
 status: executing
-stopped_at: Phase 13 UI-SPEC approved
-last_updated: "2026-10-02T19:13:58.256Z"
+stopped_at: Completed 13-01-PLAN.md
+last_updated: "2026-10-02T19:24:35.500Z"
 last_activity: 2026-10-02
 last_activity_desc: Phase 13 execution started
-state_head: 2dff4dd1646372965eb08d5cb4c6ae7aebfa7950
+state_head: 314afa0b5ad9e029653976c5f5197772a0e4e002
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 9
-  completed_plans: 3
-  percent: 33
+  completed_plans: 4
+  percent: 44
 ---
 
 # Project State
@@ -30,11 +30,11 @@ See: .planning/PROJECT.md (updated 2026-10-02 — v1.2 milestone)
 ## Current Position
 
 Phase: 13 (Admin material & email preview honesty) — EXECUTING
-Plan: 1 of 6
-Status: Executing Phase 13
+Plan: 2 of 6
+Status: Ready to execute
 Last activity: 2026-10-02 — Phase 13 execution started
 
-Progress: [███░░░░░░░] 33%
+Progress: [████░░░░░░] 44%
 
 ## Performance Metrics
 
@@ -62,6 +62,7 @@ Progress: [███░░░░░░░] 33%
 | Phase 12 P01 | 2min | 2 tasks | 1 files |
 | Phase 12 P02 | 5min | 2 tasks | 4 files |
 | Phase 12-03 P03 | 6min | 2 tasks | 2 files |
+| Phase 13 P01 | 7min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -81,6 +82,8 @@ v1.2 roadmap locks:
 - [Phase 12]: REQUIREMENTS FIX-01 rephrased per RESEARCH Q2: no-batch + empty-unsent under required-key asserts
 - [Phase 12]: D-13: no AdminDigestPage chrome — empty-unsent reuses D-80 empty UI
 - [Phase 12]: Playwright RED authorized emptyUnsentDto GREEN (RED_EVIDENCE_OK)
+- [Phase 13]: Counts computed in get_admin_shortlist from body_markdown; reading_minutes from stored join
+- [Phase 13]: Enrich shortlist via get_current_batch join only — no /admin/materials/:id (D-01)
 
 ### Pending Todos
 
@@ -104,7 +107,7 @@ Carried product deferrals to v1.3+: leaderboard, quiz, live SMTP, signup mail, W
 
 ## Session Continuity
 
-Last session: 2026-10-02T17:44:37.681Z
-Stopped at: Phase 13 UI-SPEC approved
-Resume file: .planning/phases/13-admin-material-email-preview-honesty/13-UI-SPEC.md
+Last session: 2026-10-02T19:24:35.450Z
+Stopped at: Completed 13-01-PLAN.md
+Resume file: None
 Next: `/gsd-plan-phase 12`

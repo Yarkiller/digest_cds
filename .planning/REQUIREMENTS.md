@@ -11,7 +11,7 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Admin preview & triage
 
-- [ ] **ADUX-01**: Admin material preview on `/admin/digest` shows `body_markdown`, `provenance_label`, char/word counts, and a link to `/materials/<slug>` (not title+dek only)
+- [x] **ADUX-01**: Admin material preview on `/admin/digest` shows `body_markdown`, `provenance_label`, char/word counts, and a link to `/materials/<slug>` (not title+dek only)
 - [ ] **ADUX-02**: «Превью письма» shows a real email HTML preview including intro, summaries, and links (not titles-only)
 - [ ] **ADUX-03**: Interstitial connecting text preserves paragraph breaks (`\n\n` → visible whitespace / `<p>` split)
 - [ ] **ADUX-04**: Leaked `test-header` (and equivalent seed/test chrome) does not appear in admin preview surfaces after cleanup
@@ -74,7 +74,7 @@ Deferred. Not in this milestone's roadmap.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | FIX-01 | Phase 12 | Complete |
-| ADUX-01 | Phase 13 | Pending |
+| ADUX-01 | Phase 13 | Complete |
 | ADUX-02 | Phase 13 | Pending |
 | ADUX-03 | Phase 13 | Pending |
 | ADUX-04 | Phase 13 | Pending |
