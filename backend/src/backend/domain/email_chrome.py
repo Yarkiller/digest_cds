@@ -10,5 +10,5 @@ FORBIDDEN_LOWER = ["test-header", "test_header", "testheader"]
 
 def contains_forbidden_chrome(text: str) -> bool:
     """Return True if any closed ban token appears (case-insensitive)."""
-    # Stub for RED — always False until GREEN.
-    return False
+    lowered = (text or "").lower()
+    return any(token in lowered for token in FORBIDDEN_LOWER)
