@@ -1,0 +1,94 @@
+# Requirements: Digest CDS
+
+**Defined:** 2026-10-02
+**Core Value:** Authorized СВА staff can read a trustworthy weekly issue of prepared articles and influence the next разбор through one honest vote — without treating raw video/transcript as published material.
+
+**Milestone:** v1.2 Admin UX + diagnostics + PIPE-01 MVP
+
+## v1.2 Requirements
+
+Requirements for this milestone. Each maps to roadmap phases.
+
+### Admin preview & triage
+
+- [ ] **ADUX-01**: Admin material preview on `/admin/digest` shows `body_markdown`, `provenance_label`, char/word counts, and a link to `/materials/<slug>` (not title+dek only)
+- [ ] **ADUX-02**: «Превью письма» shows a real email HTML preview including intro, summaries, and links (not titles-only)
+- [ ] **ADUX-03**: Interstitial connecting text preserves paragraph breaks (`\n\n` → visible whitespace / `<p>` split)
+- [ ] **ADUX-04**: Leaked `test-header` (and equivalent seed/test chrome) does not appear in admin preview surfaces after cleanup
+- [ ] **ADUX-05**: Admin can set material status from `draft` → `ready` in UI so send is not blocked by D-85 without SQL
+- [ ] **ADUX-06**: Shortlist «Обоснование» is honest — either populated `score_factors` from pipeline config MVP or an explicit empty/unavailable state (no silent fake justification)
+
+### Operator diagnostics
+
+- [ ] **DBG-01**: `ingestion-service` CLI accepts `--debug` and prints richer stage diagnostics on stderr/stdout without leaking secrets, proxy credentials, cookies, or full transcript bodies
+- [ ] **DBG-02**: With `--debug` off, existing staged progress / `IngestError.to_dict()` contracts remain unchanged
+
+### Pipeline config (PIPE-01 MVP)
+
+- [ ] **PIPE-01**: Admin can view and edit YAML (or equivalent structured) pipeline config through an admin UI
+- [ ] **PIPE-02**: Pipeline config is validated before save; invalid config is rejected with field-level or structured errors (no silent accept)
+- [ ] **PIPE-03**: Validated config persists and is readable on subsequent admin sessions (storage behind a port; no deep Supabase coupling in UI)
+
+### Test debt
+
+- [ ] **FIX-01**: `tests/unit/test_http_admin.py::test_admin_shortlist_empty_batch_returns_200_empty_items` passes (schema extras / `sent_at` / `week_label` response contract aligned)
+
+## v1.3+ Requirements
+
+Deferred. Not in this milestone's roadmap.
+
+### Pipeline execution
+
+- **PIPE-EXEC-01**: Full pipeline execution driven by saved PIPE-01 config (run/trigger from admin or scheduler)
+- **PIPE-EXEC-02**: Config-driven score_factors population during ingest (if not covered by MVP honesty path)
+
+### Ingestion follow-ups
+
+- **ING-01**: HTTP API to trigger ingestion (no CLI-only)
+- **ING-02**: Scheduler / playlist or channel batch ingest
+- **ING-03**: Transcription when captions are missing (FoundryModels revisit; not Whisper-on-VM)
+- **ING-04**: Transcript chunking when content exceeds the context budget
+
+### Deferred product
+
+- **LEAD-01**: Public leaderboard (ADR-0001)
+- **QUIZ-01**: Quiz cards
+- **MAIL-01**: Live SMTP in place of StubMailer
+- **MAIL-02**: Signup confirmation mail so self-service `/register` persists a user
+
+## Out of Scope
+
+| Feature | Reason |
+|---------|--------|
+| PIPE full pipeline execution | Explicitly v1.3 — v1.2 is config + validation + UI only |
+| Live SMTP / signup confirmation mail | Deferred past v1.2 to keep milestone closable |
+| Auto-`ready` without admin action | Editorial trust; ADUX-05 is explicit admin control |
+| Whisper / local ASR on the app VM | ADR-0002; captions-only until Foundry revisit |
+| Ingestion talking to FastAPI for write path | Shared database remains the ingest contract; admin UX may call backend read/write APIs for triage |
+| Nyquist reconcile of archived phases 6–8 | Historical audit tech debt; not a v1.2 product requirement |
+
+## Traceability
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| FIX-01 | TBD | Pending |
+| ADUX-01 | TBD | Pending |
+| ADUX-02 | TBD | Pending |
+| ADUX-03 | TBD | Pending |
+| ADUX-04 | TBD | Pending |
+| ADUX-05 | TBD | Pending |
+| ADUX-06 | TBD | Pending |
+| DBG-01 | TBD | Pending |
+| DBG-02 | TBD | Pending |
+| PIPE-01 | TBD | Pending |
+| PIPE-02 | TBD | Pending |
+| PIPE-03 | TBD | Pending |
+
+**Coverage:**
+- v1.2 requirements: 12 total
+- Mapped to phases: 0 (filled by roadmap)
+- Unmapped: 12
+
+---
+*Requirements defined: 2026-10-02*
+*Last updated: 2026-10-02 after v1.2 scope lock*
