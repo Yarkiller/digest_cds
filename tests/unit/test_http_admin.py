@@ -210,6 +210,8 @@ def test_admin_shortlist_empty_batch_returns_200_empty_items() -> None:
         "items": [],
         "digest_rest": False,
         "days_until_next_batch": None,
+        "week_label": None,
+        "sent_at": None,
     }
 
 

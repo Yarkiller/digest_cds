@@ -2,13 +2,13 @@
 gsd_state_version: "1.0"
 milestone: v1.1
 milestone_name: YouTube → LLM → Supabase ingestion
-current_phase: 10
+current_phase: 09
 status: completed
-stopped_at: Phase 10 complete — all phases complete
-last_updated: "2026-10-01T19:33:33.028Z"
-last_activity: 2026-10-01
-last_activity_desc: Phase 10 complete
-state_head: 170aeae1ed84a5317986ffca01abc09d0c40c42b
+stopped_at: Phase 09 complete — all phases complete
+last_updated: "2026-10-02T05:56:11.354Z"
+last_activity: 2026-10-02
+last_activity_desc: Phase 09 complete
+state_head: 80dff086245df869552b730a98de3f6414edf4a9
 progress:
   total_phases: 5
   completed_phases: 10
@@ -24,14 +24,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-09-27)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Phase 10 — CLI Composition & UAT
+**Current focus:** Phase 09 — Draft Persist & Shortlist Enqueue
 
 ## Current Position
 
-Phase: 10
+Phase: 09
 Plan: Not started
 Status: All phases complete
-Last activity: 2026-10-01 — Phase 10 complete
+Last activity: 2026-10-02 — Phase 09 complete
 
 Progress: [██████████] 100% (4 of 5 v1.1 phases complete) — [████████████████████] 14/14 planned plans (100%)
 
@@ -180,6 +180,6 @@ leaderboard, quiz, PIPE-01 YAML UI, live SMTP, signup mail, Whisper/Foundry ASR,
 ## Session Continuity
 
 Last session: 2026-10-01T19:09:36.128Z
-Stopped at: Phase 10 complete — all phases complete
+Stopped at: Phase 09 complete — all phases complete
 Resume file: None
 Next: `/gsd-verify-work 10`
