@@ -5,17 +5,17 @@ milestone_name: Admin UX + diagnostics + PIPE-01 MVP
 current_phase: 12
 current_phase_name: Admin shortlist empty-batch contract
 status: executing
-stopped_at: Phase 12 context gathered
-last_updated: "2026-10-02T16:01:31.577Z"
+stopped_at: Completed 12-01-PLAN.md
+last_updated: "2026-10-02T16:10:28.836Z"
 last_activity: 2026-10-02
-last_activity_desc: v1.2 roadmap created (Phases 12–16)
-state_head: 56eb6bd65978634f0782c73bb32b7082ad636478
+last_activity_desc: Phase 12 execution started
+state_head: 838b8b8cb8397549ba961e8c7760f482318f6c00
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 3
-  completed_plans: 0
-  percent: 0
+  completed_plans: 1
+  percent: 33
 ---
 
 # Project State
@@ -25,16 +25,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-02 — v1.2 milestone)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Phase 12 — Admin shortlist empty-batch contract (ready to plan)
+**Current focus:** Phase 12 — Admin shortlist empty-batch contract
 
 ## Current Position
 
-Phase: 12 (Admin shortlist empty-batch contract) — READY TO EXECUTE
-Plan: —
+Phase: 12 (Admin shortlist empty-batch contract) — EXECUTING
+Plan: 2 of 3
 Status: Ready to execute
-Last activity: 2026-10-02 — v1.2 roadmap created (Phases 12–16)
+Last activity: 2026-10-02 — Phase 12 execution started
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [███░░░░░░░] 33%
 
 ## Performance Metrics
 
@@ -55,6 +55,11 @@ Progress: [░░░░░░░░░░] 0%
 | 14. Draft→ready & justification | 0/? | not started | - |
 | 15. CLI --debug | 0/? | not started | - |
 | 16. PIPE-01 MVP UI | 0/? | not started | - |
+**Per-Plan Metrics:**
+
+| Plan | Duration | Tasks | Files |
+|------|----------|-------|-------|
+| Phase 12 P01 | 2min | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -68,6 +73,8 @@ v1.2 roadmap locks:
 - PIPE-01 MVP = config + validation + UI; execution → v1.3
 - Live SMTP (MAIL-01) and signup confirmation mail (MAIL-02) deferred to v1.3
 - ADUX preview cluster (13) before draft→ready / score_factors (14)
+- [Phase 12]: D-03: no production edits — empty-unsent already returned D-04 #2 via get_admin_shortlist
+- [Phase 12]: Both empty proofs use required-key asserts (D-08); AdminShortlistResponse keeps extra=forbid (D-09)
 
 ### Pending Todos
 
@@ -91,7 +98,7 @@ Carried product deferrals to v1.3+: leaderboard, quiz, live SMTP, signup mail, W
 
 ## Session Continuity
 
-Last session: 2026-10-02T15:38:19.414Z
-Stopped at: Phase 12 context gathered
-Resume file: C:/Users/Yarkiller/PycharmPET-Projects/Digital_CDS/.planning/phases/12-admin-shortlist-empty-batch-contract/12-CONTEXT.md
+Last session: 2026-10-02T16:10:28.806Z
+Stopped at: Completed 12-01-PLAN.md
+Resume file: None
 Next: `/gsd-plan-phase 12`

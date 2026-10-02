@@ -31,7 +31,7 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Test debt
 
-- [ ] **FIX-01**: `tests/unit/test_http_admin.py::test_admin_shortlist_empty_batch_returns_200_empty_items` passes (schema extras / `sent_at` / `week_label` response contract aligned)
+- [x] **FIX-01**: `tests/unit/test_http_admin.py::test_admin_shortlist_empty_batch_returns_200_empty_items` passes (schema extras / `sent_at` / `week_label` response contract aligned)
 
 ## v1.3+ Requirements
 
@@ -71,7 +71,7 @@ Deferred. Not in this milestone's roadmap.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FIX-01 | Phase 12 | Pending |
+| FIX-01 | Phase 12 | Complete |
 | ADUX-01 | Phase 13 | Pending |
 | ADUX-02 | Phase 13 | Pending |
 | ADUX-03 | Phase 13 | Pending |
