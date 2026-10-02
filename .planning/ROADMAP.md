@@ -44,7 +44,7 @@ Full phase detail: [milestones/v1.1-ROADMAP.md](milestones/v1.1-ROADMAP.md)
 - PIPE full pipeline execution — deferred to v1.3 (PIPE-EXEC-*)
 - Ingestion HTTP/scheduler / Whisper-on-VM — still out of scope (ING-*)
 
-- [ ] **Phase 12: Admin shortlist empty-batch contract** - Fix Phase 10 carry unit so empty shortlist returns 200 with empty items
+- [x] **Phase 12: Admin shortlist empty-batch contract** - Fix Phase 10 carry unit so empty shortlist returns 200 with empty items (completed 2026-10-02)
 - [ ] **Phase 13: Admin material & email preview honesty** - Preview shows body/provenance/counts/reader link; email HTML + interstitial + no test chrome
 - [ ] **Phase 14: Draft→ready & justification honesty** - Admin promotes draft→ready in UI; Обоснование is real or honestly empty
 - [ ] **Phase 15: CLI --debug diagnostics** - Richer secret-safe stage diagnostics; default progress contracts unchanged
@@ -62,7 +62,7 @@ Full phase detail: [milestones/v1.1-ROADMAP.md](milestones/v1.1-ROADMAP.md)
   2. An empty unsent batch returns HTTP 200 with an empty `items` list (not a schema/validation 500)
   3. Response fields required by the contract (`sent_at`, `week_label`, and related extras) align so clients are not blocked by missing/extra schema noise
 
-**Plans**: 3/3 plans executed
+**Plans**: 3/3 plans complete
 
 Plans:
 **Wave 1**
@@ -131,7 +131,7 @@ Plans:
 |-------|-----------|----------------|--------|-----------|
 | 1–5 | v1 | 40/40 | Complete | 2026-09-22 |
 | 6–11 | v1.1 | 23/23 | Complete | 2026-10-02 |
-| 12. Admin shortlist empty-batch contract | v1.2 | 3/3 | In Progress|  |
+| 12. Admin shortlist empty-batch contract | v1.2 | 3/3 | Complete    | 2026-10-02 |
 | 13. Admin material & email preview honesty | v1.2 | 0/? | Not started | - |
 | 14. Draft→ready & justification honesty | v1.2 | 0/? | Not started | - |
 | 15. CLI --debug diagnostics | v1.2 | 0/? | Not started | - |

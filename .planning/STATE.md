@@ -2,20 +2,20 @@
 gsd_state_version: "1.0"
 milestone: v1.2
 milestone_name: Admin UX + diagnostics + PIPE-01 MVP
-current_phase: 12
-current_phase_name: Admin shortlist empty-batch contract
-status: verifying
-stopped_at: Completed 12-03-PLAN.md
-last_updated: "2026-10-02T16:25:40.913Z"
+current_phase: 13
+current_phase_name: Admin material & email preview honesty
+status: planning
+stopped_at: Phase 12 complete, ready to plan Phase 13
+last_updated: "2026-10-02T16:32:34.170Z"
 last_activity: 2026-10-02
-last_activity_desc: Phase 12 execution started
-state_head: 57e3ca96f24ea94f37aeae4d2118b86f217920c0
+last_activity_desc: Phase 12 complete, transitioned to Phase 13
+state_head: ba92e3922db17f969c74e9b4d1de27e0bc35cc2f
 progress:
   total_phases: 5
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 3
   completed_plans: 3
-  percent: 40
+  percent: 43
 ---
 
 # Project State
@@ -29,18 +29,18 @@ See: .planning/PROJECT.md (updated 2026-10-02 — v1.2 milestone)
 
 ## Current Position
 
-Phase: 12 (Admin shortlist empty-batch contract) — EXECUTING
-Plan: 3 of 3
-Status: Phase complete — ready for verification
-Last activity: 2026-10-02 — Phase 12 execution started
+Phase: 13 — Admin material & email preview honesty
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-10-02 — Phase 12 complete, transitioned to Phase 13
 
-Progress: [████░░░░░░] 40%
+Progress: [████░░░░░░] 43%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 63 (40 v1 + 23 v1.1)
+- Total plans completed: 3 (40 v1 + 23 v1.1)
 - v1.2 plans completed: 0
 - Prior milestone velocity: see MILESTONES.md / archived STATE
 
@@ -55,6 +55,7 @@ Progress: [████░░░░░░] 40%
 | 14. Draft→ready & justification | 0/? | not started | - |
 | 15. CLI --debug | 0/? | not started | - |
 | 16. PIPE-01 MVP UI | 0/? | not started | - |
+| 12 | 3 | - | - |
 **Per-Plan Metrics:**
 
 | Plan | Duration | Tasks | Files |
@@ -105,6 +106,6 @@ Carried product deferrals to v1.3+: leaderboard, quiz, live SMTP, signup mail, W
 ## Session Continuity
 
 Last session: 2026-10-02T16:25:40.883Z
-Stopped at: Completed 12-03-PLAN.md
+Stopped at: Phase 12 complete, ready to plan Phase 13
 Resume file: None
 Next: `/gsd-plan-phase 12`
