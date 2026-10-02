@@ -1,5 +1,5 @@
 ---
-status: passed
+status: complete
 phase: 10-cli-composition-uat
 requirement: CLI-03
 decisions: [D-13, D-14, D-15, D-16]
@@ -10,7 +10,7 @@ source:
   - 10-04-PLAN.md
   - 10-05-SUMMARY.md
 started: 2026-09-29
-updated: 2026-10-01
+updated: 2026-10-02T09:17:00.000Z
 approved: 2026-10-01
 ---
 
@@ -46,7 +46,7 @@ Optional idempotency (CLI-02): re-run material id 9 → `material_id=9`, slug un
 
 ## Current Test
 
-Operator approved. Ingest batch_id=3 (overflow not triggered, 4 < 5).
+[testing complete]
 
 ## Matrix rows
 
