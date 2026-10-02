@@ -145,6 +145,18 @@ function emptyDto() {
   }
 }
 
+/** Empty-unsent batch mock (D-04 #2 / D-12 / D-13 — ISO week_label, not human RU). */
+function emptyUnsentDto() {
+  return {
+    batch_id: 7,
+    sent_at: null,
+    week_label: '2026-10-06',
+    items: [],
+    digest_rest: false,
+    days_until_next_batch: null,
+  }
+}
+
 function mapShortlistBody(body) {
   return {
     batch_id: body.batch_id ?? null,
@@ -218,6 +230,7 @@ export function resetAdminHarness() {
   resetMockItems()
   if (typeof window !== 'undefined') {
     window.__DIGEST_ADMIN_EMPTY__ = false
+    window.__DIGEST_ADMIN_EMPTY_UNSENT__ = false
     window.__DIGEST_ADMIN_DIGEST_REST__ = false
     window.__DIGEST_ADMIN_FAIL_SHORTLIST__ = false
     window.__DIGEST_ADMIN_FAIL_PREVIEW__ = false
@@ -266,6 +279,9 @@ export async function fetchShortlist(accessToken) {
     }
     if (stickyFlag('__DIGEST_ADMIN_DIGEST_REST__')) {
       return restDto()
+    }
+    if (stickyFlag('__DIGEST_ADMIN_EMPTY_UNSENT__')) {
+      return emptyUnsentDto()
     }
     if (stickyFlag('__DIGEST_ADMIN_EMPTY__')) {
       return emptyDto()
