@@ -215,6 +215,52 @@ def test_admin_shortlist_empty_batch_returns_200_empty_items() -> None:
     }
 
 
+def test_admin_shortlist_empty_unsent_batch_returns_batch_id() -> None:
+    """FIX-01 / D-04 #2: empty unsent batch → 200 with batch_id + ISO week_label."""
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    container = build_in_memory_container()
+    container.shortlist = InMemoryShortlistRepository(
+        batch=ShortlistBatch(
+            id=7,
+            week_start=date(2026, 10, 6),
+            sent_at=None,
+            items=(),
+        )
+    )
+    _seed_profile(
+        container,
+        user_id="admin-uuid-1",
+        email="admin@sberbank.ru",
+        role="admin",
+    )
+    client = _client(jwk, container)
+    token = _mint(private_key, email="admin@sberbank.ru", sub="admin-uuid-1")
+
+    response = client.get(
+        "/admin/shortlist",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    for key in (
+        "batch_id",
+        "items",
+        "week_label",
+        "sent_at",
+        "digest_rest",
+        "days_until_next_batch",
+    ):
+        assert key in body
+    assert body["items"] == []
+    assert body["batch_id"] == 7
+    assert body["week_label"] == "2026-10-06"
+    assert body["sent_at"] is None
+    assert body["digest_rest"] is False
+    assert body["days_until_next_batch"] is None
+
+
 def test_admin_shortlist_after_send_returns_digest_rest() -> None:
     """G-05-2: sent latest batch → digest_rest + weekly cadence days."""
     private_key = ec.generate_private_key(ec.SECP256R1())
