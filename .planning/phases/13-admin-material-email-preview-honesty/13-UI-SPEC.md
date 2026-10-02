@@ -1,11 +1,12 @@
 ---
 phase: "13"
 slug: "admin-material-email-preview-honesty"
-status: draft
+status: approved
 shadcn_initialized: false
 preset: none
 created: "2026-10-02"
 revised: "2026-10-02"
+reviewed_at: "2026-10-02T20:40:00+03:00"
 ---
 
 # Phase 13 — UI Design Contract
@@ -197,37 +198,36 @@ All copy is **Russian**, calm editorial/ops tone. Carry forward Phase 5 admin co
 
 ## UI Considerations
 
-> Shape-rooted state coverage for Phase 13 delta surfaces. Empty/error **copy** lives in `## Copywriting Contract`; rows reference those rows.
+> Shape-rooted state coverage for Phase 13 delta surfaces (probe kinds confirmed: E1 media+static-content+interactive-control · E2 media+interactive-control · E3 form+static-content · E4 interactive-control+nav). Empty/error **copy** lives in `## Copywriting Contract`; rows reference those rows.
 
-Applicable state considerations resolved: **18 covered, 4 backstop, 0 unresolved** (dismissals listed below).
+Applicable: **21** · resolved explicit: **12** · resolved backstop: **4** · dismissed: **5** · unresolved: **0**.
 
 Surfaces: **E1** Material preview modal · **E2** Email preview iframe · **E3** Connecting-text / intro hint · **E4** Material reader link.
 
 | Category | Element(s) | Status | Resolution / Reason |
 |----------|------------|--------|---------------------|
-| empty | E1 material body | ✅ covered | Muted «Текст материала недоступен» (D-06); counts may show honest zeros; no toast |
-| empty | E1 provenance | ✅ covered | Omit provenance row when label empty — do not invent |
-| empty | E2 email html | ✅ covered | Existing «Превью недоступно» + «Повторить превью» when preview fails; no fake HTML |
+| empty | E1 material body | ✅ covered | Muted «Текст материала недоступен» (D-06); provenance row omitted when empty; counts may show honest zeros; no toast |
+| empty | E2 email html | ✅ covered | «Превью недоступно» + «Повторить превью» when preview fails/empty; no fake HTML |
 | empty | E3 connecting text | ✅ covered | Empty textarea valid; hint always visible; empty interstitial omitted in HTML (D-13) |
+| loading | E1 material modal | ✅ covered | Sync open from enriched shortlist DTO — no loading chrome (D-01) |
 | loading | E2 email preview | ✅ covered | «Загрузка…» until preview DTO returns (Phase 5) |
-| loading | E1 material modal | ✅ covered | Sync open from shortlist DTO — no loading state (D-01) |
+| error | E1 material modal | ✅ covered | No fetch-on-open; missing body uses empty copy — not an error path |
 | error | E2 email preview | ✅ covered | «Превью недоступно» + «Повторить превью»; send gate stays locked (D-86 carry) |
-| error | E1 material modal | ✅ covered | No fetch; no error path — missing body uses empty copy |
 | populated | E1 material | ✅ covered | title → provenance → counts → markdown body → reader link (D-05) |
 | populated | E2 email iframe | ✅ covered | Backend html with intro, dek summaries, «Читать →» links (ADUX-02) |
-| partial | E1 missing body only | ✅ covered | Empty-body copy while title/counts/link still render (D-06) |
-| partial | E2 dek omit | ✅ covered | Backend omits empty dek in material email block (D-11) |
+| partial | E3 connecting text | ✅ covered | Optional text; partial/empty interstitial omitted in composed HTML (D-13) |
 | overflow | E1 long markdown | 🧪 backstop | { statement: "Long material markdown scrolls inside the material preview dialog without clipping the close control", verification: backstop } |
-| overflow | E2 long email html | 🧪 backstop | { statement: "Long email HTML scrolls via modal/iframe without clipping the close control or subject", verification: backstop } |
 | long-text | E1 title / provenance | 🧪 backstop | { statement: "Long titles and provenance wrap with break-words in the material modal", verification: backstop } |
+| long-text | E2 email subject / iframe | 🧪 backstop | { statement: "Long email subject wraps; long HTML scrolls via modal/iframe without clipping the close control", verification: backstop } |
 | long-text | E3 connecting textarea | 🧪 backstop | { statement: "Long connecting text wraps/scrolls in the textarea; hint remains visible below", verification: backstop } |
-| zero-one-many | E2 email materials | ✅ covered | iframe reflects 0…N approved∩ready blocks from server composition |
-| zero-one-many | E1 single item | ✅ covered | Modal always shows one material; list cardinality owned by shortlist (Phase 5) |
-
-**Dismissed as N/A (audit trail):**
-- **E1** loading beyond sync open — no network on open (D-01)
-- **E3** loading / error / populated / partial / overflow / zero-one-many — static hint + optional textarea; no async; overflow covered by long-text backstop
-- **E4** empty / loading / error / partial / overflow / zero-one-many — link present when slug exists; missing slug is a data bug (assert in tests), not a separate empty UI; long-text N/A (fixed CTA label)
+| loading | E3 connecting text | � "Long connecting text wraps/scrolls in the textarea; hint remains visible below", verification: backstop } |
+| loading | E3 connecting text | ✗ dismissed | Static hint + local textarea — no async load |
+| error | E3 connecting text | ✗ dismissed | No network/submit on this surface this phase |
+| overflow | E3 connecting text | ✗ dismissed | Covered by E3 long-text backstop (textarea wrap/scroll) |
+| loading | E4 reader link | ✗ dismissed | Link is sync chrome from shortlist slug — no in-flight state |
+| error | E4 reader link | ✗ dismissed | Missing slug is a data/assert bug, not a separate error UI |
+| overflow | E4 reader link | ✗ dismissed | Fixed CTA label «Открыть материал →» — no variable-length overflow |
+| long-text | E4 reader link | ✗ dismissed | Fixed CTA label — long-text N/A |
 
 > **Planner note:** the 4 `backstop` rows lift into `must_haves.truths` as `{ statement, verification: backstop }` — verify needs explicit visual/held-out evidence or `insufficient_spec → human_needed`.
 
@@ -245,12 +245,12 @@ No shadcn initialization and no third-party registries declared. Vetting gate no
 
 ## Checker Sign-Off
 
-- [ ] Dimension 1 Copywriting: PASS
-- [ ] Dimension 2 Visuals: PASS
-- [ ] Dimension 3 Color: PASS
-- [ ] Dimension 4 Typography: PASS
-- [ ] Dimension 5 Spacing: PASS
-- [ ] Dimension 6 Registry Safety: PASS
-- [ ] Dimension 7 Inventory Provenance: PASS — N/A (`Tool: none`; Component Inventory omitted by template)
+- [x] Dimension 1 Copywriting: PASS
+- [x] Dimension 2 Visuals: PASS
+- [x] Dimension 3 Color: PASS
+- [x] Dimension 4 Typography: PASS
+- [x] Dimension 5 Spacing: PASS
+- [x] Dimension 6 Registry Safety: PASS
+- [x] Dimension 7 Inventory Provenance: PASS — N/A (`Tool: none`; Component Inventory omitted by template)
 
-**Approval:** pending
+**Approval:** approved (gsd-ui-checker, 2026-10-02)
