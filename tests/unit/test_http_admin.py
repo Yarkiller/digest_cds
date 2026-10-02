@@ -184,6 +184,79 @@ def test_admin_shortlist_admin_returns_ranked_items_with_factor_honesty() -> Non
     assert second["factor_labels"] == []
 
 
+def test_admin_shortlist_returns_full_items() -> None:
+    """ADUX-01 / D-02: non-empty items carry full material preview fields (required keys)."""
+    body_md = "Параграф один.\n\nПараграф два с деталями."
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    container = build_in_memory_container()
+    container.shortlist = InMemoryShortlistRepository(
+        batch=ShortlistBatch(
+            id=42,
+            week_start=date(2026, 9, 15),
+            sent_at=None,
+            items=(
+                ShortlistItem(
+                    material_id=101,
+                    rank=1,
+                    title="RAG в продакшене",
+                    material_status="ready",
+                    decision="approved",
+                    score=0.92,
+                    score_factors={
+                        "factors": [
+                            {"label": "Релевантность"},
+                            {"label": "Свежесть"},
+                        ]
+                    },
+                    dek="Короткий dek",
+                    body_markdown=body_md,
+                    provenance_label="YouTube · канал",
+                    slug="rag-v-prodakshene",
+                    reading_minutes=4,
+                ),
+            ),
+        )
+    )
+    _seed_profile(
+        container,
+        user_id="admin-uuid-1",
+        email="admin@sberbank.ru",
+        role="admin",
+    )
+    client = _client(jwk, container)
+    token = _mint(private_key, email="admin@sberbank.ru", sub="admin-uuid-1")
+
+    response = client.get(
+        "/admin/shortlist",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert len(payload["items"]) == 1
+    first = payload["items"][0]
+    for key in (
+        "body_markdown",
+        "provenance_label",
+        "slug",
+        "reading_minutes",
+        "char_count",
+        "word_count",
+        "rank",
+        "title",
+        "dek",
+        "decision",
+    ):
+        assert key in first, f"missing required key: {key}"
+    assert first["body_markdown"] == body_md
+    assert first["provenance_label"] == "YouTube · канал"
+    assert first["slug"] == "rag-v-prodakshene"
+    assert first["reading_minutes"] == 4
+    assert first["char_count"] == len(body_md)
+    assert first["word_count"] == len(body_md.split())
+
+
 def test_admin_shortlist_no_batches_returns_null_batch_id() -> None:
     """FIX-01 / D-04 #1: no batches → 200 with null batch_id and empty items."""
     private_key = ec.generate_private_key(ec.SECP256R1())

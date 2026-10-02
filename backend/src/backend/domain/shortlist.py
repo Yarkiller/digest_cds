@@ -49,6 +49,11 @@ class ShortlistItem:
     decided_by: str | None = None
     decided_at: datetime | None = None
     dek: str | None = None
+    # Phase 13 ADUX-01 / D-02 — material preview columns via shortlist join
+    body_markdown: str | None = None
+    provenance_label: str | None = None
+    slug: str | None = None
+    reading_minutes: int | None = None
 
 
 @dataclass(frozen=True)
