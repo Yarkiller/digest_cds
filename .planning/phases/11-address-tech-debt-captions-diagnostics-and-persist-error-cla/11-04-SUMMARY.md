@@ -89,7 +89,7 @@ status: complete
 1. **Task 1: CLI sent-batch re-run prints checkmarks and already_saved** - `0e68b4d` (test)
 2. **Task 2: [BLOCKING] Apply migration 009 on shared VM via Studio/psql** - human verify (`pushed`) — no code commit; no re-apply by executor
 
-**Plan metadata:** recorded in docs commit after this SUMMARY
+**Plan metadata:** `5f431d5` (docs: complete plan)
 
 ## Files Created/Modified
 
