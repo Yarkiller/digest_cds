@@ -5,6 +5,7 @@ status: draft
 shadcn_initialized: false
 preset: none
 created: "2026-10-02"
+revised: "2026-10-02"
 ---
 
 # Phase 13 — UI Design Contract
@@ -14,6 +15,8 @@ created: "2026-10-02"
 
 **Requirements covered:** ADUX-01, ADUX-02, ADUX-03, ADUX-04
 **Source decisions:** 13-CONTEXT.md D-01…D-20 (LOCKED); 13-RESEARCH.md stack + patterns; 05-UI-SPEC.md token/copy baseline; reader markdown stack from `MaterialPage.jsx`
+
+**Revision (Dimension 4):** Collapsed Body to one size token; mapped email subject to Subhead (removed fifth `text-xl` size). Retry CTA updated to verb+noun «Повторить превью».
 
 ---
 
@@ -25,7 +28,7 @@ created: "2026-10-02"
 | Preset | not applicable |
 | Component library | **none** — hand-rolled React. Extend existing `AdminItemPreview` / `AdminEmailPreview` / connecting-text textareas in `AdminDigestPage.jsx`. Reuse reader markdown (`react-markdown` + `remark-gfm` + `rehype-sanitize` + `rehype-slug`). Do not introduce a component kit. |
 | Icon library | **none** — text glyphs only (`→`, `✕`). Keep Phase 5 glyph convention; close control **`aria-label="Закрыть"`**. |
-| Font (display) | `Bricolage Grotesque` (fallback `Trebuchet MS`, sans-serif) — email-preview subject emphasis only |
+| Font (display) | `Bricolage Grotesque` (fallback `Trebuchet MS`, sans-serif) — email-preview subject (Subhead role) only |
 | Font (body) | `IBM Plex Sans` (fallback `Segoe UI`, sans-serif) — admin UI, modal chrome, counts, hint |
 | Font (mono) | `IBM Plex Mono` (fallback `Consolas`, monospace) — not required for Phase 13 surfaces |
 | Styling in SPA | Tailwind v4 utilities backed by `@theme` tokens. Prefer existing `AdminDigestPage` modal patterns (`max-w-lg` → widen body modal if needed for prose; `rounded-2xl`, `border-rule`, `bg-paper`, `min-h-11` targets). |
@@ -62,22 +65,22 @@ Exceptions:
 
 ## Typography
 
-Reuse the locked type scale. Contract declares **4 primary roles** and **2 weights** (400 + 600). Caption remains **inherited-meta-only** (Phase 4/5 disposition).
+Reuse the locked type scale. Phase 13 markup declares **exactly 4 sizes** and **exactly 2 weights** (400 + 600). No fifth size (do **not** use `text-xl` as a separate contract size).
 
 | Role | Token / utility | Size | Weight | Line Height | Used for |
 |------|-----------------|------|--------|-------------|----------|
 | Heading | `--text-h1` / `text-3xl` | clamp 2→3rem | 600 | 1.1 | Page H1 unchanged this phase |
-| Subhead | `--text-h2` / `text-2xl` | clamp 1.5→2rem | 600 | 1.2 | Modal titles «Превью материала», «Превью письма» |
-| Body | `--text-body` / `text-sm`–`text-base` | 1.0625rem (17px) / 14–15px UI | 400 | 1.5–1.65 | Markdown body, email iframe content (backend HTML), empty-body copy |
-| Label | `--text-overline` / `text-xs` | 0.75rem (12px) | 600 | 1.4 | Provenance label; connecting-text hint; email modal caption |
+| Subhead | `--text-h2` / `text-2xl` | clamp 1.5→2rem | 600 | 1.2 | Modal titles «Превью материала», «Превью письма»; **email subject** inside modal (`font-display` + Subhead size — maps former `text-xl` into this role) |
+| Body | `--text-body` / `text-base` | **1.0625rem (17px) only** | 400 | 1.5 | Markdown body, email iframe content (backend HTML), empty-body copy, material item title under modal H2 (title may use weight 600) |
+| Label | `--text-overline` / `text-xs` | 0.75rem (12px) | 600 | 1.4 | Provenance label; connecting-text hint; email modal caption; counts row (counts may use Label size at weight 400 for quieter meta) |
 
-**Inherited meta (not a 5th contract size):** Caption (`text-xs`, weight 400) — counts row may use Label size with weight 400 if quieter than provenance; do not invent a new size token.
+**Size count for Phase 13 markup:** Heading · Subhead · Body · Label = **4**. No other size tokens in new markup.
 
 Weights: **400 regular** + **600 semibold** only in new Phase 13 markup.
 Exception: existing `font-medium` (500) on shared controls — reuse only; do not expand.
 
-Material modal title (item title under modal H2): Body/Subhead weight 600, wrap with `break-words`.
-Email subject inside modal: existing `font-display text-xl font-semibold` — keep.
+Material modal title (item title under modal H2): Body size, weight 600, wrap with `break-words`.
+Email subject inside modal: **Subhead** role (`font-display` + Subhead size/`text-2xl` or `--text-h2`, weight 600) — **not** a separate `text-xl` size.
 
 ---
 
@@ -94,7 +97,7 @@ Locked OKLCH palette. 60/30/10 discipline mapped to existing tokens. Do not add 
 
 **Accent (`--color-accent`) reserved for — explicit list:**
 - Reader link in material modal (`/materials/<slug>`) — text link + hover underline
-- Email preview failure **«Повторить»**
+- Email preview failure **«Повторить превью»**
 - Focus rings on modal close / connecting-text textareas (`outline-accent` / existing focus pattern)
 
 **Muted (`--color-muted` / `--color-ink-2`) reserved for:**
@@ -125,13 +128,13 @@ All copy is **Russian**, calm editorial/ops tone. Carry forward Phase 5 admin co
 | Material reader link | **«Открыть материал →»** → `/materials/{slug}` (complementary to in-modal body; D-04) **[discretion: verb+noun CTA; CONTEXT specified link presence, not exact RU label]** |
 | Email modal title | **«Превью письма»** |
 | Email loading | **«Загрузка…»** (existing) |
-| Email empty/error | **«Превью недоступно»** + **«Повторить»** (existing Phase 5) |
+| Email empty/error | **«Превью недоступно»** + **«Повторить превью»** (verb+noun retry; supersedes bare «Повторить») |
 | Email caption | **«только одобренные ready»** (existing) |
 | Email HTML CTA (backend) | **«Читать →»** per material block (D-11) — not FE-constructed |
 | Connecting-text hint | **«Пустая строка = новый абзац»** — light hint under connecting-text textarea (and under intro textarea if both compose interstitial HTML) (D-15) |
 | Connecting-text placeholder | Keep existing **«Необязательный связующий текст»** |
 | Empty state (shortlist) | Unchanged Phase 5 / Phase 12: **«Кандидатов пока нет»** / **«Обновите список позже.»** — out of Phase 13 delta scope |
-| Error state (preview) | Unchanged: **«Превью недоступно»** + **«Повторить»** |
+| Error state (preview) | **«Превью недоступно»** + **«Повторить превью»** |
 | Destructive confirmation | **none** — Phase 13 has no destructive actions (ADUX-04 is data migration + asserts, not a UI wipe) |
 | Ban-list UI | **none** — no runtime strip chrome, no admin “scrub” button (D-17) |
 
@@ -172,12 +175,12 @@ All copy is **Russian**, calm editorial/ops tone. Carry forward Phase 5 admin co
 ### Email preview modal — ADUX-02 (D-07…D-12)
 - Backend owns HTML; FE must not assemble email markup.
 - iframe: empty `sandbox` (no scripts/forms); `srcDoc={html}`; `data-testid="email-preview-frame"`.
-- Loading / error states unchanged from Phase 5.
-- Subject line remains above iframe.
+- Loading / error states unchanged from Phase 5 except retry label **«Повторить превью»**.
+- Subject line remains above iframe — **Subhead** typography role (see Typography).
 - Email HTML must not include issue URL (issue created at send) (D-11).
 
 ### Interstitial / intro — ADUX-03 (D-13…D-16)
-- Hint under connecting-text textarea: **«Пустая строка = новый абзац»** (`text-xs text-muted`).
+- Hint under connecting-text textarea: **«Пустая строка = новый абзац»** (`text-xs text-muted` — Label size).
 - No markdown toolbar this phase.
 - Visual paragraph honesty is proven in email iframe after preview (backend `render_interstitial_html`), not via live textarea preview.
 
@@ -204,11 +207,11 @@ Surfaces: **E1** Material preview modal · **E2** Email preview iframe · **E3**
 |----------|------------|--------|---------------------|
 | empty | E1 material body | ✅ covered | Muted «Текст материала недоступен» (D-06); counts may show honest zeros; no toast |
 | empty | E1 provenance | ✅ covered | Omit provenance row when label empty — do not invent |
-| empty | E2 email html | ✅ covered | Existing «Превью недоступно» + «Повторить» when preview fails; no fake HTML |
+| empty | E2 email html | ✅ covered | Existing «Превью недоступно» + «Повторить превью» when preview fails; no fake HTML |
 | empty | E3 connecting text | ✅ covered | Empty textarea valid; hint always visible; empty interstitial omitted in HTML (D-13) |
 | loading | E2 email preview | ✅ covered | «Загрузка…» until preview DTO returns (Phase 5) |
 | loading | E1 material modal | ✅ covered | Sync open from shortlist DTO — no loading state (D-01) |
-| error | E2 email preview | ✅ covered | «Превью недоступно» + «Повторить»; send gate stays locked (D-86 carry) |
+| error | E2 email preview | ✅ covered | «Превью недоступно» + «Повторить превью»; send gate stays locked (D-86 carry) |
 | error | E1 material modal | ✅ covered | No fetch; no error path — missing body uses empty copy |
 | populated | E1 material | ✅ covered | title → provenance → counts → markdown body → reader link (D-05) |
 | populated | E2 email iframe | ✅ covered | Backend html with intro, dek summaries, «Читать →» links (ADUX-02) |
