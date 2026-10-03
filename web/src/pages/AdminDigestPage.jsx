@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import Markdown from 'react-markdown'
 import { Link } from 'react-router-dom'
+import rehypeSanitize from 'rehype-sanitize'
+import rehypeSlug from 'rehype-slug'
+import remarkGfm from 'remark-gfm'
 import ServiceUnavailable from '../components/ServiceUnavailable.jsx'
 import ForbiddenPage from './ForbiddenPage.jsx'
 import { getAccessToken } from '../services/authApi.js'
@@ -764,32 +768,7 @@ export default function AdminDigestPage() {
       ) : null}
 
       {previewItem ? (
-        <div
-          className="fixed inset-0 z-[400] flex items-center justify-center bg-ink/40 p-4"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="item-preview-title"
-        >
-          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-paper p-6">
-            <div className="flex items-start justify-between gap-3">
-              <h2 id="item-preview-title" className="text-2xl font-semibold">
-                Превью материала
-              </h2>
-              <button
-                type="button"
-                className="inline-flex min-h-11 min-w-11 items-center justify-center"
-                aria-label="Закрыть"
-                onClick={() => setPreviewItem(null)}
-              >
-                ✕
-              </button>
-            </div>
-            <p className="mt-4 break-words font-medium text-ink">{previewItem.title}</p>
-            <p className="mt-2 break-words text-sm text-ink-2">
-              {previewItem.dek || 'Краткое описание недоступно.'}
-            </p>
-          </div>
-        </div>
+        <AdminItemPreview item={previewItem} onClose={() => setPreviewItem(null)} />
       ) : null}
 
       {emailModal ? (
@@ -903,5 +882,74 @@ export default function AdminDigestPage() {
         </div>
       ) : null}
     </section>
+  )
+}
+
+/**
+ * Material preview modal — shortlist DTO only (D-01); order D-05; empty body D-06.
+ * @param {{ item: import('../services/adminApi.js').AdminShortlistItem, onClose: () => void }} props
+ */
+function AdminItemPreview({ item, onClose }) {
+  const body = typeof item.body_markdown === 'string' ? item.body_markdown.trim() : ''
+  const provenance =
+    typeof item.provenance_label === 'string' ? item.provenance_label.trim() : ''
+  const charCount = Number.isFinite(item.char_count) ? item.char_count : 0
+  const wordCount = Number.isFinite(item.word_count) ? item.word_count : 0
+  const readingMinutes = Number.isFinite(item.reading_minutes) ? item.reading_minutes : 1
+  const slug = typeof item.slug === 'string' ? item.slug.trim() : ''
+
+  return (
+    <div
+      className="fixed inset-0 z-[400] flex items-center justify-center bg-ink/40 p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="item-preview-title"
+    >
+      <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-paper p-6">
+        <div className="flex items-start justify-between gap-3">
+          <h2 id="item-preview-title" className="text-2xl font-semibold">
+            Превью материала
+          </h2>
+          <button
+            type="button"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center"
+            aria-label="Закрыть"
+            onClick={onClose}
+          >
+            ✕
+          </button>
+        </div>
+        <p className="mt-4 break-words text-base font-semibold text-ink">{item.title}</p>
+        {provenance ? (
+          <p className="mt-2 break-words text-xs font-semibold text-muted">{provenance}</p>
+        ) : null}
+        <p className="mt-2 text-xs font-normal text-muted">
+          ~{charCount} символов · {wordCount} слов · ~{readingMinutes} мин
+        </p>
+        {body ? (
+          <div
+            data-testid="admin-material-preview-body"
+            className="prose-column mt-4 max-w-none break-words text-base leading-relaxed text-ink-2 [&_h2]:mt-4 [&_h2]:font-display [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:text-ink [&_p]:mt-3"
+          >
+            <Markdown
+              remarkPlugins={[remarkGfm]}
+              rehypePlugins={[rehypeSlug, rehypeSanitize]}
+            >
+              {body}
+            </Markdown>
+          </div>
+        ) : (
+          <p className="mt-4 text-base text-muted">Текст материала недоступен</p>
+        )}
+        {slug ? (
+          <Link
+            to={`/materials/${slug}`}
+            className="mt-6 inline-flex min-h-11 items-center font-medium text-accent hover:underline"
+          >
+            Открыть материал →
+          </Link>
+        ) : null}
+      </div>
+    </div>
   )
 }
