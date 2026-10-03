@@ -178,3 +178,11 @@ Plans:
 **Deferred at:** 2026-10-03 during /gsd-verify-work 13 session completion
 **Follow-ups:**
 - [ ] Test 3: O3 — «Открыть материал →» from email/admin preview leads to error page. Reader /materials/<slug> route issue, not admin preview. Separate ticket. (deferred 2026-10-03)
+
+### Phase 999.3: Follow-up — Phase 13 deferred UAT follow-up: Test 3 (BACKLOG)
+
+**Goal:** Resolve the UAT checkpoint deferred during Phase 13 verification
+**Source phase:** 13
+**Deferred at:** 2026-10-03 during /gsd-verify-work 13 session completion
+**Follow-ups:**
+- [ ] Test 3: Hover on «Превью материала» keeps the default arrow cursor instead of pointer. Fix cursor-pointer on that control. Not Phase 13. (deferred 2026-10-03)
