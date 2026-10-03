@@ -408,11 +408,73 @@ export async function setDecision(materialId, decision, accessToken) {
 }
 
 /**
+ * Escape text for mock email HTML (mirrors backend html.escape for Playwright honesty).
+ * @param {string} value
+ * @returns {string}
+ */
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+/**
+ * Interstitial/intro HTML for mocks — blank line → new paragraph (D-13/D-15).
+ * @param {string} text
+ * @returns {string}
+ */
+function composeMockInterstitialHtml(text) {
+  const trimmed = String(text ?? '').trim()
+  if (!trimmed) return ''
+  const safe = escapeHtml(trimmed)
+  return safe
+    .split('\n\n')
+    .filter(Boolean)
+    .map((para) => `<p>${para.replace(/\n/g, '<br>')}</p>`)
+    .join('')
+}
+
+/**
+ * Mock preview HTML shaped like backend render_email_html (titles + Читать →).
+ * Live path must prefer API `html` — this is mock-only.
+ * @param {{ intro?: string, blocks?: Array<{ kind: string, material_id?: number, text?: string }>, itemById?: Map<number, AdminShortlistItem> }} opts
+ * @returns {string}
+ */
+function composeMockPreviewHtml({ intro = '', blocks = [], itemById = new Map() } = {}) {
+  const parts = []
+  const introHtml = composeMockInterstitialHtml(intro)
+  if (introHtml) parts.push(introHtml)
+  for (const block of blocks ?? []) {
+    if (!block || typeof block !== 'object') continue
+    if (block.kind === 'text') {
+      const textHtml = composeMockInterstitialHtml(block.text ?? '')
+      if (textHtml) parts.push(textHtml)
+      continue
+    }
+    if (block.kind === 'material') {
+      const item = itemById.get(block.material_id)
+      if (!item) continue
+      parts.push(`<h2>${escapeHtml(item.title)}</h2>`)
+      if (item.dek && String(item.dek).trim()) {
+        parts.push(`<p>${escapeHtml(String(item.dek).trim())}</p>`)
+      }
+      const slug = item.slug || String(item.material_id)
+      parts.push(
+        `<p><a href="http://127.0.0.1:5173/materials/${escapeHtml(slug)}">Читать →</a></p>`,
+      )
+    }
+  }
+  return parts.join('')
+}
+
+/**
  * @typedef {{ intro?: string, blocks?: Array<{ kind: 'material', material_id: number } | { kind: 'text', text: string }> }} DigestPreviewComposition
  *
  * @param {string} [accessToken]
  * @param {DigestPreviewComposition} [composition]
- * @returns {Promise<{ batch_id: number, subject: string, body: string, items: Array<{ material_id: number, rank: number, title: string }> }>}
+ * @returns {Promise<{ batch_id: number, subject: string, body: string, html: string, items: Array<{ material_id: number, rank: number, title: string }> }>}
  */
 export async function previewEmail(accessToken, composition = {}) {
   const intro = typeof composition?.intro === 'string' ? composition.intro : ''
@@ -458,6 +520,7 @@ export async function previewEmail(accessToken, composition = {}) {
       batch_id: mockBatch.batch_id ?? 1,
       subject: `Digest CDS · ${mockBatch.week_label ?? 'неделя'}`,
       body: composePreviewBody({ intro, blocks, titleById }),
+      html: composeMockPreviewHtml({ intro, blocks, itemById: byId }),
       items,
     }
   }

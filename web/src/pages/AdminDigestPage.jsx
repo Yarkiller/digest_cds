@@ -805,7 +805,7 @@ export default function AdminDigestPage() {
                     openEmailPreview()
                   }}
                 >
-                  Повторить
+                  Повторить превью
                 </button>
               </div>
             ) : (
@@ -814,14 +814,17 @@ export default function AdminDigestPage() {
                 <p className="mt-3 font-display text-xl font-semibold break-words">
                   {emailModal.preview.subject}
                 </p>
-                {emailModal.preview.body ? (
-                  <p
-                    data-testid="email-preview-body"
-                    className="mt-3 whitespace-pre-wrap break-words text-sm text-ink-2"
-                  >
-                    {emailModal.preview.body}
-                  </p>
-                ) : null}
+                {emailModal.preview.html ? (
+                  <iframe
+                    data-testid="email-preview-frame"
+                    title="Превью письма HTML"
+                    sandbox=""
+                    srcDoc={emailModal.preview.html}
+                    className="mt-3 min-h-64 w-full rounded-xl border border-rule bg-white"
+                  />
+                ) : (
+                  <p className="mt-3 text-sm text-ink-2">Превью недоступно</p>
+                )}
                 <ul className="mt-4 space-y-2">
                   {emailModal.preview.items.map((row) => (
                     <li key={row.material_id} className="text-sm break-words">
