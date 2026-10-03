@@ -21,6 +21,7 @@ import {
   setDecision,
 } from '../services/adminApi.js'
 import { compositionFingerprint } from '../services/adminPreviewComposition.js'
+import { preservePromotedReady } from '../services/adminReadyReconcile.js'
 
 const TOAST_DISMISS_MS = 4000
 const TOP_N = 3
@@ -340,16 +341,21 @@ export default function AdminDigestPage() {
       ),
     )
     try {
-      const dto = await markReady(item.material_id)
-      if (dto) {
-        applyBatch(dto, setItems, setBatchMeta, setDigestRest, setDaysUntilNextBatch)
-      } else {
-        try {
-          const refreshed = await fetchShortlist()
-          applyBatch(refreshed, setItems, setBatchMeta, setDigestRest, setDaysUntilNextBatch)
-        } catch {
-          // keep optimistic ready; silent refetch best-effort (CR-01 / D-05)
-        }
+      await markReady(item.material_id)
+      try {
+        const refreshed = await fetchShortlist()
+        applyBatch(
+          {
+            ...refreshed,
+            items: preservePromotedReady(refreshed.items, [item.material_id]),
+          },
+          setItems,
+          setBatchMeta,
+          setDigestRest,
+          setDaysUntilNextBatch,
+        )
+      } catch {
+        // keep optimistic ready; silent refetch best-effort (G-14-2 / D-05)
       }
     } catch (err) {
       setItems(previous)
@@ -397,7 +403,16 @@ export default function AdminDigestPage() {
       }
       try {
         const dto = await fetchShortlist()
-        applyBatch(dto, setItems, setBatchMeta, setDigestRest, setDaysUntilNextBatch)
+        applyBatch(
+          {
+            ...dto,
+            items: preservePromotedReady(dto.items, [...okIds]),
+          },
+          setItems,
+          setBatchMeta,
+          setDigestRest,
+          setDaysUntilNextBatch,
+        )
       } catch {
         // silent refetch best-effort
       }

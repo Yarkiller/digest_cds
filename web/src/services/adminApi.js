@@ -32,6 +32,7 @@ export class AdminApiError extends Error {
 
 /** @typedef {{ material_id: number, rank: number, title: string, material_status: 'ready'|'draft', decision: 'pending'|'approved'|'rejected', score: number|null, factor_labels: string[], dek?: string, body_markdown?: string, provenance_label?: string, slug?: string, reading_minutes?: number, char_count?: number, word_count?: number }} AdminShortlistItem */
 /** @typedef {{ batch_id: number|null, sent_at: string|null, week_label: string|null, items: AdminShortlistItem[], digest_rest?: boolean, days_until_next_batch?: number|null }} AdminShortlistDto */
+/** @typedef {{ material_id: number, status: 'ready' }} MarkReadyResult */
 
 /** Locked product weekly cadence days (G-05-2 / PROJECT.md weekly digest). */
 export const DIGEST_WEEKLY_CADENCE_DAYS = 7
@@ -194,6 +195,7 @@ export function resetAdminHarness() {
     window.__DIGEST_ADMIN_ALREADY_SENT__ = false
     window.__DIGEST_ADMIN_MATERIAL_EMPTY_BODY__ = false
     window.__DIGEST_ADMIN_MATERIAL_LONG_BODY__ = false
+    window.__DIGEST_ADMIN_STALE_READY__ = false
   }
 }
 
@@ -348,9 +350,11 @@ export async function setDecision(materialId, decision, accessToken) {
 
 /**
  * Promote a single material draft→ready (ADUX-05 / D-07).
+ * The POST response is the source of truth for the promoted row — this is
+ * decoupled from any shortlist refetch (G-14-2 #1).
  * @param {number} materialId
  * @param {string} [accessToken]
- * @returns {Promise<AdminShortlistDto|null>} Shortlist DTO, or null when promote OK but refetch failed.
+ * @returns {Promise<MarkReadyResult>} Authoritative promote result { material_id, status }.
  */
 export async function markReady(materialId, accessToken) {
   if (useMocks()) {
@@ -364,7 +368,7 @@ export async function markReady(materialId, accessToken) {
     if (!stickyFlag('__DIGEST_ADMIN_STALE_READY__')) {
       applyMockMarkReady(mockBatch.items, materialId)
     }
-    return cloneBatch()
+    return { material_id: materialId, status: 'ready' }
   }
 
   const token = accessToken ?? (await getAccessToken())
@@ -388,13 +392,8 @@ export async function markReady(materialId, accessToken) {
     throw mapHttpError(response, 'Не удалось сделать ready')
   }
 
-  // Promote persisted; shortlist refetch is best-effort (CR-01 — do not throw).
-  try {
-    return await fetchShortlist(token)
-  } catch {
-    // Caller keeps optimistic ready / retries fetch.
-    return null
-  }
+  // Promote persisted; MarkReadyResponse is authoritative (G-14-2 — no refetch coupling).
+  return response.json()
 }
 
 /**
