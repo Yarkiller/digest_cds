@@ -110,7 +110,7 @@ Each task was committed atomically:
 2. **Task 1 GREEN: wire send_digest + StubMailer + site_url** - `d96a78c` (feat)
 3. **Task 2: preview≡send HTML parity proof** - `3fa84ff` (test)
 
-**Plan metadata:** (pending docs commit)
+**Plan metadata:** `6f33e01` (docs: complete plan)
 
 _Note: Task 2 had no separate GREEN production commit — Task 1 already shared the renderer._
 
