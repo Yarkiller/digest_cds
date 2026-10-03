@@ -350,7 +350,7 @@ export async function setDecision(materialId, decision, accessToken) {
  * Promote a single material draft→ready (ADUX-05 / D-07).
  * @param {number} materialId
  * @param {string} [accessToken]
- * @returns {Promise<AdminShortlistDto>}
+ * @returns {Promise<AdminShortlistDto|null>} Shortlist DTO, or null when promote OK but refetch failed.
  */
 export async function markReady(materialId, accessToken) {
   if (useMocks()) {
@@ -383,8 +383,13 @@ export async function markReady(materialId, accessToken) {
     throw mapHttpError(response, 'Не удалось сделать ready')
   }
 
-  // Live API returns MarkReadyResponse — refetch shortlist for DTO parity with mocks.
-  return fetchShortlist(token)
+  // Promote persisted; shortlist refetch is best-effort (CR-01 — do not throw).
+  try {
+    return await fetchShortlist(token)
+  } catch {
+    // Caller keeps optimistic ready / retries fetch.
+    return null
+  }
 }
 
 /**

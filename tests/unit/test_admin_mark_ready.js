@@ -90,3 +90,52 @@ describe('adminApi markReady / markReadyBatch exports', () => {
     )
   })
 })
+
+describe('live markReady / promoteReady CR-01 refetch best-effort', () => {
+  it('markReady treats shortlist refetch failure as null, not throw', () => {
+    const apiPath = path.resolve(__dirname, '../../web/src/services/adminApi.js')
+    const source = fs.readFileSync(apiPath, 'utf8')
+    const markReadyMatch = source.match(
+      /export async function markReady\([\s\S]*?(?=\nexport async function |\nexport function |\n$)/,
+    )
+    assert.ok(markReadyMatch, 'markReady function body must be present')
+    const body = markReadyMatch[0]
+    assert.match(
+      body,
+      /try\s*\{[\s\S]*fetchShortlist\([\s\S]*\}\s*catch/,
+      'CR-01: live markReady must try/catch fetchShortlist after successful POST',
+    )
+    assert.match(body, /return null/, 'CR-01: refetch failure must return null (promote persisted)')
+    assert.equal(
+      /^\s*return fetchShortlist\(token\)\s*$/m.test(body),
+      false,
+      'CR-01: must not bare-return fetchShortlist (throws → FE draft rollback)',
+    )
+  })
+
+  it('promoteReady applies markReady dto and keeps optimistic ready when dto is null', () => {
+    const pagePath = path.resolve(__dirname, '../../web/src/pages/AdminDigestPage.jsx')
+    const source = fs.readFileSync(pagePath, 'utf8')
+    const promoteMatch = source.match(
+      /async function promoteReady\([\s\S]*?(?=\n  async function |\n  function )/,
+    )
+    assert.ok(promoteMatch, 'promoteReady function body must be present')
+    const body = promoteMatch[0]
+    assert.match(
+      body,
+      /const dto = await markReady\(/,
+      'CR-01/IN-01: promoteReady must use markReady return value',
+    )
+    assert.match(
+      body,
+      /if\s*\(\s*dto\s*\)/,
+      'CR-01: promoteReady must applyBatch only when markReady returns a DTO',
+    )
+    assert.equal(
+      /await markReady\([\s\S]*?await fetchShortlist\(\)/.test(body) &&
+        !/const dto = await markReady/.test(body),
+      false,
+      'CR-01/IN-01: must not ignore markReady dto then always refetch',
+    )
+  })
+})

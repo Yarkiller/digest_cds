@@ -340,12 +340,16 @@ export default function AdminDigestPage() {
       ),
     )
     try {
-      await markReady(item.material_id)
-      try {
-        const dto = await fetchShortlist()
+      const dto = await markReady(item.material_id)
+      if (dto) {
         applyBatch(dto, setItems, setBatchMeta, setDigestRest, setDaysUntilNextBatch)
-      } catch {
-        // keep optimistic ready; silent refetch best-effort (D-05)
+      } else {
+        try {
+          const refreshed = await fetchShortlist()
+          applyBatch(refreshed, setItems, setBatchMeta, setDigestRest, setDaysUntilNextBatch)
+        } catch {
+          // keep optimistic ready; silent refetch best-effort (CR-01 / D-05)
+        }
       }
     } catch (err) {
       setItems(previous)
