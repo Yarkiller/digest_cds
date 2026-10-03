@@ -11,8 +11,14 @@ import {
   composePreviewBody,
   composePreviewItems,
 } from './adminPreviewComposition.js'
+import {
+  applyMockMarkReady,
+  applyMockMarkReadyBatch,
+  getMockDefaultItems,
+} from './adminReadyMock.js'
 
 export { buildDefaultMaterialBlocks, composePreviewBody, composePreviewItems }
+export { applyMockMarkReady, applyMockMarkReadyBatch, getMockDefaultItems }
 
 export class AdminApiError extends Error {
   constructor(message, { code = 'ADMIN_FAILED', retryable = true, detail = null } = {}) {
@@ -30,89 +36,7 @@ export class AdminApiError extends Error {
 /** Locked product weekly cadence days (G-05-2 / PROJECT.md weekly digest). */
 export const DIGEST_WEEKLY_CADENCE_DAYS = 7
 
-const DEFAULT_ITEMS = /** @type {AdminShortlistItem[]} */ ([
-  {
-    material_id: 101,
-    rank: 1,
-    title: 'Building Production RAG Systems',
-    material_status: 'ready',
-    decision: 'pending',
-    score: 0.92,
-    factor_labels: ['relevance', 'freshness', 'engagement'],
-    dek: 'Как быстро находить фрагменты регламентов СВА.',
-    body_markdown:
-      '## RAG для СВА\n\nФрагменты регламентов находятся быстрее.',
-    provenance_label: 'YouTube · lecture',
-    slug: 'building-production-rag-systems',
-    reading_minutes: 2,
-    char_count: 128,
-    word_count: 18,
-  },
-  {
-    material_id: 102,
-    rank: 2,
-    title: 'Anomaly Detection in Audit Pipelines',
-    material_status: 'ready',
-    decision: 'pending',
-    score: 0.87,
-    factor_labels: ['relevance', 'freshness', 'engagement'],
-    dek: 'Как замечать аномалии в аудиторских выборках.',
-    body_markdown: 'Аномалии в выборках обнаруживаются раньше.',
-    provenance_label: 'YouTube · podcast',
-    slug: 'anomaly-detection-in-audit-pipelines',
-    reading_minutes: 3,
-    char_count: 96,
-    word_count: 12,
-  },
-  {
-    material_id: 103,
-    rank: 3,
-    title: 'Prompt Engineering Patterns 2026',
-    material_status: 'ready',
-    decision: 'pending',
-    score: 0.81,
-    factor_labels: ['relevance', 'freshness'],
-    dek: 'Паттерны формулировок запросов к LLM для аудита.',
-    body_markdown: 'Паттерны промптов для аудиторских запросов.',
-    provenance_label: 'Internal note',
-    slug: 'prompt-engineering-patterns-2026',
-    reading_minutes: 2,
-    char_count: 80,
-    word_count: 10,
-  },
-  {
-    material_id: 104,
-    rank: 4,
-    title: 'SQL Dashboards for Audit Reporting',
-    material_status: 'draft',
-    decision: 'pending',
-    score: 0.74,
-    factor_labels: [],
-    dek: 'Черновик витрин для ежемесячной отчётности.',
-    body_markdown: '',
-    provenance_label: '',
-    slug: 'sql-dashboards-for-audit-reporting',
-    reading_minutes: 1,
-    char_count: 0,
-    word_count: 0,
-  },
-  {
-    material_id: 105,
-    rank: 5,
-    title: 'Data Quality Checks for Regulated Domains',
-    material_status: 'ready',
-    decision: 'pending',
-    score: 0.69,
-    factor_labels: ['relevance'],
-    dek: 'Один фактор — обоснование недоступно.',
-    body_markdown: 'Проверки качества данных в регулируемых доменах.',
-    provenance_label: '',
-    slug: 'data-quality-checks-for-regulated-domains',
-    reading_minutes: 1,
-    char_count: 64,
-    word_count: 8,
-  },
-])
+const DEFAULT_ITEMS = getMockDefaultItems()
 
 /** @type {AdminShortlistDto} */
 let mockBatch = {
@@ -413,6 +337,86 @@ export async function setDecision(materialId, decision, accessToken) {
 
   const body = await response.json()
   return mapShortlistBody(body)
+}
+
+/**
+ * Promote a single material draft→ready (ADUX-05 / D-07).
+ * @param {number} materialId
+ * @param {string} [accessToken]
+ * @returns {Promise<AdminShortlistDto>}
+ */
+export async function markReady(materialId, accessToken) {
+  if (useMocks()) {
+    await delay(60)
+    const found = applyMockMarkReady(mockBatch.items, materialId)
+    if (!found) {
+      throw new AdminApiError('Материал не найден.', { code: 'NOT_FOUND', retryable: false })
+    }
+    return cloneBatch()
+  }
+
+  const token = accessToken ?? (await getAccessToken())
+  if (!token) {
+    throw new AdminApiError('Требуется вход.', { code: 'UNAUTHORIZED', retryable: false })
+  }
+
+  let response
+  try {
+    response = await fetch(`${apiBase()}/admin/materials/${materialId}/ready`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+  } catch {
+    throw new AdminApiError('Не удалось сделать ready', { code: 'NETWORK', retryable: true })
+  }
+
+  if (!response.ok) {
+    throw mapHttpError(response, 'Не удалось сделать ready')
+  }
+
+  // Live API returns MarkReadyResponse — refetch shortlist for DTO parity with mocks.
+  return fetchShortlist(token)
+}
+
+/**
+ * Batch promote materials draft→ready in one POST (ADUX-05 / D-08).
+ * Must not call markReady — single /admin/materials/ready request.
+ * @param {number[]} materialIds
+ * @param {string} [accessToken]
+ * @returns {Promise<{ results: Array<{ material_id: number, ok: boolean, status: string|null, error: string|null }> }>}
+ */
+export async function markReadyBatch(materialIds, accessToken) {
+  if (useMocks()) {
+    await delay(60)
+    return applyMockMarkReadyBatch(mockBatch.items, materialIds ?? [])
+  }
+
+  const token = accessToken ?? (await getAccessToken())
+  if (!token) {
+    throw new AdminApiError('Требуется вход.', { code: 'UNAUTHORIZED', retryable: false })
+  }
+
+  let response
+  try {
+    response = await fetch(`${apiBase()}/admin/materials/ready`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ material_ids: materialIds ?? [] }),
+    })
+  } catch {
+    throw new AdminApiError('Не удалось сделать ready', { code: 'NETWORK', retryable: true })
+  }
+
+  if (!response.ok) {
+    throw mapHttpError(response, 'Не удалось сделать ready')
+  }
+
+  return response.json()
 }
 
 /**
