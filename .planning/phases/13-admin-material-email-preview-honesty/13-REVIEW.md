@@ -1,128 +1,96 @@
 ---
 phase: 13-admin-material-email-preview-honesty
-reviewed: 2026-10-03T07:20:00Z
+reviewed: 2026-10-03T09:27:25Z
 depth: standard
-files_reviewed: 23
+files_reviewed: 8
 files_reviewed_list:
-  - .env.example
-  - backend/src/backend/application/ports/mailer.py
-  - backend/src/backend/application/use_cases/email_render.py
-  - backend/src/backend/application/use_cases/get_admin_shortlist.py
-  - backend/src/backend/application/use_cases/preview_digest_email.py
-  - backend/src/backend/application/use_cases/send_digest.py
-  - backend/src/backend/composition/settings.py
-  - backend/src/backend/domain/email_chrome.py
-  - backend/src/backend/domain/shortlist.py
-  - backend/src/backend/infrastructure/stub_mailer.py
-  - backend/src/backend/interface/http/routes/admin.py
-  - backend/src/backend/tests_support/in_memory.py
-  - docs/agents/local-platform-runbook.md
-  - supabase-integration/migrations/010_phase13_scrub_test_header.sql
-  - supabase-integration/src/supabase_integration/shortlist_repository.py
   - tests/admin.spec.js
-  - tests/unit/test_email_render.py
-  - tests/unit/test_http_admin.py
-  - tests/unit/test_preview_digest.py
-  - tests/unit/test_send_digest.py
+  - web/src/components/PlatformProofBanner.jsx
   - web/src/pages/AdminDigestPage.jsx
+  - web/src/pages/LoginPage.jsx
+  - web/src/pages/RegisterPage.jsx
   - web/src/services/adminApi.js
-  - web/src/utils/forbiddenChrome.js
+  - web/src/services/meApi.js
+  - web/src/services/welcomeSession.js
 findings:
-  critical: 1
-  warning: 4
+  critical: 0
+  warning: 3
   info: 3
-  total: 8
+  total: 6
 status: issues_found
 ---
 
 # Phase 13: Code Review Report
 
-**Reviewed:** 2026-10-03T07:20:00Z
+**Reviewed:** 2026-10-03T09:27:25Z
 **Depth:** standard
-**Files Reviewed:** 23
+**Files Reviewed:** 8
 **Status:** issues_found
 
 ## Summary
 
-Phase 13’s email HTML path is largely sound: `html.escape` in renderers, admin-only preview/send, sandboxed `srcDoc` iframe (no `dangerouslySetInnerHTML`), rehype-sanitize on material markdown, and trusted `Settings.site_url` (not request body). The main defect is a send-path contract bug where `material_ids` and `blocks` can disagree on order, making published issue order diverge from email HTML — undercutting the phase’s preview/send honesty goal for any client that sends both fields.
-
-## Critical Issues
-
-### CR-01: Publish order can diverge from email HTML when both `material_ids` and `blocks` are sent
-
-**File:** `backend/src/backend/application/use_cases/send_digest.py:139-175`
-**Issue:** When both `material_ids` and `blocks` are provided, publication order comes from `material_ids` (`ordered_ids` → `claim_and_publish`), while plain/HTML mail order comes from `blocks` via `compose_digest_segments` / `_html_content_blocks`. The docstring claims `material_ids` becomes “publication and mail order”, but mail follows blocks whenever blocks are present. The SPA currently sends matching orders, so the happy path works; any API client (or future FE drift) can publish issue items in one order and email materials in another — breaking digest honesty vs preview.
-
-**Fix:** Derive a single ordered material id list and use it for both publish and mail. Prefer blocks when present (preview parity), else `material_ids`:
-
-```python
-effective_ids = (
-    _material_ids_from_blocks(blocks)
-    if blocks is not None and _material_ids_from_blocks(blocks) is not None
-    else material_ids
-)
-if material_ids is not None and effective_ids is not None and material_ids != effective_ids:
-    raise InvalidSendOrderError(batch_id=batch.id)
-ordered = _ordered_pool(pool, effective_ids, batch_id=batch.id)
-# publish + compose both use `ordered` / same block sequence
-```
-
-Alternatively reject requests that supply both with conflicting material order (400 `invalid_send_order`).
+Incremental review since `fbccc6e` (plans 13-07, 13-08, and `0c6dd13`). Pinned preview headers, the removed email item list, and the sticky `window.__DIGEST_ME_FAIL_FETCH__` outage match their stated contracts. The welcome toast can still be torn down on the issue page’s loading-to-ready remount, and a `sessionStorage` failure after a successful sign-in aborts navigation. The material dialog still invents a one-minute read when `reading_minutes` is missing.
 
 ## Warnings
 
-### WR-01: Preview accepts material subsets that send rejects
+### WR-01: Welcome toast unmounts when the issue leaves loading
 
-**File:** `backend/src/backend/application/use_cases/preview_digest_email.py:91-112`
-**File:** `backend/src/backend/application/use_cases/send_digest.py:80-88,139-141`
-**Issue:** `preview_digest_email` / `compose_digest_segments` allow a proper subset of the approved∩ready pool. `send_digest` then requires an exact permutation (`_ordered_pool` / `_material_ids_from_blocks`). The same composition can preview successfully and fail on send with `invalid_send_order` / `empty_send_pool`. The SPA always syncs all approved∩ready into `issueBlocks`, so this is latent for the UI but real for the HTTP API.
+**File:** `web/src/components/PlatformProofBanner.jsx:16-51`
+**Issue:** The toast state and the 5s dismiss timer live only in this effect. `IssuePage` mounts a separate `<PlatformProofBanner />` in the loading branch (`web/src/pages/IssuePage.jsx:30`) and another in the ready branch (`web/src/pages/IssuePage.jsx:161`). Leaving loading unmounts the first instance: cleanup sets `cancelled` and clears `dismissTimer` before `clearWelcomeToast()` runs. The session flag survives, so the next instance can show the toast again, but any toast already on screen disappears and the dismiss deadline starts over after a second `fetchMe`. On a slow issue load that loses the race to `/me`, the user sees the toast vanish and return. The auth test only asserts visibility after the page has settled, so it does not catch the gap.
 
-**Fix:** Align contracts — either reject subset compositions in preview with `InvalidPreviewCompositionError`, or allow send to publish/mail the composed subset (and document that choice). Prefer matching D-12 “same composition → same HTML”.
+**Fix:** Render one banner above the status switch so loading and ready share the same instance:
 
-### WR-02: Empty/missing slug still emits `Читать →` href to `/materials/`
-
-**File:** `backend/src/backend/application/use_cases/email_render.py:38-44`
-**File:** `backend/src/backend/application/use_cases/preview_digest_email.py:126-127,146`
-**Issue:** `slug or ""` produces `href="{site}/materials/"` with an empty path segment. Preview and send HTML show a broken reader link instead of omitting the CTA (FE material modal correctly omits the link when slug is blank).
-
-**Fix:**
-
-```python
-def render_material_email_block(*, title: str, dek: str | None, slug: str, site_url: str = DEFAULT_SITE_URL) -> str:
-    parts = [f"<h2>{html.escape(title, quote=True)}</h2>"]
-    if dek and dek.strip():
-        parts.append(f"<p>{html.escape(dek.strip(), quote=True)}</p>")
-    if slug.strip():
-        base = site_url.rstrip("/")
-        href = html.escape(f"{base}/materials/{slug.strip()}", quote=True)
-        parts.append(f'<p><a href="{href}">Читать →</a></p>')
-    return "".join(parts)
+```jsx
+export default function IssuePage({ isCurrent = true }) {
+  // ...existing state and effects...
+  const statusView = status !== 'ready' || notFound || isEmpty
+  return (
+    <>
+      {isCurrent ? <PlatformProofBanner /> : null}
+      {statusView ? (
+        <IssueStatusView status={status} notFound={notFound} isEmpty={isEmpty} isCurrent={false} reload={reload} />
+      ) : (
+        <section data-testid="issue-ready">{/* ready body without a second banner */}</section>
+      )}
+    </>
+  )
+}
 ```
 
-### WR-03: `SITE_URL` / `site_url` not restricted to `http:` / `https:`
+Remove the other `<PlatformProofBanner />` copies inside `IssueStatusView`.
 
-**File:** `backend/src/backend/composition/settings.py:47-51`
-**File:** `backend/src/backend/application/use_cases/email_render.py:38-39`
-**Issue:** `site_url` is concatenated into email `href`s with only `html.escape`. A mis-set env value such as `javascript:...` or `data:...` becomes a dangerous link in outbound HTML (future SMTP) and in admin preview markup (mitigated today by `sandbox=""`). Operator-controlled, but cheap to validate at Settings load.
+### WR-02: Storage failure after sign-in is reported as a failed login
 
-**Fix:**
+**File:** `web/src/services/welcomeSession.js:4-7`
+**Issue:** `armWelcomeToast()` calls `sessionStorage.setItem` with no try/catch. `LoginPage` (`web/src/pages/LoginPage.jsx:48-52`) and `RegisterPage` (`web/src/pages/RegisterPage.jsx:64-68`) call it only after auth (and, on register, after display-name writes) succeed. If storage is blocked, `setItem` throws `SecurityError`. That exception is not an `AuthApiError` / `MeApiError`, so the page catch shows «Сервис входа временно недоступен» and never calls `navigate`. The session is already established.
 
-```python
-from urllib.parse import urlparse
+**Fix:** Swallow storage failures inside the helper so the auth success path always continues:
 
-def _validated_site_url(raw: str, default: str) -> str:
-    parsed = urlparse(raw)
-    if parsed.scheme in ("http", "https") and parsed.netloc:
-        return raw.rstrip("/")
-    return default
+```javascript
+function storage() {
+  try {
+    if (typeof sessionStorage === 'undefined') return null
+    return sessionStorage
+  } catch {
+    return null
+  }
+}
+
+export function armWelcomeToast() {
+  try {
+    storage()?.setItem(WELCOME_KEY, '1')
+  } catch {
+    // Login and register must still navigate.
+  }
+}
 ```
 
-Apply in `Settings.from_env` before storing `site_url`.
+Apply the same try/catch in `peekWelcomeToast` and `clearWelcomeToast`.
 
-### WR-04: Material modal invents `~1 мин` when `reading_minutes` is null/non-finite
+### WR-03: Material preview shows one minute when reading time is missing
 
-**File:** `web/src/pages/AdminDigestPage.jsx:903-905`
-**Issue:** `Number.isFinite(item.reading_minutes) ? item.reading_minutes : 1` displays one minute whenever the API omits or nulls `reading_minutes`. Char/word counts honestly fall back to `0`; reading time does not. Live shortlist rows with null `reading_minutes` look like a 1-minute read. (Empty-body Playwright mock sets `reading_minutes: 1` explicitly — that fixture is fine; the silent FE default is not.)
+**File:** `web/src/pages/AdminDigestPage.jsx:900`
+**Issue:** `Number.isFinite(item.reading_minutes) ? item.reading_minutes : 1` renders «~1 мин» when the shortlist omits `reading_minutes` or sends `null`. Character and word counts on the next lines fall back to `0`. A row with an unknown duration looks like a one-minute read. The empty-body mock sets `reading_minutes: 1` itself; this default is the live-DTO path. Plan 13-07 moved this line into the new scroll body and left the fallback in place.
 
 **Fix:**
 
@@ -130,30 +98,28 @@ Apply in `Settings.from_env` before storing `site_url`.
 const readingMinutes = Number.isFinite(item.reading_minutes) ? item.reading_minutes : 0
 ```
 
-Update the empty-body E2E expectation only if the mock stops setting `reading_minutes: 1`.
-
 ## Info
 
-### IN-01: Mock preview slug fallback diverges from backend
+### IN-01: `postPing` has no remaining caller
 
-**File:** `web/src/services/adminApi.js:463-466`
-**Issue:** Mock HTML uses `item.slug || String(item.material_id)`; backend uses `slug or ""` and can emit `/materials/`. Playwright-on-mocks can hide missing-slug honesty gaps.
-**Fix:** Use the same empty-slug rule as `render_material_email_block` (omit CTA or emit `/materials/` consistently).
+**File:** `web/src/services/meApi.js:183-231`
+**Issue:** `0c6dd13` removed the banner’s ping button, and nothing else in `web/` or `tests/` calls `postPing`. The helper still honors the one-shot `failNextFetch` flag and not the sticky `__DIGEST_ME_FAIL_FETCH__` outage, so a future caller would disagree with `fetchMe`.
+**Fix:** Delete `postPing` until a caller needs it, or route it through the same sticky check as `fetchMe`.
 
-### IN-02: Mock `escapeHtml` does not escape `'` (Python `html.escape(..., quote=True)` does)
+### IN-02: Mock email HTML invents a slug the backend omits
 
-**File:** `web/src/services/adminApi.js:415-421`
-**Issue:** Minor mock/live parity gap for apostrophes inside attributes; current hrefs use double quotes so risk is low.
+**File:** `web/src/services/adminApi.js:471-474`
+**Issue:** `item.slug || String(item.material_id)` always emits a `Читать →` href. Backend `render_material_email_block` uses `slug or ""` and can emit `/materials/` with an empty segment. Playwright-on-mocks will not show that broken link.
+**Fix:** Use the same empty-slug rule as the backend renderer (omit the anchor when slug is blank).
+
+### IN-03: Mock `escapeHtml` does not escape apostrophes
+
+**File:** `web/src/services/adminApi.js:423-429`
+**Issue:** The helper escapes `&`, `<`, `>`, and `"`. Python `html.escape(..., quote=True)` also escapes `'`. Current mock hrefs use double quotes, so this does not break today’s attributes, but text that later lands in a single-quoted attribute will diverge from live mail.
 **Fix:** Add `.replace(/'/g, '&#x27;')` to match CPython `html.escape(..., quote=True)`.
-
-### IN-03: Send imports private `_html_content_blocks` from preview module
-
-**File:** `backend/src/backend/application/use_cases/send_digest.py:15-20`
-**Issue:** Cross-use-case dependency on a private helper increases breakage risk when preview internals change.
-**Fix:** Move `_html_content_blocks` (and shared composition helpers) into `email_render.py` or a small shared composition module imported by both use cases.
 
 ---
 
-_Reviewed: 2026-10-03T07:20:00Z_
+_Reviewed: 2026-10-03T09:27:25Z_
 _Reviewer: Claude (gsd-code-reviewer)_
 _Depth: standard_
