@@ -9,11 +9,11 @@ findings:
     title: "Live `markReady` rolls back UI after successful promote when shortlist refetch fails"
   - id: WR-01
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "Batch helper aborts on `PersistenceError`, violating “never abort” and desyncing FE rollback"
   - id: WR-02
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "Non-empty blank `factors` list still shadows readable flat keys (honesty edge)"
   - id: IN-01
     severity: info
@@ -23,9 +23,9 @@ findings:
     severity: info
     disposition: open
     title: "Batch `material_ids` has no upper bound"
-open: 4
+open: 2
 total: 5
-recorded: 2026-10-03T13:27:22.671Z
+recorded: 2026-10-03T13:27:41.586Z
 ---
 
 # Phase 14: Code Review Disposition
@@ -33,8 +33,8 @@ recorded: 2026-10-03T13:27:22.671Z
 | Finding | Severity | Disposition | Source |
 |---------|----------|-------------|--------|
 | CR-01 | critical | fixed | 14-REVIEW-FIX.md |
-| WR-01 | warning | open | - |
-| WR-02 | warning | open | - |
+| WR-01 | warning | fixed | 14-REVIEW-FIX.md |
+| WR-02 | warning | fixed | 14-REVIEW-FIX.md |
 | IN-01 | info | open | - |
 | IN-02 | info | open | - |
 
