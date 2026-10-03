@@ -355,9 +355,14 @@ export async function setDecision(materialId, decision, accessToken) {
 export async function markReady(materialId, accessToken) {
   if (useMocks()) {
     await delay(60)
-    const found = applyMockMarkReady(mockBatch.items, materialId)
-    if (!found) {
+    const exists = mockBatch.items.some((row) => row.material_id === materialId)
+    if (!exists) {
       throw new AdminApiError('Материал не найден.', { code: 'NOT_FOUND', retryable: false })
+    }
+    // Stale-ready harness: simulate a backend that acknowledges the POST but does
+    // not persist, so the silent-revert reconcile class is exercised under mocks (G-14-2).
+    if (!stickyFlag('__DIGEST_ADMIN_STALE_READY__')) {
+      applyMockMarkReady(mockBatch.items, materialId)
     }
     return cloneBatch()
   }

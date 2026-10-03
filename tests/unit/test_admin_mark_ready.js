@@ -91,8 +91,8 @@ describe('adminApi markReady / markReadyBatch exports', () => {
   })
 })
 
-describe('live markReady / promoteReady CR-01 refetch best-effort', () => {
-  it('markReady treats shortlist refetch failure as null, not throw', () => {
+describe('decoupled markReady + reconciled promote refetch (G-14-2 / ADUX-05)', () => {
+  it('markReady is decoupled from fetchShortlist and returns a MarkReadyResult', () => {
     const apiPath = path.resolve(__dirname, '../../web/src/services/adminApi.js')
     const source = fs.readFileSync(apiPath, 'utf8')
     const markReadyMatch = source.match(
@@ -100,42 +100,53 @@ describe('live markReady / promoteReady CR-01 refetch best-effort', () => {
     )
     assert.ok(markReadyMatch, 'markReady function body must be present')
     const body = markReadyMatch[0]
+    assert.equal(
+      body.includes('fetchShortlist'),
+      false,
+      'G-14-2 #1: markReady must not couple promote success to fetchShortlist',
+    )
+    assert.match(
+      source,
+      /@returns \{Promise<MarkReadyResult>\}/,
+      'markReady JSDoc must declare the MarkReadyResult return type',
+    )
     assert.match(
       body,
-      /try\s*\{[\s\S]*fetchShortlist\([\s\S]*\}\s*catch/,
-      'CR-01: live markReady must try/catch fetchShortlist after successful POST',
+      /status: 'ready'/,
+      'mock markReady must return a MarkReadyResult-shaped object',
     )
-    assert.match(body, /return null/, 'CR-01: refetch failure must return null (promote persisted)')
-    assert.equal(
-      /^\s*return fetchShortlist\(token\)\s*$/m.test(body),
-      false,
-      'CR-01: must not bare-return fetchShortlist (throws → FE draft rollback)',
+    assert.match(
+      body,
+      /return response\.json\(\)/,
+      'live markReady must return the parsed MarkReadyResponse',
     )
   })
 
-  it('promoteReady applies markReady dto and keeps optimistic ready when dto is null', () => {
+  it('promoteReady and promoteApprovedDrafts reconcile refetch via preservePromotedReady', () => {
     const pagePath = path.resolve(__dirname, '../../web/src/pages/AdminDigestPage.jsx')
     const source = fs.readFileSync(pagePath, 'utf8')
+    assert.match(
+      source,
+      /import\s*\{[^}]*preservePromotedReady[^}]*\}\s*from\s*['"][^'"]*adminReadyReconcile\.js['"]/,
+      'AdminDigestPage must import preservePromotedReady from adminReadyReconcile.js',
+    )
     const promoteMatch = source.match(
       /async function promoteReady\([\s\S]*?(?=\n  async function |\n  function )/,
     )
     assert.ok(promoteMatch, 'promoteReady function body must be present')
-    const body = promoteMatch[0]
     assert.match(
-      body,
-      /const dto = await markReady\(/,
-      'CR-01/IN-01: promoteReady must use markReady return value',
+      promoteMatch[0],
+      /preservePromotedReady\(/,
+      'G-14-2 #2: promoteReady must reconcile the refetch through preservePromotedReady',
     )
+    const batchMatch = source.match(
+      /async function promoteApprovedDrafts\([\s\S]*?(?=\n  async function |\n  function )/,
+    )
+    assert.ok(batchMatch, 'promoteApprovedDrafts function body must be present')
     assert.match(
-      body,
-      /if\s*\(\s*dto\s*\)/,
-      'CR-01: promoteReady must applyBatch only when markReady returns a DTO',
-    )
-    assert.equal(
-      /await markReady\([\s\S]*?await fetchShortlist\(\)/.test(body) &&
-        !/const dto = await markReady/.test(body),
-      false,
-      'CR-01/IN-01: must not ignore markReady dto then always refetch',
+      batchMatch[0],
+      /preservePromotedReady\(/,
+      'G-14-2: promoteApprovedDrafts must reconcile ok ids through preservePromotedReady',
     )
   })
 })

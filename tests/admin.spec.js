@@ -302,6 +302,39 @@ test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07
     await expect(page.getByTestId("admin-mark-ready-batch")).toHaveCount(0);
   });
 
+  // G-14-2 / ADUX-05 — a still-draft refetch must never silently revert a confirmed promote
+  test("stale still-draft refetch does not revert a promoted row (G-14-2)", async ({
+    page,
+  }) => {
+    await gotoAsRole(page, "admin", "/admin/digest", {
+      __DIGEST_ADMIN_STALE_READY__: true,
+    });
+    const rows = page.getByTestId("admin-shortlist-row");
+    const draftRow = rows.nth(3); // material 104 — draft, empty body
+    await draftRow.getByRole("checkbox").check();
+    await page.getByRole("button", { name: /одобрить выбранные/i }).click();
+    await expect(draftRow.getByText("одобрен")).toBeVisible();
+    await expect(draftRow.getByText("draft", { exact: true })).toBeVisible();
+
+    page.once("dialog", async (dialog) => {
+      expect(dialog.message()).toBe("Текст пуст. Сделать ready и продолжить?");
+      await dialog.accept();
+    });
+    await draftRow.getByTestId("admin-mark-ready").click();
+
+    // Let the optimistic update + still-draft refetch settle before asserting the
+    // promoted row was not silently reverted (mock delays: 60ms POST + 80ms GET).
+    await page.waitForTimeout(500);
+
+    // Backend acknowledged the POST but the refetch still reports draft —
+    // the row must stay ready and the D-85 draft hint must clear.
+    await expect(draftRow.getByText("ready", { exact: true })).toBeVisible();
+    await expect(draftRow.getByTestId("admin-mark-ready")).toHaveCount(0);
+    await expect(
+      page.getByTestId("admin-send-hint"),
+    ).not.toContainText(/уберите черновики из одобренных или дождитесь ready/i);
+  });
+
   // ADUX-05 / D-03, D-04, D-08 — batch one markReadyBatch call
   test("batch Сделать ready одобренные черновики issues one markReadyBatch (ADUX-05)", async ({
     page,
