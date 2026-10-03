@@ -118,7 +118,7 @@ Plans:
   2. After promotion, D-85 send gate no longer blocks that material solely for still being draft
   3. Shortlist «Обоснование» shows populated `score_factors` when available from pipeline config MVP, or an explicit empty/unavailable state (never a silent fake justification)
 
-**Plans**: 8 plans (5 executed + 3 gap closure)
+**Plans**: 6/8 plans executed (5 executed + 3 gap closure)
 
 Plans:
 **Wave 1**
@@ -137,7 +137,7 @@ Plans:
 - [x] 14-05-PLAN.md — G-14-2a/2b: disambiguate status axes + dedupe footer
 
 **Wave 6** *(gap closure, blocked on Wave 5)*
-- [ ] 14-06-PLAN.md — G-14-1/G-14-4: disambiguate material_relations embed so live get()/get_by_slug() work
+- [x] 14-06-PLAN.md — G-14-1/G-14-4: disambiguate material_relations embed so live get()/get_by_slug() work
 - [ ] 14-07-PLAN.md — G-14-2: remove batch promote CTA + approved-drafts hint
 
 **Wave 7** *(gap closure, blocked on Wave 6)*
@@ -179,7 +179,7 @@ Plans:
 | 6–11 | v1.1 | 23/23 | Complete | 2026-10-02 |
 | 12. Admin shortlist empty-batch contract | v1.2 | 3/3 | Complete    | 2026-10-02 |
 | 13. Admin material & email preview honesty | v1.2 | 8/8 | Complete    | 2026-10-03 |
-| 14. Draft→ready & justification honesty | v1.2 | 5/8 | In Progress|  |
+| 14. Draft→ready & justification honesty | v1.2 | 6/8 | In Progress|  |
 | 15. CLI --debug diagnostics | v1.2 | 0/? | Not started | - |
 | 16. PIPE-01 MVP config UI | v1.2 | 0/? | Not started | - |
 
