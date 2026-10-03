@@ -251,14 +251,10 @@ def post_materials_ready_batch(
     request: Request,
     _admin: CurrentUser = Depends(require_admin),
 ) -> MarkReadyBatchResponse:
+    # Missing materials repo → 503 via _require_materials. Per-id PersistenceError
+    # is mapped inside mark_materials_ready (WR-01 / D-08 — never abort batch → 200).
     materials = _require_materials(request)
-    try:
-        items = mark_materials_ready(materials, body.material_ids)
-    except PersistenceError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="materials_unavailable",
-        ) from exc
+    items = mark_materials_ready(materials, body.material_ids)
     return MarkReadyBatchResponse(
         results=[
             MarkReadyBatchItemResult(

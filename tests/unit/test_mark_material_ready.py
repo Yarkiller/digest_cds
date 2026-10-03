@@ -105,3 +105,38 @@ def test_mark_materials_ready_empty_ids_returns_empty() -> None:
     assert hasattr(mod, "mark_materials_ready"), "mark_materials_ready batch helper missing (D-08)"
     results = mod.mark_materials_ready(InMemoryMaterialRepository([]), [])
     assert results == []
+
+
+def test_mark_materials_ready_persistence_error_is_per_id_never_aborts() -> None:
+    """WR-01 / D-08: PersistenceError on one id must not abort the batch."""
+    from backend.application.use_cases.mark_material_ready import mark_materials_ready
+    from backend.domain.errors import PersistenceError
+
+    class FlakyMaterialRepository(InMemoryMaterialRepository):
+        def save(self, material: Material) -> Material:
+            if material.id == 20:
+                raise PersistenceError("db down")
+            return super().save(material)
+
+    repo = FlakyMaterialRepository(
+        [
+            _draft(id=10, slug="batch-ok-10"),
+            _draft(id=20, slug="batch-fail-20"),
+            _draft(id=30, slug="batch-ok-30"),
+        ]
+    )
+    now = datetime(2026, 10, 3, 12, 0, tzinfo=timezone.utc)
+
+    results = mark_materials_ready(repo, [10, 20, 30], now=now)
+
+    assert [r.material_id for r in results] == [10, 20, 30]
+    assert results[0].ok is True
+    assert results[0].status == MaterialStatus.READY.value
+    assert results[1].ok is False
+    assert results[1].status is None
+    assert results[1].error == "materials_unavailable"
+    assert results[2].ok is True
+    assert results[2].status == MaterialStatus.READY.value
+    assert repo.get(10).status == MaterialStatus.READY
+    assert repo.get(20).status == MaterialStatus.DRAFT
+    assert repo.get(30).status == MaterialStatus.READY

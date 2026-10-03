@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 
 from backend.application.ports.material_repository import MaterialRepository
-from backend.domain.errors import MaterialNotFoundError
+from backend.domain.errors import MaterialNotFoundError, PersistenceError
 from backend.domain.material import Material
 
 
@@ -54,6 +54,26 @@ def mark_materials_ready(
                     ok=False,
                     status=None,
                     error="material_not_found",
+                )
+            )
+            continue
+        except PersistenceError:
+            results.append(
+                MarkReadyItemResult(
+                    material_id=material_id,
+                    ok=False,
+                    status=None,
+                    error="materials_unavailable",
+                )
+            )
+            continue
+        except Exception:
+            results.append(
+                MarkReadyItemResult(
+                    material_id=material_id,
+                    ok=False,
+                    status=None,
+                    error="unexpected_error",
                 )
             )
             continue
