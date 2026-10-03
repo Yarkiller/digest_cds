@@ -85,11 +85,11 @@ v1 is done only when **all** of the following hold:
 - ✓ Four-video live UAT: drafts visible in `/admin/digest` including English→Russian (CLI-03) — Phase 10
 - ✓ Captions/persist diagnostics hardening: secret-safe envelopes, `23514`/int HTTP classification, sent-batch `already_saved` (migration 009) — Phase 11
 - ✓ Admin shortlist empty-batch HTTP contract — `test_admin_shortlist_no_batches_returns_null_batch_id` + `test_admin_shortlist_empty_unsent_batch_returns_batch_id` (FIX-01) — Phase 12
+- ✓ Admin material preview honesty (body, provenance, counts, reader link, pinned close) — Phase 13
+- ✓ Email preview honesty + interstitial whitespace + `test-header` cleanup; email dialog is subject plus sandboxed HTML only — Phase 13
 
 ### Active
 
-- [ ] Admin material preview honesty (body, provenance, counts, reader link)
-- [ ] Email preview honesty + interstitial whitespace + `test-header` cleanup
 - [ ] Admin draft → ready control for D-85 send gate
 - [ ] score_factors / justification honesty (config MVP or honest empty)
 - [ ] CLI `--debug` secret-safe operator diagnostics
@@ -201,4 +201,4 @@ After each phase transition: move validated/invalidated requirements; log decisi
 After milestone: full review of Core Value, Out of Scope, and Context against shipped reality.
 
 ---
-*Last updated: 2026-10-02 after Phase 12*
+*Last updated: 2026-10-03 after Phase 13*

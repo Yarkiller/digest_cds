@@ -45,7 +45,7 @@ Full phase detail: [milestones/v1.1-ROADMAP.md](milestones/v1.1-ROADMAP.md)
 - Ingestion HTTP/scheduler / Whisper-on-VM — still out of scope (ING-*)
 
 - [x] **Phase 12: Admin shortlist empty-batch contract** - Fix Phase 10 carry unit so empty shortlist returns 200 with empty items (completed 2026-10-02)
-- [ ] **Phase 13: Admin material & email preview honesty** - Preview shows body/provenance/counts/reader link; email HTML + interstitial + no test chrome
+- [x] **Phase 13: Admin material & email preview honesty** - Preview shows body/provenance/counts/reader link; email HTML + interstitial + no test chrome (completed 2026-10-03)
 - [ ] **Phase 14: Draft→ready & justification honesty** - Admin promotes draft→ready in UI; Обоснование is real or honestly empty
 - [ ] **Phase 15: CLI --debug diagnostics** - Richer secret-safe stage diagnostics; default progress contracts unchanged
 - [ ] **Phase 16: PIPE-01 MVP config UI** - View/edit/validate/persist pipeline YAML; no run/trigger execution
@@ -83,7 +83,7 @@ Plans:
   3. Interstitial connecting text preserves paragraph breaks so `\n\n` is visible as whitespace / separate paragraphs
   4. Leaked `test-header` (and equivalent seed/test chrome) does not appear on admin preview surfaces after cleanup
 
-**Plans**: 8/8 plans executed
+**Plans**: 8/8 plans complete
 
 Plans:
 **Wave 1**
@@ -154,7 +154,7 @@ Plans:
 | 1–5 | v1 | 40/40 | Complete | 2026-09-22 |
 | 6–11 | v1.1 | 23/23 | Complete | 2026-10-02 |
 | 12. Admin shortlist empty-batch contract | v1.2 | 3/3 | Complete    | 2026-10-02 |
-| 13. Admin material & email preview honesty | v1.2 | 8/8 | In Progress|  |
+| 13. Admin material & email preview honesty | v1.2 | 8/8 | Complete    | 2026-10-03 |
 | 14. Draft→ready & justification honesty | v1.2 | 0/? | Not started | - |
 | 15. CLI --debug diagnostics | v1.2 | 0/? | Not started | - |
 | 16. PIPE-01 MVP config UI | v1.2 | 0/? | Not started | - |
