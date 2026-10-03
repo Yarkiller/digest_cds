@@ -1,9 +1,9 @@
 ---
-status: partial
+status: diagnosed
 phase: 14-draft-ready-justification-honesty
 source: [14-VERIFICATION.md]
 started: 2026-10-03T17:25:00Z
-updated: 2026-10-03T18:12:00Z
+updated: 2026-10-03T18:20:00Z
 ---
 
 ## Current Test
@@ -63,42 +63,74 @@ blocked: 1
 - gap_id: G-14-1
   truth: "Draft badge and «Сделать ready» remain usable: clicking per-row «Сделать ready» promotes the draft to ready"
   status: failed
-  reason: "User reported: Кнопка \"Сделать ready\" не срабатывает — toast «Не удалось сделать ready», row stays «черновик» (live mode, VITE_USE_MOCKS=false, real data). Дополнение: «Видимо в базе тоже ничего не меняется» — материал в БД не переходит в ready. Backend-подтверждение (test 5): POST /admin/materials/{id}/ready → HTTP 503 без DevTools-блокировки; initiator adminApi.js:381 — FE корректен, падает бэкенд (вероятно необработанное исключение)."
+  reason: "User reported: Кнопка \"Сделать ready\" не срабатывает — toast «Не удалось сделать ready», row stays «черновик» (live mode). Log: POST /admin/materials/{id}/ready → 503."
   severity: blocker
   test: 1
-  artifacts: []
+  root_cause: "SupabaseMaterialRepository._fetch_one embeds `material_relations(to_material_id)` without disambiguating the FK; materials↔material_relations has two FKs (from_material_id / to_material_id), so PostgREST returns PGRST201 (ambiguous embed), the driver raises APIError, and _fetch_one wraps it in PersistenceError — every live repo.get()/get_by_slug() fails. mark_material_ready → repo.get() → PersistenceError → route maps to 503."
+  artifacts:
+    - path: "supabase-integration/src/supabase_integration/material_repository.py"
+      issue: "Ambiguous `material_relations(to_material_id)` embed in _fetch_one (line ~135); must be disambiguated by FK name. Also verify the `material_tags(...)` embed resolves unambiguously."
+    - path: "backend/src/backend/application/use_cases/mark_material_ready.py"
+      issue: "Surfaces the PersistenceError from repo.get() (no masking)"
+    - path: "backend/src/backend/interface/http/routes/admin.py"
+      issue: "Maps PersistenceError → 503 materials_unavailable (line ~293)"
   missing:
-    - "Inspect backend logs for the /ready route (request_id, traceback) — route may be missing or raising"
-    - "Fix the backend exception causing 503 on POST /admin/materials/{id}/ready so the draft→ready write persists"
+    - "Disambiguate the embed in _fetch_one to `material_relations!material_relations_from_material_id_fkey(to_material_id)` (and confirm material_tags is unambiguous)"
+    - "Add a regression test that fails on the ambiguous embed / PGRST201 class (fake-client or contract) — the existing fake/InMemory repos never hit the real PostgREST embed"
+    - "Re-run the live read probe to confirm get()/get_by_slug() return a Material (also unblocks the public reader)"
+  debug_session: .planning/debug/mark-ready-503.md
 - gap_id: G-14-2
-  truth: "Footer shows only the count-only hint; batch promote «Сделать ready все одобренные черновики (N)» is removed (functionality + display) and the approved-drafts blocker hint is dropped"
+  truth: "Footer no longer offers a batch promote: «Сделать ready все одобренные черновики (N)» and the «Уберите черновики из одобренных или дождитесь ready» hint are removed (display + functionality)"
   status: failed
   reason: "User reported: Сделать ready все одобренные черновики (2) - убери этот функционал и отображение; подсказку «Уберите черновики из одобренных или дождитесь ready» тоже убрать"
   severity: major
   test: 2
-  artifacts: []
+  root_cause: "Intentional product change (operator decision), not a defect: the batch CTA and the approved-drafts hint are to be removed. Per-row «Сделать ready» stays."
+  artifacts:
+    - path: "web/src/pages/AdminDigestPage.jsx"
+      issue: "Batch CTA render (lines ~837-847, data-testid=admin-mark-ready-batch), promoteApprovedDrafts handler (~374), and sendHint draft branch (~255-257) all present"
+    - path: "web/src/services/adminApi.js"
+      issue: "markReadyBatch becomes unused once the CTA is removed"
+    - path: "tests/admin.spec.js"
+      issue: "Asserts the quantified batch CTA, the one-batch-call counter, and the draft hint"
+    - path: "tests/unit/test_admin_mark_ready.js"
+      issue: "Asserts the batch helper single-call shape"
   missing:
-    - "Remove the batch CTA button (data-testid=admin-mark-ready-batch) and its promoteApprovedDrafts handler/display"
-    - "Remove the approved-drafts blocker hint copy «Уберите черновики из одобренных или дождитесь ready» from admin-send-hint"
-    - "Update/remove the batch-related Playwright assertions (quantified CTA label, batch markReadyBatch call) that now contradict the removed control"
+    - "Remove the batch CTA button and its promoteApprovedDrafts handler/display"
+    - "Remove the approved-drafts hint copy «Уберите черновики из одобренных или дождитесь ready.» and make sendHint fall through coherently when approvedDrafts.length > 0 (keep the sendUnlocked gate requiring approvedDrafts.length === 0 for D-85)"
+    - "Update/remove the contradicting batch Playwright + node assertions; decide whether the now-unused FE markReadyBatch and backend batch route/mark_materials_ready are deleted or unhooked"
+  debug_session: .planning/debug/admin-batch-cta-removal.md
 - gap_id: G-14-3
-  truth: "Interactive admin controls show a pointer cursor on hover"
+  truth: "Interactive admin controls show a pointer cursor on hover (incl. «Превью материала»)"
   status: failed
   reason: "User reported (observed while testing 4): «курсор по-прежнему не изменяется при наведении на кнопку Превью материала»"
   severity: cosmetic
   test: 4
   note: "Incidental finding — separate cosmetic defect, not part of test 4's rollback criterion (which passed)"
-  artifacts: []
-  missing: []
+  root_cause: "The «Превью материала» button has no cursor-pointer class and web/src/index.css defines no global <button> cursor rule, so the browser shows the default cursor."
+  artifacts:
+    - path: "web/src/pages/AdminDigestPage.jsx"
+      issue: "«Превью материала» button className (lines ~812-819) lacks cursor-pointer"
+    - path: "web/src/index.css"
+      issue: "No global cursor rule for buttons"
+  missing:
+    - "Add cursor-pointer to «Превью материала» (and audit other Phase 14 interactive controls for the same omission)"
+    - "Regression-lock via Playwright/class assertion (cursor: pointer)"
+  debug_session: .planning/debug/preview-cursor.md
 - gap_id: G-14-4
   truth: "Batch promote: ok ids become «готов», failed ids stay «черновик» with a toast listing only the failed ids (D-08 partial success)"
   status: failed
-  reason: "User reported: Toast «Не удалось сделать ready: 9, 10, 11, 12» — all 4 failed, not only the one blocked id. The block rule on */admin/materials/12/ready matched 0 requests (batch posts to /admin/materials/ready with no per-id URL), so the partial path could not be exercised."
+  reason: "User reported: Toast «Не удалось сделать ready: 9, 10, 11, 12» — all 4 failed, not only the blocked id. Log confirms POST /admin/materials/ready → 200 with all results ok=false."
   severity: major
   test: 5
-  note: "Likely shares the live-mode promote failure root cause with G-14-1 (all ids fail). Also mooted if G-14-2 removes the batch control — reconcile at fix planning."
-  artifacts: []
-  missing: []
+  root_cause: "Same as G-14-1: every mark_material_ready raises PersistenceError (ambiguous embed), so the batch returns HTTP 200 with all ids failing (error=materials_unavailable). The 'partial success' path is unreachable while promote is globally broken — not a separate defect."
+  note: "Reconcile with G-14-2: removing the batch CTA makes this moot on the FE; fix it only if the backend batch path is retained. Verify a genuine partial result after the G-14-1 fix."
+  artifacts:
+    - path: "backend/src/backend/application/use_cases/mark_material_ready.py"
+      issue: "mark_materials_ready catches the per-id PersistenceError → ok=false for all ids"
+  missing:
+    - "Resolved by the G-14-1 fix once a working promote exists; re-test the partial path (or drop the batch path per G-14-2)"
+  debug_session: .planning/debug/mark-ready-503.md
 
 ## Deferred Follow-Ups
 
