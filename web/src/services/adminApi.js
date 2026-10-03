@@ -24,7 +24,7 @@ export class AdminApiError extends Error {
   }
 }
 
-/** @typedef {{ material_id: number, rank: number, title: string, material_status: 'ready'|'draft', decision: 'pending'|'approved'|'rejected', score: number|null, factor_labels: string[], dek?: string }} AdminShortlistItem */
+/** @typedef {{ material_id: number, rank: number, title: string, material_status: 'ready'|'draft', decision: 'pending'|'approved'|'rejected', score: number|null, factor_labels: string[], dek?: string, body_markdown?: string, provenance_label?: string, slug?: string, reading_minutes?: number, char_count?: number, word_count?: number }} AdminShortlistItem */
 /** @typedef {{ batch_id: number|null, sent_at: string|null, week_label: string|null, items: AdminShortlistItem[], digest_rest?: boolean, days_until_next_batch?: number|null }} AdminShortlistDto */
 
 /** Locked product weekly cadence days (G-05-2 / PROJECT.md weekly digest). */
@@ -40,6 +40,13 @@ const DEFAULT_ITEMS = /** @type {AdminShortlistItem[]} */ ([
     score: 0.92,
     factor_labels: ['relevance', 'freshness', 'engagement'],
     dek: 'Как быстро находить фрагменты регламентов СВА.',
+    body_markdown:
+      '## RAG для СВА\n\nФрагменты регламентов находятся быстрее.',
+    provenance_label: 'YouTube · lecture',
+    slug: 'building-production-rag-systems',
+    reading_minutes: 2,
+    char_count: 128,
+    word_count: 18,
   },
   {
     material_id: 102,
@@ -50,6 +57,12 @@ const DEFAULT_ITEMS = /** @type {AdminShortlistItem[]} */ ([
     score: 0.87,
     factor_labels: ['relevance', 'freshness', 'engagement'],
     dek: 'Как замечать аномалии в аудиторских выборках.',
+    body_markdown: 'Аномалии в выборках обнаруживаются раньше.',
+    provenance_label: 'YouTube · podcast',
+    slug: 'anomaly-detection-in-audit-pipelines',
+    reading_minutes: 3,
+    char_count: 96,
+    word_count: 12,
   },
   {
     material_id: 103,
@@ -60,6 +73,12 @@ const DEFAULT_ITEMS = /** @type {AdminShortlistItem[]} */ ([
     score: 0.81,
     factor_labels: ['relevance', 'freshness'],
     dek: 'Паттерны формулировок запросов к LLM для аудита.',
+    body_markdown: 'Паттерны промптов для аудиторских запросов.',
+    provenance_label: 'Internal note',
+    slug: 'prompt-engineering-patterns-2026',
+    reading_minutes: 2,
+    char_count: 80,
+    word_count: 10,
   },
   {
     material_id: 104,
@@ -70,6 +89,12 @@ const DEFAULT_ITEMS = /** @type {AdminShortlistItem[]} */ ([
     score: 0.74,
     factor_labels: [],
     dek: 'Черновик витрин для ежемесячной отчётности.',
+    body_markdown: '',
+    provenance_label: '',
+    slug: 'sql-dashboards-for-audit-reporting',
+    reading_minutes: 1,
+    char_count: 0,
+    word_count: 0,
   },
   {
     material_id: 105,
@@ -80,6 +105,12 @@ const DEFAULT_ITEMS = /** @type {AdminShortlistItem[]} */ ([
     score: 0.69,
     factor_labels: ['relevance'],
     dek: 'Один фактор — обоснование недоступно.',
+    body_markdown: 'Проверки качества данных в регулируемых доменах.',
+    provenance_label: '',
+    slug: 'data-quality-checks-for-regulated-domains',
+    reading_minutes: 1,
+    char_count: 64,
+    word_count: 8,
   },
 ])
 
@@ -235,6 +266,7 @@ export function resetAdminHarness() {
     window.__DIGEST_ADMIN_FAIL_SHORTLIST__ = false
     window.__DIGEST_ADMIN_FAIL_PREVIEW__ = false
     window.__DIGEST_ADMIN_ALREADY_SENT__ = false
+    window.__DIGEST_ADMIN_MATERIAL_EMPTY_BODY__ = false
   }
 }
 
@@ -289,7 +321,18 @@ export async function fetchShortlist(accessToken) {
     if (mockBatch.sent_at) {
       return restDto()
     }
-    return cloneBatch()
+    const batch = cloneBatch()
+    if (stickyFlag('__DIGEST_ADMIN_MATERIAL_EMPTY_BODY__') && batch.items[0]) {
+      batch.items[0] = {
+        ...batch.items[0],
+        body_markdown: '',
+        provenance_label: '',
+        char_count: 0,
+        word_count: 0,
+        reading_minutes: 1,
+      }
+    }
+    return batch
   }
 
   const token = accessToken ?? (await getAccessToken())

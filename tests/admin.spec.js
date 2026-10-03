@@ -511,3 +511,59 @@ test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07
     await expect(page.getByRole("status").filter({ hasText: "Уже отправлено" })).toBeVisible();
   });
 });
+
+test.describe("Admin Digest — material preview honesty (ADUX-01, D-04…D-06)", () => {
+  test("material preview shows body_markdown provenance counts and reader link", async ({
+    page,
+  }) => {
+    const materialByIdHits = [];
+    page.on("request", (req) => {
+      const url = req.url();
+      if (/\/admin\/materials\//i.test(url) || /\/materials\/\d+/i.test(url)) {
+        materialByIdHits.push(url);
+      }
+    });
+
+    await gotoAsRole(page, "admin", "/admin/digest");
+    const firstRow = page.getByTestId("admin-shortlist-row").first();
+    await firstRow.getByRole("button", { name: "Превью материала" }).click();
+
+    const dialog = page.getByRole("dialog").filter({
+      has: page.getByRole("heading", { name: "Превью материала", exact: true }),
+    });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByText("Building Production RAG Systems")).toBeVisible();
+    await expect(dialog.getByText("YouTube · lecture")).toBeVisible();
+    await expect(dialog.getByText("~128 символов · 18 слов · ~2 мин")).toBeVisible();
+    await expect(dialog.getByText("Фрагменты регламентов находятся быстрее.")).toBeVisible();
+    const readerLink = dialog.getByRole("link", { name: "Открыть материал →" });
+    await expect(readerLink).toBeVisible();
+    await expect(readerLink).toHaveAttribute(
+      "href",
+      "/materials/building-production-rag-systems",
+    );
+    await expect(dialog.getByRole("button", { name: "Закрыть", exact: true })).toBeVisible();
+    expect(materialByIdHits).toEqual([]);
+  });
+
+  test("material preview empty body shows Текст материала недоступен without toast", async ({
+    page,
+  }) => {
+    await gotoAsRole(page, "admin", "/admin/digest", {
+      __DIGEST_ADMIN_MATERIAL_EMPTY_BODY__: true,
+    });
+    const firstRow = page.getByTestId("admin-shortlist-row").first();
+    await firstRow.getByRole("button", { name: "Превью материала" }).click();
+
+    const dialog = page.getByRole("dialog").filter({
+      has: page.getByRole("heading", { name: "Превью материала", exact: true }),
+    });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByText("Building Production RAG Systems")).toBeVisible();
+    await expect(dialog.getByText("Текст материала недоступен")).toBeVisible();
+    await expect(dialog.getByText("~0 символов · 0 слов · ~1 мин")).toBeVisible();
+    await expect(dialog.getByText("YouTube · lecture")).toHaveCount(0);
+    await expect(dialog.getByRole("button", { name: "Закрыть", exact: true })).toBeVisible();
+    await expect(page.getByRole("status")).toHaveCount(0);
+  });
+});
