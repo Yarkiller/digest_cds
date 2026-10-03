@@ -392,7 +392,7 @@ where lower(coalesce(title, '')) like '%test-header%'
 
 Record apply method below when confirmed.
 
-**Applied:** _pending — run Studio step 2 above, then set date/method here._
+**Applied:** 2026-10-03 — Studio SQL Editor (postgres role) on shared knowledge-db VM; file `010_phase13_scrub_test_header.sql`. Operator confirmed («готово»). Post-apply Supabase MCP PostgREST probe: materials `title ilike %test-header%` → `[]`. Full `remaining_ban_hits` SELECT not pasted by operator; accepted per prior-phase pattern (operator confirm + empty probe).
 
 ---
 
