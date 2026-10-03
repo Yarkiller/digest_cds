@@ -4,17 +4,17 @@ milestone: v1.2
 milestone_name: Admin UX + diagnostics + PIPE-01 MVP
 current_phase: 14
 current_phase_name: Draft→ready & justification honesty
-status: executing
-stopped_at: Completed 14-02-PLAN.md
-last_updated: "2026-10-03T12:53:26.688Z"
+status: verifying
+stopped_at: Completed 14-03-PLAN.md
+last_updated: "2026-10-03T13:11:57.568Z"
 last_activity: 2026-10-03
 last_activity_desc: Phase 14 execution started
-state_head: 259decce06dab44f1ac6aba030e5afee02175131
+state_head: 691285c9d662ce0b518659a9cb198ca4329696c0
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 14
-  completed_plans: 13
+  completed_plans: 14
   percent: 80
 ---
 
@@ -31,7 +31,7 @@ See: .planning/PROJECT.md (updated 2026-10-02 — v1.2 milestone)
 
 Phase: 14 (Draft→ready & justification honesty) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-10-03 — Phase 14 execution started
 
 Progress: [████████░░] 80%
@@ -73,6 +73,7 @@ Progress: [████████░░] 80%
 | Phase 13 P08 | 9min | 2 tasks | 3 files |
 | Phase 14 P01 | 5min | 2 tasks | 8 files |
 | Phase 14 P02 | 4min | 2 tasks | 6 files |
+| Phase 14 P03 | 16min | 3 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -113,6 +114,9 @@ v1.2 roadmap locks:
 - [Phase 14]: In-memory shortlist overlays material_status for send-bridge fidelity
 - [Phase 14]: Batch ready uses HTTP 200 partial success results[] (D-08); never 207/FE-loop
 - [Phase 14]: D-02 Approve≠ready locked via asserts + AST import guard
+- [Phase 14]: Mock DEFAULT_ITEMS seed owned by getMockDefaultItems (material 104 empty factor_labels)
+- [Phase 14]: Batch mock call counter on harness for D-08 Playwright proof
+- [Phase 14]: Empty Обоснование is exact D-15 sentence; populated join unchanged
 
 ### Pending Todos
 
@@ -136,7 +140,7 @@ Carried product deferrals to v1.3+: leaderboard, quiz, live SMTP, signup mail, W
 
 ## Session Continuity
 
-Last session: 2026-10-03T12:53:26.589Z
-Stopped at: Completed 14-02-PLAN.md
+Last session: 2026-10-03T13:11:57.479Z
+Stopped at: Completed 14-03-PLAN.md
 Resume file: None
 Next: phase verification

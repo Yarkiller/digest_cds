@@ -118,7 +118,7 @@ Plans:
   2. After promotion, D-85 send gate no longer blocks that material solely for still being draft
   3. Shortlist «Обоснование» shows populated `score_factors` when available from pipeline config MVP, or an explicit empty/unavailable state (never a silent fake justification)
 
-**Plans**: 2/3 plans executed
+**Plans**: 3/3 plans executed
 
 Plans:
 **Wave 1**
@@ -128,7 +128,7 @@ Plans:
 - [x] 14-02-PLAN.md — Batch ready partial success + Approve≠ready lock
 
 **Wave 3** *(blocked on Wave 2)*
-- [ ] 14-03-PLAN.md — FE promote UX + exact D-15 Обоснование honesty lock
+- [x] 14-03-PLAN.md — FE promote UX + exact D-15 Обоснование honesty lock
 
 **UI hint**: yes
 
@@ -166,7 +166,7 @@ Plans:
 | 6–11 | v1.1 | 23/23 | Complete | 2026-10-02 |
 | 12. Admin shortlist empty-batch contract | v1.2 | 3/3 | Complete    | 2026-10-02 |
 | 13. Admin material & email preview honesty | v1.2 | 8/8 | Complete    | 2026-10-03 |
-| 14. Draft→ready & justification honesty | v1.2 | 2/3 | In Progress|  |
+| 14. Draft→ready & justification honesty | v1.2 | 3/3 | In Progress|  |
 | 15. CLI --debug diagnostics | v1.2 | 0/? | Not started | - |
 | 16. PIPE-01 MVP config UI | v1.2 | 0/? | Not started | - |
 

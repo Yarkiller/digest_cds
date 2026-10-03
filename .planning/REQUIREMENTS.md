@@ -16,7 +16,7 @@ Requirements for this milestone. Each maps to roadmap phases.
 - [x] **ADUX-03**: Interstitial connecting text preserves paragraph breaks (`\n\n` → visible whitespace / `<p>` split)
 - [x] **ADUX-04**: Leaked `test-header` (and equivalent seed/test chrome) does not appear in admin preview surfaces after cleanup
 - [x] **ADUX-05**: Admin can set material status from `draft` → `ready` in UI so send is not blocked by D-85 without SQL
-- [ ] **ADUX-06**: Shortlist «Обоснование» is honest — either populated `score_factors` from pipeline config MVP or an explicit empty/unavailable state (no silent fake justification)
+- [x] **ADUX-06**: Shortlist «Обоснование» is honest — either populated `score_factors` from pipeline config MVP or an explicit empty/unavailable state (no silent fake justification)
 
 ### Operator diagnostics
 
@@ -79,7 +79,7 @@ Deferred. Not in this milestone's roadmap.
 | ADUX-03 | Phase 13 | Complete |
 | ADUX-04 | Phase 13 | Complete |
 | ADUX-05 | Phase 14 | Complete |
-| ADUX-06 | Phase 14 | Pending |
+| ADUX-06 | Phase 14 | Complete |
 | DBG-01 | Phase 15 | Pending |
 | DBG-02 | Phase 15 | Pending |
 | PIPE-01 | Phase 16 | Pending |
