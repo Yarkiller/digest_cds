@@ -5,16 +5,16 @@ milestone_name: Admin UX + diagnostics + PIPE-01 MVP
 current_phase: 14
 current_phase_name: Draft→ready & justification honesty
 status: executing
-stopped_at: Completed 14-01-PLAN.md
-last_updated: "2026-10-03T12:47:14.241Z"
+stopped_at: Completed 14-02-PLAN.md
+last_updated: "2026-10-03T12:53:26.688Z"
 last_activity: 2026-10-03
 last_activity_desc: Phase 14 execution started
-state_head: 63eb87cfbbe59d09673140d235b398c107f564bf
+state_head: 259decce06dab44f1ac6aba030e5afee02175131
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 14
-  completed_plans: 12
+  completed_plans: 13
   percent: 80
 ---
 
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-10-02 — v1.2 milestone)
 ## Current Position
 
 Phase: 14 (Draft→ready & justification honesty) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-10-03 — Phase 14 execution started
 
@@ -72,6 +72,7 @@ Progress: [████████░░] 80%
 | Phase 13 P07 | 11min | 2 tasks | 5 files |
 | Phase 13 P08 | 9min | 2 tasks | 3 files |
 | Phase 14 P01 | 5min | 2 tasks | 8 files |
+| Phase 14 P02 | 4min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -110,6 +111,8 @@ v1.2 roadmap locks:
 - [Phase 14]: Triage ready uses with_ready_status — never publish_material/as_ready/index (D-06)
 - [Phase 14]: Single ready route is body-less; MarkReadyResponse extra=forbid (D-07/D-10)
 - [Phase 14]: In-memory shortlist overlays material_status for send-bridge fidelity
+- [Phase 14]: Batch ready uses HTTP 200 partial success results[] (D-08); never 207/FE-loop
+- [Phase 14]: D-02 Approve≠ready locked via asserts + AST import guard
 
 ### Pending Todos
 
@@ -133,7 +136,7 @@ Carried product deferrals to v1.3+: leaderboard, quiz, live SMTP, signup mail, W
 
 ## Session Continuity
 
-Last session: 2026-10-03T12:47:14.155Z
-Stopped at: Completed 14-01-PLAN.md
+Last session: 2026-10-03T12:53:26.589Z
+Stopped at: Completed 14-02-PLAN.md
 Resume file: None
 Next: phase verification
