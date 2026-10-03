@@ -835,24 +835,15 @@ export default function AdminDigestPage() {
                 {sendHint}
               </p>
               {!restMode && approvedDrafts.length > 0 ? (
-                <>
-                  <ul className="mt-1 text-xs text-muted">
-                    {approvedDrafts.map((d) => (
-                      <li key={d.material_id}>
-                        {d.title} · draft
-                      </li>
-                    ))}
-                  </ul>
-                  <button
-                    type="button"
-                    data-testid="admin-mark-ready-batch"
-                    className="mt-2 inline-flex min-h-11 items-center text-sm text-accent hover:underline disabled:opacity-50"
-                    disabled={mutating}
-                    onClick={promoteApprovedDrafts}
-                  >
-                    Сделать ready одобренные черновики
-                  </button>
-                </>
+                <button
+                  type="button"
+                  data-testid="admin-mark-ready-batch"
+                  className="mt-2 inline-flex min-h-11 items-center text-sm text-accent hover:underline disabled:opacity-50"
+                  disabled={mutating}
+                  onClick={promoteApprovedDrafts}
+                >
+                  Сделать ready все одобренные черновики ({approvedDrafts.length})
+                </button>
               ) : null}
               {banner ? (
                 <p className="mt-1 text-sm font-medium text-[oklch(45%_0.13_155)]" role="status">
