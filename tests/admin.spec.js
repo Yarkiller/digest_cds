@@ -576,7 +576,7 @@ test.describe("Admin Digest — email preview honesty (ADUX-02, D-08/D-12)", () 
   });
 
   test("email preview close stays visible while the preview scrolls", async ({ page }) => {
-    await page.setViewportSize({ width: 1280, height: 480 });
+    await page.setViewportSize({ width: 1280, height: 400 });
     await gotoAsRole(page, "admin", "/admin/digest");
     await approveReadyRows(page, [0]);
     await page.getByRole("button", { name: /предпросмотр письма/i }).click();

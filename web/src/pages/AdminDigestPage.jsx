@@ -830,13 +830,6 @@ export default function AdminDigestPage() {
                   ) : (
                     <p className="mt-3 text-sm text-ink-2">Превью недоступно</p>
                   )}
-                  <ul className="mt-4 space-y-2">
-                    {emailModal.preview.items.map((row) => (
-                      <li key={row.material_id} className="text-sm break-words">
-                        {row.rank}. {row.title}
-                      </li>
-                    ))}
-                  </ul>
                 </>
               )}
             </div>
