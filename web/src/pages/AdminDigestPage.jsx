@@ -74,7 +74,7 @@ function decisionCaption(decision) {
 
 function factorText(item) {
   const labels = Array.isArray(item.factor_labels) ? item.factor_labels.filter(Boolean) : []
-  if (labels.length < 2) return 'обоснование недоступно'
+  if (labels.length < 2) return 'Обоснование недоступно — скоринг не запускался'
   return labels.join(' · ')
 }
 
