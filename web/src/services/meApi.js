@@ -17,9 +17,6 @@ let mockRole = 'employee'
 
 export function armFailNextMeFetch() {
   failNextFetch = true
-  if (typeof window !== 'undefined') {
-    window.__DIGEST_ME_FAIL_FETCH__ = true
-  }
 }
 
 /** @param {'employee' | 'analyst' | 'ds' | 'admin'} role */
@@ -67,10 +64,10 @@ function apiBase() {
  */
 export async function fetchMe(accessToken) {
   if (failNextFetch || stickyMeFail()) {
+    // One-shot arm is module-local. The window flag is the init-script outage
+    // and stays set until resetMeHarness, so a second caller (shell + page,
+    // or StrictMode's second effect) still sees the failure.
     failNextFetch = false
-    if (typeof window !== 'undefined') {
-      window.__DIGEST_ME_FAIL_FETCH__ = false
-    }
     throw new MeApiError('Не удалось загрузить профиль. Проверьте сеть.', {
       code: 'NETWORK',
       retryable: true,

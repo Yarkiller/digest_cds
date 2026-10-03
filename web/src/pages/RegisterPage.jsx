@@ -5,6 +5,7 @@ import { AuthApiError, getSignUpInvocationCount, signUp, updateAuthDisplayName }
 import { sanitizeReturnUrl } from '../services/authEnv.js'
 import { isAllowedCorporateEmail } from '../services/emailDomain.js'
 import { MeApiError, updateDisplayName } from '../services/meApi.js'
+import { armWelcomeToast } from '../services/welcomeSession.js'
 
 const DOMAIN_MESSAGE = 'Вход только с корпоративного домена СВА'
 const CONFIRM_MESSAGE =
@@ -62,6 +63,7 @@ export default function RegisterPage() {
       }
       await updateDisplayName(nickname)
       await updateAuthDisplayName(nickname)
+      armWelcomeToast()
       const dest = sanitizeReturnUrl(searchParams.get('returnUrl'))
       navigate(dest, { replace: true })
     } catch (err) {

@@ -8,6 +8,7 @@ import {
 } from '../services/authApi.js'
 import { sanitizeReturnUrl } from '../services/authEnv.js'
 import { isAllowedCorporateEmail } from '../services/emailDomain.js'
+import { armWelcomeToast } from '../services/welcomeSession.js'
 
 const DOMAIN_MESSAGE = 'Вход только с корпоративного домена СВА'
 
@@ -46,6 +47,7 @@ export default function LoginPage() {
     try {
       await signIn({ email: email.trim(), password })
       setSignInCalls(getSignInInvocationCount())
+      armWelcomeToast()
       const dest = sanitizeReturnUrl(searchParams.get('returnUrl'))
       navigate(dest, { replace: true })
     } catch (err) {
