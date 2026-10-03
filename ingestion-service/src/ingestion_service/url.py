@@ -47,11 +47,42 @@ class InvalidYouTubeUrl(Exception):
         self.context = {"value": safe_value, **safe_context}
 
 
+def _id_from_short_link(path: str, value: str) -> str:
+    stripped = path.strip("/")
+    candidate = stripped.split("/")[0] if stripped else ""
+    return _require_id(candidate, value)
+
+
+def _id_from_watch(query: str, value: str) -> str:
+    vids = parse_qs(query).get("v") or []
+    if not vids or not vids[0]:
+        raise InvalidYouTubeUrl("missing_video_id", value)
+    return _require_id(vids[0], value)
+
+
+def _id_from_youtube_path(path: str, query: str, value: str) -> str:
+    segments = [segment for segment in path.split("/") if segment]
+    if not segments:
+        raise InvalidYouTubeUrl("missing_video_id", value)
+
+    head = segments[0].lower()
+    # D-02: deferred forms — reject explicitly (allowlist, not silent accept)
+    if head in {"live", "v", "e"}:
+        raise InvalidYouTubeUrl("not_a_youtube_url", value)
+    if head == "watch":
+        return _id_from_watch(query, value)
+    if head in {"shorts", "embed"}:
+        if len(segments) < 2:
+            raise InvalidYouTubeUrl("missing_video_id", value)
+        return _require_id(segments[1], value)
+    # channel / @handle / user / playlist-without-v / unknown paths
+    raise InvalidYouTubeUrl("not_a_youtube_url", value)
+
+
 def extract_video_id(value: str) -> str:
     raw = value.strip()
     if not raw:
         raise InvalidYouTubeUrl("invalid_video_id", value)
-
     if _ID_RE.fullmatch(raw):
         return raw
 
@@ -59,38 +90,9 @@ def extract_video_id(value: str) -> str:
     host = (parsed.hostname or "").lower()
     if host not in _ALLOWED_HOSTS:
         raise InvalidYouTubeUrl("not_a_youtube_url", value)
-
-    path = parsed.path or ""
-    query = parse_qs(parsed.query)
-
     if host in {"youtu.be", "www.youtu.be"}:
-        candidate = path.strip("/").split("/")[0] if path.strip("/") else ""
-        return _require_id(candidate, value)
-
-    # youtube.com / www / m — path families
-    segments = [s for s in path.split("/") if s]
-    if not segments:
-        raise InvalidYouTubeUrl("missing_video_id", value)
-
-    head = segments[0].lower()
-
-    # D-02: deferred forms — reject explicitly (allowlist, not silent accept)
-    if head in {"live", "v", "e"}:
-        raise InvalidYouTubeUrl("not_a_youtube_url", value)
-
-    if head == "watch":
-        vids = query.get("v") or []
-        if not vids or not vids[0]:
-            raise InvalidYouTubeUrl("missing_video_id", value)
-        return _require_id(vids[0], value)
-
-    if head in {"shorts", "embed"}:
-        if len(segments) < 2:
-            raise InvalidYouTubeUrl("missing_video_id", value)
-        return _require_id(segments[1], value)
-
-    # channel / @handle / user / playlist-without-v / unknown paths
-    raise InvalidYouTubeUrl("not_a_youtube_url", value)
+        return _id_from_short_link(parsed.path or "", value)
+    return _id_from_youtube_path(parsed.path or "", parsed.query, value)
 
 
 def _require_id(candidate: str, value: str) -> str:

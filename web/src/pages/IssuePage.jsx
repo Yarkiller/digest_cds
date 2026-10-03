@@ -23,6 +23,62 @@ function toTocItems(items) {
   }))
 }
 
+function IssueStatusView({ status, notFound, isEmpty, isCurrent, reload }) {
+  if (status === 'loading') {
+    return (
+      <section aria-busy="true" data-testid="issue-loading">
+        {isCurrent ? <PlatformProofBanner /> : null}
+        <div className="mt-3 h-4 w-48 animate-pulse rounded bg-rule" />
+        <div className="mt-4 h-10 max-w-xl animate-pulse rounded bg-rule" />
+        <div className="mt-6 h-24 animate-pulse rounded bg-rule" />
+      </section>
+    )
+  }
+  if (status === 'error') {
+    return (
+      <section>
+        {isCurrent ? <PlatformProofBanner /> : null}
+        <ServiceUnavailable onRetry={reload} />
+      </section>
+    )
+  }
+  if (notFound) {
+    return (
+      <section data-testid="issue-not-found">
+        <h1 className="font-display text-3xl font-semibold">Выпуск не найден</h1>
+        <p className="mt-3 max-w-prose text-ink-2">
+          Проверьте номер выпуска или вернитесь к актуальному.
+        </p>
+        <p className="mt-6">
+          <Link
+            to="/"
+            className="inline-flex min-h-11 items-center font-medium text-accent no-underline hover:underline"
+          >
+            К текущему выпуску →
+          </Link>
+        </p>
+      </section>
+    )
+  }
+  if (isEmpty) {
+    return (
+      <section data-testid="issue-empty">
+        {isCurrent ? <PlatformProofBanner /> : null}
+        <h2 className="font-display text-2xl font-semibold">Выпуск готовится</h2>
+        <p className="mt-3 max-w-prose text-ink-2">
+          Свежий выпуск скоро появится. А пока — загляните в архив прошлых недель.
+        </p>
+        <p className="mt-6">
+          <Link to="/archive" className="font-medium text-accent no-underline hover:underline">
+            В архив →
+          </Link>
+        </p>
+      </section>
+    )
+  }
+  return null
+}
+
 /** Format cycle closes_at for callout copy (UI-SPEC). */
 function formatClosesAt(iso) {
   if (!iso) return ''
@@ -83,62 +139,17 @@ export default function IssuePage({ isCurrent = true }) {
     }
   }, [isCurrent, numberParam, loadKey])
 
-  if (status === 'loading') {
-    return (
-      <section aria-busy="true" data-testid="issue-loading">
-        {isCurrent ? <PlatformProofBanner /> : null}
-        <div className="mt-3 h-4 w-48 animate-pulse rounded bg-rule" />
-        <div className="mt-4 h-10 max-w-xl animate-pulse rounded bg-rule" />
-        <div className="mt-6 h-24 animate-pulse rounded bg-rule" />
-      </section>
-    )
-  }
-
-  if (status === 'error') {
-    return (
-      <section>
-        {isCurrent ? <PlatformProofBanner /> : null}
-        <ServiceUnavailable onRetry={reload} />
-      </section>
-    )
-  }
-
-  if (notFound) {
-    return (
-      <section data-testid="issue-not-found">
-        <h1 className="font-display text-3xl font-semibold">Выпуск не найден</h1>
-        <p className="mt-3 max-w-prose text-ink-2">
-          Проверьте номер выпуска или вернитесь к актуальному.
-        </p>
-        <p className="mt-6">
-          <Link
-            to="/"
-            className="inline-flex min-h-11 items-center font-medium text-accent no-underline hover:underline"
-          >
-            К текущему выпуску →
-          </Link>
-        </p>
-      </section>
-    )
-  }
-
   const items = issue?.items ?? []
   const isEmpty = items.length === 0
-
-  if (isEmpty) {
+  if (status !== 'ready' || notFound || isEmpty) {
     return (
-      <section data-testid="issue-empty">
-        {isCurrent ? <PlatformProofBanner /> : null}
-        <h2 className="font-display text-2xl font-semibold">Выпуск готовится</h2>
-        <p className="mt-3 max-w-prose text-ink-2">
-          Свежий выпуск скоро появится. А пока — загляните в архив прошлых недель.
-        </p>
-        <p className="mt-6">
-          <Link to="/archive" className="font-medium text-accent no-underline hover:underline">
-            В архив →
-          </Link>
-        </p>
-      </section>
+      <IssueStatusView
+        status={status}
+        notFound={notFound}
+        isEmpty={isEmpty}
+        isCurrent={isCurrent}
+        reload={reload}
+      />
     )
   }
 

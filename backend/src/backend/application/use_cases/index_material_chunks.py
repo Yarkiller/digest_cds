@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import hashlib
-import re
 from collections.abc import Callable
 from datetime import datetime, timezone
 
@@ -11,7 +10,34 @@ from backend.domain.errors import MaterialNotFoundError, MaterialNotReadyError
 from backend.domain.knowledge import KnowledgeChunk
 from backend.domain.material import MaterialStatus
 
-_HEADING = re.compile(r"(?m)^(#{1,6})\s+(.+)$")
+def _heading_title(line: str) -> str | None:
+    """ATX heading title, or None. Linear scan — no backtracking quantifiers."""
+    marks = 0
+    while marks < len(line) and line[marks] == "#":
+        marks += 1
+    if marks < 1 or marks > 6:
+        return None
+    if marks >= len(line) or line[marks] not in " \t":
+        return None
+    return line[marks + 1 :].strip()
+
+
+def _flush_atom(
+    atoms: list[tuple[str | None, str]],
+    heading: str | None,
+    lines: list[str],
+    *,
+    seen_heading: bool,
+) -> None:
+    body = "\n".join(lines).strip()
+    if not seen_heading:
+        if body:
+            atoms.append((None, body))
+        return
+    if body:
+        atoms.append((heading, body))
+    elif heading:
+        atoms.append((heading, heading))
 
 
 def split_article_into_atoms(body_markdown: str) -> list[tuple[str | None, str]]:
@@ -20,22 +46,20 @@ def split_article_into_atoms(body_markdown: str) -> list[tuple[str | None, str]]
     if not text:
         return []
 
-    parts = _HEADING.split(text)
-    # parts: [preamble, level, title, body, level, title, body, ...]
     atoms: list[tuple[str | None, str]] = []
-    if parts[0].strip():
-        atoms.append((None, parts[0].strip()))
-
-    i = 1
-    while i + 2 < len(parts):
-        heading = parts[i + 1].strip()
-        body = parts[i + 2].strip()
-        if body:
-            atoms.append((heading, body))
-        elif heading:
-            atoms.append((heading, heading))
-        i += 3
-
+    heading: str | None = None
+    buffer: list[str] = []
+    seen_heading = False
+    for line in text.splitlines():
+        title = _heading_title(line)
+        if title is None:
+            buffer.append(line)
+            continue
+        _flush_atom(atoms, heading, buffer, seen_heading=seen_heading)
+        seen_heading = True
+        heading = title
+        buffer = []
+    _flush_atom(atoms, heading, buffer, seen_heading=seen_heading)
     if not atoms:
         atoms.append((None, text))
     return atoms

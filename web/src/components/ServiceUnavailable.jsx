@@ -30,10 +30,7 @@ export default function ServiceUnavailable({ onRetry }) {
         height={360}
         className="h-auto w-full max-w-[360px] sm:max-w-[420px]"
       />
-      <h1 className="mt-6 font-display text-2xl font-semibold text-ink sm:text-3xl">
-        Ошибочка вышла
-      </h1>
-      <p className="mt-3 max-w-prose text-sm leading-relaxed text-ink-2 sm:text-base">
+      <p className="mt-6 max-w-prose text-sm leading-relaxed text-ink-2 sm:text-base">
         Не удалось загрузить. Проверьте соединение и попробуйте ещё раз.
       </p>
       <button

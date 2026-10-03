@@ -10,6 +10,25 @@ export const HEADING_ID_PREFIX = 'user-content-'
  * @param {string} text
  * @returns {string}
  */
+function headingFromLine(line) {
+  let marks = 0
+  while (marks < line.length && line[marks] === '#') marks += 1
+  if (marks < 1 || marks > 6) return null
+  if (line[marks] !== ' ' && line[marks] !== '\t') return null
+  return { level: marks, text: stripClosingHashes(line.slice(marks + 1)) }
+}
+
+function stripClosingHashes(raw) {
+  const text = raw.trim()
+  let end = text.length
+  while (end > 0 && text[end - 1] === '#') end -= 1
+  if (end === text.length) return text
+  let split = end
+  while (split > 0 && (text[split - 1] === ' ' || text[split - 1] === '\t')) split -= 1
+  if (split === end) return text
+  return text.slice(0, split).trim()
+}
+
 function slugify(text) {
   return text
     .toLowerCase()
@@ -39,11 +58,10 @@ export function extractMarkdownHeadings(markdown) {
     }
     if (inFence) continue
 
-    const match = /^(#{1,6})\s+(.+?)\s*$/.exec(line)
-    if (!match) continue
+    const heading = headingFromLine(line)
+    if (!heading) continue
 
-    const level = match[1].length
-    const text = match[2].replace(/\s+#+\s*$/, '').trim()
+    const { level, text } = heading
     if (!text) continue
 
     let bare = slugify(text)

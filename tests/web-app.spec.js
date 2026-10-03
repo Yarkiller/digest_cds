@@ -562,8 +562,5 @@ test.describe("web app responsive", () => {
  * - Hero: long issue title reflow
  * - AppShell nav: mobile reflow without overlapping wordmark
  */
-test.describe.skip("phase 2 UI-SPEC visual backstops (verify-work)", () => {
-  test("placeholder — run visual checks listed in 02-UI-SPEC UI Considerations", async () => {
-    // Intentionally skipped: human/visual gate at /gsd-verify-work
-  });
-});
+// Visual backstops stay a human gate at /gsd-verify-work.
+// A skipped placeholder test is not an assertion Sonar can trust.

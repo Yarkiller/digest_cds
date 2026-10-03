@@ -23,6 +23,22 @@ const ROLE_CHIPS = [
 
 const FILTER_TOAST_MS = 4000
 
+function searchFailureState(err, { roleValue, append, q }) {
+  if (err instanceof KnowledgeApiError && err.code === 'INVALID_ROLE' && roleValue !== 'all') {
+    return { invalidRole: true }
+  }
+  const known = err instanceof KnowledgeApiError
+  return {
+    invalidRole: false,
+    error: {
+      message: known ? err.message : 'Не удалось выполнить поиск. Проверьте сеть.',
+      retryable: known ? err.retryable : true,
+    },
+    clearItems: !append,
+    activeQuery: q,
+  }
+}
+
 /**
  * Knowledge SPA — Submit/Enter «Найти» → knowledgeApi (D-57, D-59, D-60, D-61 / KNOW-01).
  * Role chips re-run search when the trimmed query is non-empty (D-62, D-64 / KNOW-02).
@@ -73,21 +89,17 @@ export default function KnowledgePage() {
       setNextOffset(offset + (dto.items?.length ?? 0))
       setError(null)
     } catch (err) {
-      if (err instanceof KnowledgeApiError && err.code === 'INVALID_ROLE' && roleValue !== 'all') {
+      const failure = searchFailureState(err, { roleValue, append, q })
+      if (failure.invalidRole) {
         // Tampered role: toast and fall back to «Все» without clearing q (D-62).
         resetInvalidRole = true
         setError(null)
       } else {
-        const message =
-          err instanceof KnowledgeApiError
-            ? err.message
-            : 'Не удалось выполнить поиск. Проверьте сеть.'
-        const retryable = err instanceof KnowledgeApiError ? err.retryable : true
-        setError({ message, retryable })
-        if (!append) {
+        setError(failure.error)
+        if (failure.clearItems) {
           setItems([])
           setHasMore(false)
-          setActiveQuery(q)
+          setActiveQuery(failure.activeQuery)
         }
       }
     } finally {
@@ -163,8 +175,49 @@ export default function KnowledgePage() {
   return (
     <section>
       <h1 className="mb-6 font-display text-3xl font-semibold">База знаний</h1>
+      <KnowledgeSearchForm
+        query={query}
+        setQuery={setQuery}
+        inlineError={inlineError}
+        setInlineError={setInlineError}
+        searching={searching}
+        onSubmit={handleSubmit}
+        role={role}
+        onRoleChange={handleRoleChange}
+        toast={toast}
+      />
+      <KnowledgeResults
+        preSearch={preSearch}
+        setQuery={setQuery}
+        error={error}
+        onRetry={handleRetry}
+        activeQuery={activeQuery}
+        searching={searching}
+        items={items}
+        hasMore={hasMore}
+        showZeroHit={showZeroHit}
+        onResetFilter={handleResetFilter}
+        loadingMore={loadingMore}
+        onLoadMore={handleLoadMore}
+      />
+    </section>
+  )
+}
 
-      <form className="mb-4" role="search" onSubmit={handleSubmit}>
+function KnowledgeSearchForm({
+  query,
+  setQuery,
+  inlineError,
+  setInlineError,
+  searching,
+  onSubmit,
+  role,
+  onRoleChange,
+  toast,
+}) {
+  return (
+    <>
+      <form className="mb-4" role="search" onSubmit={onSubmit}>
         <label className="sr-only" htmlFor="kb-search">
           Поиск по базе знаний
         </label>
@@ -214,7 +267,7 @@ export default function KnowledgePage() {
               type="button"
               aria-pressed={selected}
               disabled={searching}
-              onClick={() => handleRoleChange(chip.value)}
+              onClick={() => onRoleChange(chip.value)}
               className={
                 selected
                   ? 'min-h-11 rounded-full bg-accent px-3 text-sm text-accent-ink'
@@ -232,7 +285,32 @@ export default function KnowledgePage() {
           {toast}
         </p>
       ) : null}
+    </>
+  )
+}
 
+function knowledgeResultSummary({ searching, items, hasMore }) {
+  if (searching) return 'Ищем…'
+  if (items.length === 0) return 'Найдено 0 материалов'
+  return `Показано ${items.length}${hasMore ? '+' : ''}`
+}
+
+function KnowledgeResults({
+  preSearch,
+  setQuery,
+  error,
+  onRetry,
+  activeQuery,
+  searching,
+  items,
+  hasMore,
+  showZeroHit,
+  onResetFilter,
+  loadingMore,
+  onLoadMore,
+}) {
+  return (
+    <>
       {preSearch ? (
         <div className="mb-8" data-testid="kb-hint-chips">
           <p className="mb-3 text-xs text-ink-2">Попробуйте тему:</p>
@@ -255,7 +333,7 @@ export default function KnowledgePage() {
         <div className="mb-6" data-testid="kb-search-error">
           <ErrorPanel title="Не удалось найти материалы" message={error.message} />
           {error.retryable ? (
-            <ActionButton variant="secondary" className="mt-4" onClick={handleRetry}>
+            <ActionButton variant="secondary" className="mt-4" onClick={onRetry}>
               Повторить
             </ActionButton>
           ) : null}
@@ -264,11 +342,7 @@ export default function KnowledgePage() {
 
       {activeQuery !== null && !error ? (
         <p className="mb-4 text-xs text-ink-2" aria-live="polite">
-          {searching
-            ? 'Ищем…'
-            : items.length === 0
-              ? 'Найдено 0 материалов'
-              : `Показано ${items.length}${hasMore ? '+' : ''}`}
+          {knowledgeResultSummary({ searching, items, hasMore })}
         </p>
       ) : null}
 
@@ -280,7 +354,7 @@ export default function KnowledgePage() {
           </p>
           <button
             type="button"
-            onClick={handleResetFilter}
+            onClick={onResetFilter}
             className="mt-4 inline-flex min-h-11 items-center text-sm text-accent"
           >
             Сбросить фильтр
@@ -288,29 +362,38 @@ export default function KnowledgePage() {
         </div>
       ) : null}
 
-      {items.length > 0 ? (
-        <div>
-          {items.map((hit) => (
-            // KNOW-03: every hit, including DS, opens /materials/{slug}.
-            <MaterialListRow key={hit.slug} material={hit} />
-          ))}
+      <KnowledgeHitList
+        items={items}
+        loadingMore={loadingMore}
+        hasMore={hasMore}
+        searching={searching}
+        onLoadMore={onLoadMore}
+      />
+    </>
+  )
+}
 
-          {loadingMore ? (
-            <div data-testid="kb-skeleton" className="mt-4 space-y-3" aria-busy="true">
-              <div className="h-16 animate-pulse rounded-xl bg-paper-2" />
-              <div className="h-16 animate-pulse rounded-xl bg-paper-2" />
-            </div>
-          ) : null}
-
-          {hasMore && !loadingMore ? (
-            <div className="mt-6">
-              <ActionButton variant="secondary" onClick={handleLoadMore} disabled={searching}>
-                Показать ещё
-              </ActionButton>
-            </div>
-          ) : null}
+function KnowledgeHitList({ items, loadingMore, hasMore, searching, onLoadMore }) {
+  if (items.length === 0) return null
+  return (
+    <div>
+      {items.map((hit) => (
+        // KNOW-03: every hit, including DS, opens /materials/{slug}.
+        <MaterialListRow key={hit.slug} material={hit} />
+      ))}
+      {loadingMore ? (
+        <div data-testid="kb-skeleton" className="mt-4 space-y-3" aria-busy="true">
+          <div className="h-16 animate-pulse rounded-xl bg-paper-2" />
+          <div className="h-16 animate-pulse rounded-xl bg-paper-2" />
         </div>
       ) : null}
-    </section>
+      {hasMore && !loadingMore ? (
+        <div className="mt-6">
+          <ActionButton variant="secondary" onClick={onLoadMore} disabled={searching}>
+            Показать ещё
+          </ActionButton>
+        </div>
+      ) : null}
+    </div>
   )
 }

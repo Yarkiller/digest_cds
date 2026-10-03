@@ -2,6 +2,8 @@
 
 from backend.composition.settings import Settings
 from backend.interface.http.app import create_app
+from backend.interface.http.middleware import RequestIdMiddleware
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.testclient import TestClient
 
 
@@ -15,6 +17,14 @@ def _settings_with_cors(origins: str) -> Settings:
         supabase_jwks_url="",
         supabase_jwt_issuer="",
     )
+
+
+def test_cors_middleware_is_outermost() -> None:
+    """Starlette runs the last added middleware first; CORS must wrap the rest."""
+    app = create_app(_settings_with_cors("http://localhost:5173"))
+    classes = [layer.cls for layer in app.user_middleware]
+    assert classes[0] is CORSMiddleware
+    assert classes.index(CORSMiddleware) < classes.index(RequestIdMiddleware)
 
 
 def test_allowed_origin_receives_access_control_allow_origin() -> None:

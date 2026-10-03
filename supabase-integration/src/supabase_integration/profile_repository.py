@@ -14,6 +14,17 @@ class _SupabaseClient(Protocol):
     def table(self, name: str) -> Any: ...
 
 
+def _row_to_user(row: dict[str, Any]) -> CurrentUser:
+    raw_name = row.get("display_name")
+    display_name = str(raw_name) if raw_name is not None and str(raw_name).strip() else None
+    return CurrentUser(
+        id=str(row["id"]),
+        email=str(row["email"]),
+        role=str(row.get("role") or _DEFAULT_APP_ROLE),
+        display_name=display_name,
+    )
+
+
 class SupabaseProfileRepository:
     """Idempotent get_or_upsert against profiles (app_role), safe if Auth trigger exists."""
 
@@ -24,18 +35,13 @@ class SupabaseProfileRepository:
         try:
             existing = (
                 self._client.table("profiles")
-                .select("id,email,role")
+                .select("id,email,role,display_name")
                 .eq("id", user_id)
                 .execute()
             )
             rows = getattr(existing, "data", None) or []
             if rows:
-                row = rows[0]
-                return CurrentUser(
-                    id=str(row["id"]),
-                    email=str(row["email"]),
-                    role=str(row.get("role") or _DEFAULT_APP_ROLE),
-                )
+                return _row_to_user(rows[0])
 
             upserted = (
                 self._client.table("profiles")
@@ -56,9 +62,22 @@ class SupabaseProfileRepository:
         data = getattr(upserted, "data", None) or []
         if not data:
             raise PersistenceError("profiles upsert returned no rows")
-        row = data[0]
-        return CurrentUser(
-            id=str(row["id"]),
-            email=str(row["email"]),
-            role=str(row.get("role") or _DEFAULT_APP_ROLE),
-        )
+        return _row_to_user(data[0])
+
+    def set_display_name(self, user_id: str, display_name: str) -> CurrentUser:
+        try:
+            updated = (
+                self._client.table("profiles")
+                .update({"display_name": display_name})
+                .eq("id", user_id)
+                .execute()
+            )
+        except PersistenceError:
+            raise
+        except Exception as exc:  # noqa: BLE001 — map all SDK failures at boundary
+            raise PersistenceError(f"profiles set_display_name failed: {exc}") from exc
+
+        data = getattr(updated, "data", None) or []
+        if not data:
+            raise PersistenceError("profiles set_display_name returned no rows")
+        return _row_to_user(data[0])

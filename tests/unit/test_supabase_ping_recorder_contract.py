@@ -39,6 +39,11 @@ class _FakeQuery:
         self._payload = dict(payload)
         return self
 
+    def update(self, payload: dict[str, Any]) -> "_FakeQuery":
+        self._op = "update"
+        self._payload = dict(payload)
+        return self
+
     def select(self, cols: str = "*") -> "_FakeQuery":
         self._select_cols = cols
         if self._op is None:
@@ -71,13 +76,24 @@ class _FakeQuery:
                     "id": key,
                     "email": self._payload["email"],
                     "role": self._payload.get("role", "employee"),
+                    "display_name": self._payload.get("display_name"),
                 }
                 self._table.rows.append(row)
                 return _FakeExecuteResult([row])
             existing["email"] = self._payload["email"]
             if "role" in self._payload:
                 existing["role"] = self._payload["role"]
+            if "display_name" in self._payload:
+                existing["display_name"] = self._payload["display_name"]
             return _FakeExecuteResult([existing])
+        if self._op == "update":
+            assert self._payload is not None
+            matched = list(self._table.rows)
+            for column, value in self._filters:
+                matched = [r for r in matched if r.get(column) == value]
+            for row in matched:
+                row.update(self._payload)
+            return _FakeExecuteResult(matched)
         if self._op == "select":
             matched = list(self._table.rows)
             for column, value in self._filters:
@@ -172,6 +188,18 @@ def test_profile_get_or_upsert_is_idempotent_when_row_exists() -> None:
     assert first.role == "analyst"
     assert second.role == "analyst"
     assert len(client.tables["profiles"].rows) == 1
+
+
+def test_profile_set_display_name_persists_and_returns_user() -> None:
+    client = FakeSupabaseClient()
+    uid = "44444444-4444-4444-4444-444444444444"
+    repo = SupabaseProfileRepository(client)
+    repo.get_or_upsert(uid, "carol@sberbank.ru")
+
+    updated = repo.set_display_name(uid, "Каролина")
+
+    assert updated.display_name == "Каролина"
+    assert client.tables["profiles"].rows[0]["display_name"] == "Каролина"
 
 
 def test_domain_and_use_cases_have_zero_supabase_imports() -> None:

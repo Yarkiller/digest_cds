@@ -36,6 +36,8 @@ def create_app(
     app.state.settings = settings
     app.state.signing_key_resolver = signing_key_resolver
 
+    # Starlette runs the last added middleware first. CORS must be outermost.
+    app.add_middleware(RequestIdMiddleware)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=list(settings.cors_origins),
@@ -43,7 +45,6 @@ def create_app(
         allow_methods=["GET", "POST", "PATCH", "OPTIONS"],
         allow_headers=["Authorization", "Content-Type", "X-Request-ID"],
     )
-    app.add_middleware(RequestIdMiddleware)
 
     app.include_router(health.router)
     app.include_router(me.router)

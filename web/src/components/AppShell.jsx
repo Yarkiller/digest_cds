@@ -13,6 +13,21 @@ const linkClass = ({ isActive }) =>
     isActive ? 'bg-accent text-accent-ink' : 'text-ink-2 hover:bg-paper-2',
   ].join(' ')
 
+function mockIdentity() {
+  return isMocksEnabled() ? MOCK_SHELL_IDENTITY : ''
+}
+
+async function resolveShellSession(token) {
+  if (!token) {
+    if (!isMocksEnabled()) return { identity: '', appRole: 'employee' }
+    const me = await fetchMe(null)
+    return { identity: MOCK_SHELL_IDENTITY, appRole: me.role ?? 'employee' }
+  }
+  const me = await fetchMe(token)
+  const identity = me.display_name?.trim() || me.email || mockIdentity()
+  return { identity, appRole: me.role ?? 'employee' }
+}
+
 export default function AppShell() {
   const [identity, setIdentity] = useState(() => (isMocksEnabled() ? MOCK_SHELL_IDENTITY : ''))
   const [appRole, setAppRole] = useState(/** @type {string | null} */ (null))
@@ -22,28 +37,14 @@ export default function AppShell() {
 
     async function loadIdentity() {
       try {
-        const token = await getAccessToken()
-        if (!token) {
-          if (!cancelled) {
-            setIdentity(isMocksEnabled() ? MOCK_SHELL_IDENTITY : '')
-            // Mocks still resolve /me for role-gated nav (D-76)
-            if (isMocksEnabled()) {
-              const me = await fetchMe(null)
-              if (!cancelled) setAppRole(me.role ?? 'employee')
-            } else if (!cancelled) {
-              setAppRole('employee')
-            }
-          }
-          return
-        }
-        const me = await fetchMe(token)
+        const session = await resolveShellSession(await getAccessToken())
         if (!cancelled) {
-          setIdentity(me.display_name?.trim() || me.email || (isMocksEnabled() ? MOCK_SHELL_IDENTITY : ''))
-          setAppRole(me.role ?? 'employee')
+          setIdentity(session.identity)
+          setAppRole(session.appRole)
         }
       } catch {
         if (!cancelled) {
-          setIdentity(isMocksEnabled() ? MOCK_SHELL_IDENTITY : '')
+          setIdentity(mockIdentity())
           setAppRole('employee')
         }
       }

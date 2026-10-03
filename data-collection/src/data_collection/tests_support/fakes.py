@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from typing import TypedDict
 
 from data_collection.dto.article_draft import ArticleDraft
@@ -32,6 +33,7 @@ class FakeTranscriptProvider:
         self.calls.append(video_id)
         if video_id in self._failures:
             raise self._failures[video_id]
+        await asyncio.sleep(0)
         return self._result
 
 
@@ -49,6 +51,7 @@ class FakeVideoMetadataProvider:
         self.calls.append(video_id)
         if video_id in self._failures:
             raise self._failures[video_id]
+        await asyncio.sleep(0)
         return self._result
 
 
@@ -69,4 +72,5 @@ class FakeArticleGenerator:
         failure = self._failures.get(transcript.video_id)
         if failure is not None:
             raise failure
+        await asyncio.sleep(0)
         return self._result

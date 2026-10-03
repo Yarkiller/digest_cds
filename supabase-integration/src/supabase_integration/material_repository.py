@@ -29,25 +29,38 @@ def _require_dt(value: Any, field: str) -> datetime:
     return parsed
 
 
-def _row_to_material(row: dict[str, Any]) -> Material:
+def _tag_pairs(row: dict[str, Any]) -> tuple[tuple[str, str], ...]:
     tags_raw = row.get("material_tags") or []
-    tags: list[tuple[str, str]] = []
-    if isinstance(tags_raw, list):
-        for tag in tags_raw:
-            if isinstance(tag, dict):
-                tags.append((str(tag["tag_slug"]), str(tag["tag_label"])))
+    if not isinstance(tags_raw, list):
+        return ()
+    return tuple(
+        (str(tag["tag_slug"]), str(tag["tag_label"]))
+        for tag in tags_raw
+        if isinstance(tag, dict)
+    )
 
+
+def _related_ids(row: dict[str, Any]) -> tuple[str, ...]:
     relations_raw = row.get("material_relations") or []
-    related: list[str] = []
-    if isinstance(relations_raw, list):
-        for rel in relations_raw:
-            if isinstance(rel, dict) and rel.get("to_material_id") is not None:
-                related.append(str(rel["to_material_id"]))
+    if not isinstance(relations_raw, list):
+        return ()
+    return tuple(
+        str(rel["to_material_id"])
+        for rel in relations_raw
+        if isinstance(rel, dict) and rel.get("to_material_id") is not None
+    )
 
+
+def _role_tuple(row: dict[str, Any]) -> tuple[str, ...]:
+    roles_raw = row.get("roles") or []
+    if not isinstance(roles_raw, list):
+        return ()
+    return tuple(str(role) for role in roles_raw)
+
+
+def _row_to_material(row: dict[str, Any]) -> Material:
     status_raw = str(row.get("status") or "draft")
     status = MaterialStatus.READY if status_raw == "ready" else MaterialStatus.DRAFT
-    roles_raw = row.get("roles") or []
-    roles = tuple(str(r) for r in roles_raw) if isinstance(roles_raw, list) else ()
 
     return Material(
         id=int(row["id"]),
@@ -60,9 +73,9 @@ def _row_to_material(row: dict[str, Any]) -> Material:
         reading_minutes=int(row.get("reading_minutes") or 0),
         provenance_label=str(row["provenance_label"]),
         source_id=int(row["source_id"]) if row.get("source_id") is not None else None,
-        roles=roles,
-        tags=tuple(tags),
-        related_material_ids=tuple(related),
+        roles=_role_tuple(row),
+        tags=_tag_pairs(row),
+        related_material_ids=_related_ids(row),
         published_at=_parse_dt(row.get("published_at")),
         created_at=_require_dt(row.get("created_at"), "created_at"),
         updated_at=_require_dt(row.get("updated_at"), "updated_at"),

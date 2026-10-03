@@ -33,6 +33,80 @@ def _row_to_personal(row: dict[str, Any]) -> PersonalVote:
     )
 
 
+def _db_id(value: str) -> int | str:
+    return int(value) if str(value).isdigit() else value
+
+
+def _rows(result: Any) -> list[Any]:
+    return getattr(result, "data", None) or []
+
+
+def _insert_vote(
+    client: _SupabaseClient,
+    *,
+    cycle_id: str,
+    user_id: str,
+    topic_id: str,
+    now_iso: str,
+) -> PersonalVote:
+    result = (
+        client.table("votes")
+        .insert(
+            {
+                "cycle_id": _db_id(cycle_id),
+                "user_id": user_id,
+                "topic_id": _db_id(topic_id),
+                "updated_at": now_iso,
+            }
+        )
+        .execute()
+    )
+    rows = _rows(result)
+    if not rows:
+        raise PersistenceError("votes insert returned no rows")
+    return _row_to_personal(rows[0])
+
+
+def _update_vote(
+    client: _SupabaseClient,
+    *,
+    cycle_id: str,
+    user_id: str,
+    topic_id: str,
+    now_iso: str,
+    expected_updated_at: datetime,
+) -> PersonalVote:
+    expected_iso = _iso(expected_updated_at)
+    payload = {"topic_id": _db_id(topic_id), "updated_at": now_iso}
+    result = (
+        client.table("votes")
+        .update(payload)
+        .eq("cycle_id", cycle_id)
+        .eq("user_id", user_id)
+        .eq("updated_at", expected_iso)
+        .execute()
+    )
+    rows = _rows(result)
+    if rows:
+        return _row_to_personal(rows[0])
+
+    # PostgREST may store timestamptz without Z — retry with fromisoformat form.
+    alt_expected = expected_updated_at.astimezone(timezone.utc).isoformat()
+    if alt_expected != expected_iso:
+        result = (
+            client.table("votes")
+            .update(payload)
+            .eq("cycle_id", cycle_id)
+            .eq("user_id", user_id)
+            .eq("updated_at", alt_expected)
+            .execute()
+        )
+        rows = _rows(result)
+    if not rows:
+        raise VoteConflictError(cycle_id, user_id)
+    return _row_to_personal(rows[0])
+
+
 class SupabaseVoteRepository:
     """VoteRepository against topics / topic_materials / votes (service_role)."""
 
@@ -122,61 +196,21 @@ class SupabaseVoteRepository:
         now_iso = _iso(now)
         try:
             if expected_updated_at is None:
-                result = (
-                    self._client.table("votes")
-                    .insert(
-                        {
-                            "cycle_id": int(cycle_id) if str(cycle_id).isdigit() else cycle_id,
-                            "user_id": user_id,
-                            "topic_id": int(topic_id) if str(topic_id).isdigit() else topic_id,
-                            "updated_at": now_iso,
-                        }
-                    )
-                    .execute()
+                return _insert_vote(
+                    self._client,
+                    cycle_id=cycle_id,
+                    user_id=user_id,
+                    topic_id=topic_id,
+                    now_iso=now_iso,
                 )
-                rows = getattr(result, "data", None) or []
-                if not rows:
-                    raise PersistenceError("votes insert returned no rows")
-                return _row_to_personal(rows[0])
-
-            expected_iso = _iso(expected_updated_at)
-            result = (
-                self._client.table("votes")
-                .update(
-                    {
-                        "topic_id": int(topic_id) if str(topic_id).isdigit() else topic_id,
-                        "updated_at": now_iso,
-                    }
-                )
-                .eq("cycle_id", cycle_id)
-                .eq("user_id", user_id)
-                .eq("updated_at", expected_iso)
-                .execute()
+            return _update_vote(
+                self._client,
+                cycle_id=cycle_id,
+                user_id=user_id,
+                topic_id=topic_id,
+                now_iso=now_iso,
+                expected_updated_at=expected_updated_at,
             )
-            rows = getattr(result, "data", None) or []
-            if not rows:
-                # Fallback: PostgREST may store timestamptz without Z — retry with fromisoformat form
-                alt_expected = expected_updated_at.astimezone(timezone.utc).isoformat()
-                if alt_expected != expected_iso:
-                    result = (
-                        self._client.table("votes")
-                        .update(
-                            {
-                                "topic_id": int(topic_id)
-                                if str(topic_id).isdigit()
-                                else topic_id,
-                                "updated_at": now_iso,
-                            }
-                        )
-                        .eq("cycle_id", cycle_id)
-                        .eq("user_id", user_id)
-                        .eq("updated_at", alt_expected)
-                        .execute()
-                    )
-                    rows = getattr(result, "data", None) or []
-                if not rows:
-                    raise VoteConflictError(cycle_id, user_id)
-            return _row_to_personal(rows[0])
         except VoteConflictError:
             raise
         except PersistenceError:

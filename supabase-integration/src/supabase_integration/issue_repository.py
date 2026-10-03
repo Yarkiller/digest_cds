@@ -10,6 +10,7 @@ from backend.domain.errors import PersistenceError
 from backend.domain.issue import Issue, IssueItem
 
 _MATERIAL_ID_SLUG = re.compile(r"^material-(\d+)$")
+_ISSUE_COLUMNS = "id,number,period_label,title,published_at"
 
 
 class _SupabaseClient(Protocol):
@@ -89,7 +90,7 @@ class SupabaseIssueRepository:
         try:
             result = (
                 self._client.table("digest_issues")
-                .select("id,number,period_label,title,published_at")
+                .select(_ISSUE_COLUMNS)
                 .not_.is_("published_at", "null")
                 .order("published_at", desc=True)
                 .limit(1)
@@ -109,7 +110,7 @@ class SupabaseIssueRepository:
         try:
             result = (
                 self._client.table("digest_issues")
-                .select("id,number,period_label,title,published_at")
+                .select(_ISSUE_COLUMNS)
                 .eq("number", number)
                 .not_.is_("published_at", "null")
                 .limit(1)
@@ -130,7 +131,7 @@ class SupabaseIssueRepository:
         try:
             result = (
                 self._client.table("digest_issues")
-                .select("id,number,period_label,title,published_at")
+                .select(_ISSUE_COLUMNS)
                 .not_.is_("published_at", "null")
                 .order("published_at", desc=True)
                 .execute()
