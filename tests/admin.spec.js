@@ -1,10 +1,24 @@
 const { expect, test } = require("@playwright/test");
+const path = require("node:path");
+const { pathToFileURL } = require("node:url");
+
+/** @type {(text: string | null | undefined) => boolean} */
+let containsForbiddenChrome;
 
 /**
  * Admin Digest SPA honesty gate (ADMIN-01, ADMIN-04, ADMIN-06, ADMIN-07, ADMIN-08;
  * D-77, D-80, D-85, D-86, D-87, D-90).
  * Role harness: sticky window.__DIGEST_MOCK_ME_ROLE__ (employee default).
  */
+
+test.beforeAll(async () => {
+  const mod = await import(
+    pathToFileURL(
+      path.resolve(__dirname, "../web/src/utils/forbiddenChrome.js"),
+    ).href,
+  );
+  containsForbiddenChrome = mod.containsForbiddenChrome;
+});
 
 async function gotoAsRole(page, role, path = "/", extraInit) {
   await page.addInitScript(
@@ -557,6 +571,42 @@ test.describe("Admin Digest — email preview honesty (ADUX-02, D-08/D-12)", () 
       "Building Production RAG Systems",
     );
     await expect(frame.getByRole("link", { name: "Читать →" })).toBeVisible();
+  });
+});
+
+test.describe("Admin Digest — ban-list surfaces (ADUX-04, D-19)", () => {
+  test("material modal text has no forbidden chrome tokens", async ({ page }) => {
+    await gotoAsRole(page, "admin", "/admin/digest");
+    const firstRow = page.getByTestId("admin-shortlist-row").first();
+    await firstRow.getByRole("button", { name: "Превью материала" }).click();
+
+    const dialog = page.getByRole("dialog").filter({
+      has: page.getByRole("heading", { name: "Превью материала", exact: true }),
+    });
+    await expect(dialog).toBeVisible();
+    const sampled = await dialog.innerText();
+    expect(containsForbiddenChrome(sampled)).toBe(false);
+  });
+
+  test("email-preview-frame content has no forbidden chrome tokens", async ({
+    page,
+  }) => {
+    await gotoAsRole(page, "admin", "/admin/digest");
+    await approveReadyRows(page, [0]);
+
+    await page.getByRole("button", { name: /предпросмотр письма/i }).click();
+    const emailDialog = page.getByRole("dialog").filter({
+      has: page.getByRole("heading", { name: "Превью письма", exact: true }),
+    });
+    const iframe = emailDialog.getByTestId("email-preview-frame");
+    await expect(iframe).toBeVisible();
+
+    const srcDoc = await iframe.getAttribute("srcdoc");
+    expect(containsForbiddenChrome(srcDoc ?? "")).toBe(false);
+
+    const frame = emailDialog.frameLocator('[data-testid=email-preview-frame]');
+    const frameText = await frame.locator("body").innerText();
+    expect(containsForbiddenChrome(frameText)).toBe(false);
   });
 });
 
