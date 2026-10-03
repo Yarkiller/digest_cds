@@ -70,3 +70,38 @@ def test_mark_material_ready_already_ready_is_noop() -> None:
     assert result.status == MaterialStatus.READY
     assert result.published_at == published_at
     assert result is before or result == before
+
+
+def test_mark_materials_ready_order_preserving_partial_results() -> None:
+    """D-08 / ADUX-05: batch never aborts; order matches ids; missing → material_not_found."""
+    import backend.application.use_cases.mark_material_ready as mod
+
+    assert hasattr(mod, "mark_materials_ready"), "mark_materials_ready batch helper missing (D-08)"
+    mark_materials_ready = mod.mark_materials_ready
+
+    found = _draft(id=10, slug="batch-10")
+    repo = InMemoryMaterialRepository([found])
+    now = datetime(2026, 10, 3, 12, 0, tzinfo=timezone.utc)
+
+    results = mark_materials_ready(repo, [10, 999, 10], now=now)
+
+    assert [r.material_id for r in results] == [10, 999, 10]
+    assert results[0].ok is True
+    assert results[0].status == MaterialStatus.READY.value
+    assert results[0].error is None
+    assert results[1].ok is False
+    assert results[1].status is None
+    assert results[1].error == "material_not_found"
+    assert results[2].ok is True
+    assert results[2].status == MaterialStatus.READY.value
+    assert repo.get(10) is not None
+    assert repo.get(10).status == MaterialStatus.READY
+
+
+def test_mark_materials_ready_empty_ids_returns_empty() -> None:
+    """D-08 / ADUX-05 empty probe: material_ids=[] → []."""
+    import backend.application.use_cases.mark_material_ready as mod
+
+    assert hasattr(mod, "mark_materials_ready"), "mark_materials_ready batch helper missing (D-08)"
+    results = mod.mark_materials_ready(InMemoryMaterialRepository([]), [])
+    assert results == []

@@ -1039,3 +1039,89 @@ def test_admin_mark_ready_employee_returns_403() -> None:
 
     assert response.status_code == 403
     assert response.json()["detail"] == "forbidden"
+
+
+def test_admin_mark_ready_batch_partial_success_preserves_order() -> None:
+    """D-08 / ADUX-05: POST /admin/materials/ready → 200 results[] order + partial success."""
+    client, headers, container = _admin_client_with_batch(_ready_approved_batch())
+    container.materials.save(_draft_material(102, title="Draft approved"))
+
+    response = client.post(
+        "/admin/materials/ready",
+        headers=headers,
+        json={"material_ids": [102, 999, 102]},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert list(body.keys()) == ["results"]
+    results = body["results"]
+    assert [r["material_id"] for r in results] == [102, 999, 102]
+    assert results[0] == {
+        "material_id": 102,
+        "ok": True,
+        "status": "ready",
+        "error": None,
+    }
+    assert results[1] == {
+        "material_id": 999,
+        "ok": False,
+        "status": None,
+        "error": "material_not_found",
+    }
+    assert results[2]["ok"] is True
+    assert results[2]["status"] == "ready"
+    assert container.materials.get(102).status == MaterialStatus.READY
+    assert container.materials.get(102).published_at is None
+
+
+def test_admin_mark_ready_batch_empty_ids_returns_empty_results() -> None:
+    """D-08 / ADUX-05 empty probe: material_ids=[] → 200 results=[]."""
+    client, headers, _container = _admin_client_with_batch(_ready_approved_batch())
+
+    response = client.post(
+        "/admin/materials/ready",
+        headers=headers,
+        json={"material_ids": []},
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {"results": []}
+
+
+def test_admin_mark_ready_batch_unknown_field_returns_422() -> None:
+    """T-14-05 / ADUX-05: MarkReadyBatchRequest extra=forbid → 422."""
+    client, headers, _container = _admin_client_with_batch(_ready_approved_batch())
+
+    response = client.post(
+        "/admin/materials/ready",
+        headers=headers,
+        json={"material_ids": [102], "extra_field": True},
+    )
+
+    assert response.status_code == 422
+
+
+def test_admin_mark_ready_batch_employee_returns_403() -> None:
+    """T-14-04 / D-74: employee JWT cannot batch-promote ready (ADUX-05)."""
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    container = build_in_memory_container()
+    container.materials.save(_draft_material(102))
+    _seed_profile(
+        container,
+        user_id="user-uuid-1",
+        email="alice@sberbank.ru",
+        role="employee",
+    )
+    client = _client(jwk, container)
+    token = _mint(private_key, email="alice@sberbank.ru")
+
+    response = client.post(
+        "/admin/materials/ready",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"material_ids": [102]},
+    )
+
+    assert response.status_code == 403
+    assert response.json()["detail"] == "forbidden"
