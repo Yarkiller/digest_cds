@@ -15,7 +15,6 @@ import {
   clearFailNextShortlistFetch,
   fetchShortlist,
   markReady,
-  markReadyBatch,
   previewEmail,
   sendDigest,
   setDecision,
@@ -252,12 +251,10 @@ export default function AdminDigestPage() {
 
   const sendHint = useMemo(() => {
     if (batchSent || batchMeta.sent_at) return 'Уже отправлено'
-    if (approvedDrafts.length > 0) {
-      return 'Уберите черновики из одобренных или дождитесь ready.'
-    }
     if (approvedReady.length === 0) {
       return 'Нет одобренных ready-материалов для отправки.'
     }
+    if (approvedDrafts.length > 0) return 'Отправка недоступна.'
     if (!previewOk) return 'Сначала откройте превью письма.'
     return 'Превью просмотрено. Можно отправить.'
   }, [approvedDrafts.length, approvedReady.length, batchMeta.sent_at, batchSent, previewOk])
@@ -362,65 +359,6 @@ export default function AdminDigestPage() {
         )
       } catch {
         // keep optimistic ready; silent refetch best-effort (G-14-2 / D-05)
-      }
-    } catch (err) {
-      setItems(previous)
-      setToast(err instanceof AdminApiError ? err.message : 'Не удалось сделать ready')
-    } finally {
-      setMutating(false)
-    }
-  }
-
-  async function promoteApprovedDrafts() {
-    if (restMode || approvedDrafts.length === 0 || mutating) return
-    const n = approvedDrafts.length
-    const ok = window.confirm(`Сделать ready ${n} одобренных черновиков?`)
-    if (!ok) return
-    const ids = approvedDrafts.map((d) => d.material_id)
-    setMutating(true)
-    const previous = items
-    setItems((prev) =>
-      prev.map((row) =>
-        ids.includes(row.material_id) ? { ...row, material_status: 'ready' } : row,
-      ),
-    )
-    try {
-      const { results } = await markReadyBatch(ids)
-      const failedIds = (results ?? [])
-        .filter((row) => !row.ok)
-        .map((row) => row.material_id)
-      const okIds = new Set(
-        (results ?? []).filter((row) => row.ok).map((row) => row.material_id),
-      )
-      if (failedIds.length > 0) {
-        setItems((prev) =>
-          prev.map((row) => {
-            if (failedIds.includes(row.material_id)) {
-              const prior = previous.find((p) => p.material_id === row.material_id)
-              return prior ? { ...row, material_status: prior.material_status } : row
-            }
-            if (okIds.has(row.material_id)) {
-              return { ...row, material_status: 'ready' }
-            }
-            return row
-          }),
-        )
-        setToast(`Не удалось сделать ready: ${failedIds.join(', ')}`)
-      }
-      try {
-        const dto = await fetchShortlist()
-        applyBatch(
-          {
-            ...dto,
-            items: preservePromotedReady(dto.items, [...okIds]),
-          },
-          setItems,
-          setBatchMeta,
-          setDigestRest,
-          setDaysUntilNextBatch,
-        )
-      } catch {
-        // silent refetch best-effort
       }
     } catch (err) {
       setItems(previous)
@@ -834,17 +772,6 @@ export default function AdminDigestPage() {
               <p className="text-sm text-ink-2 break-words" data-testid="admin-send-hint">
                 {sendHint}
               </p>
-              {!restMode && approvedDrafts.length > 0 ? (
-                <button
-                  type="button"
-                  data-testid="admin-mark-ready-batch"
-                  className="mt-2 inline-flex min-h-11 items-center text-sm text-accent hover:underline disabled:opacity-50"
-                  disabled={mutating}
-                  onClick={promoteApprovedDrafts}
-                >
-                  Сделать ready все одобренные черновики ({approvedDrafts.length})
-                </button>
-              ) : null}
               {banner ? (
                 <p className="mt-1 text-sm font-medium text-[oklch(45%_0.13_155)]" role="status">
                   <span>{banner}</span>
