@@ -31,7 +31,7 @@ status: all_fixed
 **Applied fix:** Live `markReady` try/catches `fetchShortlist` and returns `null` on refetch failure (POST success preserved). `promoteReady` uses the returned DTO when present; on `null`, best-effort refetch; rollback to previous items only when the promote POST itself fails. Also removes the redundant always-refetch path (IN-01).
 **Verification:** `node --test tests/unit/test_admin_mark_ready.js` (6 passed) in main checkout; Tier-1 re-read of modified sections.
 
-### WR-01: Batch helper aborts on `PersistenceError`, violating “never abort”
+### WR-01: Batch helper aborts on `PersistenceError`, violating “never abort” and desyncing FE rollback
 
 **Files modified:** `tests/unit/test_mark_material_ready.py`, `backend/src/backend/application/use_cases/mark_material_ready.py`, `backend/src/backend/interface/http/routes/admin.py`
 **Commit:** `7e881df`
@@ -39,7 +39,7 @@ status: all_fixed
 **Verification:** `uv run pytest tests/unit/test_mark_material_ready.py -q` (6 passed) in main checkout; Python `ast.parse` on modified files.
 **Commit status note:** `fixed: requires human verification` for batch error-mapping logic (confirm live Supabase `PersistenceError` surfaces as per-id `materials_unavailable` under partial failure).
 
-### WR-02: Non-empty blank `factors` list still shadows readable flat keys
+### WR-02: Non-empty blank `factors` list still shadows readable flat keys (honesty edge)
 
 **Files modified:** `tests/unit/test_score_factors.py`, `backend/src/backend/domain/shortlist.py`
 **Commit:** `70df151`
