@@ -58,6 +58,18 @@ def test_honest_factor_labels_falls_back_to_flat_keys_when_factors_list_empty() 
     assert labels == ["релевантность теме недели", "качество источников"]
 
 
+def test_honest_factor_labels_falls_back_to_flat_keys_when_structured_labels_blank() -> None:
+    """WR-02: non-empty factors with only blank/non-dict entries must fall through to flat keys."""
+    labels = honest_factor_labels(
+        {
+            "factors": [{"label": "  "}, "x"],
+            "Релевантность": 0.8,
+            "Свежесть": 0.6,
+        }
+    )
+    assert labels == ["Релевантность", "Свежесть"]
+
+
 def test_honest_factor_labels_ignores_blank_labels_in_list() -> None:
     labels = honest_factor_labels(
         {
