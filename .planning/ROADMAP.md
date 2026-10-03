@@ -154,3 +154,21 @@ Plans:
 | 16. PIPE-01 MVP config UI | v1.2 | 0/? | Not started | - |
 
 **Coverage:** 12/12 v1.2 requirements mapped (FIX-01, ADUX-01…06, DBG-01…02, PIPE-01…03). No orphans.
+
+## Backlog
+
+### Phase 999.1: Follow-up — Phase 13 deferred UAT follow-up: Test 1 (BACKLOG)
+
+**Goal:** Resolve the UAT checkpoint deferred during Phase 13 verification
+**Source phase:** 13
+**Deferred at:** 2026-10-03 during /gsd-verify-work 13 session completion
+**Follow-ups:**
+- [ ] Test 1: O3 — Reader /materials/<slug> returns error page. Check: slug validity, reader endpoint health, SPA route. Not Phase 13 scope. File for Phase 14 / debug session. (deferred 2026-10-03)
+
+### Phase 999.2: Follow-up — Phase 13 deferred UAT follow-up: Test 3 (BACKLOG)
+
+**Goal:** Resolve the UAT checkpoint deferred during Phase 13 verification
+**Source phase:** 13
+**Deferred at:** 2026-10-03 during /gsd-verify-work 13 session completion
+**Follow-ups:**
+- [ ] Test 3: O3 — «Открыть материал →» from email/admin preview leads to error page. Reader /materials/<slug> route issue, not admin preview. Separate ticket. (deferred 2026-10-03)
