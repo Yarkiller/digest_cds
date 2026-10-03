@@ -32,7 +32,7 @@ See: .planning/PROJECT.md (updated 2026-10-02 — v1.2 milestone)
 Phase: 13 (Admin material & email preview honesty) — EXECUTING
 Plan: 8 of 8
 Status: Phase complete — ready for verification
-Last activity: 2026-10-03 — Completed 13-07-PLAN.md
+Last activity: 2026-10-03 — Completed 13-08-PLAN.md
 
 Progress: [██████░░░░] 60%
 
@@ -108,7 +108,7 @@ v1.2 roadmap locks:
 
 ### Pending Todos
 
-None. Next: execute 13-08 (G-13-3b). 13-07 summary is present.
+None. Phase 13 plans 01–08 are complete and ready for verification.
 
 ### Blockers/Concerns
 
@@ -131,4 +131,4 @@ Carried product deferrals to v1.3+: leaderboard, quiz, live SMTP, signup mail, W
 Last session: 2026-10-03T09:15:49.466Z
 Stopped at: Completed 13-08-PLAN.md
 Resume file: None
-Next: execute 13-08
+Next: phase verification
