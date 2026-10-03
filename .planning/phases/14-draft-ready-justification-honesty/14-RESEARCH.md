@@ -396,22 +396,25 @@ await markReady(item.material_id)
 | A3 | No new DB migration needed (`materials.status` already supports `ready`) | Standard Stack | If live enum/check constraint differs, live promote fails — verify only if executor hits DB error |
 | A4 | Partial-success HTTP 200 (not 207 Multi-Status) matches product preference | Pattern 3 | Clients expecting 4xx on any failure would break — lock in HTTP tests |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Batch response field names**
+1. **Batch response field names** — RESOLVED
    - What we know: D-08 wants partial success; decision FE uses failed-id toast, no backend batch today.
    - What's unclear: Exact JSON keys.
-   - Recommendation: Use `results: [{material_id, ok, status, error}]` (A1); lock with HTTP unit test in Plan 01.
+   - Recommendation: Use `results: [{material_id, ok, status, error}]` (A1); lock with HTTP unit test.
+   - **Locked plan answer:** Plan 02 DTOs `MarkReadyBatchRequest` / `MarkReadyBatchItemResult` / `MarkReadyBatchResponse` with fields `material_ids`, `results[]` `{material_id, ok, status, error}`; HTTP 200 partial success (A4). Locked by unit/HTTP tests in 14-02.
 
-2. **In-memory shortlist sync mechanism**
+2. **In-memory shortlist sync mechanism** — RESOLVED
    - What we know: Live joins; in-memory denormalizes.
    - What's unclear: Overlay vs explicit `set_material_status` helper.
    - Recommendation: Prefer overlay from materials repo in test support (mirrors live); keep domain use-case materials-only.
+   - **Locked plan answer:** Plan 01 wires `InMemoryShortlistRepository` to overlay `material_status` from an attached `InMemoryMaterialRepository` on get_current_batch / get_latest_batch (live-join fidelity); use-case stays materials-only.
 
-3. **Reader visibility after triage ready**
+3. **Reader visibility after triage ready** — RESOLVED
    - What we know: `get_material_for_reader` keys off `status == READY` only.
    - What's unclear: Whether product owners consider that a problem for empty-body ready materials.
    - Recommendation: Accept per D-06; do not expand scope. Note in plan acceptance notes.
+   - **Locked plan answer:** Accepted consequence of D-06 (14-01 `must_haves.assumptions`); out of Phase 14 scope — no reader ACL redesign.
 
 ## Environment Availability
 
@@ -449,6 +452,7 @@ Step 2.6: external tools available for code/config phase; no blocking gaps.
 | ADUX-05 | HTTP batch partial success (found + missing) | unit/HTTP | same | ❌ Wave 0 |
 | ADUX-05 | After ready, approved draft no longer trips `DraftInSendPoolError` | unit | `uv run pytest tests/unit/test_send_digest.py -k draft -x` (+ new bridge test) | ⚠️ partial — send gate exists; bridge after flip needed |
 | ADUX-05 | Approve does not auto-ready | unit | decision test assertion | ⚠️ extend `test_set_shortlist_decision.py` |
+| ADUX-05 | markReady/markReadyBatch mock helpers; batch single-call; empty factor_labels seed | unit (node) | `node --test tests/unit/test_admin_mark_ready.js` | ❌ Wave 0 |
 | ADUX-05 | Per-row control + batch for approved drafts; optimistic UX | e2e | `npx playwright test tests/admin.spec.js -g "ready"` | ❌ Wave 0 |
 | ADUX-06 | `honest_factor_labels` 0/1/2+/whitespace | unit | `uv run pytest tests/unit/test_score_factors.py -x` | ✅ extend |
 | ADUX-06 | Exact empty copy on shortlist row | e2e | `npx playwright test tests/admin.spec.js -g "обоснование\|Обоснование"` | ⚠️ exists with old string — update |
@@ -463,7 +467,8 @@ Step 2.6: external tools available for code/config phase; no blocking gaps.
 - [ ] `tests/unit/test_mark_material_ready.py` — covers ADUX-05 domain/use-case (status-only, idempotent, not-found, published_at unchanged)
 - [ ] HTTP cases in `tests/unit/test_http_admin.py` — single + batch ready routes
 - [ ] In-memory shortlist↔materials status sync for HTTP/send bridge tests
-- [ ] Playwright: promote control + D-85 unblock smoke; exact D-15 empty copy (replace old assert)
+- [ ] `tests/unit/test_admin_mark_ready.js` + `web/src/services/adminReadyMock.js` — fast FE service gate
+- [ ] Playwright: per-row + batch promote; D-85 unblock smoke; exact D-15 empty copy (replace old assert)
 - [ ] Extend `tests/unit/test_score_factors.py` named matrix cases for D-14 if gaps remain after review
 
 ## Security Domain
