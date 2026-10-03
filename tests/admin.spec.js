@@ -117,7 +117,7 @@ test.describe("Admin Digest — shortlist triage (ADMIN-01…03, ADMIN-05, D-79,
     await expect(list).toBeVisible();
     const rows = page.getByTestId("admin-shortlist-row");
     await expect(rows).toHaveCount(5);
-    await expect(rows.first()).toContainText(/ready/i);
+    await expect(rows.first().getByText("готов", { exact: true })).toBeVisible();
     await expect(
       page.getByText("Обоснование недоступно — скоринг не запускался", { exact: true }).first(),
     ).toBeVisible();
@@ -277,7 +277,7 @@ test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07
     await gotoAsRole(page, "admin", "/admin/digest");
     const rows = page.getByTestId("admin-shortlist-row");
     const draftRow = rows.nth(3); // material 104 — draft, empty body
-    await expect(draftRow.getByText("draft", { exact: true })).toBeVisible();
+    await expect(draftRow.getByText("черновик", { exact: true })).toBeVisible();
     const readyBtn = draftRow.getByTestId("admin-mark-ready");
     await expect(readyBtn).toBeVisible();
     await expect(readyBtn).toHaveText("Сделать ready");
@@ -289,7 +289,7 @@ test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07
     });
     await readyBtn.click();
 
-    await expect(draftRow.getByText("ready", { exact: true })).toBeVisible();
+    await expect(draftRow.getByText("готов", { exact: true })).toBeVisible();
     await expect(draftRow.getByTestId("admin-mark-ready")).toHaveCount(0);
 
     // Approve after ready — send path unblocked (no approved∩draft)
@@ -314,7 +314,7 @@ test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07
     await draftRow.getByRole("checkbox").check();
     await page.getByRole("button", { name: /одобрить выбранные/i }).click();
     await expect(draftRow.getByText("одобрен")).toBeVisible();
-    await expect(draftRow.getByText("draft", { exact: true })).toBeVisible();
+    await expect(draftRow.getByText("черновик", { exact: true })).toBeVisible();
 
     page.once("dialog", async (dialog) => {
       expect(dialog.message()).toBe("Текст пуст. Сделать ready и продолжить?");
@@ -328,7 +328,7 @@ test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07
 
     // Backend acknowledged the POST but the refetch still reports draft —
     // the row must stay ready and the D-85 draft hint must clear.
-    await expect(draftRow.getByText("ready", { exact: true })).toBeVisible();
+    await expect(draftRow.getByText("готов", { exact: true })).toBeVisible();
     await expect(draftRow.getByTestId("admin-mark-ready")).toHaveCount(0);
     await expect(
       page.getByTestId("admin-send-hint"),
@@ -356,7 +356,7 @@ test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07
     });
     await batchBtn.click();
 
-    await expect(rows.nth(3).getByText("ready", { exact: true })).toBeVisible();
+    await expect(rows.nth(3).getByText("готов", { exact: true })).toBeVisible();
     await expect(page.getByTestId("admin-mark-ready-batch")).toHaveCount(0);
     await expect(
       page.getByTestId("admin-send-hint"),
@@ -376,8 +376,8 @@ test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07
     const rows = page.getByTestId("admin-shortlist-row");
     await rows.nth(3).getByRole("checkbox").check();
     await page.getByRole("button", { name: /одобрить выбранные/i }).click();
-    await expect(rows.nth(3).getByText("одобрен")).toBeVisible();
-    await expect(rows.nth(3).getByText("draft", { exact: true })).toBeVisible();
+    await expect(rows.nth(3).getByText("одобрен (в шортлист)", { exact: true })).toBeVisible();
+    await expect(rows.nth(3).getByText("черновик", { exact: true })).toBeVisible();
     await expect(rows.nth(3).getByTestId("admin-mark-ready")).toBeVisible();
   });
 
