@@ -912,50 +912,52 @@ function AdminItemPreview({ item, onClose }) {
       aria-modal="true"
       aria-labelledby="item-preview-title"
     >
-      <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-paper p-6">
-        <div className="flex items-start justify-between gap-3">
+      <div className="flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl bg-paper">
+        <div className="flex shrink-0 items-start justify-between gap-3 px-6 pt-6">
           <h2 id="item-preview-title" className="text-2xl font-semibold">
             Превью материала
           </h2>
           <button
             type="button"
-            className="inline-flex min-h-11 min-w-11 items-center justify-center"
+            className="inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center"
             aria-label="Закрыть"
             onClick={onClose}
           >
             ✕
           </button>
         </div>
-        <p className="mt-4 break-words text-base font-semibold text-ink">{item.title}</p>
-        {provenance ? (
-          <p className="mt-2 break-words text-xs font-semibold text-muted">{provenance}</p>
-        ) : null}
-        <p className="mt-2 text-xs font-normal text-muted">
-          ~{charCount} символов · {wordCount} слов · ~{readingMinutes} мин
-        </p>
-        {body ? (
-          <div
-            data-testid="admin-material-preview-body"
-            className="prose-column mt-4 max-w-none break-words text-base leading-relaxed text-ink-2 [&_h2]:mt-4 [&_h2]:font-display [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:text-ink [&_p]:mt-3"
-          >
-            <Markdown
-              remarkPlugins={[remarkGfm]}
-              rehypePlugins={[rehypeSlug, rehypeSanitize]}
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-6">
+          <p className="mt-4 break-words text-base font-semibold text-ink">{item.title}</p>
+          {provenance ? (
+            <p className="mt-2 break-words text-xs font-semibold text-muted">{provenance}</p>
+          ) : null}
+          <p className="mt-2 text-xs font-normal text-muted">
+            ~{charCount} символов · {wordCount} слов · ~{readingMinutes} мин
+          </p>
+          {body ? (
+            <div
+              data-testid="admin-material-preview-body"
+              className="prose-column mt-4 max-w-none break-words text-base leading-relaxed text-ink-2 [&_h2]:mt-4 [&_h2]:font-display [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:text-ink [&_p]:mt-3"
             >
-              {body}
-            </Markdown>
-          </div>
-        ) : (
-          <p className="mt-4 text-base text-muted">Текст материала недоступен</p>
-        )}
-        {slug ? (
-          <Link
-            to={`/materials/${slug}`}
-            className="mt-6 inline-flex min-h-11 items-center font-medium text-accent hover:underline"
-          >
-            Открыть материал →
-          </Link>
-        ) : null}
+              <Markdown
+                remarkPlugins={[remarkGfm]}
+                rehypePlugins={[rehypeSlug, rehypeSanitize]}
+              >
+                {body}
+              </Markdown>
+            </div>
+          ) : (
+            <p className="mt-4 text-base text-muted">Текст материала недоступен</p>
+          )}
+          {slug ? (
+            <Link
+              to={`/materials/${slug}`}
+              className="mt-6 inline-flex min-h-11 items-center font-medium text-accent hover:underline"
+            >
+              Открыть материал →
+            </Link>
+          ) : null}
+        </div>
       </div>
     </div>
   )

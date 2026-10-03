@@ -267,6 +267,7 @@ export function resetAdminHarness() {
     window.__DIGEST_ADMIN_FAIL_PREVIEW__ = false
     window.__DIGEST_ADMIN_ALREADY_SENT__ = false
     window.__DIGEST_ADMIN_MATERIAL_EMPTY_BODY__ = false
+    window.__DIGEST_ADMIN_MATERIAL_LONG_BODY__ = false
   }
 }
 
@@ -330,6 +331,13 @@ export async function fetchShortlist(accessToken) {
         char_count: 0,
         word_count: 0,
         reading_minutes: 1,
+      }
+    }
+    if (stickyFlag('__DIGEST_ADMIN_MATERIAL_LONG_BODY__') && batch.items[0]) {
+      const sentence = 'Фрагменты регламентов находятся быстрее.'
+      batch.items[0] = {
+        ...batch.items[0],
+        body_markdown: Array.from({ length: 40 }, () => sentence).join('\n\n'),
       }
     }
     return batch
