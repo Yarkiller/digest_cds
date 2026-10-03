@@ -16,6 +16,7 @@ from backend.composition.container import AppContainer, build_in_memory_containe
 from backend.composition.settings import Settings
 from backend.domain.current_user import CurrentUser
 from backend.domain.errors import PersistenceError
+from backend.domain.material import Material, MaterialStatus
 from backend.domain.shortlist import ShortlistBatch, ShortlistItem
 from backend.interface.http.app import create_app
 from backend.tests_support.in_memory import InMemoryShortlistRepository
@@ -590,7 +591,11 @@ def _admin_client_with_batch(batch: ShortlistBatch | None):
     private_key = ec.generate_private_key(ec.SECP256R1())
     jwk = _public_jwk(private_key)
     container = build_in_memory_container()
-    container.shortlist = InMemoryShortlistRepository(batch=batch)
+    shortlist = InMemoryShortlistRepository(batch=batch)
+    # Live-join fidelity: shortlist material_status overlays from materials repo (ADUX-05).
+    if hasattr(shortlist, "attach_materials"):
+        shortlist.attach_materials(container.materials)
+    container.shortlist = shortlist
     _seed_profile(
         container,
         user_id="admin-uuid-1",
@@ -600,6 +605,27 @@ def _admin_client_with_batch(batch: ShortlistBatch | None):
     client = _client(jwk, container)
     token = _mint(private_key, email="admin@sberbank.ru", sub="admin-uuid-1")
     return client, {"Authorization": f"Bearer {token}"}, container
+
+
+def _draft_material(material_id: int, *, title: str = "Draft approved") -> Material:
+    return Material(
+        id=material_id,
+        slug=f"material-{material_id}",
+        title=title,
+        dek="dek",
+        body_markdown="",
+        format="статья",
+        status=MaterialStatus.DRAFT,
+        reading_minutes=5,
+        provenance_label="внешний текстовый источник",
+        source_id=None,
+        roles=("ds",),
+        tags=(),
+        related_material_ids=(),
+        published_at=None,
+        created_at=datetime(2026, 9, 15, tzinfo=timezone.utc),
+        updated_at=datetime(2026, 9, 15, tzinfo=timezone.utc),
+    )
 
 
 def _ready_approved_batch() -> ShortlistBatch:
@@ -880,3 +906,80 @@ def test_admin_send_employee_returns_403() -> None:
 
     assert response.status_code == 403
     assert response.json()["detail"] == "forbidden"
+
+
+def test_admin_mark_ready_promotes_draft_and_clears_send_gate() -> None:
+    """ADUX-05 / D-06 / D-07: POST ready → shortlist ready → send no draft_in_send_pool."""
+    batch = ShortlistBatch(
+        id=42,
+        week_start=date(2026, 9, 15),
+        sent_at=None,
+        items=(
+            ShortlistItem(
+                material_id=101,
+                rank=1,
+                title="Ready",
+                material_status="ready",
+                decision="approved",
+                score=0.9,
+                score_factors={"factors": [{"label": "A"}, {"label": "B"}]},
+            ),
+            ShortlistItem(
+                material_id=102,
+                rank=2,
+                title="Draft approved",
+                material_status="draft",
+                decision="approved",
+                score=0.4,
+                score_factors={},
+            ),
+        ),
+    )
+    client, headers, container = _admin_client_with_batch(batch)
+    container.materials.save(
+        Material(
+            id=101,
+            slug="material-101",
+            title="Ready",
+            dek="dek",
+            body_markdown="body",
+            format="статья",
+            status=MaterialStatus.READY,
+            reading_minutes=5,
+            provenance_label="внешний текстовый источник",
+            source_id=None,
+            roles=("ds",),
+            tags=(),
+            related_material_ids=(),
+            published_at=datetime(2026, 9, 1, tzinfo=timezone.utc),
+            created_at=datetime(2026, 9, 1, tzinfo=timezone.utc),
+            updated_at=datetime(2026, 9, 1, tzinfo=timezone.utc),
+        )
+    )
+    container.materials.save(_draft_material(102, title="Draft approved"))
+
+    ready_response = client.post("/admin/materials/102/ready", headers=headers)
+    assert ready_response.status_code == 200
+    ready_body = ready_response.json()
+    assert ready_body["material_id"] == 102
+    assert ready_body["status"] == "ready"
+    assert container.materials.get(102).published_at is None
+
+    shortlist = client.get("/admin/shortlist", headers=headers)
+    assert shortlist.status_code == 200
+    by_id = {item["material_id"]: item for item in shortlist.json()["items"]}
+    assert by_id[102]["material_status"] == "ready"
+
+    send_response = client.post("/admin/shortlist/send", headers=headers)
+    assert send_response.status_code == 200
+    detail = send_response.json()
+    assert detail["message"] == "Отправка записана"
+
+
+def test_admin_mark_ready_missing_material_returns_404() -> None:
+    client, headers, _container = _admin_client_with_batch(_ready_approved_batch())
+
+    response = client.post("/admin/materials/999/ready", headers=headers)
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "material_not_found"
