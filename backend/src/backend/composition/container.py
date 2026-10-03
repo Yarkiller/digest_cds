@@ -98,6 +98,7 @@ def build_in_memory_container(
 ) -> AppContainer:
     """Default local wiring until supabase-integration adapters are connected."""
     materials_repo = InMemoryMaterialRepository(materials)
+    shortlist_repo = InMemoryShortlistRepository(materials=materials_repo)
     root = Path(notebook_root) if notebook_root else Path(".")
     container = AppContainer(
         materials=materials_repo,
@@ -110,7 +111,7 @@ def build_in_memory_container(
         embedder=StubQueryEmbedder(),
         razbors=InMemoryRazborRepository(),
         notebook_storage=LocalNotebookStorage(root),
-        shortlist=InMemoryShortlistRepository(),
+        shortlist=shortlist_repo,
         mailer=StubMailer(),
         # Placeholder replaced below with a publisher bound to this container so tests that
         # reassign container.shortlist post-build are still resolved (lazy providers).

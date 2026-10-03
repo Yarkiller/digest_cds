@@ -29,9 +29,110 @@ def _cosine(a: list[float], b: list[float]) -> float:
     dot = sum(x * y for x, y in zip(a, b, strict=True))
     na = math.sqrt(sum(x * x for x in a))
     nb = math.sqrt(sum(y * y for y in b))
-    if na == 0.0 or nb == 0.0:
+    if not na or not nb:
         return 0.0
     return dot / (na * nb)
+
+
+def _searchable_material(material: Material | None, role_filter: str | None) -> Material | None:
+    if material is None or material.status != MaterialStatus.READY:
+        return None
+    if role_filter and role_filter not in material.roles:
+        return None
+    return material
+
+
+def _snippet(content: str) -> str:
+    text = content.strip()
+    if len(text) <= 180:
+        return text
+    return text[:177] + "..."
+
+
+def _chunk_score(chunk: KnowledgeChunk, query_embedding: list[float], tokens: set[str]) -> float:
+    vector_score = _cosine(query_embedding, chunk.embedding)
+    if not tokens:
+        return 0.7 * vector_score
+    text = chunk.content_md.lower()
+    fts_score = sum(1.0 for token in tokens if token in text) / len(tokens)
+    return 0.7 * vector_score + 0.3 * fts_score
+
+
+def _hit_for_chunk(
+    materials: Any,
+    chunk: KnowledgeChunk,
+    query_embedding: list[float],
+    tokens: set[str],
+    role_filter: str | None,
+) -> KnowledgeHit | None:
+    material = materials.get(chunk.material_id) if materials is not None else None
+    ready = _searchable_material(material, role_filter)
+    if ready is None:
+        return None
+    score = _chunk_score(chunk, query_embedding, tokens)
+    if score <= 0:
+        return None
+    return KnowledgeHit(
+        material_id=ready.id,
+        material_slug=ready.slug,
+        chunk_index=chunk.chunk_index,
+        snippet=_snippet(chunk.content_md),
+        score=score,
+    )
+
+
+def _page_best_hits(scored: list[KnowledgeHit], *, limit: int, offset: int) -> list[KnowledgeHit]:
+    # Dedupe by material_id — best score wins (D-61 / Pitfall 2).
+    best: dict[int, KnowledgeHit] = {}
+    for hit in scored:
+        existing = best.get(hit.material_id)
+        if existing is None or hit.score > existing.score:
+            best[hit.material_id] = hit
+    ranked = sorted(best.values(), key=lambda hit: hit.score, reverse=True)
+    start = max(offset, 0)
+    if limit < 1:
+        return []
+    return ranked[start : start + limit]
+
+
+def _reject_stale_vote(
+    existing: PersonalVote | None,
+    cycle_id: str,
+    user_id: str,
+    topic_id: str,
+    expected_updated_at: datetime | None,
+) -> None:
+    if existing is None:
+        if expected_updated_at is not None:
+            raise VoteConflictError(cycle_id, user_id)
+        return
+    if existing.topic_id == topic_id:
+        return
+    # A→B change requires matching expected_updated_at (strict CAS in 03-04)
+    if expected_updated_at is None or existing.updated_at != expected_updated_at:
+        raise VoteConflictError(cycle_id, user_id)
+
+
+def _next_topic_votes(topic: BallotTopic, previous_topic: str | None, topic_id: str) -> int:
+    votes = topic.votes
+    if previous_topic == topic.id and previous_topic != topic_id:
+        votes = max(0, votes - 1)
+    if topic.id == topic_id and previous_topic != topic_id:
+        votes = votes + 1
+    return votes
+
+
+def _retally_topics(
+    topics: list[BallotTopic],
+    *,
+    previous_topic: str | None,
+    topic_id: str,
+) -> list[BallotTopic]:
+    updated: list[BallotTopic] = []
+    for topic in topics:
+        votes = _next_topic_votes(topic, previous_topic, topic_id)
+        updated.append(replace(topic, votes=votes) if votes != topic.votes else topic)
+    return updated
 
 
 @dataclass(frozen=True)
@@ -77,19 +178,40 @@ class InMemoryPingRecorder:
 class InMemoryShortlistRepository:
     """In-memory ShortlistRepository — empty by default (D-80)."""
 
-    def __init__(self, batch: ShortlistBatch | None = None) -> None:
+    def __init__(
+        self,
+        batch: ShortlistBatch | None = None,
+        materials: InMemoryMaterialRepository | None = None,
+    ) -> None:
         self._batch = batch
+        self._materials = materials
+
+    def attach_materials(self, materials: InMemoryMaterialRepository | None) -> None:
+        """Overlay material_status from materials repo (live-join fidelity; ADUX-05)."""
+        self._materials = materials
+
+    def _overlay_batch(self, batch: ShortlistBatch | None) -> ShortlistBatch | None:
+        if batch is None or self._materials is None:
+            return batch
+        overlaid: list[ShortlistItem] = []
+        for item in batch.items:
+            material = self._materials.get(item.material_id)
+            if material is None:
+                overlaid.append(item)
+            else:
+                overlaid.append(replace(item, material_status=material.status.value))
+        return replace(batch, items=tuple(overlaid))
 
     def get_current_batch(self) -> ShortlistBatch | None:
         # WR-03: match the live `sent_at IS NULL` contract — a claimed batch is no longer
         # "current" (mirrors SupabaseShortlistRepository.get_current_batch).
         if self._batch is None or self._batch.sent_at is not None:
             return None
-        return self._batch
+        return self._overlay_batch(self._batch)
 
     def get_latest_batch(self) -> ShortlistBatch | None:
         """Most recent batch regardless of sent_at (D-89 already-sent signal)."""
-        return self._batch
+        return self._overlay_batch(self._batch)
 
     def seed(self, batch: ShortlistBatch | None) -> None:
         self._batch = batch
@@ -150,11 +272,14 @@ class InMemoryShortlistRepository:
             raise ShortlistNotFoundError(batch_id=batch_id)
         if self._batch.sent_at is not None:
             raise AlreadySentError(batch_id)
+        # Persist overlaid statuses so claim+publish pool matches live materials join (ADUX-05).
+        overlaid = self._overlay_batch(self._batch)
+        assert overlaid is not None
         self._batch = ShortlistBatch(
-            id=self._batch.id,
-            week_start=self._batch.week_start,
+            id=overlaid.id,
+            week_start=overlaid.week_start,
             sent_at=sent_at,
-            items=self._batch.items,
+            items=overlaid.items,
         )
         return self._batch
 
@@ -260,52 +385,13 @@ class InMemoryKnowledgeChunkRepository:
         offset: int,
     ) -> list[KnowledgeHit]:
         tokens = {t.lower() for t in re.findall(r"\w+", query_text, flags=re.UNICODE) if t}
-        scored: list[KnowledgeHit] = []
-
-        for chunk in self._chunks:
-            material = self._materials.get(chunk.material_id) if self._materials is not None else None
-            if material is None:
-                continue
-            if material.status != MaterialStatus.READY:
-                continue
-            if role_filter and role_filter not in material.roles:
-                continue
-
-            vector_score = _cosine(query_embedding, chunk.embedding)
-            text_l = chunk.content_md.lower()
-            fts_score = 0.0
-            if tokens:
-                fts_score = sum(1.0 for t in tokens if t in text_l) / len(tokens)
-            score = 0.7 * vector_score + 0.3 * fts_score
-            if score <= 0:
-                continue
-
-            snippet = chunk.content_md.strip()
-            if len(snippet) > 180:
-                snippet = snippet[:177] + "..."
-            scored.append(
-                KnowledgeHit(
-                    material_id=material.id,
-                    material_slug=material.slug,
-                    chunk_index=chunk.chunk_index,
-                    snippet=snippet,
-                    score=score,
-                )
-            )
-
-        # Dedupe by material_id — best score wins (D-61 / Pitfall 2).
-        best: dict[int, KnowledgeHit] = {}
-        for hit in scored:
-            existing = best.get(hit.material_id)
-            if existing is None or hit.score > existing.score:
-                best[hit.material_id] = hit
-
-        ranked = sorted(best.values(), key=lambda h: h.score, reverse=True)
-        if offset < 0:
-            offset = 0
-        if limit < 1:
-            return []
-        return ranked[offset : offset + limit]
+        scored = [
+            hit
+            for chunk in self._chunks
+            if (hit := _hit_for_chunk(self._materials, chunk, query_embedding, tokens, role_filter))
+            is not None
+        ]
+        return _page_best_hits(scored, limit=limit, offset=offset)
 
 
 class InMemoryVotingCycleReader:
@@ -356,30 +442,17 @@ class InMemoryVoteRepository:
         key = (cycle_id, user_id)
         existing = self._votes.get(key)
 
-        if existing is None:
-            if expected_updated_at is not None:
-                raise VoteConflictError(cycle_id, user_id)
-        elif existing.topic_id != topic_id:
-            # A→B change requires matching expected_updated_at (strict CAS in 03-04)
-            if expected_updated_at is None or existing.updated_at != expected_updated_at:
-                raise VoteConflictError(cycle_id, user_id)
-        # same-topic repeat: idempotent success regardless of expected drift (VOTE-01 assumption)
+        _reject_stale_vote(existing, cycle_id, user_id, topic_id, expected_updated_at)
 
         previous_topic = existing.topic_id if existing is not None else None
         now = datetime.now(timezone.utc)
         personal = PersonalVote(topic_id=topic_id, updated_at=now)
         self._votes[key] = personal
-
-        topics = self._topics.get(cycle_id, [])
-        updated: list[BallotTopic] = []
-        for topic in topics:
-            votes = topic.votes
-            if previous_topic == topic.id and previous_topic != topic_id:
-                votes = max(0, votes - 1)
-            if topic.id == topic_id and previous_topic != topic_id:
-                votes = votes + 1
-            updated.append(replace(topic, votes=votes) if votes != topic.votes else topic)
-        self._topics[cycle_id] = updated
+        self._topics[cycle_id] = _retally_topics(
+            self._topics.get(cycle_id, []),
+            previous_topic=previous_topic,
+            topic_id=topic_id,
+        )
         return personal
 
 

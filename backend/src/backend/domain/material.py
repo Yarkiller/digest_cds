@@ -44,3 +44,9 @@ class Material:
     def as_ready(self, published_at: datetime) -> Material:
         self.assert_publishable()
         return replace(self, status=MaterialStatus.READY, published_at=published_at, updated_at=published_at)
+
+    def with_ready_status(self, *, now: datetime) -> Material:
+        """Triage ready (ADUX-05 / D-06): flip draft→ready without publish gate or published_at."""
+        if self.status == MaterialStatus.READY:
+            return self
+        return replace(self, status=MaterialStatus.READY, updated_at=now)

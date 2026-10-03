@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, ConfigDict, Field
 
 from backend.application.use_cases.get_admin_shortlist import get_admin_shortlist
+from backend.application.use_cases.mark_material_ready import mark_material_ready
 from backend.application.use_cases.preview_digest_email import (
     PreviewMaterialBlock,
     PreviewTextBlock,
@@ -23,6 +24,7 @@ from backend.domain.errors import (
     InvalidPreviewCompositionError,
     InvalidSendOrderError,
     InvalidShortlistDecisionError,
+    MaterialNotFoundError,
     PersistenceError,
     ShortlistNotFoundError,
 )
@@ -130,6 +132,13 @@ class SendDigestResponse(BaseModel):
     message: str
 
 
+class MarkReadyResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    material_id: int
+    status: str
+
+
 def _require_shortlist(request: Request):
     container = request.app.state.container
     if container is None or getattr(container, "shortlist", None) is None:
@@ -148,6 +157,16 @@ def _require_container(request: Request):
             detail="container_not_configured",
         )
     return container
+
+
+def _require_materials(request: Request):
+    container = request.app.state.container
+    if container is None or getattr(container, "materials", None) is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="materials_not_configured",
+        )
+    return container.materials
 
 
 def _to_preview_blocks(
@@ -191,6 +210,36 @@ def _to_response(dto: AdminShortlist) -> AdminShortlistResponse:
         week_label=dto.week_label,
         sent_at=dto.sent_at,
     )
+
+
+@router.post(
+    "/materials/{material_id}/ready",
+    response_model=MarkReadyResponse,
+    summary="Promote one material draft→ready (status-only)",
+    description=(
+        "Triage ready without publish gate or published_at (ADUX-05; D-06, D-07, D-09, D-10). "
+        "Missing material → 404 material_not_found. Already-ready → 200 no-op. Requires admin."
+    ),
+)
+def post_material_ready(
+    material_id: int,
+    request: Request,
+    _admin: CurrentUser = Depends(require_admin),
+) -> MarkReadyResponse:
+    materials = _require_materials(request)
+    try:
+        material = mark_material_ready(materials, material_id)
+    except MaterialNotFoundError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="material_not_found",
+        ) from exc
+    except PersistenceError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="materials_unavailable",
+        ) from exc
+    return MarkReadyResponse(material_id=material.id, status=material.status.value)
 
 
 @router.get(

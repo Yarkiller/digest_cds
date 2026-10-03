@@ -1,8 +1,8 @@
-"""ADUX-05: mark_material_ready — RED stub (status flip not implemented yet)."""
+"""mark_material_ready — status-only triage promote (ADUX-05; D-06 / D-09 / D-10)."""
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from backend.application.ports.material_repository import MaterialRepository
 from backend.domain.errors import MaterialNotFoundError
@@ -15,9 +15,11 @@ def mark_material_ready(
     *,
     now: datetime | None = None,
 ) -> Material:
-    del now
     material = repo.get(material_id)
     if material is None:
         raise MaterialNotFoundError(material_id)
-    # Intentionally no status flip — RED until GREEN implements with_ready_status.
-    return material
+    clock = now or datetime.now(timezone.utc)
+    updated = material.with_ready_status(now=clock)
+    if updated is material:
+        return material
+    return repo.save(updated)
