@@ -348,6 +348,54 @@ Covers employee 403 deep-link, empty shortlist, select-all/top-3, preview fail/s
 
 ---
 
+## 4g. Phase 13 test-header scrub (ADUX-04)
+
+Checked-in idempotent SQL: `supabase-integration/migrations/010_phase13_scrub_test_header.sql`.
+
+**Why:** Phase 10 UAT observed leaked chrome (`test-header` / siblings) on admin preview surfaces. ADUX-04 / D-20 require a defensive one-way scrub of materials text columns plus regression asserts — **no** runtime strip in renderers (D-17).
+
+**Closed ban tokens (D-18):** `test-header`, `test_header`, `testheader` (case-insensitive). Synced helpers: `backend.domain.email_chrome.FORBIDDEN_LOWER` ↔ `web/src/utils/forbiddenChrome.js`.
+
+**What it does (safe on shared VM):**
+
+- `UPDATE public.materials` — `regexp_replace` on `title`, `dek`, `body_markdown`, `provenance_label` where `lower(col)` matches any closed token
+- Idempotent: re-run updates 0 rows when already clean
+- Historical row may already be gone (0-row apply OK)
+
+**Apply once on the shared VM** (`knowledge-db.ru`) **after** shipping `010_*.sql` (decision: `apply-after-sql`):
+
+1. Open Supabase Studio → **SQL Editor** → **New query**  
+   URL (self-hosted): `https://knowledge-db.ru/project/default/sql/new`
+2. Paste the **entire** file [`010_phase13_scrub_test_header.sql`](../../supabase-integration/migrations/010_phase13_scrub_test_header.sql) and **Run** once as the **postgres** role (or equivalent DDL-capable role). Expect success; row count may be 0.
+3. Optional: when `POSTGRES_URL` is configured for Supabase MCP, `raw_sql` may run the same UPDATE — **never** `db reset`.
+
+**Do not** `TRUNCATE` / wipe materials / `db reset` on the shared VM.
+
+**Verify after apply** (Studio SQL — expect `0`):
+
+```sql
+select count(*) as remaining_ban_hits
+from public.materials
+where lower(coalesce(title, '')) like '%test-header%'
+   or lower(coalesce(title, '')) like '%test_header%'
+   or lower(coalesce(title, '')) like '%testheader%'
+   or lower(coalesce(dek, '')) like '%test-header%'
+   or lower(coalesce(dek, '')) like '%test_header%'
+   or lower(coalesce(dek, '')) like '%testheader%'
+   or lower(coalesce(body_markdown, '')) like '%test-header%'
+   or lower(coalesce(body_markdown, '')) like '%test_header%'
+   or lower(coalesce(body_markdown, '')) like '%testheader%'
+   or lower(coalesce(provenance_label, '')) like '%test-header%'
+   or lower(coalesce(provenance_label, '')) like '%test_header%'
+   or lower(coalesce(provenance_label, '')) like '%testheader%';
+```
+
+Record apply method below when confirmed.
+
+**Applied:** _pending — run Studio step 2 above, then set date/method here._
+
+---
+
 ## 5. Live FE↔BE proof checklist (D-10)
 
 With API on `:8000`, Vite on `:5173`, `APP_CONTAINER=live`, and `VITE_USE_MOCKS=false`:

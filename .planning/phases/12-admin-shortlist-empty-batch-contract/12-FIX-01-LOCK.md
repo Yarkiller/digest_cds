@@ -105,12 +105,33 @@ After-send rest is a **third** distinct shape (`digest_rest=true`, typically nul
 
 ---
 
+## Closed ban list — ADUX-04 / D-18 (Phase 13)
+
+Assert-only helpers (D-17 — **do not** strip at render time). Closed tokens (lowercase normalize):
+
+| Token | Notes |
+|-------|-------|
+| `test-header` | hyphen form |
+| `test_header` | underscore form |
+| `testheader` | concatenated (covers `testHeader` after `.lower()`) |
+
+**Synced surfaces:**
+- Python: `backend.domain.email_chrome.FORBIDDEN_LOWER` + `contains_forbidden_chrome`
+- JS: `web/src/utils/forbiddenChrome.js` — `FORBIDDEN_LOWER` + `containsForbiddenChrome`
+- Sync proof: `tests/unit/test_email_render.py::test_python_forbidden_lower_matches_js_mirror`
+- Live scrub: `supabase-integration/migrations/010_phase13_scrub_test_header.sql` + runbook **§4g** (D-20)
+
+Do **not** broaden this list without an explicit phase decision. Do **not** add an admin UI scrub control.
+
+---
+
 ## Citations
 
 D-04, D-05, D-08, D-09, D-10; FIX-01. Prior wave: `12-01-SUMMARY.md`.  
-Phase 13 carry: D-01, D-02, D-03, D-06; ADUX-01 (`13-01-SUMMARY.md`).
+Phase 13 carry: D-01, D-02, D-03, D-06; ADUX-01 (`13-01-SUMMARY.md`).  
+Phase 13 ban/scrub: D-17, D-18, D-20; ADUX-04 (`13-05`).
 
 ---
 
 *Phase: 12-admin-shortlist-empty-batch-contract*  
-*Lock authored for plan 12-02; item schema grown in plan 13-01 (D-03)*
+*Lock authored for plan 12-02; item schema grown in plan 13-01 (D-03); ban list locked in plan 13-05 (D-18)*
