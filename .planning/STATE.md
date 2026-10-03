@@ -4,17 +4,17 @@ milestone: v1.2
 milestone_name: Admin UX + diagnostics + PIPE-01 MVP
 current_phase: 13
 current_phase_name: Admin material & email preview honesty
-status: executing
-stopped_at: Completed 13-07-PLAN.md
-last_updated: "2026-10-03T08:51:12.732Z"
+status: verifying
+stopped_at: Completed 13-08-PLAN.md
+last_updated: "2026-10-03T09:15:49.557Z"
 last_activity: 2026-10-03
 last_activity_desc: Phase 13 execution started
-state_head: 41417f72b1cc0831981918130628c86f6f53a146
+state_head: 0c1d27b630eeb287689644cc73d22aaef8c33bda
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 11
-  completed_plans: 10
+  completed_plans: 11
   percent: 60
 ---
 
@@ -31,7 +31,7 @@ See: .planning/PROJECT.md (updated 2026-10-02 — v1.2 milestone)
 
 Phase: 13 (Admin material & email preview honesty) — EXECUTING
 Plan: 8 of 8
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-10-03 — Completed 13-07-PLAN.md
 
 Progress: [██████░░░░] 60%
@@ -69,6 +69,7 @@ Progress: [██████░░░░] 60%
 | Phase 13 P04 | 7min | 2 tasks | 3 files |
 | Phase 13 P05 | 45min | 3 tasks | 6 files |
 | Phase 13 P07 | 11min | 2 tasks | 5 files |
+| Phase 13 P08 | 9min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -102,6 +103,8 @@ v1.2 roadmap locks:
 - [Phase 13]: Runbook scrub section is §4g (plan text said §4f; §4f already used for admin shortlist/send E2E)
 - [Phase 13]: Preview close stays visible because the header row is outside overflow-y-auto, with cursor-pointer on Закрыть
 - [Phase 13]: Long-body mock repeats one sentence forty times only inside fetchShortlist useMocks
+- [Phase 13]: Email success branch renders subject and email-preview-frame only; the preview.items ul is not mounted
+- [Phase 13]: Close-scroll viewport is 1280x400 so overflow comes from the subject plus the iframe after the items list is gone
 
 ### Pending Todos
 
@@ -125,7 +128,7 @@ Carried product deferrals to v1.3+: leaderboard, quiz, live SMTP, signup mail, W
 
 ## Session Continuity
 
-Last session: 2026-10-03T08:51:12.647Z
-Stopped at: Completed 13-07-PLAN.md
+Last session: 2026-10-03T09:15:49.466Z
+Stopped at: Completed 13-08-PLAN.md
 Resume file: None
 Next: execute 13-08

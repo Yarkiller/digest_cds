@@ -83,7 +83,7 @@ Plans:
   3. Interstitial connecting text preserves paragraph breaks so `\n\n` is visible as whitespace / separate paragraphs
   4. Leaked `test-header` (and equivalent seed/test chrome) does not appear on admin preview surfaces after cleanup
 
-**Plans**: 7/8 plans executed
+**Plans**: 8/8 plans executed
 
 Plans:
 **Wave 1**
@@ -104,7 +104,7 @@ Plans:
 - [x] 13-07-PLAN.md — Pin material and email preview close controls (G-13-1, G-13-2, G-13-3)
 
 **Wave 6** *(gap closure, blocked on Wave 5)*
-- [ ] 13-08-PLAN.md — Drop the duplicate email item list under the iframe (G-13-3b)
+- [x] 13-08-PLAN.md — Drop the duplicate email item list under the iframe (G-13-3b)
 
 **UI hint**: yes
 
@@ -154,7 +154,7 @@ Plans:
 | 1–5 | v1 | 40/40 | Complete | 2026-09-22 |
 | 6–11 | v1.1 | 23/23 | Complete | 2026-10-02 |
 | 12. Admin shortlist empty-batch contract | v1.2 | 3/3 | Complete    | 2026-10-02 |
-| 13. Admin material & email preview honesty | v1.2 | 7/8 | In Progress|  |
+| 13. Admin material & email preview honesty | v1.2 | 8/8 | In Progress|  |
 | 14. Draft→ready & justification honesty | v1.2 | 0/? | Not started | - |
 | 15. CLI --debug diagnostics | v1.2 | 0/? | Not started | - |
 | 16. PIPE-01 MVP config UI | v1.2 | 0/? | Not started | - |
