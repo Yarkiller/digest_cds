@@ -67,9 +67,15 @@ function syncIssueBlocks(prev, approvedReady) {
   return kept
 }
 
+function materialStatusLabel(status) {
+  if (status === 'ready') return 'готов'
+  if (status === 'draft') return 'черновик'
+  return status
+}
+
 function decisionCaption(decision) {
-  if (decision === 'approved') return 'одобрен'
-  if (decision === 'rejected') return 'отклонён'
+  if (decision === 'approved') return 'одобрен (в шортлист)'
+  if (decision === 'rejected') return 'отклонён (из шортлиста)'
   return null
 }
 
@@ -780,7 +786,7 @@ export default function AdminDigestPage() {
                             : 'bg-[oklch(93%_0.05_50)] text-[oklch(45%_0.12_38)]',
                         ].join(' ')}
                       >
-                        {item.material_status}
+                        {materialStatusLabel(item.material_status)}
                       </span>
                       {item.material_status === 'draft' ? (
                         <button
