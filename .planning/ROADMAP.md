@@ -118,7 +118,7 @@ Plans:
   2. After promotion, D-85 send gate no longer blocks that material solely for still being draft
   3. Shortlist «Обоснование» shows populated `score_factors` when available from pipeline config MVP, or an explicit empty/unavailable state (never a silent fake justification)
 
-**Plans**: 3/3 plans executed
+**Plans**: 5 plans (3 executed + 2 gap closure)
 
 Plans:
 **Wave 1**
@@ -129,6 +129,12 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2)*
 - [x] 14-03-PLAN.md — FE promote UX + exact D-15 Обоснование honesty lock
+
+**Wave 4** *(gap closure, blocked on Wave 3)*
+- [ ] 14-04-PLAN.md — G-14-2: decouple promote from refetch, kill silent revert
+
+**Wave 5** *(gap closure, blocked on Wave 4)*
+- [ ] 14-05-PLAN.md — G-14-2a/2b: disambiguate status axes + dedupe footer
 
 **UI hint**: yes
 
