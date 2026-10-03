@@ -8,7 +8,10 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, ConfigDict, Field
 
 from backend.application.use_cases.get_admin_shortlist import get_admin_shortlist
-from backend.application.use_cases.mark_material_ready import mark_material_ready
+from backend.application.use_cases.mark_material_ready import (
+    mark_material_ready,
+    mark_materials_ready,
+)
 from backend.application.use_cases.preview_digest_email import (
     PreviewMaterialBlock,
     PreviewTextBlock,
@@ -139,6 +142,27 @@ class MarkReadyResponse(BaseModel):
     status: str
 
 
+class MarkReadyBatchRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    material_ids: list[int]
+
+
+class MarkReadyBatchItemResult(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    material_id: int
+    ok: bool
+    status: str | None = None
+    error: str | None = None
+
+
+class MarkReadyBatchResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    results: list[MarkReadyBatchItemResult]
+
+
 def _require_shortlist(request: Request):
     container = request.app.state.container
     if container is None or getattr(container, "shortlist", None) is None:
@@ -209,6 +233,42 @@ def _to_response(dto: AdminShortlist) -> AdminShortlistResponse:
         days_until_next_batch=dto.days_until_next_batch,
         week_label=dto.week_label,
         sent_at=dto.sent_at,
+    )
+
+
+@router.post(
+    "/materials/ready",
+    response_model=MarkReadyBatchResponse,
+    summary="Batch promote materials draft→ready (partial success)",
+    description=(
+        "One-call batch ready with per-id results (ADUX-05; D-08). "
+        "HTTP 200 even when some ids are missing — never 207; never abort the batch. "
+        "Requires admin. Unknown JSON fields → 422 (extra=forbid)."
+    ),
+)
+def post_materials_ready_batch(
+    body: MarkReadyBatchRequest,
+    request: Request,
+    _admin: CurrentUser = Depends(require_admin),
+) -> MarkReadyBatchResponse:
+    materials = _require_materials(request)
+    try:
+        items = mark_materials_ready(materials, body.material_ids)
+    except PersistenceError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="materials_unavailable",
+        ) from exc
+    return MarkReadyBatchResponse(
+        results=[
+            MarkReadyBatchItemResult(
+                material_id=item.material_id,
+                ok=item.ok,
+                status=item.status,
+                error=item.error,
+            )
+            for item in items
+        ]
     )
 
 
