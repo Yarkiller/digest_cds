@@ -139,3 +139,56 @@ describe('live markReady / promoteReady CR-01 refetch best-effort', () => {
     )
   })
 })
+
+describe('preservePromotedReady refetch reconciliation (G-14-2 / ADUX-05)', () => {
+  it('forces a still-draft promoted id to ready and leaves other rows untouched', async () => {
+    const { preservePromotedReady } = await import(
+      '../../web/src/services/adminReadyReconcile.js'
+    )
+    const refetched = [
+      { material_id: 101, material_status: 'ready' },
+      { material_id: 104, material_status: 'draft' },
+      { material_id: 105, material_status: 'draft' },
+    ]
+    const result = preservePromotedReady(refetched, [104])
+    assert.equal(result.find((row) => row.material_id === 104).material_status, 'ready')
+    // Non-promoted rows keep their own status — including a still-draft one.
+    assert.equal(result.find((row) => row.material_id === 105).material_status, 'draft')
+    assert.equal(result.find((row) => row.material_id === 101).material_status, 'ready')
+  })
+
+  it('leaves an already-ready promoted row unchanged (identity preserved)', async () => {
+    const { preservePromotedReady } = await import(
+      '../../web/src/services/adminReadyReconcile.js'
+    )
+    const readyRow = { material_id: 101, material_status: 'ready' }
+    const result = preservePromotedReady([readyRow], [101])
+    assert.equal(result[0], readyRow)
+  })
+
+  it('forces every still-draft id in a multi-id promoted set', async () => {
+    const { preservePromotedReady } = await import(
+      '../../web/src/services/adminReadyReconcile.js'
+    )
+    const refetched = [
+      { material_id: 104, material_status: 'draft' },
+      { material_id: 105, material_status: 'draft' },
+      { material_id: 106, material_status: 'draft' },
+    ]
+    const result = preservePromotedReady(refetched, [104, 105])
+    assert.equal(result.find((row) => row.material_id === 104).material_status, 'ready')
+    assert.equal(result.find((row) => row.material_id === 105).material_status, 'ready')
+    assert.equal(result.find((row) => row.material_id === 106).material_status, 'draft')
+  })
+
+  it('treats null/undefined refetchedItems as [] and empty promotedIds as a no-op', async () => {
+    const { preservePromotedReady } = await import(
+      '../../web/src/services/adminReadyReconcile.js'
+    )
+    assert.deepEqual(preservePromotedReady(null, [104]), [])
+    assert.deepEqual(preservePromotedReady(undefined, [104]), [])
+    const refetched = [{ material_id: 104, material_status: 'draft' }]
+    assert.equal(preservePromotedReady(refetched, []), refetched)
+    assert.equal(preservePromotedReady(refetched, null), refetched)
+  })
+})
