@@ -263,7 +263,8 @@ test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07
 
     await expect(
       page.getByTestId("admin-send-hint"),
-    ).toContainText(/уберите черновики из одобренных или дождитесь ready/i);
+    ).toContainText("Нет одобренных ready-материалов для отправки.");
+    await expect(page.getByTestId("admin-mark-ready-batch")).toHaveCount(0);
     await expect(rows.nth(3).getByText("черновик", { exact: true })).toBeVisible();
     await expect(page.getByTestId("admin-send-footer").locator("ul")).toHaveCount(0);
     await expect(page.getByRole("button", { name: /отправить дайджест/i })).toBeDisabled();
@@ -299,7 +300,7 @@ test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07
     await expect(draftRow.getByText("одобрен")).toBeVisible();
     await expect(
       page.getByTestId("admin-send-hint"),
-    ).not.toContainText(/уберите черновики из одобренных или дождитесь ready/i);
+    ).toContainText("Сначала откройте превью письма.");
     await expect(page.getByTestId("admin-mark-ready-batch")).toHaveCount(0);
   });
 
@@ -333,44 +334,22 @@ test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07
     await expect(draftRow.getByTestId("admin-mark-ready")).toHaveCount(0);
     await expect(
       page.getByTestId("admin-send-hint"),
-    ).not.toContainText(/уберите черновики из одобренных или дождитесь ready/i);
+    ).toContainText("Сначала откройте превью письма.");
+    await expect(page.getByTestId("admin-mark-ready-batch")).toHaveCount(0);
   });
 
-  // ADUX-05 / D-03, D-04, D-08 — batch one markReadyBatch call
-  test("batch Сделать ready одобренные черновики issues one markReadyBatch (ADUX-05)", async ({
-    page,
-  }) => {
+  // G-14-2 — batch promote control removed (operator override of D-03/D-04)
+  test("no batch promote CTA is rendered (G-14-2)", async ({ page }) => {
     await gotoAsRole(page, "admin", "/admin/digest");
     const rows = page.getByTestId("admin-shortlist-row");
-    // Approve draft (rank 4) — batch CTA appears
+    // Approve the draft (rank 4) — a batch CTA used to appear in the footer.
     await rows.nth(3).getByRole("checkbox").check();
     await page.getByRole("button", { name: /одобрить выбранные/i }).click();
     await expect(rows.nth(3).getByText("одобрен")).toBeVisible();
 
-    const batchBtn = page.getByTestId("admin-mark-ready-batch");
-    await expect(batchBtn).toBeVisible();
-    await expect(batchBtn).toHaveText("Сделать ready все одобренные черновики (1)");
-    await expect(page.getByTestId("admin-send-footer").locator("ul")).toHaveCount(0);
-
-    page.once("dialog", async (dialog) => {
-      expect(dialog.message()).toBe("Сделать ready 1 одобренных черновиков?");
-      await dialog.accept();
-    });
-    await batchBtn.click();
-
-    await expect(rows.nth(3).getByText("готов", { exact: true })).toBeVisible();
     await expect(page.getByTestId("admin-mark-ready-batch")).toHaveCount(0);
-    await expect(
-      page.getByTestId("admin-send-hint"),
-    ).not.toContainText(/уберите черновики из одобренных или дождитесь ready/i);
-
-    await page.waitForFunction(
-      () => (window.__DIGEST_ADMIN_HARNESS__?.getMockMarkReadyBatchCalls?.() ?? 0) >= 1,
-    );
-    const batchCalls = await page.evaluate(
-      () => window.__DIGEST_ADMIN_HARNESS__?.getMockMarkReadyBatchCalls?.() ?? -1,
-    );
-    expect(batchCalls).toBe(1);
+    await expect(rows.nth(3).getByTestId("admin-mark-ready")).toBeVisible();
+    await expect(page.getByTestId("admin-send-footer").locator("ul")).toHaveCount(0);
   });
 
   test("Approve does not auto-ready draft (D-02)", async ({ page }) => {

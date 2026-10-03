@@ -91,7 +91,7 @@ describe('adminApi markReady / markReadyBatch exports', () => {
   })
 })
 
-describe('decoupled markReady + reconciled promote refetch (G-14-2 / ADUX-05)', () => {
+describe('decoupled markReady + reconciled promoteReady refetch (G-14-2 / ADUX-05)', () => {
   it('markReady is decoupled from fetchShortlist and returns a MarkReadyResult', () => {
     const apiPath = path.resolve(__dirname, '../../web/src/services/adminApi.js')
     const source = fs.readFileSync(apiPath, 'utf8')
@@ -122,7 +122,7 @@ describe('decoupled markReady + reconciled promote refetch (G-14-2 / ADUX-05)', 
     )
   })
 
-  it('promoteReady and promoteApprovedDrafts reconcile refetch via preservePromotedReady', () => {
+  it('promoteReady reconciles the refetch via preservePromotedReady; batch CTA is gone', () => {
     const pagePath = path.resolve(__dirname, '../../web/src/pages/AdminDigestPage.jsx')
     const source = fs.readFileSync(pagePath, 'utf8')
     assert.match(
@@ -139,14 +139,21 @@ describe('decoupled markReady + reconciled promote refetch (G-14-2 / ADUX-05)', 
       /preservePromotedReady\(/,
       'G-14-2 #2: promoteReady must reconcile the refetch through preservePromotedReady',
     )
-    const batchMatch = source.match(
-      /async function promoteApprovedDrafts\([\s\S]*?(?=\n  async function |\n  function )/,
+    // G-14-2 (operator override): the batch promote affordance + handler are removed.
+    assert.equal(
+      source.includes('markReadyBatch'),
+      false,
+      'AdminDigestPage must not import/call markReadyBatch (batch CTA removed)',
     )
-    assert.ok(batchMatch, 'promoteApprovedDrafts function body must be present')
-    assert.match(
-      batchMatch[0],
-      /preservePromotedReady\(/,
-      'G-14-2: promoteApprovedDrafts must reconcile ok ids through preservePromotedReady',
+    assert.equal(
+      source.includes('promoteApprovedDrafts'),
+      false,
+      'AdminDigestPage must not define promoteApprovedDrafts (batch CTA removed)',
+    )
+    assert.equal(
+      source.includes('admin-mark-ready-batch'),
+      false,
+      'AdminDigestPage must not render the admin-mark-ready-batch testid',
     )
   })
 })
