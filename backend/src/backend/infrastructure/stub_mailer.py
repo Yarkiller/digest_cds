@@ -15,6 +15,7 @@ class StubMailer:
         self.last_issue_url: str | None = None
         self.last_subject: str | None = None
         self.last_body_text: str | None = None
+        self.last_body_html: str | None = None
         self.last_recipient_count: int | None = None
 
     def send_digest(
@@ -25,11 +26,13 @@ class StubMailer:
         subject: str,
         body_text: str,
         recipient_count: int,
+        body_html: str | None = None,
     ) -> dict[str, object]:
         self.last_batch_id = batch_id
         self.last_issue_url = issue_url
         self.last_subject = subject
         self.last_body_text = body_text
+        self.last_body_html = body_html
         self.last_recipient_count = recipient_count
         logger.info(
             "stub_mailer digest batch_id=%s issue_url=%s recipient_count=%s\n%s",
@@ -56,6 +59,7 @@ class SmtpMailer:
         subject: str,
         body_text: str,
         recipient_count: int,
+        body_html: str | None = None,
     ) -> dict[str, object]:
         raise NotImplementedError("SmtpMailer is not implemented; use MAILER=stub")
 

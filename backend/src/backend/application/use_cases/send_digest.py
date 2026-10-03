@@ -11,9 +11,11 @@ from backend.application.ports.digest_publisher import DigestPublisher
 from backend.application.ports.mailer import Mailer
 from backend.application.ports.ping_recorder import PingRecorder
 from backend.application.ports.shortlist_repository import ShortlistRepository
+from backend.application.use_cases.email_render import DEFAULT_SITE_URL, render_email_html
 from backend.application.use_cases.preview_digest_email import (
     PreviewBlock,
     PreviewMaterialBlock,
+    _html_content_blocks,
     compose_digest_body,
     compose_digest_segments,
 )
@@ -97,6 +99,7 @@ def send_digest(
     material_ids: list[int] | None = None,
     intro: str = "",
     blocks: Sequence[PreviewBlock] | None = None,
+    site_url: str = DEFAULT_SITE_URL,
 ) -> SendDigestResult:
     """Validate pool → atomic claim+publish → mail → audit (D-88 mandatory publish-on-send).
 
@@ -108,7 +111,8 @@ def send_digest(
     pool; that order becomes publication and mail order (G-05-1).
 
     WR-02: optional ``intro`` + ``blocks`` compose the mail body with the same rules as
-    preview (plus an issue URL header).
+    preview (plus an issue URL header). HTML uses shared ``render_email_html`` (D-07);
+    issue URL stays in the plain wrapper only (D-11).
 
     CR-02: after a successful claim+publish, mail and audit are best-effort — failures are
     logged and must not convert an already-published digest into a failed send response.
@@ -138,7 +142,11 @@ def send_digest(
     ordered_ids = [item.material_id for item in ordered]
 
     try:
-        _materials, body_segments = compose_digest_segments(pool=ordered, blocks=blocks)
+        materials, body_segments = compose_digest_segments(
+            pool=ordered,
+            blocks=blocks,
+            site_url=site_url,
+        )
     except InvalidPreviewCompositionError as exc:
         raise InvalidSendOrderError(batch_id=batch.id) from exc
     except EmptySendPoolError as exc:
@@ -160,6 +168,11 @@ def send_digest(
         f"Читать: {issue_url}\n\n"
         f"{composed}"
     )
+    body_html = render_email_html(
+        intro=intro,
+        blocks=_html_content_blocks(ordered_materials=materials, blocks=blocks),
+        site_url=site_url,
+    )
     try:
         mailer.send_digest(
             batch_id=publication.batch_id,
@@ -167,6 +180,7 @@ def send_digest(
             subject=subject,
             body_text=body_text,
             recipient_count=publication.recipient_count,
+            body_html=body_html,
         )
     except PersistenceError:
         logger.exception(

@@ -14,6 +14,10 @@ class Mailer(Protocol):
         subject: str,
         body_text: str,
         recipient_count: int,
+        body_html: str | None = None,
     ) -> dict[str, object]:
-        """Return {delivery_status, recipient_count, issue_url} — stub always 'stubbed'."""
+        """Return {delivery_status, recipient_count, issue_url} — stub always 'stubbed'.
+
+        Optional ``body_html`` is additive (A4) so existing keyword callers stay valid.
+        """
         ...

@@ -335,6 +335,8 @@ def post_shortlist_send(
     container = _require_container(request)
     shortlist = _require_shortlist(request)
     payload = body or SendDigestRequest()
+    settings = getattr(request.app.state, "settings", None)
+    site_url = getattr(settings, "site_url", None) or "http://127.0.0.1:5173"
     try:
         result = send_digest(
             shortlist,
@@ -345,6 +347,7 @@ def post_shortlist_send(
             material_ids=payload.material_ids,
             intro=payload.intro,
             blocks=_to_preview_blocks(payload.blocks),
+            site_url=site_url,
         )
     except DraftInSendPoolError as exc:
         raise HTTPException(
