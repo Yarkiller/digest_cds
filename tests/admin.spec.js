@@ -118,7 +118,9 @@ test.describe("Admin Digest — shortlist triage (ADMIN-01…03, ADMIN-05, D-79,
     const rows = page.getByTestId("admin-shortlist-row");
     await expect(rows).toHaveCount(5);
     await expect(rows.first()).toContainText(/ready/i);
-    await expect(page.getByText("обоснование недоступно").first()).toBeVisible();
+    await expect(
+      page.getByText("Обоснование недоступно — скоринг не запускался", { exact: true }).first(),
+    ).toBeVisible();
     await expect(page.getByText(/relevance · freshness/i).first()).toBeVisible();
   });
 

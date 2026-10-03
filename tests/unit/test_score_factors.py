@@ -1,11 +1,28 @@
-"""score_factors honesty helper — ADMIN-05 / D-79 (≥2 labels or empty for «обоснование недоступно»)."""
+"""score_factors honesty helper — ADMIN-05 / ADUX-06 / D-14 (≥2 labels or empty).
+
+Named matrix: 0 factors · 1 readable · 2+ readable · whitespace-only (D-14).
+"""
 
 from __future__ import annotations
 
 from backend.domain.shortlist import honest_factor_labels
 
 
-def test_honest_factor_labels_returns_labels_when_factors_list_has_two_or_more() -> None:
+def test_honest_factor_labels_zero_factors_returns_empty() -> None:
+    """D-14 matrix: 0 factors → no labels (FE shows D-15 empty copy)."""
+    assert honest_factor_labels({}) == []
+    assert honest_factor_labels(None) == []
+    assert honest_factor_labels({"factors": []}) == []
+
+
+def test_honest_factor_labels_one_readable_label_returns_empty() -> None:
+    """D-14 matrix: 1 readable label is insufficient — honesty empty."""
+    assert honest_factor_labels({"factors": [{"label": "Только один"}]}) == []
+    assert honest_factor_labels({"Единственный": 1.0}) == []
+
+
+def test_honest_factor_labels_two_or_more_readable_returns_labels() -> None:
+    """D-14 matrix: ≥2 readable labels returned as-is (never fabricated)."""
     labels = honest_factor_labels(
         {
             "factors": [
@@ -17,16 +34,16 @@ def test_honest_factor_labels_returns_labels_when_factors_list_has_two_or_more()
     assert labels == ["Релевантность", "Свежесть"]
 
 
+def test_honest_factor_labels_whitespace_only_returns_empty() -> None:
+    """D-14 matrix: whitespace-only labels/keys do not count as readable."""
+    assert honest_factor_labels({"factors": [{"label": ""}, {"label": "  "}]}) == []
+    assert honest_factor_labels({"factors": [{"label": "\t"}, {"label": "\n"}]}) == []
+    assert honest_factor_labels({"  ": 0.5, "\t": 0.4}) == []
+
+
 def test_honest_factor_labels_returns_labels_from_flat_map_keys() -> None:
     labels = honest_factor_labels({"Релевантность": 0.8, "Свежесть": 0.6})
     assert labels == ["Релевантность", "Свежесть"]
-
-
-def test_honest_factor_labels_empty_when_fewer_than_two_readable() -> None:
-    assert honest_factor_labels({}) == []
-    assert honest_factor_labels({"factors": [{"label": "Только один"}]}) == []
-    assert honest_factor_labels({"Единственный": 1.0}) == []
-    assert honest_factor_labels({"factors": [{"label": ""}, {"label": "  "}]}) == []
 
 
 def test_honest_factor_labels_falls_back_to_flat_keys_when_factors_list_empty() -> None:
