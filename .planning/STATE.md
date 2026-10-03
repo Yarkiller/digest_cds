@@ -102,7 +102,7 @@ v1.2 roadmap locks:
 
 ### Pending Todos
 
-None. Next: `/gsd-discuss-phase 13` or `/gsd-plan-phase 13`
+None. Next: `/gsd-verify-work 13` (all Phase 13 plan SUMMARYs present)
 
 ### Blockers/Concerns
 
