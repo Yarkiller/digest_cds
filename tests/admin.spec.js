@@ -279,7 +279,13 @@ test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07
       has: page.getByRole("heading", { name: "Превью письма", exact: true }),
     });
     await expect(emailDialog.getByText(/только одобренные ready/i)).toBeVisible();
-    await expect(emailDialog.locator("li")).toHaveCount(1);
+    await expect(emailDialog.getByText(/Digest CDS/i)).toBeVisible();
+    const iframe = emailDialog.getByTestId("email-preview-frame");
+    await expect(iframe).toBeVisible();
+    await expect(iframe).toHaveAttribute("sandbox", "");
+    await expect(emailDialog.locator("ul")).toHaveCount(0);
+    const frame = emailDialog.frameLocator('[data-testid=email-preview-frame]');
+    await expect(frame.getByRole("heading")).toContainText("Building Production RAG Systems");
     await emailDialog.getByRole("button", { name: "Закрыть", exact: true }).click();
   });
 
@@ -297,7 +303,7 @@ test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07
     });
     const frame = emailDialog.frameLocator('[data-testid=email-preview-frame]');
     await expect(frame.locator("body")).toContainText(introPhrase);
-    await expect(emailDialog.locator("li")).toHaveCount(2);
+    await expect(emailDialog.locator("ul")).toHaveCount(0);
     await emailDialog.getByRole("button", { name: "Закрыть", exact: true }).click();
   });
 
@@ -341,11 +347,6 @@ test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07
     const emailDialog = page.getByRole("dialog").filter({
       has: page.getByRole("heading", { name: "Превью письма", exact: true }),
     });
-    const previewLis = emailDialog.locator("li");
-    await expect(previewLis).toHaveCount(2);
-    await expect(previewLis.nth(0)).toContainText(/Anomaly Detection in Audit Pipelines/i);
-    await expect(previewLis.nth(1)).toContainText(/Building Production RAG Systems/i);
-
     const frame = emailDialog.frameLocator('[data-testid=email-preview-frame]');
     const body = frame.locator("body");
     await expect(body).toContainText(bridge);
@@ -356,6 +357,7 @@ test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07
     expect(anomalyAt).toBeGreaterThanOrEqual(0);
     expect(bridgeAt).toBeGreaterThan(anomalyAt);
     expect(ragAt).toBeGreaterThan(bridgeAt);
+    await expect(emailDialog.locator("ul")).toHaveCount(0);
 
     await emailDialog.getByRole("button", { name: "Закрыть", exact: true }).click();
   });
@@ -428,7 +430,7 @@ test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07
       has: page.getByRole("heading", { name: "Превью письма", exact: true }),
     });
     await expect(emailDialog.getByText(/только одобренные ready/i)).toBeVisible();
-    await expect(emailDialog.locator("li")).toHaveCount(2);
+    await expect(emailDialog.locator("ul")).toHaveCount(0);
     await emailDialog.getByRole("button", { name: "Закрыть", exact: true }).click();
     await expect(emailDialog).toHaveCount(0);
 
@@ -587,6 +589,7 @@ test.describe("Admin Digest — email preview honesty (ADUX-02, D-08/D-12)", () 
     const frame = emailDialog.getByTestId("email-preview-frame");
     await expect(frame).toBeVisible();
     await expect(frame).toHaveAttribute("sandbox", "");
+    await expect(emailDialog.locator("ul")).toHaveCount(0);
 
     const closeContract = await close.evaluate((button) => {
       let node = button.parentElement;
