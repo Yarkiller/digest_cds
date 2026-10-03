@@ -553,6 +553,7 @@ export default function AdminDigestPage() {
                   onChange={(e) => setContextText(e.target.value)}
                   rows={5}
                 />
+                <span className="mt-1 block text-xs text-muted">Пустая строка = новый абзац</span>
               </label>
             </section>
             <section className="rounded-2xl border border-rule bg-paper-2/40 p-5">
@@ -595,6 +596,9 @@ export default function AdminDigestPage() {
                                 rows={3}
                                 placeholder="Необязательный связующий текст"
                               />
+                              <span className="mt-1 block text-xs text-muted">
+                                Пустая строка = новый абзац
+                              </span>
                             </label>
                           )}
                         </div>
