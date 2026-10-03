@@ -225,6 +225,9 @@ test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07
       has: page.getByRole("heading", { name: "Превью письма", exact: true }),
     });
     await expect(emailDialog.getByText("Превью недоступно", { exact: true })).toBeVisible();
+    await expect(
+      emailDialog.getByRole("button", { name: "Повторить превью", exact: true }),
+    ).toBeVisible();
     await emailDialog.getByRole("button", { name: "Закрыть", exact: true }).click();
     await expect(emailDialog).toHaveCount(0);
 
@@ -278,9 +281,8 @@ test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07
     const emailDialog = page.getByRole("dialog").filter({
       has: page.getByRole("heading", { name: "Превью письма", exact: true }),
     });
-    await expect(emailDialog.getByTestId("email-preview-body")).toContainText(
-      introPhrase,
-    );
+    const frame = emailDialog.frameLocator('[data-testid=email-preview-frame]');
+    await expect(frame.locator("body")).toContainText(introPhrase);
     await expect(emailDialog.locator("li")).toHaveCount(2);
     await emailDialog.getByRole("button", { name: "Закрыть", exact: true }).click();
   });
@@ -330,7 +332,8 @@ test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07
     await expect(previewLis.nth(0)).toContainText(/Anomaly Detection in Audit Pipelines/i);
     await expect(previewLis.nth(1)).toContainText(/Building Production RAG Systems/i);
 
-    const body = emailDialog.getByTestId("email-preview-body");
+    const frame = emailDialog.frameLocator('[data-testid=email-preview-frame]');
+    const body = frame.locator("body");
     await expect(body).toContainText(bridge);
     const bodyText = await body.innerText();
     const anomalyAt = bodyText.indexOf("Anomaly Detection");
@@ -371,7 +374,8 @@ test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07
     const emailDialog = page.getByRole("dialog").filter({
       has: page.getByRole("heading", { name: "Превью письма", exact: true }),
     });
-    const body = emailDialog.getByTestId("email-preview-body");
+    const frame = emailDialog.frameLocator('[data-testid=email-preview-frame]');
+    const body = frame.locator("body");
     await expect(body).toContainText(introPhrase);
     await expect(body).toContainText(bridge);
     const bodyText = await body.innerText();
@@ -509,6 +513,31 @@ test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07
     await page.getByRole("button", { name: /отправить дайджест/i }).click();
     await page.getByRole("button", { name: /подтвердить отправку/i }).click();
     await expect(page.getByRole("status").filter({ hasText: "Уже отправлено" })).toBeVisible();
+  });
+});
+
+test.describe("Admin Digest — email preview honesty (ADUX-02, D-08/D-12)", () => {
+  test("email-preview-frame shows sandboxed backend HTML with material title", async ({
+    page,
+  }) => {
+    await gotoAsRole(page, "admin", "/admin/digest");
+    await approveReadyRows(page, [0]);
+
+    await page.getByRole("button", { name: /предпросмотр письма/i }).click();
+    const emailDialog = page.getByRole("dialog").filter({
+      has: page.getByRole("heading", { name: "Превью письма", exact: true }),
+    });
+    const iframe = emailDialog.getByTestId("email-preview-frame");
+    await expect(iframe).toBeVisible();
+    await expect(iframe).toHaveAttribute("title", "Превью письма HTML");
+    await expect(iframe).toHaveAttribute("sandbox", "");
+    await expect(emailDialog.getByTestId("email-preview-body")).toHaveCount(0);
+
+    const frame = emailDialog.frameLocator('[data-testid=email-preview-frame]');
+    await expect(frame.getByRole("heading", { level: 2 })).toContainText(
+      "Building Production RAG Systems",
+    );
+    await expect(frame.getByRole("link", { name: "Читать →" })).toBeVisible();
   });
 });
 
