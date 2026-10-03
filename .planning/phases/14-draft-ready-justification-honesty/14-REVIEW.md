@@ -1,39 +1,53 @@
 ---
 phase: 14-draft-ready-justification-honesty
-reviewed: 2026-10-03T17:05:00Z
+reviewed: 2026-10-03T18:45:00Z
 depth: standard
-files_reviewed: 10
+files_reviewed: 20
 files_reviewed_list:
   - backend/src/backend/application/use_cases/mark_material_ready.py
+  - backend/src/backend/composition/container.py
+  - backend/src/backend/domain/material.py
   - backend/src/backend/domain/shortlist.py
   - backend/src/backend/interface/http/routes/admin.py
+  - backend/src/backend/tests_support/in_memory.py
+  - supabase-integration/src/supabase_integration/material_repository.py
   - tests/admin.spec.js
   - tests/unit/test_admin_mark_ready.js
+  - tests/unit/test_http_admin.py
   - tests/unit/test_mark_material_ready.py
   - tests/unit/test_score_factors.py
+  - tests/unit/test_set_shortlist_decision.py
+  - tests/unit/test_supabase_material_repository_embed.py
+  - web/src/index.css
+  - web/src/main.jsx
   - web/src/pages/AdminDigestPage.jsx
   - web/src/services/adminApi.js
+  - web/src/services/adminReadyMock.js
   - web/src/services/adminReadyReconcile.js
 findings:
   critical: 0
   warning: 3
-  info: 4
-  total: 7
+  info: 5
+  total: 8
 status: issues_found
 ---
 
 # Phase 14: Code Review Report
 
-**Reviewed:** 2026-10-03T17:05:00Z
+**Reviewed:** 2026-10-03T18:45:00Z
 **Depth:** standard
-**Files Reviewed:** 10
+**Files Reviewed:** 20
 **Status:** issues_found
 
 ## Summary
 
-This review covers the plan 14-04 (G-14-2) and 14-05 (G-14-2a/2b) gap-closure. The prior review's CR-01/WR-01/WR-02/IN-01 are materially resolved: `markReady` is decoupled from `fetchShortlist` and returns the authoritative `MarkReadyResponse`; `mark_materials_ready` now maps `PersistenceError` per-id and never aborts the batch; `honest_factor_labels` falls through to flat keys when structured labels are blank; and both promote handlers reconcile the post-promote refetch through the pure `preservePromotedReady` helper. The new pure helper is small, side-effect-free, and correctly unit-tested.
+Re-review after the three gap closures. The fixes themselves are sound:
 
-The remaining defects are narrower. `honest_factor_labels` still fabricates labels for non-string structured entries (`str(None)` → `"None"`), which weakens the phase's central honesty guarantee. The single-promote path still couples "promote succeeded" to a successful JSON parse of the POST body, so an unparseable 2xx response would re-introduce the same silent-revert class that G-14-2 removed. And the batch reconcile — the same silent-revert class on the collection endpoint — is only asserted through source-text regexes; no behavioral test exercises a stale batch refetch.
+- **PGRST201 embed (14-06)** — `material_relations!material_relations_from_material_id_fkey(to_material_id)` matches the Postgres default constraint name produced by `001_initial_schema.sql` (inline `references materials (id)`, column `from_material_id`) and keeps outgoing-relations semantics. No other bare `material_relations(` embed exists in the repo.
+- **Batch-CTA removal (14-07)** — the button, `promoteApprovedDrafts` handler, and `markReadyBatch` import are gone; the per-row «Сделать ready» path and the reordered `sendHint` match the Playwright expectations. No dangling references in `AdminDigestPage.jsx`.
+- **Pointer cursor (14-08)** — `@layer base { button:not(:disabled) { cursor: pointer } }` is correctly scoped (utilities layer + `disabled:cursor-not-allowed` still win; `disabled:` selectors don't match `:not(:disabled)`). All submit controls in the app render as `<button>`/`ActionButton`, so the rule covers them.
+
+No BLOCKER was found in the changed code. The remaining defects are the phase's own honesty guarantee leaking on non-string factor labels, a residual rollback path on the single-promote response parse, and a regression test that cannot fail on the one string the embed fix depends on. `backend/src/backend/domain/shortlist.py` is included because a listed test (`tests_unit/test_score_factors.py`) targets its `honest_factor_labels` directly.
 
 ## Narrative Findings (AI reviewer)
 
@@ -41,8 +55,8 @@ The remaining defects are narrower. `honest_factor_labels` still fabricates labe
 
 ### WR-01: `honest_factor_labels` fabricates labels for non-string structured entries
 
-**File:** `backend/src/backend/domain/shortlist.py:23-27`
-**Issue:** The structured branch stringifies whatever `label` value is present:
+**File:** `backend/src/backend/domain/shortlist.py:23-27` (cross-referenced from `tests/unit/test_score_factors.py`)
+**Issue:** The structured branch coerces *any* present `label` to a string, so non-readable values count as readable factors:
 
 ```python
 labels = [
@@ -50,20 +64,18 @@ labels = [
     for f in factors
     if isinstance(f, dict)
 ]
-labels = [x for x in labels if x]
 ```
 
-`str(f.get("label", ""))` turns a present-but-non-string value into a "readable" label. Confirmed by direct execution:
+Verified by direct execution against the current source:
 
 ```text
-f({'factors':[{'label':None},{'label':None}]})  -> ['None', 'None']
-f({'factors':[{'label':1},{'label':2}]})        -> ['1', '2']
-f({'factors':[{'label':None},{'label':'real'}]}) -> ['None', 'real']
+honest_factor_labels({'factors':[{'label':None},{'label':None}]}) -> ['None', 'None']
+honest_factor_labels({'factors':[{'label':1},{'label':2}]})       -> ['1', '2']
 ```
 
-`None`/numeric labels are not readable factor labels, yet they are returned and rendered by the admin UI (`factorText` joins them with ` · `). This defeats the documented contract ("never fabricated") and the D-14/D-15 honesty goal for exactly the shape this function exists to sanitize. No test covers a non-string (`None`/int/bool) label — `test_score_factors.py` only covers `""`, `"  "`, `"\t"`, `"\n"`.
+Both pass the `len(labels) < 2` gate, so the admin UI renders fabricated «обоснование» chips (`factorText` joins them with ` · `). `score_factors` is JSON from the DB and can legitimately contain `null`/numeric labels; `test_score_factors.py` only covers `""`/`"  "`/`"\t"`/`"\n"`, never a non-string. This defeats the documented D-14/D-15 contract ("never fabricated") and is the phase's central honesty mechanism.
 
-**Fix:** Accept only string labels; skip the rest (blank/non-string are "not readable"):
+**Fix:** Accept only string labels; skip everything else.
 
 ```python
 labels = [
@@ -74,24 +86,24 @@ labels = [
 labels = [x for x in labels if x]
 ```
 
-Add a matrix case asserting `honest_factor_labels({"factors": [{"label": None}, {"label": None}]}) == []` and `{"label": 1}` is ignored.
+Add matrix cases asserting `{"factors": [{"label": None}, {"label": None}]} == []` and that `{"label": 1}` is ignored.
 
-### WR-02: Live `markReady` still ties promote success to JSON parsing — residual silent revert
+### WR-02: Live `markReady` still rolls a persisted promote back on JSON parse failure
 
-**File:** `web/src/services/adminApi.js:395-396`
-**Also:** `web/src/pages/AdminDigestPage.jsx:349-368`
+**File:** `web/src/services/adminApi.js:390-395` (consumer: `web/src/pages/AdminDigestPage.jsx:332-369`)
+**Issue:** The live path treats a 2xx as successful only if the body parses:
 
-**Issue:** The G-14-2 fix correctly stops calling `fetchShortlist` inside `markReady`, but the live path still treats a successful POST as successful only if `response.json()` parses:
-
-```python
-response = await fetch(...)
-if (!response.ok) { throw mapHttpError(...) }
-return response.json()   // parse failure => throws
+```javascript
+if (!response.ok) {
+  throw mapHttpError(response, 'Не удалось сделать ready')
+}
+// Promote persisted; MarkReadyResponse is authoritative (G-14-2 — no refetch coupling).
+return response.json()
 ```
 
-If the promote persisted server-side but the 2xx body is empty or unparseable (proxy truncation, a 204 from an intermediary, a future route change), `markReady` throws, and `promoteReady`/`promoteApprovedDrafts` run `setItems(previous)`, rolling the row back to `draft` and re-arming the D-85 draft block. That is the exact silent-revert class this phase set out to eliminate, just relocated from the refetch boundary to the response-parse boundary. The backend currently declares `response_model=MarkReadyResponse`, so likelihood is low, but the guarantee is stated as absolute.
+If the promote persisted server-side but the 2xx body is empty/unparseable (proxy truncation, an intermediary `204`, a future route change), `markReady` throws. `promoteReady` then runs `setItems(previous)`, rolling the row back to `draft` and re-arming the D-85 draft block — the exact silent-revert class G-14-2 removed, relocated from the refetch boundary to the response-parse boundary. The absolute guarantee claimed in the comment is not met. `response_model=MarkReadyResponse` makes this unlikely, not impossible.
 
-**Fix:** Treat the POST reaching `response.ok` as authoritative; don't let body parsing determine promote success:
+**Fix:** Treat reaching `response.ok` as authoritative and do not let body parsing determine promote success.
 
 ```javascript
 if (!response.ok) {
@@ -105,49 +117,68 @@ try {
 }
 ```
 
-### WR-03: Batch reconcile (the same silent-revert class) is not behaviorally tested
+### WR-03: The PGRST201 regression test does not lock the FK hint name
 
-**File:** `tests/admin.spec.js:332-374`; `tests/unit/test_admin_mark_ready.js:124-150`
-**Also:** `web/src/pages/AdminDigestPage.jsx:388-421`
+**File:** `tests/unit/test_supabase_material_repository_embed.py:147-153`
+**Issue:** The fake raises `PGRST201` only for a bare `material_relations(`, and the assertions require a `!` hint plus `(to_material_id)` but never the exact constraint name:
 
-**Issue:** The stale-refetch harness (`__DIGEST_ADMIN_STALE_READY__`) is honoured only by the single-material mock (`adminApi.js:368`); `markReadyBatch` always mutates the seed via `applyMockMarkReadyBatch`. Consequently the batch path's `preservePromotedReady(dto.items, [...okIds])` (line 415) is never exercised against a still-draft refetch. The only test that references it is:
-
-```js
-assert.match(batchMatch[0], /preservePromotedReady\(/, 'G-14-2: ...')
+```python
+assert "material_relations!" in spec
+assert re.search(r"material_relations![^(]+\(to_material_id\)", spec)
+assert "material_relations(to_material_id)" not in spec
 ```
 
-— a source-text match. If the call were wired with the wrong id set (e.g. all ids instead of `okIds`, or `[]`), or the reconcile were applied to the wrong DTO, no behavioral test would fail. This is the batch half of G-14-2 left regression-unlocked.
+A typo'd hint such as `material_relations!material_relations_from_material_idfkey(to_material_id)` passes this test while production fails with `PGRST200` (unknown relationship) and the original 503 returns. The one literal the fix depends on is the one assertion the test omits — false-green on a just-fixed blocker.
 
-**Fix:** Extend the stale harness so `markReadyBatch` (mock) also skips persisting when the flag is armed (or add a dedicated `__DIGEST_ADMIN_STALE_READY_BATCH__`), and add a Playwright case that approves ≥1 batch draft, promotes via the batch CTA, and asserts the ok ids stay `готов` after the still-draft refetch. Keep a pure unit test that feeds `preservePromotedReady` the exact `okIds` array the handler builds.
+**Fix:** Assert the exact disambiguated literal.
+
+```python
+assert (
+    "material_relations!material_relations_from_material_id_fkey(to_material_id)" in spec
+)
+```
 
 ## Info
 
-### IN-01: Source-text assertions couple wiring tests to implementation
+### IN-01: Batch-promote client/harness surface is now dead code
 
-**File:** `tests/unit/test_admin_mark_ready.js:94-150`
-**Issue:** The `decoupled markReady` and `reconcile refetch via preservePromotedReady` tests read `adminApi.js` / `AdminDigestPage.jsx` and regex-match source (`body.includes('fetchShortlist') === false`, `/preservePromotedReady\(/`). They can pass with a broken runtime wiring and fail on harmless refactors (reordering, comments, helper extraction). The pure `preservePromotedReady` behavior block (lines 153-204) is the trustworthy part; the wiring assertions add little behavioral signal.
-**Fix:** Prefer behavioral coverage (render `promoteReady` with a fake `markReady`/`fetchShortlist` and assert post-refetch state) over grepping the source; keep at most one smoke assertion on the export surface.
+**File:** `web/src/services/adminApi.js:406-436`, `web/src/main.jsx:30,55`, `web/src/services/adminReadyMock.js:119-142`
+**Issue:** After 14-07 removed the CTA, nothing in the application calls `markReadyBatch` / `applyMockMarkReadyBatch`. `getMockMarkReadyBatchCalls` is imported into the `window.__DIGEST_ADMIN_HARNESS__` and `mockMarkReadyBatchCalls` is reset/incremented, but no test or spec references the accessor (only the unit test that asserts the export literal exists). This is dead production surface and bundle weight.
+**Fix:** Remove the unused exports/harness wiring (adjust `tests/unit/test_admin_mark_ready.js` accordingly) or add a comment documenting the batch client as intentionally retained for a future batch tool.
 
-### IN-02: Footer `locator("ul")` assertion is a weak proxy for "no duplicate titles"
+### IN-02: `_filter_ready_relations` couples per-related lookup failures to the whole read
 
-**File:** `tests/admin.spec.js:268`, `tests/admin.spec.js:353`
-**Issue:** `await expect(page.getByTestId("admin-send-footer").locator("ul")).toHaveCount(0)` guards against re-introducing a `<ul>` in the footer, but it does not assert the actual G-14-2b intent (approved-draft titles are not re-listed in the footer). A regression that duplicated titles in a `<div>`/`<ol>` would pass.
-**Fix:** Assert the footer does not contain any `approvedDrafts` title (e.g. `expect(footer).not.toContainText(draftTitle)`), or assert the footer exposes only the hint + quantified CTA.
+**File:** `supabase-integration/src/supabase_integration/material_repository.py:151-181`
+**Issue:** With the embed now working, every `get()`/`get_by_slug()` issues 1 + N queries. Any failure in a related-material status query is wrapped as `PersistenceError` and fails the primary read, which the admin route maps to 503. A transient hiccup on a secondary relation re-widens the exact 503 blast radius this phase set out to close.
+**Fix:** Degrade gracefully (drop the relation on lookup failure) or resolve all target statuses in a single `.in_("id", ids)` query.
 
-### IN-03: `MarkReadyBatchRequest.material_ids` remains unbounded
+### IN-03: `MarkReadyBatchRequest.material_ids` is unbounded
 
-**File:** `backend/src/backend/interface/http/routes/admin.py:145-148`
-**Issue:** Carried over from the prior review (IN-02, unresolved): the batch request accepts an arbitrarily long `material_ids` list, driving N sequential `get`/`save` calls in one admin request. Admin-only, so not an authz hole, but there is still no product-aligned cap.
-**Fix:** Add `Field(max_length=…)` (e.g. `MAX_SHORTLIST_ITEMS` or a small multiple) with a 422 on overflow.
+**File:** `backend/src/backend/interface/http/routes/admin.py:146-148`
+**Issue:** The request accepts an arbitrarily long `material_ids` list, driving N sequential `get`/`save` round-trips in one admin call. Admin-only, so not an authz hole, but there is no product-aligned cap.
+**Fix:** Add `Field(max_length=…)` (e.g. a small multiple of `MAX_SHORTLIST_ITEMS`) so overflow yields 422.
 
-### IN-04: Broad `except Exception` in the batch masks unexpected failures
+### IN-04: Broad `except Exception` in batch promote masks defects without logging
 
 **File:** `backend/src/backend/application/use_cases/mark_material_ready.py:70-79`
-**Issue:** The new catch-all maps any exception (including programming errors like `TypeError`, or a bug in a repository adapter) to `error="unexpected_error"` and continues. This is a reasonable resilience default for D-08, but it can silently hide genuine defects behind a per-id "failure" that looks like expected partial-success.
-**Fix:** Keep the per-id resilience, but narrow it where possible and/or log the unexpected exception (e.g. `logger.exception(...)`) so masked defects are observable.
+**Issue:** The catch-all maps any exception — including programming errors such as `TypeError` or an adapter bug — to `error="unexpected_error"` and continues, with no log. Reasonable resilience for D-08, but it can silently hide real defects behind a per-id result that reads as expected partial success.
+**Fix:** Call `logger.exception(...)` before appending, or narrow the catch and keep a logged generic fallback.
+
+### IN-05: Mock `sendDigest` order validation is weaker than the backend
+
+**File:** `web/src/services/adminApi.js:625-631`
+**Issue:** The mock only checks `materialIds.length !== poolIds.size || materialIds.some(id => !poolIds.has(id))`, which accepts duplicates (`[101, 101]` against pool `{101, 102}`) and silently drops the omitted id. The backend `_ordered_pool` rejects the same input via set equality. Not reachable from the UI today (issue blocks are deduped by `syncIssueBlocks`), but mock/backend contract drift can mask a future regression.
+**Fix:** Mirror the backend.
+
+```javascript
+const uniqueIds = new Set(materialIds)
+if (uniqueIds.size !== poolIds.size || materialIds.some((id) => !poolIds.has(id))) {
+  throw new AdminApiError('Некорректный порядок материалов.', { code: 'BAD_REQUEST', retryable: false })
+}
+```
 
 ---
 
-_Reviewed: 2026-10-03T17:05:00Z_
+_Reviewed: 2026-10-03T18:45:00Z_
 _Reviewer: Claude (gsd-code-reviewer)_
 _Depth: standard_
