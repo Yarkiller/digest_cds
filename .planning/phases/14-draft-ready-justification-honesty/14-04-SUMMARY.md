@@ -124,7 +124,7 @@ Each task was committed atomically (TDD: RED then GREEN):
    - `93cea53` (test) — add failing decouple + stale-refetch proofs (G-14-2)
    - `b9e7d6a` (feat) — decouple markReady and reconcile promote refetch (G-14-2)
 
-**Plan metadata:** pending (docs: complete plan)
+**Plan metadata:** `0bc2249` (docs: complete summary), `8c168fd` (docs: ROADMAP plan progress 4/5)
 
 _Note: TDD tasks commit RED and GREEN separately, so a single plan task may span two commits._
 
@@ -158,3 +158,11 @@ None - no external service configuration required.
 ---
 *Phase: 14-draft-ready-justification-honesty*
 *Completed: 2026-10-03*
+
+## Self-Check: PASSED
+
+- FOUND: `.planning/phases/14-draft-ready-justification-honesty/14-04-SUMMARY.md`
+- FOUND: `8d65e32`, `c828129`, `93cea53`, `b9e7d6a` (task commits)
+- FOUND: `0bc2249` (summary), `8c168fd` (roadmap)
+- `node --test tests/unit/test_admin_mark_ready.js` — 10 pass / 0 fail
+- `npm run test:web -- tests/admin.spec.js -g "stale|Сделать ready|draft hint|mark-ready"` — 35 passed / 0 failed
