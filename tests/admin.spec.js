@@ -664,4 +664,59 @@ test.describe("Admin Digest — material preview honesty (ADUX-01, D-04…D-06)"
     await expect(dialog.getByRole("button", { name: "Закрыть", exact: true })).toBeVisible();
     await expect(page.getByRole("status")).toHaveCount(0);
   });
+
+  test("material preview close stays visible while the body scrolls", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await gotoAsRole(page, "admin", "/admin/digest", {
+      __DIGEST_ADMIN_MATERIAL_LONG_BODY__: true,
+    });
+    const firstRow = page.getByTestId("admin-shortlist-row").first();
+    await firstRow.getByRole("button", { name: "Превью материала" }).click();
+
+    const dialog = page.getByRole("dialog").filter({
+      has: page.getByRole("heading", { name: "Превью материала", exact: true }),
+    });
+    await expect(dialog).toBeVisible();
+    const close = dialog.getByRole("button", { name: "Закрыть", exact: true });
+    const body = dialog.getByTestId("admin-material-preview-body");
+    await expect(body).toBeVisible();
+
+    const closeContract = await close.evaluate((button) => {
+      let node = button.parentElement;
+      let insideOverflow = false;
+      while (node) {
+        const overflowY = getComputedStyle(node).overflowY;
+        if (overflowY === "auto" || overflowY === "scroll") {
+          insideOverflow = true;
+          break;
+        }
+        node = node.parentElement;
+      }
+      return {
+        insideOverflow,
+        hasPointer: button.classList.contains("cursor-pointer"),
+      };
+    });
+    expect(closeContract.insideOverflow).toBe(false);
+    expect(closeContract.hasPointer).toBe(true);
+
+    const metrics = await body.evaluate((el) => {
+      let node = el.parentElement;
+      while (node) {
+        const overflowY = getComputedStyle(node).overflowY;
+        if (overflowY === "auto" || overflowY === "scroll") {
+          node.scrollTop = node.scrollHeight;
+          return { scrollHeight: node.scrollHeight, clientHeight: node.clientHeight };
+        }
+        node = node.parentElement;
+      }
+      return null;
+    });
+    expect(metrics).not.toBeNull();
+    expect(metrics.scrollHeight).toBeGreaterThan(metrics.clientHeight);
+    await expect(close).toBeInViewport();
+    await expect(
+      dialog.getByRole("heading", { name: "Превью материала", exact: true }),
+    ).toBeInViewport();
+  });
 });
