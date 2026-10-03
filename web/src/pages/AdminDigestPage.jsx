@@ -14,6 +14,8 @@ import {
   clearFailNextPreview,
   clearFailNextShortlistFetch,
   fetchShortlist,
+  markReady,
+  markReadyBatch,
   previewEmail,
   sendDigest,
   setDecision,
@@ -318,6 +320,86 @@ export default function AdminDigestPage() {
         applyBatch(latest, setItems, setBatchMeta, setDigestRest, setDaysUntilNextBatch)
       }
       setCheckedIds(new Set())
+    } finally {
+      setMutating(false)
+    }
+  }
+
+  async function promoteReady(item) {
+    if (!item || item.material_status !== 'draft' || mutating) return
+    const emptyBody = !(item.body_markdown || '').trim()
+    if (emptyBody) {
+      const ok = window.confirm('Текст пуст. Сделать ready и продолжить?')
+      if (!ok) return
+    }
+    setMutating(true)
+    const previous = items
+    setItems((prev) =>
+      prev.map((row) =>
+        row.material_id === item.material_id ? { ...row, material_status: 'ready' } : row,
+      ),
+    )
+    try {
+      await markReady(item.material_id)
+      try {
+        const dto = await fetchShortlist()
+        applyBatch(dto, setItems, setBatchMeta, setDigestRest, setDaysUntilNextBatch)
+      } catch {
+        // keep optimistic ready; silent refetch best-effort (D-05)
+      }
+    } catch (err) {
+      setItems(previous)
+      setToast(err instanceof AdminApiError ? err.message : 'Не удалось сделать ready')
+    } finally {
+      setMutating(false)
+    }
+  }
+
+  async function promoteApprovedDrafts() {
+    if (restMode || approvedDrafts.length === 0 || mutating) return
+    const n = approvedDrafts.length
+    const ok = window.confirm(`Сделать ready ${n} одобренных черновиков?`)
+    if (!ok) return
+    const ids = approvedDrafts.map((d) => d.material_id)
+    setMutating(true)
+    const previous = items
+    setItems((prev) =>
+      prev.map((row) =>
+        ids.includes(row.material_id) ? { ...row, material_status: 'ready' } : row,
+      ),
+    )
+    try {
+      const { results } = await markReadyBatch(ids)
+      const failedIds = (results ?? [])
+        .filter((row) => !row.ok)
+        .map((row) => row.material_id)
+      const okIds = new Set(
+        (results ?? []).filter((row) => row.ok).map((row) => row.material_id),
+      )
+      if (failedIds.length > 0) {
+        setItems((prev) =>
+          prev.map((row) => {
+            if (failedIds.includes(row.material_id)) {
+              const prior = previous.find((p) => p.material_id === row.material_id)
+              return prior ? { ...row, material_status: prior.material_status } : row
+            }
+            if (okIds.has(row.material_id)) {
+              return { ...row, material_status: 'ready' }
+            }
+            return row
+          }),
+        )
+        setToast(`Не удалось сделать ready: ${failedIds.join(', ')}`)
+      }
+      try {
+        const dto = await fetchShortlist()
+        applyBatch(dto, setItems, setBatchMeta, setDigestRest, setDaysUntilNextBatch)
+      } catch {
+        // silent refetch best-effort
+      }
+    } catch (err) {
+      setItems(previous)
+      setToast(err instanceof AdminApiError ? err.message : 'Не удалось сделать ready')
     } finally {
       setMutating(false)
     }
@@ -681,6 +763,17 @@ export default function AdminDigestPage() {
                       >
                         {item.material_status}
                       </span>
+                      {item.material_status === 'draft' ? (
+                        <button
+                          type="button"
+                          data-testid="admin-mark-ready"
+                          className="inline-flex min-h-11 items-center text-sm text-accent hover:underline disabled:opacity-50"
+                          disabled={mutating}
+                          onClick={() => promoteReady(item)}
+                        >
+                          Сделать ready
+                        </button>
+                      ) : null}
                       {caption ? <span className="text-xs text-muted">{caption}</span> : null}
                     </div>
                   </div>
@@ -717,13 +810,24 @@ export default function AdminDigestPage() {
                 {sendHint}
               </p>
               {!restMode && approvedDrafts.length > 0 ? (
-                <ul className="mt-1 text-xs text-muted">
-                  {approvedDrafts.map((d) => (
-                    <li key={d.material_id}>
-                      {d.title} · draft
-                    </li>
-                  ))}
-                </ul>
+                <>
+                  <ul className="mt-1 text-xs text-muted">
+                    {approvedDrafts.map((d) => (
+                      <li key={d.material_id}>
+                        {d.title} · draft
+                      </li>
+                    ))}
+                  </ul>
+                  <button
+                    type="button"
+                    data-testid="admin-mark-ready-batch"
+                    className="mt-2 inline-flex min-h-11 items-center text-sm text-accent hover:underline disabled:opacity-50"
+                    disabled={mutating}
+                    onClick={promoteApprovedDrafts}
+                  >
+                    Сделать ready одобренные черновики
+                  </button>
+                </>
               ) : null}
               {banner ? (
                 <p className="mt-1 text-sm font-medium text-[oklch(45%_0.13_155)]" role="status">

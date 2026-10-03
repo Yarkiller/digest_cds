@@ -327,6 +327,9 @@ test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07
       page.getByTestId("admin-send-hint"),
     ).not.toContainText(/уберите черновики из одобренных или дождитесь ready/i);
 
+    await page.waitForFunction(
+      () => (window.__DIGEST_ADMIN_HARNESS__?.getMockMarkReadyBatchCalls?.() ?? 0) >= 1,
+    );
     const batchCalls = await page.evaluate(
       () => window.__DIGEST_ADMIN_HARNESS__?.getMockMarkReadyBatchCalls?.() ?? -1,
     );

@@ -51,6 +51,7 @@ let failNextDecision = false
 let failNextPreview = false
 let failNextSend = false
 let alreadySentOnSend = false
+let mockMarkReadyBatchCalls = 0
 
 function useMocks() {
   return isMocksEnabled()
@@ -182,6 +183,7 @@ export function resetAdminHarness() {
   failNextPreview = false
   failNextSend = false
   alreadySentOnSend = false
+  mockMarkReadyBatchCalls = 0
   resetMockItems()
   if (typeof window !== 'undefined') {
     window.__DIGEST_ADMIN_EMPTY__ = false
@@ -193,6 +195,11 @@ export function resetAdminHarness() {
     window.__DIGEST_ADMIN_MATERIAL_EMPTY_BODY__ = false
     window.__DIGEST_ADMIN_MATERIAL_LONG_BODY__ = false
   }
+}
+
+/** Playwright: count of mock markReadyBatch invocations (D-08). */
+export function getMockMarkReadyBatchCalls() {
+  return mockMarkReadyBatchCalls
 }
 
 function shouldFailFetch() {
@@ -389,6 +396,7 @@ export async function markReady(materialId, accessToken) {
  */
 export async function markReadyBatch(materialIds, accessToken) {
   if (useMocks()) {
+    mockMarkReadyBatchCalls += 1
     await delay(60)
     return applyMockMarkReadyBatch(mockBatch.items, materialIds ?? [])
   }

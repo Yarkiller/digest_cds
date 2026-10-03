@@ -27,6 +27,7 @@ import {
   clearFailNextPreview,
   clearFailNextShortlistFetch,
   resetAdminHarness,
+  getMockMarkReadyBatchCalls,
 } from './services/adminApi.js'
 
 // Playwright harness (mirrors votingApi arm-fail pattern).
@@ -51,6 +52,7 @@ window.__DIGEST_ADMIN_HARNESS__ = {
   armFailNextSend,
   armAlreadySentOnSend,
   resetAdminHarness,
+  getMockMarkReadyBatchCalls,
 }
 
 createRoot(document.getElementById('root')).render(
