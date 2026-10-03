@@ -31,6 +31,8 @@ def _item(
     title: str = "Ready approved",
     material_status: str = "ready",
     decision: str = "approved",
+    dek: str | None = None,
+    slug: str | None = None,
 ) -> ShortlistItem:
     return ShortlistItem(
         material_id=material_id,
@@ -40,6 +42,8 @@ def _item(
         decision=decision,
         score=0.9,
         score_factors={"factors": [{"label": "A"}, {"label": "B"}]},
+        dek=dek,
+        slug=slug,
     )
 
 
@@ -471,4 +475,99 @@ def test_send_validates_against_top_five_visible_pool() -> None:
         "Item 5",
     ]
     assert "Item 6" not in {item.title for item in published.items}
+
+
+def test_send_records_body_html_with_interstitial_and_omits_issue_url() -> None:
+    """ADUX-02 / D-07 / D-11: StubMailer.last_body_html from render_email_html; no /issues/."""
+    from backend.application.use_cases.preview_digest_email import (
+        PreviewMaterialBlock,
+        PreviewTextBlock,
+    )
+
+    shortlist = InMemoryShortlistRepository(
+        batch=_batch(
+            _item(
+                material_id=101,
+                rank=1,
+                title="Send HTML Title",
+                dek="Send dek",
+                slug="send-html-title",
+            ),
+        )
+    )
+    issues = InMemoryIssueRepository()
+    mailer = StubMailer()
+    pings = InMemoryPingRecorder()
+
+    result = send_digest(
+        shortlist,
+        _publisher(shortlist, issues),
+        mailer,
+        pings,
+        actor_user_id="admin-uuid-1",
+        now=datetime(2026, 9, 21, 15, 0, tzinfo=timezone.utc),
+        intro="Para one\n\nPara two",
+        blocks=[
+            PreviewMaterialBlock(material_id=101),
+            PreviewTextBlock(text="Bridge A\n\nBridge B"),
+        ],
+    )
+
+    html = mailer.last_body_html
+    assert isinstance(html, str)
+    assert html
+    assert "<p>Para one</p><p>Para two</p>" in html
+    assert "<p>Bridge A</p><p>Bridge B</p>" in html
+    assert "Send HTML Title" in html
+    assert "Читать →" in html
+    assert f"/issues/{result.issue_number}" in (mailer.last_body_text or "")
+    assert "/issues/" not in html
+
+
+def test_send_body_html_uses_site_url_for_chitat_href() -> None:
+    """ADUX-02 / D-11: send_digest(site_url=…) drives absolute Читать → href."""
+    from backend.application.use_cases.preview_digest_email import PreviewMaterialBlock
+
+    shortlist = InMemoryShortlistRepository(
+        batch=_batch(
+            _item(
+                material_id=101,
+                rank=1,
+                title="Absolute Link",
+                slug="absolute-link",
+            ),
+        )
+    )
+    mailer = StubMailer()
+
+    send_digest(
+        shortlist,
+        _publisher(shortlist, InMemoryIssueRepository()),
+        mailer,
+        InMemoryPingRecorder(),
+        actor_user_id="admin-uuid-1",
+        now=datetime(2026, 9, 21, 15, 0, tzinfo=timezone.utc),
+        blocks=[PreviewMaterialBlock(material_id=101)],
+        site_url="https://digest.example",
+    )
+
+    html = mailer.last_body_html or ""
+    assert 'href="https://digest.example/materials/absolute-link"' in html
+    assert "Читать →" in html
+
+
+def test_post_shortlist_send_passes_settings_site_url() -> None:
+    """ADUX-02 / D-11 / D-12: send HTTP path uses trusted Settings.site_url like preview."""
+    from pathlib import Path
+
+    from backend.interface.http.routes import admin as admin_routes
+
+    src = Path(admin_routes.__file__).read_text(encoding="utf-8")
+    send_fn_start = src.index("def post_shortlist_send")
+    next_def = src.find("\ndef ", send_fn_start + 1)
+    send_fn = src[send_fn_start:] if next_def < 0 else src[send_fn_start:next_def]
+    assert "site_url" in send_fn
+    assert "settings" in send_fn
+    assert "payload.site_url" not in send_fn
+    assert "body.site_url" not in send_fn
 
