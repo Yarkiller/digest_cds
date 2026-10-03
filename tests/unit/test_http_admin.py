@@ -983,3 +983,59 @@ def test_admin_mark_ready_missing_material_returns_404() -> None:
 
     assert response.status_code == 404
     assert response.json()["detail"] == "material_not_found"
+
+
+def test_admin_mark_ready_already_ready_is_noop() -> None:
+    """D-09: already-ready POST returns 200; published_at unchanged (ADUX-05)."""
+    client, headers, container = _admin_client_with_batch(_ready_approved_batch())
+    published_at = datetime(2026, 9, 1, tzinfo=timezone.utc)
+    container.materials.save(
+        Material(
+            id=101,
+            slug="material-101",
+            title="Ready",
+            dek="dek",
+            body_markdown="body",
+            format="статья",
+            status=MaterialStatus.READY,
+            reading_minutes=5,
+            provenance_label="внешний текстовый источник",
+            source_id=None,
+            roles=("ds",),
+            tags=(),
+            related_material_ids=(),
+            published_at=published_at,
+            created_at=published_at,
+            updated_at=published_at,
+        )
+    )
+
+    response = client.post("/admin/materials/101/ready", headers=headers)
+
+    assert response.status_code == 200
+    assert response.json() == {"material_id": 101, "status": "ready"}
+    assert container.materials.get(101).published_at == published_at
+
+
+def test_admin_mark_ready_employee_returns_403() -> None:
+    """T-14-01 / D-74: employee JWT cannot promote ready (parity with decision)."""
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    container = build_in_memory_container()
+    container.materials.save(_draft_material(102))
+    _seed_profile(
+        container,
+        user_id="user-uuid-1",
+        email="alice@sberbank.ru",
+        role="employee",
+    )
+    client = _client(jwk, container)
+    token = _mint(private_key, email="alice@sberbank.ru")
+
+    response = client.post(
+        "/admin/materials/102/ready",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 403
+    assert response.json()["detail"] == "forbidden"
