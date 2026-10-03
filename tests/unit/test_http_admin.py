@@ -445,7 +445,7 @@ def test_admin_decision_employee_returns_403() -> None:
 
 
 def test_admin_decision_approve_returns_updated_shortlist_with_status() -> None:
-    """ADMIN-02 / ADMIN-03 / D-85: admin approve → 200 snapshot; draft|ready on items."""
+    """D-02 / ADMIN-02 / D-85 / ADUX-05: approve draft → decision approved; material_status stays draft."""
     private_key = ec.generate_private_key(ec.SECP256R1())
     jwk = _public_jwk(private_key)
     container = build_in_memory_container()
@@ -471,6 +471,7 @@ def test_admin_decision_approve_returns_updated_shortlist_with_status() -> None:
     assert body["batch_id"] == 42
     draft = next(i for i in body["items"] if i["material_id"] == 102)
     assert draft["decision"] == "approved"
+    # D-02: Approve ≠ ready — HTTP decision must leave material_status draft
     assert draft["material_status"] == "draft"
     ready = next(i for i in body["items"] if i["material_id"] == 101)
     assert ready["material_status"] == "ready"

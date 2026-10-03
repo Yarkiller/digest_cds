@@ -100,7 +100,7 @@ def test_reject_persists_decision_on_subsequent_get() -> None:
 
 
 def test_approve_allowed_on_draft_material() -> None:
-    """ADMIN-03 / D-85: Approve succeeds on draft — no DraftInSendPoolError here."""
+    """D-02 / D-85 / ADUX-05: Approve ≠ ready — draft material_status stays draft after approve."""
     repo = InMemoryShortlistRepository(batch=_seeded_batch())
 
     snapshot = set_shortlist_decision(
@@ -112,7 +112,37 @@ def test_approve_allowed_on_draft_material() -> None:
 
     draft = next(i for i in snapshot.items if i.material_id == 102)
     assert draft.decision == "approved"
+    # D-02: decision path must not flip triage ready
     assert draft.material_status == "draft"
+
+
+def test_set_shortlist_decision_does_not_import_ready_path() -> None:
+    """D-02 / ADUX-05: decision use-case must not import MaterialRepository or mark_material_ready."""
+    import ast
+    from pathlib import Path
+
+    source_path = (
+        Path(__file__).resolve().parents[2]
+        / "backend"
+        / "src"
+        / "backend"
+        / "application"
+        / "use_cases"
+        / "set_shortlist_decision.py"
+    )
+    tree = ast.parse(source_path.read_text(encoding="utf-8"))
+    imported: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            imported.update(alias.name for alias in node.names)
+        elif isinstance(node, ast.ImportFrom):
+            module = node.module or ""
+            imported.add(module)
+            for alias in node.names:
+                imported.add(f"{module}.{alias.name}" if module else alias.name)
+
+    assert not any("material_repository" in name for name in imported)
+    assert not any("mark_material_ready" in name for name in imported)
 
 
 def test_pending_resets_decision() -> None:
