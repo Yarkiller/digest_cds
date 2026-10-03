@@ -94,7 +94,7 @@ status: complete
 1. **Task 1 (RED): FE mocks + AdminItemPreview markdown honesty** — `cf7de16` (test)
 2. **Task 1 (GREEN) + Task 2 edges:** AdminItemPreview implementation covers empty provenance / zero counts / close visibility — `3672bdd` (feat)
 
-**Plan metadata:** (pending docs commit)
+**Plan metadata:** `43a3e98` (docs: complete plan)
 
 _Note: Task 2 Playwright edge asserts landed in the RED commit; GREEN implementation satisfied both tasks without a separate task-2 production commit._
 
