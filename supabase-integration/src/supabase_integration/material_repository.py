@@ -95,8 +95,20 @@ class SupabaseMaterialRepository:
         return self._fetch_one("slug", slug)
 
     def save(self, material: Material) -> Material:
+        """Persist an existing material's domain-owned columns.
+
+        The live `materials` table is a superset of the domain model: migration 007
+        added NOT NULL provenance columns (`source_url`, `youtube_video_id`,
+        `source_author`) plus a `bigint generated always as identity` primary key.
+        A full-row upsert therefore cannot work — the INSERT half is rejected with
+        428C9 (explicit identity value) and 23502 (unmodelled NOT NULL columns),
+        which surfaced as HTTP 503 on the admin promote route. `save` only ever
+        persists an existing aggregate (publish / draft→ready triage); new
+        materials are created by the `persist_draft_and_enqueue` RPC. So update the
+        domain-owned columns of the row addressed by `id`, leaving provenance and
+        the identity untouched.
+        """
         payload = {
-            "id": material.id,
             "slug": material.slug,
             "title": material.title,
             "dek": material.dek,
@@ -108,11 +120,15 @@ class SupabaseMaterialRepository:
             "source_id": material.source_id,
             "roles": list(material.roles),
             "published_at": material.published_at.isoformat() if material.published_at else None,
-            "created_at": material.created_at.isoformat(),
             "updated_at": material.updated_at.isoformat(),
         }
         try:
-            result = self._client.table("materials").upsert(payload).execute()
+            result = (
+                self._client.table("materials")
+                .update(payload)
+                .eq("id", material.id)
+                .execute()
+            )
         except PersistenceError:
             raise
         except Exception as exc:  # noqa: BLE001
@@ -120,7 +136,7 @@ class SupabaseMaterialRepository:
 
         data = getattr(result, "data", None) or []
         if not data:
-            raise PersistenceError("materials upsert returned no rows")
+            raise PersistenceError("materials update matched no rows")
         # Tags/relations are owned by seed/editorial paths; return domain object as saved.
         return material
 

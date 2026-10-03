@@ -2,6 +2,7 @@
 
 from pydantic import BaseModel, Field, field_validator
 
+from data_collection.dto._body import strip_audience_section
 from data_collection.dto._validators import strip_non_blank
 from data_collection.dto.role_kind import RoleKind, normalize_roles
 
@@ -16,6 +17,13 @@ class ArticleDraft(BaseModel):
     @classmethod
     def _strip_non_blank(cls, value: str) -> str:
         return strip_non_blank(value)
+
+    @field_validator("body_markdown")
+    @classmethod
+    def _strip_audience_scaffolding(cls, value: str) -> str:
+        # `## Аудитория` is prompt scaffolding for the `roles` key, not article
+        # content; models sometimes leak it (as JSON or the echoed instruction).
+        return strip_audience_section(value)
 
     @field_validator("roles", mode="before")
     @classmethod
