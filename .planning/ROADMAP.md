@@ -118,7 +118,18 @@ Plans:
   2. After promotion, D-85 send gate no longer blocks that material solely for still being draft
   3. Shortlist «Обоснование» shows populated `score_factors` when available from pipeline config MVP, or an explicit empty/unavailable state (never a silent fake justification)
 
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+**Wave 1**
+- [ ] 14-01-PLAN.md — Tracer: single POST /admin/materials/{id}/ready unblocks D-85 send
+
+**Wave 2** *(blocked on Wave 1)*
+- [ ] 14-02-PLAN.md — Batch ready partial success + Approve≠ready lock
+
+**Wave 3** *(blocked on Wave 2)*
+- [ ] 14-03-PLAN.md — FE promote UX + exact D-15 Обоснование honesty lock
+
 **UI hint**: yes
 
 ### Phase 15: CLI --debug diagnostics
