@@ -186,9 +186,10 @@ def test_map_captions_error_forwards_available_languages() -> None:
 
 
 def test_roadmap_records_cap02_live_persist_spy_deferral() -> None:
+    """CAP-02 / D-14 deferral lives on the archived v1.1 roadmap (not live ROADMAP)."""
     from pathlib import Path
 
-    roadmap = Path(".planning/ROADMAP.md").read_text(encoding="utf-8")
+    roadmap = Path(".planning/milestones/v1.1-ROADMAP.md").read_text(encoding="utf-8")
     phase9 = roadmap.split("### Phase 9:")[1].split("### Phase 10:")[0]
     assert "persist.calls == []" in phase9
     assert "CAP-02" in phase9 or "D-14" in phase9
