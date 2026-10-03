@@ -5,17 +5,17 @@ milestone_name: Admin UX + diagnostics + PIPE-01 MVP
 current_phase: 13
 current_phase_name: Admin material & email preview honesty
 status: executing
-stopped_at: Completed 13-02-PLAN.md
-last_updated: "2026-10-02T19:33:51.759Z"
+stopped_at: Completed 13-03-PLAN.md
+last_updated: "2026-10-03T06:42:47.512Z"
 last_activity: 2026-10-02
 last_activity_desc: Phase 13 execution started
-state_head: 557aefe33c41a8b36994bb2d7e5599b3dcbd391d
+state_head: 3672bdd76c2bfe359802aa280a58620d9d8ce5f7
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 9
-  completed_plans: 5
-  percent: 56
+  completed_plans: 6
+  percent: 60
 ---
 
 # Project State
@@ -30,11 +30,11 @@ See: .planning/PROJECT.md (updated 2026-10-02 — v1.2 milestone)
 ## Current Position
 
 Phase: 13 (Admin material & email preview honesty) — EXECUTING
-Plan: 3 of 6
+Plan: 4 of 6
 Status: Ready to execute
 Last activity: 2026-10-02 — Phase 13 execution started
 
-Progress: [██████░░░░] 56%
+Progress: [██████░░░░] 60%
 
 ## Performance Metrics
 
@@ -64,6 +64,7 @@ Progress: [██████░░░░] 56%
 | Phase 12-03 P03 | 6min | 2 tasks | 2 files |
 | Phase 13 P01 | 7min | 2 tasks | 7 files |
 | Phase 13 P02 | 8min | 3 tasks | 8 files |
+| Phase 13 P03 | 5min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -86,6 +87,8 @@ v1.2 roadmap locks:
 - [Phase 13]: Counts computed in get_admin_shortlist from body_markdown; reading_minutes from stored join
 - [Phase 13]: Enrich shortlist via get_current_batch join only — no /admin/materials/:id (D-01)
 - [Phase 13]: render_email_html blocks as kind maps; site_url defaults until Plan 06; ban assert-only
+- [Phase 13]: AdminItemPreview uses MaterialPage markdown stack; no fetch-on-open (D-01/D-04)
+- [Phase 13]: Counts always shown (incl. zeros); provenance omitted when empty (D-05/D-06)
 
 ### Pending Todos
 
@@ -109,7 +112,7 @@ Carried product deferrals to v1.3+: leaderboard, quiz, live SMTP, signup mail, W
 
 ## Session Continuity
 
-Last session: 2026-10-02T19:33:51.707Z
-Stopped at: Completed 13-02-PLAN.md
+Last session: 2026-10-03T06:42:47.446Z
+Stopped at: Completed 13-03-PLAN.md
 Resume file: None
 Next: `/gsd-plan-phase 12`
