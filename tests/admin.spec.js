@@ -264,7 +264,8 @@ test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07
     await expect(
       page.getByTestId("admin-send-hint"),
     ).toContainText(/уберите черновики из одобренных или дождитесь ready/i);
-    await expect(page.getByText(/· draft/i)).toBeVisible();
+    await expect(rows.nth(3).getByText("черновик", { exact: true })).toBeVisible();
+    await expect(page.getByTestId("admin-send-footer").locator("ul")).toHaveCount(0);
     await expect(page.getByRole("button", { name: /отправить дайджест/i })).toBeDisabled();
     // Preview stays locked until there is ≥1 approved ready
     await expect(page.getByRole("button", { name: /предпросмотр письма/i })).toBeDisabled();
@@ -348,7 +349,8 @@ test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07
 
     const batchBtn = page.getByTestId("admin-mark-ready-batch");
     await expect(batchBtn).toBeVisible();
-    await expect(batchBtn).toHaveText("Сделать ready одобренные черновики");
+    await expect(batchBtn).toHaveText("Сделать ready все одобренные черновики (1)");
+    await expect(page.getByTestId("admin-send-footer").locator("ul")).toHaveCount(0);
 
     page.once("dialog", async (dialog) => {
       expect(dialog.message()).toBe("Сделать ready 1 одобренных черновиков?");
