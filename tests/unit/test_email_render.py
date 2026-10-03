@@ -148,3 +148,25 @@ def test_email_render_module_does_not_import_or_call_ban_helper() -> None:
     assert "email_chrome" not in src
     assert "contains_forbidden_chrome" not in src
     assert "FORBIDDEN_LOWER" not in src
+
+
+def test_python_forbidden_lower_matches_js_mirror() -> None:
+    """D-18: Python FORBIDDEN_LOWER must equal web/src/utils/forbiddenChrome.js list order/values."""
+    import ast
+    import re
+    from pathlib import Path
+
+    js_path = (
+        Path(__file__).resolve().parents[2] / "web" / "src" / "utils" / "forbiddenChrome.js"
+    )
+    assert js_path.is_file(), f"missing JS ban mirror: {js_path}"
+    js_src = js_path.read_text(encoding="utf-8")
+    match = re.search(
+        r"export\s+const\s+FORBIDDEN_LOWER\s*=\s*(\[[^\]]*\])",
+        js_src,
+        flags=re.DOTALL,
+    )
+    assert match is not None, "FORBIDDEN_LOWER export not found in forbiddenChrome.js"
+    js_list = ast.literal_eval(match.group(1))
+    assert js_list == FORBIDDEN_LOWER
+    assert "containsForbiddenChrome" in js_src
