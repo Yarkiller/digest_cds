@@ -354,3 +354,95 @@ def test_settings_site_url_from_site_url_then_public_then_default() -> None:
         ).site_url
         == "http://primary.example"
     )
+
+
+def _parity_composition_fixture(*, with_dek: bool):
+    """Shared intro/blocks/batch for preview≡send HTML parity (D-12)."""
+    from datetime import datetime, timezone
+
+    from backend.infrastructure.stub_mailer import StubMailer
+    from backend.tests_support.in_memory import (
+        InMemoryDigestPublisher,
+        InMemoryIssueRepository,
+        InMemoryPingRecorder,
+    )
+
+    dek = "Parity dek with detail" if with_dek else None
+    batch = _batch(
+        _item(
+            material_id=401,
+            rank=1,
+            title="Parity Material",
+            material_status="ready",
+            decision="approved",
+            dek=dek,
+            slug="parity-material",
+        ),
+        _item(
+            material_id=402,
+            rank=2,
+            title="Second Parity",
+            material_status="ready",
+            decision="approved",
+            slug="second-parity",
+        ),
+    )
+    intro = "Intro A\n\nIntro B"
+    blocks = (
+        PreviewMaterialBlock(material_id=401),
+        PreviewTextBlock(text="Bridge\n\nLine"),
+        PreviewMaterialBlock(material_id=402),
+    )
+    site_url = "https://parity.example"
+    repo = InMemoryShortlistRepository(batch=batch)
+    return {
+        "repo": repo,
+        "intro": intro,
+        "blocks": blocks,
+        "site_url": site_url,
+        "mailer": StubMailer(),
+        "publisher": InMemoryDigestPublisher(
+            lambda: repo,
+            lambda: InMemoryIssueRepository(),
+        ),
+        "pings": InMemoryPingRecorder(),
+        "now": datetime(2026, 9, 21, 15, 0, tzinfo=timezone.utc),
+    }
+
+
+def test_preview_email_html_matches_send_html() -> None:
+    """ADUX-02 / D-12: same intro/blocks → preview.html == send body_html."""
+    from backend.application.use_cases.send_digest import send_digest
+
+    for with_dek in (True, False):
+        fx = _parity_composition_fixture(with_dek=with_dek)
+        preview = preview_digest_email(
+            fx["repo"],
+            intro=fx["intro"],
+            blocks=fx["blocks"],
+            site_url=fx["site_url"],
+        )
+        # Fresh batch for send — preview must not mark sent; use same fixture clone.
+        fx_send = _parity_composition_fixture(with_dek=with_dek)
+        send_digest(
+            fx_send["repo"],
+            fx_send["publisher"],
+            fx_send["mailer"],
+            fx_send["pings"],
+            actor_user_id="admin-uuid-1",
+            now=fx_send["now"],
+            intro=fx_send["intro"],
+            blocks=fx_send["blocks"],
+            site_url=fx_send["site_url"],
+        )
+        send_html = fx_send["mailer"].last_body_html
+        assert isinstance(send_html, str)
+        assert send_html == preview.html
+        assert "/issues/" not in send_html
+        assert "Intro A" in send_html
+        assert "Bridge" in send_html
+        if with_dek:
+            assert "Parity dek with detail" in send_html
+        else:
+            assert "Parity dek with detail" not in send_html
+
