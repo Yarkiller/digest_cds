@@ -115,7 +115,7 @@ status: complete
 3. **Task 2 (RED): Connecting-text paragraph hint** — `52d8b9f` (test)
 4. **Task 2 (GREEN):** hint under intro + connecting text — `7750cc9` (feat)
 
-**Plan metadata:** _(pending docs commit)_
+**Plan metadata:** `9387c1d` (docs: complete plan)
 
 ## Files Created/Modified
 
