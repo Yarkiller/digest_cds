@@ -3,19 +3,19 @@ gsd_state_version: "1.0"
 milestone: v1.2
 milestone_name: Admin UX + diagnostics + PIPE-01 MVP
 current_phase: 14
-current_phase_name: draft-ready-justification-honesty
+current_phase_name: Draft→ready & justification honesty
 status: executing
-stopped_at: Phase 14 UI-SPEC approved
-last_updated: "2026-10-03T12:37:53.512Z"
+stopped_at: Completed 14-01-PLAN.md
+last_updated: "2026-10-03T12:47:14.241Z"
 last_activity: 2026-10-03
-last_activity_desc: Phase 13 complete, transitioned to Phase 14
-state_head: 83c216d8d61d602e5e320b4b9cd98bc2e6565931
+last_activity_desc: Phase 14 execution started
+state_head: 63eb87cfbbe59d09673140d235b398c107f564bf
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 14
-  completed_plans: 11
-  percent: 79
+  completed_plans: 12
+  percent: 80
 ---
 
 # Project State
@@ -25,16 +25,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-02 — v1.2 milestone)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Phase 13 — Admin material & email preview honesty
+**Current focus:** Phase 14 — Draft→ready & justification honesty
 
 ## Current Position
 
-Phase: 14 (draft-ready-justification-honesty) — READY TO EXECUTE
-Plan: Not started
+Phase: 14 (Draft→ready & justification honesty) — EXECUTING
+Plan: 2 of 3
 Status: Ready to execute
-Last activity: 2026-10-03 — Phase 13 complete, transitioned to Phase 14
+Last activity: 2026-10-03 — Phase 14 execution started
 
-Progress: [████████░░] 79%
+Progress: [████████░░] 80%
 
 ## Performance Metrics
 
@@ -71,6 +71,7 @@ Progress: [████████░░] 79%
 | Phase 13 P05 | 45min | 3 tasks | 6 files |
 | Phase 13 P07 | 11min | 2 tasks | 5 files |
 | Phase 13 P08 | 9min | 2 tasks | 3 files |
+| Phase 14 P01 | 5min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -106,6 +107,9 @@ v1.2 roadmap locks:
 - [Phase 13]: Long-body mock repeats one sentence forty times only inside fetchShortlist useMocks
 - [Phase 13]: Email success branch renders subject and email-preview-frame only; the preview.items ul is not mounted
 - [Phase 13]: Close-scroll viewport is 1280x400 so overflow comes from the subject plus the iframe after the items list is gone
+- [Phase 14]: Triage ready uses with_ready_status — never publish_material/as_ready/index (D-06)
+- [Phase 14]: Single ready route is body-less; MarkReadyResponse extra=forbid (D-07/D-10)
+- [Phase 14]: In-memory shortlist overlays material_status for send-bridge fidelity
 
 ### Pending Todos
 
@@ -129,7 +133,7 @@ Carried product deferrals to v1.3+: leaderboard, quiz, live SMTP, signup mail, W
 
 ## Session Continuity
 
-Last session: 2026-10-03T12:20:02.671Z
-Stopped at: Phase 14 UI-SPEC approved
-Resume file: C:/Users/Yarkiller/PycharmPET-Projects/Digital_CDS/.planning/phases/14-draft-ready-justification-honesty/14-UI-SPEC.md
+Last session: 2026-10-03T12:47:14.155Z
+Stopped at: Completed 14-01-PLAN.md
+Resume file: None
 Next: phase verification
