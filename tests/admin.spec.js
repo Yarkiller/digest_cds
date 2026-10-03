@@ -516,6 +516,25 @@ test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07
   });
 });
 
+test.describe("Admin Digest — interstitial hint (ADUX-03, D-15)", () => {
+  test("Пустая строка = новый абзац hint under intro and connecting text", async ({
+    page,
+  }) => {
+    await gotoAsRole(page, "admin", "/admin/digest");
+    await approveReadyRows(page, [0, 1]);
+
+    const introSection = page.locator("section").filter({ hasText: "Контекст дайджеста" });
+    await expect(introSection.getByText("Пустая строка = новый абзац", { exact: true })).toBeVisible();
+
+    await page.getByRole("button", { name: /добавить текст/i }).click();
+    const textBlock = page.getByTestId("admin-issue-block-text").first();
+    await expect(textBlock.getByRole("textbox")).toBeVisible();
+    await expect(textBlock.getByText("Пустая строка = новый абзац", { exact: true })).toBeVisible();
+    // Empty connecting text remains valid — hint stays visible without markdown toolbar.
+    await expect(page.getByRole("toolbar")).toHaveCount(0);
+  });
+});
+
 test.describe("Admin Digest — email preview honesty (ADUX-02, D-08/D-12)", () => {
   test("email-preview-frame shows sandboxed backend HTML with material title", async ({
     page,
