@@ -352,6 +352,28 @@ test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07
     await expect(page.getByTestId("admin-send-footer").locator("ul")).toHaveCount(0);
   });
 
+  // G-14-3 / ADUX-05 — interactive controls show the pointer affordance
+  test("interactive admin controls show a pointer cursor (G-14-3)", async ({ page }) => {
+    await gotoAsRole(page, "admin", "/admin/digest");
+    const rows = page.getByTestId("admin-shortlist-row");
+
+    await expect(
+      rows.first().getByRole("button", { name: "Превью материала" }),
+    ).toHaveCSS("cursor", "pointer");
+    await expect(rows.nth(3).getByTestId("admin-mark-ready")).toHaveCSS(
+      "cursor",
+      "pointer",
+    );
+    await expect(
+      page.getByRole("button", { name: /выбрать все/i }),
+    ).toHaveCSS("cursor", "pointer");
+
+    // Disabled controls keep the non-pointer cursor (guards :not(:disabled))
+    const sendBtn = page.getByRole("button", { name: /отправить дайджест/i });
+    await expect(sendBtn).toBeDisabled();
+    await expect(sendBtn).not.toHaveCSS("cursor", "pointer");
+  });
+
   test("Approve does not auto-ready draft (D-02)", async ({ page }) => {
     await gotoAsRole(page, "admin", "/admin/digest");
     const rows = page.getByTestId("admin-shortlist-row");
