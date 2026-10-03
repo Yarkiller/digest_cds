@@ -3,7 +3,7 @@ status: testing
 phase: 14-draft-ready-justification-honesty
 source: [14-VERIFICATION.md]
 started: 2026-10-03T19:10:00Z
-updated: 2026-10-03T19:10:00Z
+updated: 2026-10-04T00:45:00Z
 ---
 
 ## Current Test
@@ -25,12 +25,16 @@ result: [pending]
 expected: Open Admin Digest with a long draft title; the title wraps with `break-words` and the draft badge + «Сделать ready» stay usable in the meta flex wrap (clickable, no overflow clipping).
 result: [pending]
 
+### 3. Long factor caption / empty justification wrap (14-03 backstop)
+expected: Render a row with a long populated factor caption and a row with the exact empty sentence; both wrap with `break-words` inside `max-w-[12rem]` without breaking the shortlist row grid.
+result: [pending]
+
 ## Summary
 
-total: 2
+total: 3
 passed: 0
 issues: 0
-pending: 2
+pending: 3
 skipped: 0
 blocked: 0
 
