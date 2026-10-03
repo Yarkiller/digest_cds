@@ -1,10 +1,11 @@
 ---
 phase: "14"
 slug: "draft-ready-justification-honesty"
-status: draft
+status: approved
 shadcn_initialized: false
 preset: none
 created: "2026-10-03"
+reviewed_at: "2026-10-03T15:19:00+03:00"
 ---
 
 # Phase 14 — UI Design Contract
@@ -183,38 +184,46 @@ All copy is **Russian**, calm editorial/ops tone. Carry forward Phase 5 / 13 adm
 
 ## UI Considerations
 
-> Shape-rooted state coverage for Phase 14 delta surfaces. Empty/error **copy** lives in `## Copywriting Contract`; rows reference those rows.
+> Shape-rooted state coverage for Phase 14 delta surfaces. Empty/error **copy** lives in `## Copywriting Contract`; rows reference those rows. Kinds confirmed: E1–E5 as-is (`form` retained on E4/E5; form-field categories dismissed with reason).
 
-Applicable: **18** · resolved explicit: **11** · resolved backstop: **3** · dismissed: **4** · unresolved: **0**.
+Applicable: **23** · resolved explicit: **12** · resolved backstop: **3** · dismissed: **8** · unresolved: **0**.
 
 Surfaces:
 - **E1** Per-row «Сделать ready» (`interactive-control`)
-- **E2** Batch «Сделать ready одобренные черновики» (`interactive-control` + `list-collection` gate)
+- **E2** Batch «Сделать ready одобренные черновики» (`interactive-control` + `list-collection`)
 - **E3** Shortlist «Обоснование» caption (`static-content`)
+- **E4** Soft-warn empty-body confirm (`form` + `interactive-control`)
+- **E5** Batch count confirm (`form` + `interactive-control`)
 
 | Category | Element(s) | Status | Resolution / Reason |
 |----------|------------|--------|---------------------|
-| empty | E3 justification | ✅ covered | Exact muted «Обоснование недоступно — скоринг не запускался» when &lt;2 labels (D-15/D-16) |
-| empty | E2 batch gate | ✅ covered | Batch control **not rendered** when `approvedDrafts.length === 0` (D-03) |
-| loading | E1/E2 promote | ✅ covered | Reuse mutating/disabled pattern during request; optimistic badge then silent refetch (D-05) — no skeleton |
-| error | E1/E2 promote | ✅ covered | Toast on failure; badge stays draft; no fake ready |
-| error | E3 justification | ✅ covered | Honesty empty is content state, not error chrome (D-16) |
-| populated | E3 justification | ✅ covered | Join ≥2 real `factor_labels` with ` · `; no FE invention (D-13/D-14) |
-| populated | E1 ready control | ✅ covered | Control visible for draft rows; after success badge=`ready` and CTA removed |
-| partial | E2 batch | ✅ covered | Partial-success: ok ids flip ready; failed ids toast + remain draft (D-08) |
-| partial | E3 factors | ✅ covered | 0 or 1 readable label → same empty copy as zero (no 0-vs-&lt;2 copy split — D-15) |
-| zero-one-many | E2 approved drafts | ✅ covered | N=0 hide batch; N≥1 show batch + confirm with count N |
-| long-text | E3 factor caption | 🧪 backstop | { statement: "Long factor captions and the empty justification sentence wrap with break-words inside max-w-[12rem] without breaking the shortlist row grid", verification: backstop } |
+| loading | E1 promote | ✅ covered | Mutating/disabled during request; optimistic `ready` badge then silent refetch (D-05); no skeleton |
+| error | E1 promote | ✅ covered | Toast on failure; badge stays `draft`; no fake ready |
 | long-text | E1 row title near ready | 🧪 backstop | { statement: "Long material titles still wrap with break-words while draft badge + Сделать ready remain usable in the meta flex wrap", verification: backstop } |
+| empty | E2 batch gate | ✅ covered | Batch control **not rendered** when `approvedDrafts.length === 0` (D-03) |
+| loading | E2 batch | ✅ covered | Same mutating/disabled + optimistic ok-ids as E1 (D-05/D-08) |
+| error | E2 batch | ✅ covered | Toast; failed ids remain draft |
+| populated | E2 batch | ✅ covered | N≥1: show batch CTA; confirm with count N |
+| partial | E2 batch | ✅ covered | Ok ids → ready; failed → toast + stay draft (D-08) |
 | overflow | E2 footer draft list | 🧪 backstop | { statement: "Many approved-draft titles under the send hint scroll/wrap within the sticky footer without covering the batch CTA hit target", verification: backstop } |
-| loading | E3 justification | ✗ dismissed | Caption is sync from shortlist DTO — no async factor fetch |
-| overflow | E3 justification | ✗ dismissed | Covered by E3 long-text backstop |
-| empty | E1 ready control | ✗ dismissed | Absence of CTA when already ready is the happy post-state, not an empty-collection UI |
+| zero-one-many | E2 approved drafts | ✅ covered | N=0 hide batch; N≥1 show batch + confirm with count N |
 | long-text | E2 batch CTA label | ✗ dismissed | Fixed CTA label — long-text N/A |
+| overflow | E3 justification | ✗ dismissed | Covered by E3 long-text backstop |
+| long-text | E3 factor caption | 🧪 backstop | { statement: "Long factor captions and the empty justification sentence wrap with break-words inside max-w-[12rem] without breaking the shortlist row grid", verification: backstop } |
+| empty | E4 soft-warn confirm | ✗ dismissed | Confirm ≠ multi-field form; dialog only when body already empty (trigger ≠ dialog empty-state) |
+| loading | E4 soft-warn confirm | ✅ covered | Browser confirm is sync; after OK, E1 loading contract applies |
+| error | E4 soft-warn confirm | ✅ covered | After OK, API failure → E1 error (toast, keep draft); Cancel = abort, no error chrome |
+| partial | E4 soft-warn confirm | ✗ dismissed | Binary OK/Cancel — no partial field fill |
+| long-text | E4 soft-warn confirm | ✗ dismissed | Fixed RU string «Текст пуст. Сделать ready и продолжить?» |
+| empty | E5 batch confirm | ✗ dismissed | Dialog only when N≥1; empty collection handled by E2 empty |
+| loading | E5 batch confirm | ✅ covered | After OK → E2 loading |
+| error | E5 batch confirm | ✅ covered | After OK → E2 error / partial |
+| partial | E5 batch confirm | ✗ dismissed | Dialog is atomic; batch partial success is E2 partial (no duplicate) |
+| long-text | E5 batch confirm | ✗ dismissed | Fixed template with N; titles not listed in confirm (D-04) |
 
 > **Planner note:** the 3 `backstop` rows lift into `must_haves.truths` as `{ statement, verification: backstop }` — verify needs explicit visual/held-out evidence or `insufficient_spec → human_needed`.
 
-**Domain probes (prose, not closed taxonomy):** Optimistic UI for ready flip is locked by D-05 (mirror Approve/Reject). Soft-warn uses `window.confirm` until a shared in-app dialog exists (RESEARCH A2) — acceptable for Phase 14.
+**Domain probes (prose, not closed taxonomy):** E3 honesty empty/populated stays in Copywriting — exact «Обоснование недоступно — скоринг не запускался» when &lt;2 usable labels; join ≥2 real `factor_labels` with ` · `; never invent factors (D-13…D-17). Optimistic UI for ready flip locked by D-05. Soft-warn / batch use `window.confirm` until a shared in-app dialog exists (RESEARCH A2) — acceptable for Phase 14; own dialog surfaces (E4/E5) still carry loading/error contracts after OK.
 
 ---
 
@@ -230,12 +239,12 @@ No shadcn initialization and no third-party registries declared. Vetting gate no
 
 ## Checker Sign-Off
 
-- [ ] Dimension 1 Copywriting: PASS
-- [ ] Dimension 2 Visuals: PASS
-- [ ] Dimension 3 Color: PASS
-- [ ] Dimension 4 Typography: PASS
-- [ ] Dimension 5 Spacing: PASS
-- [ ] Dimension 6 Registry Safety: PASS
-- [ ] Dimension 7 Inventory Provenance: PASS — N/A (`Tool: none`; Component Inventory omitted by template)
+- [x] Dimension 1 Copywriting: PASS
+- [x] Dimension 2 Visuals: PASS
+- [x] Dimension 3 Color: PASS
+- [x] Dimension 4 Typography: FLAG — Body cell lists near-adjacent 14–15px / 17px; bind one Body size for new promote controls at plan/execute (non-blocking)
+- [x] Dimension 5 Spacing: PASS
+- [x] Dimension 6 Registry Safety: PASS
+- [x] Dimension 7 Inventory Provenance: PASS — N/A (`Tool: none`; Component Inventory omitted by template)
 
-**Approval:** pending
+**Approval:** approved (gsd-ui-checker 2026-10-03; UI Considerations probe confirmed by user)
