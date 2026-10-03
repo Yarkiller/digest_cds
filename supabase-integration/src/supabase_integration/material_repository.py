@@ -132,7 +132,7 @@ class SupabaseMaterialRepository:
                     "id,slug,title,dek,body_markdown,format,status,reading_minutes,"
                     "provenance_label,source_id,roles,published_at,created_at,updated_at,"
                     "material_tags(tag_slug,tag_label),"
-                    "material_relations(to_material_id)"
+                    "material_relations!material_relations_from_material_id_fkey(to_material_id)"
                 )
                 .eq(column, value)
                 .limit(1)
