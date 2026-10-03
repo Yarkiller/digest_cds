@@ -572,6 +572,60 @@ test.describe("Admin Digest — email preview honesty (ADUX-02, D-08/D-12)", () 
     );
     await expect(frame.getByRole("link", { name: "Читать →" })).toBeVisible();
   });
+
+  test("email preview close stays visible while the preview scrolls", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 480 });
+    await gotoAsRole(page, "admin", "/admin/digest");
+    await approveReadyRows(page, [0]);
+    await page.getByRole("button", { name: /предпросмотр письма/i }).click();
+
+    const emailDialog = page.getByRole("dialog").filter({
+      has: page.getByRole("heading", { name: "Превью письма", exact: true }),
+    });
+    await expect(emailDialog).toBeVisible();
+    const close = emailDialog.getByRole("button", { name: "Закрыть", exact: true });
+    const frame = emailDialog.getByTestId("email-preview-frame");
+    await expect(frame).toBeVisible();
+    await expect(frame).toHaveAttribute("sandbox", "");
+
+    const closeContract = await close.evaluate((button) => {
+      let node = button.parentElement;
+      let insideOverflow = false;
+      while (node) {
+        const overflowY = getComputedStyle(node).overflowY;
+        if (overflowY === "auto" || overflowY === "scroll") {
+          insideOverflow = true;
+          break;
+        }
+        node = node.parentElement;
+      }
+      return {
+        insideOverflow,
+        hasPointer: button.classList.contains("cursor-pointer"),
+      };
+    });
+    expect(closeContract.insideOverflow).toBe(false);
+    expect(closeContract.hasPointer).toBe(true);
+
+    const metrics = await frame.evaluate((el) => {
+      let node = el.parentElement;
+      while (node) {
+        const overflowY = getComputedStyle(node).overflowY;
+        if (overflowY === "auto" || overflowY === "scroll") {
+          node.scrollTop = node.scrollHeight;
+          return { scrollHeight: node.scrollHeight, clientHeight: node.clientHeight };
+        }
+        node = node.parentElement;
+      }
+      return null;
+    });
+    expect(metrics).not.toBeNull();
+    expect(metrics.scrollHeight).toBeGreaterThan(metrics.clientHeight);
+    await expect(close).toBeInViewport();
+    await expect(
+      emailDialog.getByRole("heading", { name: "Превью письма", exact: true }),
+    ).toBeInViewport();
+  });
 });
 
 test.describe("Admin Digest — ban-list surfaces (ADUX-04, D-19)", () => {
