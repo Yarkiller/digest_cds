@@ -268,6 +268,81 @@ test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07
     await expect(page.getByRole("button", { name: /предпросмотр письма/i })).toBeDisabled();
   });
 
+  // ADUX-05 / D-01…D-05 / D-10 — per-row Сделать ready next to draft badge
+  test("per-row Сделать ready promotes draft and clears draft hint (ADUX-05)", async ({
+    page,
+  }) => {
+    await gotoAsRole(page, "admin", "/admin/digest");
+    const rows = page.getByTestId("admin-shortlist-row");
+    const draftRow = rows.nth(3); // material 104 — draft, empty body
+    await expect(draftRow.getByText("draft", { exact: true })).toBeVisible();
+    const readyBtn = draftRow.getByTestId("admin-mark-ready");
+    await expect(readyBtn).toBeVisible();
+    await expect(readyBtn).toHaveText("Сделать ready");
+
+    // Soft-warn for empty body (D-04/D-10)
+    page.once("dialog", async (dialog) => {
+      expect(dialog.message()).toBe("Текст пуст. Сделать ready и продолжить?");
+      await dialog.accept();
+    });
+    await readyBtn.click();
+
+    await expect(draftRow.getByText("ready", { exact: true })).toBeVisible();
+    await expect(draftRow.getByTestId("admin-mark-ready")).toHaveCount(0);
+
+    // Approve after ready — send path unblocked (no approved∩draft)
+    await draftRow.getByRole("checkbox").check();
+    await page.getByRole("button", { name: /одобрить выбранные/i }).click();
+    await expect(draftRow.getByText("одобрен")).toBeVisible();
+    await expect(
+      page.getByTestId("admin-send-hint"),
+    ).not.toContainText(/уберите черновики из одобренных или дождитесь ready/i);
+    await expect(page.getByTestId("admin-mark-ready-batch")).toHaveCount(0);
+  });
+
+  // ADUX-05 / D-03, D-04, D-08 — batch one markReadyBatch call
+  test("batch Сделать ready одобренные черновики issues one markReadyBatch (ADUX-05)", async ({
+    page,
+  }) => {
+    await gotoAsRole(page, "admin", "/admin/digest");
+    const rows = page.getByTestId("admin-shortlist-row");
+    // Approve draft (rank 4) — batch CTA appears
+    await rows.nth(3).getByRole("checkbox").check();
+    await page.getByRole("button", { name: /одобрить выбранные/i }).click();
+    await expect(rows.nth(3).getByText("одобрен")).toBeVisible();
+
+    const batchBtn = page.getByTestId("admin-mark-ready-batch");
+    await expect(batchBtn).toBeVisible();
+    await expect(batchBtn).toHaveText("Сделать ready одобренные черновики");
+
+    page.once("dialog", async (dialog) => {
+      expect(dialog.message()).toBe("Сделать ready 1 одобренных черновиков?");
+      await dialog.accept();
+    });
+    await batchBtn.click();
+
+    await expect(rows.nth(3).getByText("ready", { exact: true })).toBeVisible();
+    await expect(page.getByTestId("admin-mark-ready-batch")).toHaveCount(0);
+    await expect(
+      page.getByTestId("admin-send-hint"),
+    ).not.toContainText(/уберите черновики из одобренных или дождитесь ready/i);
+
+    const batchCalls = await page.evaluate(
+      () => window.__DIGEST_ADMIN_HARNESS__?.getMockMarkReadyBatchCalls?.() ?? -1,
+    );
+    expect(batchCalls).toBe(1);
+  });
+
+  test("Approve does not auto-ready draft (D-02)", async ({ page }) => {
+    await gotoAsRole(page, "admin", "/admin/digest");
+    const rows = page.getByTestId("admin-shortlist-row");
+    await rows.nth(3).getByRole("checkbox").check();
+    await page.getByRole("button", { name: /одобрить выбранные/i }).click();
+    await expect(rows.nth(3).getByText("одобрен")).toBeVisible();
+    await expect(rows.nth(3).getByText("draft", { exact: true })).toBeVisible();
+    await expect(rows.nth(3).getByTestId("admin-mark-ready")).toBeVisible();
+  });
+
   test("preview lists one approved-ready article (zero-one-many E4)", async ({
     page,
   }) => {
