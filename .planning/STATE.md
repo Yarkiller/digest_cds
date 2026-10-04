@@ -25,7 +25,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-02 — v1.2 milestone)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Phase 14 — Draft→ready & justification honesty
+**Current focus:** Phase 15 — CLI --debug diagnostics
 
 ## Current Position
 
@@ -41,7 +41,7 @@ Progress: [███████░░░] 71%
 **Velocity:**
 
 - Total plans completed: 19 (40 v1 + 23 v1.1)
-- v1.2 plans completed: 0
+- v1.2 plans completed: 19
 - Prior milestone velocity: see MILESTONES.md / archived STATE
 
 **By Phase:**
