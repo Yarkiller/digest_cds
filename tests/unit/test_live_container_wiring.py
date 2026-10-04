@@ -89,6 +89,15 @@ def test_build_live_container_wires_supabase_adapters(monkeypatch: pytest.Monkey
     assert isinstance(container.mailer, StubMailer)
     assert isinstance(container.publisher, SupabaseDigestPublisher)
     assert not isinstance(container.publisher, InMemoryDigestPublisher)
+
+    from backend.infrastructure.yaml_pipeline_config_validator import YamlPipelineConfigValidator
+    from backend.tests_support.in_memory import InMemoryPipelineConfigRepository
+    from supabase_integration import SupabasePipelineConfigRepository
+
+    assert isinstance(container.pipeline_config, SupabasePipelineConfigRepository)
+    assert not isinstance(container.pipeline_config, InMemoryPipelineConfigRepository)
+    assert isinstance(container.pipeline_config_validator, YamlPipelineConfigValidator)
+
     create_service.assert_called_once_with(
         "https://example.test",
         "secret-key",
@@ -97,6 +106,28 @@ def test_build_live_container_wires_supabase_adapters(monkeypatch: pytest.Monkey
         "https://example.test",
         "publishable-key",
     )
+
+
+def test_build_live_container_wires_pipeline_config(monkeypatch: pytest.MonkeyPatch) -> None:
+    """D-10 / PIPE-03: live composition wires the Supabase adapter + the real YAML validator."""
+    from backend.infrastructure.yaml_pipeline_config_validator import YamlPipelineConfigValidator
+    from backend.tests_support.in_memory import InMemoryPipelineConfigRepository
+    from supabase_integration import SupabasePipelineConfigRepository
+
+    monkeypatch.setattr(
+        "backend.composition.live.create_service_role_client",
+        MagicMock(return_value=object()),
+    )
+    settings = Settings(
+        supabase_url="https://example.test",
+        supabase_secret_key="secret-key",
+    )
+
+    container = build_live_container(settings)
+
+    assert isinstance(container.pipeline_config, SupabasePipelineConfigRepository)
+    assert not isinstance(container.pipeline_config, InMemoryPipelineConfigRepository)
+    assert isinstance(container.pipeline_config_validator, YamlPipelineConfigValidator)
 
 
 def test_build_live_container_rejects_smtp_mailer(monkeypatch: pytest.MonkeyPatch) -> None:
