@@ -1,40 +1,38 @@
 ---
-status: testing
+status: complete
 phase: 14-draft-ready-justification-honesty
 source: [14-VERIFICATION.md]
 started: 2026-10-03T19:10:00Z
-updated: 2026-10-04T00:45:00Z
+updated: 2026-10-04T07:15:00Z
 ---
 
 ## Current Test
 
-number: 1
-name: Live per-row promote (G-14-1 live re-check)
-expected: |
-  On live Supabase data (VITE_USE_MOCKS=false), promoting a draft material with a non-empty body via per-row
-  «Сделать ready» returns HTTP 200 (not 503) and the row badge flips to «готов» after the silent refetch.
-awaiting: user response
+[testing complete]
 
 ## Tests
 
 ### 1. Live per-row promote (G-14-1 live re-check)
 expected: On live Supabase data (VITE_USE_MOCKS=false), promote a draft material with a non-empty body via per-row «Сделать ready»; `POST /admin/materials/{id}/ready` returns 200 (not 503) and the badge flips to «готов» after the silent refetch.
-result: [pending]
+result: pass
+evidence: "Live (VITE_USE_MOCKS=false, Supabase knowledge-db.ru). Demoted material 12 to draft in DB; row rendered «черновик Сделать ready одобрен (в шортлист)» and footer «Отправка недоступна.». Clicked «Сделать ready» → intercepted fetch recorded POST http://127.0.0.1:8000/admin/materials/12/ready → 200. Badge flipped to «готов», «Сделать ready» disappeared, footer hint became «Сначала откройте превью письма.». DB materials.id=12 → status=ready. Re-POST via authenticated session twice → both 200 {material_id:12,status:ready} (idempotent no-op). published_at stayed null throughout."
 
 ### 2. Long title + ready CTA layout (14-03 backstop)
 expected: Open Admin Digest with a long draft title; the title wraps with `break-words` and the draft badge + «Сделать ready» stay usable in the meta flex wrap (clickable, no overflow clipping).
-result: [pending]
+result: pass
+evidence: "At a 390px viewport with an injected ~3x long title on the draft row: title element class `break-words font-medium text-ink`, computed `overflow-wrap: break-word`; wrapped to 1080px tall with right edge inside the viewport; badge «черновик» and «Сделать ready» both still usable (non-zero size, inside viewport); page and row horizontal overflow 0px."
 
 ### 3. Long factor caption / empty justification wrap (14-03 backstop)
 expected: Render a row with a long populated factor caption and a row with the exact empty sentence; both wrap with `break-words` inside `max-w-[12rem]` without breaking the shortlist row grid.
-result: [pending]
+result: pass
+evidence: "Factor caption element class `mt-1 max-w-[12rem] break-words text-xs text-muted`, computed `max-width: 192px`, `overflow-wrap: break-word`. Empty state renders the exact D-15 copy «Обоснование недоступно — скоринг не запускался» on every row. With a long injected caption at 390px it wrapped (80px tall) at exactly 192px width with no overflow and the row grid stayed intact."
 
 ## Summary
 
 total: 3
-passed: 0
+passed: 3
 issues: 0
-pending: 3
+pending: 0
 skipped: 0
 blocked: 0
 
