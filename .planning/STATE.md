@@ -5,17 +5,17 @@ milestone_name: Admin UX + diagnostics + PIPE-01 MVP
 current_phase: 16
 current_phase_name: PIPE-01 MVP config UI
 status: executing
-stopped_at: Completed 16-02-PLAN.md
-last_updated: "2026-10-04T11:01:05.326Z"
+stopped_at: Completed 16-04-PLAN.md
+last_updated: "2026-10-04T11:28:31.312Z"
 last_activity: 2026-10-04
 last_activity_desc: Phase 16 execution started
-state_head: 94b786fd83ec7b90346f4c3d4db35b538310266f
+state_head: 4239f0f22b791ec91b0cb051c43191de29d79f3d
 progress:
   total_phases: 5
   completed_phases: 6
   total_plans: 26
-  completed_plans: 24
-  percent: 92
+  completed_plans: 25
+  percent: 96
 ---
 
 # Project State
@@ -30,11 +30,11 @@ See: .planning/PROJECT.md (updated 2026-10-04 — after Phase 15)
 ## Current Position
 
 Phase: 16 (PIPE-01 MVP config UI) — EXECUTING
-Plan: 3 of 4
+Plan: 4 of 4
 Status: Ready to execute
 Last activity: 2026-10-04 — Phase 16 execution started
 
-Progress: [█████████░] 92%
+Progress: [█████████░] 96%
 
 ## Performance Metrics
 
@@ -85,6 +85,7 @@ Progress: [█████████░] 92%
 | Phase 15 P03 | 8min | 3 tasks | 3 files |
 | Phase 16 P01 | 5 min | 2 tasks | 10 files |
 | Phase 16 P02 | 6min | 2 tasks | 12 files |
+| Phase 16 P04 | 20min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -144,6 +145,10 @@ v1.2 roadmap locks:
 - [Phase 16]: MAX_PIPELINE_CONFIG_CHARS=20000 cap checked before parse; strict _StrictSafeLoader rejects duplicate keys (16-02, T-16-07/T-16-09)
 - [Phase 16]: Rule 2 deviation: added PUT to CORS allow_methods so the live browser preflight reaches the reject path (16-02, RESEARCH Pitfall 1)
 - [Phase 16]: AppContainer.pipeline_config/pipeline_config_validator declared with None defaults; build_in_memory_container wires the real YamlPipelineConfigValidator + InMemoryPipelineConfigRepository (16-02)
+- [Phase 16]: 16-04 harness arms live in sessionStorage so armFailNextLoad survives page.reload(); save arms consume once so retry can succeed
+- [Phase 16]: 16-04 page performs no client YAML validation: only a server INVALID_CONFIG reject opens the panel and keeps the document dirty (D-03/D-07)
+- [Phase 16]: 16-04 aria-invalid is driven by the rejected flag so a reject with no structured errors still marks the editor
+- [Phase 16]: 16-04 exposed window.__DIGEST_PIPELINE_CONFIG_HARNESS__ in Task 1 (plan scheduled it for Task 2) so Task 1 Playwright verify could pass
 
 ### Pending Todos
 
@@ -167,7 +172,7 @@ Carried product deferrals to v1.3+: leaderboard, quiz, live SMTP, signup mail, W
 
 ## Session Continuity
 
-Last session: 2026-10-04T11:01:05.157Z
-Stopped at: Completed 16-02-PLAN.md
+Last session: 2026-10-04T11:28:21.300Z
+Stopped at: Completed 16-04-PLAN.md
 Resume file: None
 Next: plan Phase 16 (PIPE-01 MVP config UI)
