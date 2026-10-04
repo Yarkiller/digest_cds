@@ -13,6 +13,7 @@ from data_collection.ports.article_generator import ArticleGenerator
 from data_collection.ports.transcript_provider import TranscriptProvider
 from data_collection.ports.video_metadata_provider import VideoMetadataProvider
 from ingestion_service.adapters.persist_errors import DraftPersistError
+from ingestion_service.application.ports.diagnostics import StageDiagnostics
 from ingestion_service.application.ports.persist import PersistPort, PersistResult
 from ingestion_service.application.use_cases.persist_draft import persist_draft
 from ingestion_service.mapping.article import map_article_error
@@ -36,16 +37,29 @@ async def run_ingest_pipeline(
     article: ArticleGenerator,
     persist: PersistPort,
     on_stage: OnStage | None = None,
+    diagnostics: StageDiagnostics | None = None,
 ) -> PersistResult:
     try:
         video_id = extract_video_id(url)
     except InvalidYouTubeUrl as err:
         raise map_url_error(err) from err
 
+    if diagnostics is not None:
+        diagnostics.stage_started("captions")
     try:
         transcript = await captions.get(video_id)
     except CaptionsError as err:
         raise map_captions_error(err) from err
+    if diagnostics is not None:
+        diagnostics.stage_completed(
+            "captions",
+            {
+                "video_id": transcript.video_id,
+                "transcript_chars": len(transcript.text),
+                "transcript_words": len(transcript.text.split()),
+                "language": transcript.language,
+            },
+        )
     if on_stage is not None:
         on_stage("transcript")
 

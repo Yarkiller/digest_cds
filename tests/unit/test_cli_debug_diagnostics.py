@@ -1,0 +1,118 @@
+"""RED→GREEN: opt-in `--debug` stage diagnostics on stderr (DBG-01, DBG-02; D-01…D-03, D-13)."""
+
+from __future__ import annotations
+
+import ast
+import re
+from pathlib import Path
+from types import SimpleNamespace
+
+from data_collection.dto.article_draft import ArticleDraft
+from data_collection.dto.transcript import Transcript
+from data_collection.dto.video_metadata import VideoMetadata
+from data_collection.tests_support.fakes import (
+    FakeArticleGenerator,
+    FakeTranscriptProvider,
+    FakeVideoMetadataProvider,
+)
+from ingestion_service.application.ports.persist import PersistResult
+from ingestion_service.tests_support.fakes import FakeDraftPersister
+
+VIDEO_ID = "dQw4w9WgXcQ"
+URL = f"https://youtu.be/{VIDEO_ID}"
+EXPECTED_SLUG = "kak-ispolzovat-pgvector-dQw4w9WgXcQ"
+
+EXPECTED_SUCCESS_LINES = [
+    "✓ transcript",
+    "✓ LLM",
+    "✓ saved",
+    "material_id: 42",
+    f"slug: {EXPECTED_SLUG}",
+    "batch_id: 7",
+    "rank: 1",
+    "already_saved: false",
+]
+
+_DEBUG_CAPTIONS_RE = re.compile(r"^\[\d{2}:\d{2}:\d{2}\] debug stage=captions ")
+
+
+def _transcript() -> Transcript:
+    return Transcript(text="ok captions", language="ru", video_id=VIDEO_ID)
+
+
+def _article() -> ArticleDraft:
+    return ArticleDraft(
+        title="Как использовать pgvector",
+        dek="dek",
+        body_markdown="body text here",
+    )
+
+
+def _metadata() -> VideoMetadata:
+    return VideoMetadata(
+        video_id=VIDEO_ID,
+        source_url=f"https://www.youtube.com/watch?v={VIDEO_ID}",
+        author="Rick Astley",
+    )
+
+
+def _persist_result() -> PersistResult:
+    return PersistResult(material_id=42, slug=EXPECTED_SLUG, batch_id=7, rank=1)
+
+
+def _fake_deps() -> object:
+    return SimpleNamespace(
+        captions=FakeTranscriptProvider(result=_transcript()),
+        metadata_provider=FakeVideoMetadataProvider(result=_metadata()),
+        article=FakeArticleGenerator(result=_article()),
+        persist=FakeDraftPersister(_persist_result()),
+    )
+
+
+def test_debug_off_is_byte_identical(monkeypatch) -> None:
+    """D-13 / DBG-02: without --debug stderr is empty and stdout is the frozen contract."""
+    from typer.testing import CliRunner
+
+    from ingestion_service import cli as cli_mod
+
+    monkeypatch.setattr(cli_mod, "build_ingest_deps", lambda: _fake_deps())
+
+    result = CliRunner().invoke(cli_mod.app, [URL, "--template", "lecture"])
+    assert result.exit_code == 0
+    assert result.stderr == ""
+    assert result.stdout.splitlines() == EXPECTED_SUCCESS_LINES
+
+
+def test_debug_success_emits_stage_lines(monkeypatch) -> None:
+    """D-01/D-02/D-03: --debug prints a captions line on stderr; stdout unchanged."""
+    from typer.testing import CliRunner
+
+    from ingestion_service import cli as cli_mod
+
+    monkeypatch.setattr(cli_mod, "build_ingest_deps", lambda: _fake_deps())
+
+    result = CliRunner().invoke(cli_mod.app, [URL, "--template", "lecture", "--debug"])
+    assert result.exit_code == 0
+    assert result.stdout.splitlines() == EXPECTED_SUCCESS_LINES
+
+    lines = [line for line in result.stderr.splitlines() if line.strip()]
+    captions_lines = [line for line in lines if _DEBUG_CAPTIONS_RE.match(line)]
+    assert len(captions_lines) == 1
+    captions_line = captions_lines[0]
+    assert "elapsed_ms=" in captions_line
+    assert "transcript_chars=" in captions_line
+
+
+def test_ingest_pipeline_retains_no_infra_imports() -> None:
+    """Structural guard: the use-case stays free of clock/stream/CLI imports."""
+    import ingestion_service.application.use_cases.ingest_pipeline as pipeline_mod
+
+    source = Path(pipeline_mod.__file__).read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    imported: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            imported.update(alias.name.split(".")[0] for alias in node.names)
+        elif isinstance(node, ast.ImportFrom) and node.module:
+            imported.add(node.module.split(".")[0])
+    assert imported.isdisjoint({"time", "sys", "typer", "datetime"})

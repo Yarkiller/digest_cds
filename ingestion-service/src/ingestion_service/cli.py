@@ -11,6 +11,11 @@ import typer
 from data_collection.dto.template_kind import TemplateKind
 from data_collection.templates import TemplateLoadError
 
+from ingestion_service.adapters.stderr_diagnostics import StderrDiagnostics, SystemClock
+from ingestion_service.application.ports.diagnostics import (
+    NullDiagnostics,
+    StageDiagnostics,
+)
 from ingestion_service.application.use_cases.ingest_pipeline import run_ingest_pipeline
 from ingestion_service.composition.clients import (
     build_deepseek_article_generator,
@@ -39,7 +44,20 @@ def build_ingest_deps() -> Any:
         metadata_provider=build_youtube_metadata_provider(settings),
         article=build_deepseek_article_generator(settings),
         persist=build_supabase_draft_persister(settings),
+        settings=settings,
     )
+
+
+def _settings_secrets(settings: Settings | None) -> list[str]:
+    """Non-empty runtime secret values used to seed the redaction registry (D-08)."""
+    if settings is None:
+        return []
+    candidates = (
+        settings.deepseek_api_key,
+        settings.supabase_secret_key,
+        settings.youtube_proxy_url,
+    )
+    return [value for value in candidates if value]
 
 
 def _on_stage(name: str) -> None:
@@ -53,10 +71,22 @@ def main(
         TemplateKind,
         typer.Option("--template", help="Prompt template: lecture or podcast"),
     ],
+    debug: Annotated[
+        bool,
+        typer.Option("--debug", help="Emit secret-safe stage diagnostics on stderr"),
+    ] = False,
 ) -> None:
     """Ingest a YouTube URL into a materials draft + shortlist row."""
+    diagnostics: StageDiagnostics = (
+        StderrDiagnostics(clock=SystemClock()) if debug else NullDiagnostics()
+    )
     try:
         deps = build_ingest_deps()
+        if debug:
+            diagnostics = StderrDiagnostics(
+                clock=SystemClock(),
+                secrets=_settings_secrets(getattr(deps, "settings", None)),
+            )
         result = asyncio.run(
             run_ingest_pipeline(
                 url,
@@ -66,6 +96,7 @@ def main(
                 article=deps.article,
                 persist=deps.persist,
                 on_stage=_on_stage,
+                diagnostics=diagnostics,
             )
         )
     except (ConfigurationError, TemplateLoadError) as err:
