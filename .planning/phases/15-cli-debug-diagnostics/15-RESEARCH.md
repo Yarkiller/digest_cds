@@ -576,12 +576,11 @@ body_markdown, roles)` (`data_collection/dto/article_draft.py:11-15`),
 | A2 | Token counts / real prompt length are unavailable without changing `ArticleGenerator`; emit `response_chars` only | Pattern/signals / Q1 | Planner fabricates misleading `prompt_chars`, or changes the public port |
 | A3 | Debug success lines should be the four D-04 stages (`transcript`/`metadata`/`llm`/`persist`); `url`/`consistency` appear only on failure | Pattern 4 / Q2 | Operator expects a `url` success line, or stage naming mismatches the JSON envelope |
 | A4 | The denylist regex set above is sufficient defense-in-depth alongside the exact-value `SecretRegistry` | Redaction | An unanticipated secret shape slips through (residual risk, mitigated by registry) |
-| A5 | Building the secret registry from `Settings` requires exposing `settings` on the `build_ingest_deps()` namespace | Wiring | Tight coupling breaks existing monkeypatched fakes (see Pitfall 8) |
+| A5 | Building the secret registry from `Settings` requires exposing `settings` on the `build_ingest_deps()` namespace — **RESOLVED:** add `settings=` to the production namespace and read it via `getattr(deps, "settings", None)` with a regex-only fallback | Wiring | Tight coupling breaks existing monkeypatched fakes (see Pitfall 8) |
 
-**If this table is not empty**, the planner/discuss-phase should confirm A1–A3 with the user
-before locking signals; A4/A5 are implementation choices.
+**Resolved for planning:** A1–A3 are locked by Q1–Q3 (segment count omitted, no `ArticleGenerator` port change, domain `captions` token); A4 is best-effort defense-in-depth; A5 is resolved via `settings=` + `getattr(deps, "settings", None)` fallback.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Real LLM token/prompt counts (D-04 "token counts when available").**
    - What we know: `DeepSeekArticleGenerator.process()` returns only `ArticleDraft`; the
@@ -591,21 +590,36 @@ before locking signals; A4/A5 are implementation choices.
    - Recommendation: **Do not change the port this phase.** Emit `template` and
      `response_chars = len(article_draft.body_markdown)`, and rely on D-04's "when
      available" to omit token counts. Record the omission explicitly in the plan.
+   - **RESOLVED (locked for planning, Q1):** No `ArticleGenerator` port change this
+     phase; emit only `template` and `response_chars`; prompt-length/token counts omitted
+     per D-04's "when available".
 2. **Debug stage token for the captions stage: `transcript` vs `captions`.**
    - What we know: D-04 says "transcript"; `IngestError.stage` and the domain vocabulary
      say `captions`.
    - Recommendation: use `stage=captions` for correlation with the JSON envelope, or keep
      `stage=transcript` and map `captions`→`transcript` only for the timing lookup. Confirm
      the operator-facing token; either is defensible.
+   - **RESOLVED (locked for planning, Q2):** Use the domain `captions` token so each debug
+     line correlates 1:1 with `IngestError.stage`; D-04's "transcript" names the captions
+     stage.
 3. **Segment count signal.**
    - What we know: `Transcript` has no segment count; the adapter computes it.
    - Recommendation: omit it (or emit `transcript_words` as the available counter). If
      required, extend `Transcript` with an optional `segment_count` **only with explicit
      user approval**, since `Transcript` is public package API.
+   - **RESOLVED (locked for planning, Q3):** Omit segment count; emit `transcript_chars`,
+     `transcript_words`, and `language` instead (no `Transcript` DTO change).
 4. **Where the concrete sink lives (`adapters/` vs a new `diagnostics/` package).**
    - Recommendation: port in `application/ports/diagnostics.py`, sink in
      `adapters/stderr_diagnostics.py`, pure redaction in `diagnostics/redaction.py`. Any
      equivalent split is fine (Claude's Discretion).
+   - **RESOLVED (locked for planning, A5):** Port in
+     `application/ports/diagnostics.py`, sink in `adapters/stderr_diagnostics.py`, pure
+     redaction in `diagnostics/redaction.py`; thread `settings=` into the
+     `build_ingest_deps()` namespace and read it via
+     `getattr(deps, "settings", None)` so monkeypatched fakes without `settings` still work.
+
+**All four open questions are resolved and locked; no open questions remain for planning.**
 
 ## Environment Availability
 
