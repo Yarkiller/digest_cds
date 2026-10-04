@@ -217,3 +217,24 @@ def test_deeply_nested_flow_document_is_rejected_not_recursion_error() -> None:
     assert errors[0].line is None
     assert errors[0].message == "YAML nesting too deep (exceeds parser limit)"
 
+
+# --- 13. unreadable characters (CR-01) ----------------------------------------
+
+
+def test_unreadable_control_char_document_is_rejected_not_unmarked_yaml_error() -> None:
+    """RED→GREEN CR-01: a control char (< cap) raises a bare ``yaml.YAMLError``.
+
+    ``yaml.reader.ReaderError`` is a ``yaml.YAMLError`` but not a
+    ``MarkedYAMLError``; before the fix it escapes ``validate()`` entirely
+    (unhandled HTTP 500). It must map to a structured reject instead.
+    """
+    document = "template: lecture\nroles:\n  - ds\nlanguage: \x00ru\nmax_chars: 100\n"
+    assert len(document) <= MAX_PIPELINE_CONFIG_CHARS
+
+    errors = _errors(document)
+
+    assert len(errors) == 1
+    assert errors[0].path == ""
+    assert errors[0].line is None
+    assert errors[0].message == "Документ содержит недопустимые символы"
+

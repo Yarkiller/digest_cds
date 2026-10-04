@@ -30,6 +30,7 @@ MAX_PIPELINE_CONFIG_CHARS = 20000
 _OVER_CAP_MESSAGE = "Документ конфига превышает допустимый размер"
 _NOT_A_TEXT_OBJECT_MESSAGE = "Ожидается объект с текстовыми ключами"
 _TOO_DEEP_MESSAGE = "YAML nesting too deep (exceeds parser limit)"
+_UNREADABLE_MESSAGE = "Документ содержит недопустимые символы"
 
 
 class _StrictSafeLoader(yaml.SafeLoader):
@@ -109,6 +110,14 @@ class YamlPipelineConfigValidator:
             # the route returns a 400 {"errors":[...]} instead of an unhandled 500.
             raise PipelineConfigValidationError(
                 (PipelineConfigError(path="", message=_TOO_DEEP_MESSAGE),)
+            ) from exc
+        except yaml.YAMLError as exc:
+            # CR-01: unmarked YAML errors (e.g. yaml.reader.ReaderError for
+            # non-printable/control characters) are yaml.YAMLError but not
+            # MarkedYAMLError. Map them to a structured reject too, so user-supplied
+            # text never surfaces as an unhandled 500.
+            raise PipelineConfigValidationError(
+                (PipelineConfigError(path="", message=_UNREADABLE_MESSAGE),)
             ) from exc
 
         if not isinstance(data, dict) or not all(isinstance(key, str) for key in data):
