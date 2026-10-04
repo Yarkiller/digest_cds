@@ -45,6 +45,21 @@ def test_allowed_origin_receives_access_control_allow_origin() -> None:
     assert response.headers.get("access-control-allow-origin") == origin
 
 
+def test_put_method_is_advertised_in_cors_preflight() -> None:
+    """PIPE-02 (RESEARCH Pitfall 1): PUT /admin/pipeline/config preflight must allow PUT."""
+    client = TestClient(create_app(_settings_with_cors("http://127.0.0.1:5173")))
+    response = client.options(
+        "/admin/pipeline/config",
+        headers={
+            "Origin": "http://127.0.0.1:5173",
+            "Access-Control-Request-Method": "PUT",
+        },
+    )
+    assert response.status_code == 200
+    allowed = response.headers.get("access-control-allow-methods", "")
+    assert "PUT" in allowed
+
+
 def test_disallowed_origin_does_not_receive_allow_origin() -> None:
     client = TestClient(
         create_app(_settings_with_cors("http://127.0.0.1:5173,http://localhost:5173"))

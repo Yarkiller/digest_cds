@@ -19,3 +19,25 @@ class PipelineConfig:
 
     yaml: str
     updated_at: datetime | None
+
+
+@dataclass(frozen=True)
+class PipelineConfigError:
+    """One structured validation failure (PIPE-02, D-05).
+
+    ``path`` is a dotted field path (empty for document-level parse errors) and
+    ``line`` is the 1-based YAML line when the parser can supply one. ``to_dict()``
+    omits ``line`` when it is None so the reject payload matches the UI-SPEC contract
+    verbatim.
+    """
+
+    path: str
+    message: str
+    line: int | None = None
+
+    def to_dict(self) -> dict[str, object]:
+        payload: dict[str, object] = {"path": self.path, "message": self.message}
+        if self.line is not None:
+            payload["line"] = self.line
+        return payload
+

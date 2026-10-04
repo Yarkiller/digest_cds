@@ -1,3 +1,6 @@
+from backend.domain.pipeline_config import PipelineConfigError
+
+
 class DomainError(Exception):
     """Base domain error."""
 
@@ -171,3 +174,15 @@ class AlreadySentError(DomainError):
         )
         self.batch_id = batch_id
         self.message_ru = "Уже отправлено"
+
+
+class PipelineConfigValidationError(DomainError):
+    """Raised when the pipeline config fails server-side validation (PIPE-02, D-03/D-05).
+
+    Carries the structured ``PipelineConfigError`` tuple the PUT route maps to a
+    top-level ``{"errors": [...]}`` 400 payload.
+    """
+
+    def __init__(self, errors: tuple[PipelineConfigError, ...]) -> None:
+        super().__init__("pipeline config validation failed")
+        self.errors = errors

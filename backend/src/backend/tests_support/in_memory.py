@@ -626,17 +626,28 @@ class InMemoryRazborRepository:
 
 
 class InMemoryPipelineConfigRepository:
-    """In-memory PipelineConfigRepository — absent by default (D-11 empty state)."""
+    """In-memory PipelineConfigRepository — absent by default (D-11 empty state).
+
+    Records every save so route tests can assert zero writes on a validation reject
+    (D-03/D-07).
+    """
 
     def __init__(self, config: PipelineConfig | None = None) -> None:
         self._config = config
+        self.saves: list[PipelineConfig] = []
+
+    @property
+    def save_count(self) -> int:
+        return len(self.saves)
 
     def get(self) -> PipelineConfig | None:
         return self._config
 
     def save(self, *, yaml: str, updated_at: datetime) -> PipelineConfig:
-        self._config = PipelineConfig(yaml=yaml, updated_at=updated_at)
-        return self._config
+        stored = PipelineConfig(yaml=yaml, updated_at=updated_at)
+        self._config = stored
+        self.saves.append(stored)
+        return stored
 
 
 class InMemoryPipelineConfigValidator:

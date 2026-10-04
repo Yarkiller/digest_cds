@@ -120,7 +120,7 @@ def test_unknown_key_is_rejected_by_extra_forbid() -> None:
 
 def test_wrong_type_missing_required_and_empty_roles_map_to_dotted_paths() -> None:
     """RED→GREEN: one error per field with its dotted path and no line."""
-    errors = _errors("template: 5\nroles: []\n")
+    errors = _errors("template: 5\nroles: []\nmax_chars: 5\n")
 
     assert sorted(error.path for error in errors) == ["language", "roles", "template"]
     assert all(error.line is None for error in errors)

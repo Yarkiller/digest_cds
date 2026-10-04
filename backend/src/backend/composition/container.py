@@ -13,6 +13,10 @@ from backend.application.ports.material_repository import MaterialRepository
 from backend.application.ports.notebook_storage import NotebookStorage
 from backend.application.ports.ping_recorder import PingRecorder
 from backend.application.ports.profile_repository import ProfileRepository
+from backend.application.ports.pipeline_config import (
+    PipelineConfigRepository,
+    PipelineConfigValidator,
+)
 from backend.application.ports.query_embedder import QueryEmbedder, StubQueryEmbedder
 from backend.application.ports.razbor_repository import RazborRepository
 from backend.application.ports.shortlist_repository import ShortlistRepository
@@ -27,12 +31,14 @@ from backend.domain.material import Material
 from backend.domain.voting_cycle import VotingCycle
 from backend.infrastructure.local_notebook_storage import LocalNotebookStorage
 from backend.infrastructure.stub_mailer import StubMailer
+from backend.infrastructure.yaml_pipeline_config_validator import YamlPipelineConfigValidator
 from backend.tests_support.in_memory import (
     InMemoryDigestPublisher,
     InMemoryIssueRepository,
     InMemoryKnowledgeChunkRepository,
     InMemoryMaterialRepository,
     InMemoryPingRecorder,
+    InMemoryPipelineConfigRepository,
     InMemoryProfileRepository,
     InMemoryRazborRepository,
     InMemoryShortlistRepository,
@@ -56,6 +62,10 @@ class AppContainer:
     shortlist: ShortlistRepository
     mailer: Mailer
     publisher: DigestPublisher
+    # Declared here (deferred from 16-01) with None defaults so a bare AppContainer(...)
+    # still constructs; build_in_memory_container wires the real adapter.
+    pipeline_config: PipelineConfigRepository | None = None
+    pipeline_config_validator: PipelineConfigValidator | None = None
 
     def publish(self, material_id: int) -> Material:
         return publish_material(self.materials, material_id)
@@ -121,4 +131,6 @@ def build_in_memory_container(
         lambda: container.shortlist,
         lambda: container.issues,
     )
+    container.pipeline_config = InMemoryPipelineConfigRepository()
+    container.pipeline_config_validator = YamlPipelineConfigValidator()
     return container

@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field
 
 from backend.application.use_cases.get_admin_shortlist import get_admin_shortlist
@@ -33,6 +34,7 @@ from backend.domain.errors import (
     InvalidShortlistDecisionError,
     MaterialNotFoundError,
     PersistenceError,
+    PipelineConfigValidationError,
     ShortlistNotFoundError,
 )
 from backend.domain.shortlist import AdminShortlist
@@ -574,6 +576,13 @@ def put_pipeline_config(
         )
     try:
         config = save_pipeline_config(repo, validator, yaml_text=body.yaml)
+    except PipelineConfigValidationError as exc:
+        # D-05 / RESEARCH Pitfall 2: top-level {"errors":[...]}, never nested under detail.
+        # Repository is not called on reject (D-03/D-07) — zero writes.
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"errors": [error.to_dict() for error in exc.errors]},
+        )
     except PersistenceError as exc:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
