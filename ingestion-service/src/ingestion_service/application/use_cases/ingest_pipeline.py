@@ -63,10 +63,14 @@ async def run_ingest_pipeline(
     if on_stage is not None:
         on_stage("transcript")
 
+    if diagnostics is not None:
+        diagnostics.stage_started("metadata")
     try:
         metadata = await metadata_provider.get(video_id)
     except MetadataError as err:
         raise map_metadata_error(err) from err
+    if diagnostics is not None:
+        diagnostics.stage_completed("metadata", {"video_id": metadata.video_id})
 
     # CONSISTENCY-01: fail closed before LLM when DTO video ids diverge.
     if transcript.video_id != metadata.video_id:
@@ -84,18 +88,41 @@ async def run_ingest_pipeline(
     if transcript.language != "ru":
         provenance = f"{provenance}{ENGLISH_TRANSLATION_SUFFIX}"
 
+    if diagnostics is not None:
+        diagnostics.stage_started("llm")
     try:
         article_draft = await article.process(transcript, template)
     except ArticleError as err:
         raise map_article_error(err) from err
+    if diagnostics is not None:
+        diagnostics.stage_completed(
+            "llm",
+            {
+                "template": template.value,
+                "response_chars": len(article_draft.body_markdown),
+            },
+        )
     if on_stage is not None:
         on_stage("llm")
 
     material = assemble_material_draft(article_draft, metadata, provenance)
+    if diagnostics is not None:
+        diagnostics.stage_started("persist")
     try:
         result = persist_draft(material, persist)
     except DraftPersistError as err:
         raise map_persist_error(err) from err
+    if diagnostics is not None:
+        diagnostics.stage_completed(
+            "persist",
+            {
+                "material_id": result.material_id,
+                "slug": result.slug,
+                "batch_id": result.batch_id,
+                "rank": result.rank,
+                "already_saved": result.already_saved,
+            },
+        )
     if on_stage is not None:
         on_stage("saved")
     return result

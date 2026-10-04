@@ -19,7 +19,7 @@ from ingestion_service.application.ports.persist import PersistResult
 from ingestion_service.application.use_cases.ingest_pipeline import run_ingest_pipeline
 from ingestion_service.domain.errors import IngestError
 from ingestion_service.provenance import ENGLISH_TRANSLATION_SUFFIX
-from ingestion_service.tests_support.fakes import FakeDraftPersister
+from ingestion_service.tests_support.fakes import FakeDraftPersister, RecordingDiagnostics
 
 VIDEO_ID = "dQw4w9WgXcQ"
 OTHER_VIDEO_ID = "oHg5SJYRHA0"
@@ -183,3 +183,50 @@ def test_russian_transcript_omits_translation_suffix() -> None:
     assert len(persist.calls) == 1
     assert persist.calls[0].provenance_label == "YouTube · Channel X"
     assert ENGLISH_TRANSLATION_SUFFIX not in persist.calls[0].provenance_label
+
+
+def test_pipeline_emits_stage_events_in_order() -> None:
+    """D-04: start→complete fires for captions, metadata, llm, persist (in order)."""
+    diagnostics = RecordingDiagnostics()
+    captions = FakeTranscriptProvider(result=_transcript())
+    metadata = FakeVideoMetadataProvider(result=_metadata())
+    article = FakeArticleGenerator(result=_article())
+    persist = _persist()
+
+    result = asyncio.run(
+        run_ingest_pipeline(
+            URL,
+            TemplateKind.LECTURE,
+            captions=captions,
+            metadata_provider=metadata,
+            article=article,
+            persist=persist,
+            diagnostics=diagnostics,
+        )
+    )
+
+    order = [(call[0], call[1]) for call in diagnostics.calls]
+    assert order == [
+        ("started", "captions"),
+        ("completed", "captions"),
+        ("started", "metadata"),
+        ("completed", "metadata"),
+        ("started", "llm"),
+        ("completed", "llm"),
+        ("started", "persist"),
+        ("completed", "persist"),
+    ]
+
+    completed = {
+        call[1]: call[2]
+        for call in diagnostics.calls
+        if call[0] == "completed" and len(call) > 2
+    }
+    # D-06: the metadata line exposes only video_id.
+    assert completed["metadata"] == {"video_id": VIDEO_ID}
+    # D-04: llm carries template + response length; persist carries the identifiers.
+    assert completed["llm"] == {"template": "lecture", "response_chars": len("B")}
+    assert completed["persist"]["material_id"] == result.material_id
+    assert completed["persist"]["batch_id"] == result.batch_id
+    assert completed["persist"]["rank"] == result.rank
+    assert completed["persist"]["already_saved"] == result.already_saved

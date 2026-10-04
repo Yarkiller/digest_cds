@@ -103,6 +103,73 @@ def test_debug_success_emits_stage_lines(monkeypatch) -> None:
     assert "transcript_chars=" in captions_line
 
 
+def _debug_lines(stderr: str) -> list[str]:
+    return [line for line in stderr.splitlines() if " debug stage=" in line]
+
+
+def _stage_line(lines: list[str], stage: str) -> str:
+    matches = [line for line in lines if re.search(rf"\bdebug stage={stage}\b", line)]
+    assert len(matches) == 1, (stage, lines)
+    return matches[0]
+
+
+def test_debug_success_emits_all_stage_lines(monkeypatch) -> None:
+    """D-04: --debug prints exactly one line for each of captions/metadata/llm/persist."""
+    from typer.testing import CliRunner
+
+    from ingestion_service import cli as cli_mod
+
+    monkeypatch.setattr(cli_mod, "build_ingest_deps", lambda: _fake_deps())
+
+    result = CliRunner().invoke(cli_mod.app, [URL, "--template", "lecture", "--debug"])
+    assert result.exit_code == 0
+    assert result.stdout.splitlines() == EXPECTED_SUCCESS_LINES
+
+    lines = _debug_lines(result.stderr)
+    assert len(lines) == 4
+    for stage in ("captions", "metadata", "llm", "persist"):
+        _stage_line(lines, stage)
+
+
+def test_debug_metadata_line_minimized(monkeypatch) -> None:
+    """D-06: the metadata line exposes only video_id — never author or source URL."""
+    from typer.testing import CliRunner
+
+    from ingestion_service import cli as cli_mod
+
+    monkeypatch.setattr(cli_mod, "build_ingest_deps", lambda: _fake_deps())
+
+    result = CliRunner().invoke(cli_mod.app, [URL, "--template", "lecture", "--debug"])
+    line = _stage_line(_debug_lines(result.stderr), "metadata")
+    assert "video_id=" in line
+    assert "Rick Astley" not in line
+    assert f"https://www.youtube.com/watch?v={VIDEO_ID}" not in line
+
+
+def test_debug_stage_lines_carry_allowlisted_signals(monkeypatch) -> None:
+    """D-04: llm carries template/response_chars; persist carries the identifiers."""
+    from typer.testing import CliRunner
+
+    from ingestion_service import cli as cli_mod
+
+    monkeypatch.setattr(cli_mod, "build_ingest_deps", lambda: _fake_deps())
+
+    result = CliRunner().invoke(cli_mod.app, [URL, "--template", "lecture", "--debug"])
+    lines = _debug_lines(result.stderr)
+
+    llm_line = _stage_line(lines, "llm")
+    assert "template=lecture" in llm_line
+    assert "response_chars=" in llm_line
+    assert "prompt" not in llm_line
+    assert "token" not in llm_line
+
+    persist_line = _stage_line(lines, "persist")
+    assert "material_id=" in persist_line
+    assert "batch_id=" in persist_line
+    assert "rank=" in persist_line
+    assert "already_saved=" in persist_line
+
+
 def test_ingest_pipeline_retains_no_infra_imports() -> None:
     """Structural guard: the use-case stays free of clock/stream/CLI imports."""
     import ingestion_service.application.use_cases.ingest_pipeline as pipeline_mod

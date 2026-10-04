@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import datetime
 
 from data_collection.dto.material_draft import MaterialDraft
 from ingestion_service.adapters.persist_errors import DraftPersistError
+from ingestion_service.application.ports.diagnostics import DebugValue
 from ingestion_service.application.ports.persist import PersistResult
 
 
@@ -62,6 +63,25 @@ class FakeClock:
 
     def now(self) -> datetime:
         return self._now
+
+
+class RecordingDiagnostics:
+    """Call-spy StageDiagnostics double recording every event for order assertions."""
+
+    def __init__(self) -> None:
+        self.calls: list[tuple[object, ...]] = []
+
+    def stage_started(self, stage: str) -> None:
+        self.calls.append(("started", stage))
+
+    def stage_completed(self, stage: str, signals: Mapping[str, DebugValue]) -> None:
+        self.calls.append(("completed", stage, dict(signals)))
+
+    def stage_failed(self, stage: str, *, reason: str, exit_code: int) -> None:
+        self.calls.append(("failed", stage, reason, exit_code))
+
+    def config_error(self, *, error_type: str, message: str) -> None:
+        self.calls.append(("config_error", error_type, message))
 
 
 @dataclass
