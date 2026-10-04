@@ -76,6 +76,7 @@ created: "2026-10-04"
 | Audit Date | Threats Total | Closed | Open | Run By |
 |------------|---------------|--------|------|--------|
 | 2026-10-04 | 18 | 18 | 0 | gsd-secure-phase (L1 grep-depth) |
+| 2026-10-04 | 18 | 18 | 0 | gsd-secure-phase re-audit (L1 grep-depth, short-circuit: threats_open 0) |
 
 ---
 
