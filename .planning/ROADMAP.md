@@ -210,3 +210,11 @@ Plans:
 **Deferred at:** 2026-10-03 during /gsd-verify-work 13 session completion
 **Follow-ups:**
 - [ ] Test 3: Hover on «Превью материала» keeps the default arrow cursor instead of pointer. Fix cursor-pointer on that control. Not Phase 13. (deferred 2026-10-03)
+
+### Phase 999.4: Follow-up — Phase 14 deferred UAT follow-up: Test 1 (BACKLOG)
+
+**Goal:** Resolve the UAT checkpoint deferred during Phase 14 verification
+**Source phase:** 14
+**Deferred at:** 2026-10-04 during /gsd-verify-work 14 session completion
+**Follow-ups:**
+- [ ] Test 1: UX (для Phase 15+): две операции на одно editorial-решение избыточны для single-operator workflow — объединить Approve (decision) + Mark ready (material_status) в одну кнопку «Одобрить и подготовить → ready»; переименовать «Сделать ready» → «Отобрать», ready → «Отобран». (deferred 2026-10-03)
