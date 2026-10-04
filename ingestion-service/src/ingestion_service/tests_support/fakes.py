@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from datetime import datetime
 
@@ -44,6 +45,23 @@ class FakeDraftPersister:
         )
         self.stored[material_draft.youtube_video_id] = stored
         return stored
+
+
+class FakeClock:
+    """Scripted Clock double; monotonic pops a sequence, now is fixed."""
+
+    def __init__(self, monotonic_values: Sequence[float], now: datetime) -> None:
+        self._monotonic = list(monotonic_values)
+        self._now = now
+        self.calls: list[float] = []
+
+    def monotonic(self) -> float:
+        value = self._monotonic.pop(0)
+        self.calls.append(value)
+        return value
+
+    def now(self) -> datetime:
+        return self._now
 
 
 @dataclass
