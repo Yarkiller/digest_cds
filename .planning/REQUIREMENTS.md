@@ -27,7 +27,7 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 - [x] **PIPE-01**: Admin can view and edit YAML (or equivalent structured) pipeline config through an admin UI
 - [x] **PIPE-02**: Pipeline config is validated before save; invalid config is rejected with field-level or structured errors (no silent accept)
-- [ ] **PIPE-03**: Validated config persists and is readable on subsequent admin sessions (storage behind a port; no deep Supabase coupling in UI)
+- [x] **PIPE-03**: Validated config persists and is readable on subsequent admin sessions (storage behind a port; no deep Supabase coupling in UI)
 
 ### Test debt
 
@@ -84,7 +84,7 @@ Deferred. Not in this milestone's roadmap.
 | DBG-02 | Phase 15 | Complete |
 | PIPE-01 | Phase 16 | Complete |
 | PIPE-02 | Phase 16 | Complete |
-| PIPE-03 | Phase 16 | Pending |
+| PIPE-03 | Phase 16 | Complete |
 | ING-01 | — | Deferred (v1.3+) |
 | ING-02 | — | Deferred (v1.3+) |
 | ING-03 | — | Deferred (v1.3+) |

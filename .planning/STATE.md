@@ -4,18 +4,18 @@ milestone: v1.2
 milestone_name: Admin UX + diagnostics + PIPE-01 MVP
 current_phase: 16
 current_phase_name: PIPE-01 MVP config UI
-status: executing
-stopped_at: Completed 16-04-PLAN.md
-last_updated: "2026-10-04T11:28:31.312Z"
+status: verifying
+stopped_at: Completed 16-03-PLAN.md
+last_updated: "2026-10-04T11:52:33.156Z"
 last_activity: 2026-10-04
 last_activity_desc: Phase 16 execution started
-state_head: 4239f0f22b791ec91b0cb051c43191de29d79f3d
+state_head: f0e8000881fbc18c003e791f1af8a008dc472d96
 progress:
   total_phases: 5
   completed_phases: 6
   total_plans: 26
-  completed_plans: 25
-  percent: 96
+  completed_plans: 26
+  percent: 100
 ---
 
 # Project State
@@ -31,10 +31,10 @@ See: .planning/PROJECT.md (updated 2026-10-04 — after Phase 15)
 
 Phase: 16 (PIPE-01 MVP config UI) — EXECUTING
 Plan: 4 of 4
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-10-04 — Phase 16 execution started
 
-Progress: [█████████░] 96%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -86,6 +86,7 @@ Progress: [█████████░] 96%
 | Phase 16 P01 | 5 min | 2 tasks | 10 files |
 | Phase 16 P02 | 6min | 2 tasks | 12 files |
 | Phase 16 P04 | 20min | 2 tasks | 6 files |
+| Phase 16 P03 | 30min | 3 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -149,6 +150,8 @@ v1.2 roadmap locks:
 - [Phase 16]: 16-04 page performs no client YAML validation: only a server INVALID_CONFIG reject opens the panel and keeps the document dirty (D-03/D-07)
 - [Phase 16]: 16-04 aria-invalid is driven by the rejected flag so a reject with no structured errors still marks the editor
 - [Phase 16]: 16-04 exposed window.__DIGEST_PIPELINE_CONFIG_HARNESS__ in Task 1 (plan scheduled it for Task 2) so Task 1 Playwright verify could pass
+- [Phase 16]: 16-03: singleton pipeline_config (id=1) with RLS enabled and no permissive policy; only the service_role composition adapter reaches it (D-08, T-16-10)
+- [Phase 16]: 16-03: migration 011 applied on shared knowledge-db VM 2026-10-04; read-only PostgREST probe returned [] (0 rows under RLS deny-by-default) — PIPE-03 live DoD satisfied
 
 ### Pending Todos
 
@@ -172,7 +175,7 @@ Carried product deferrals to v1.3+: leaderboard, quiz, live SMTP, signup mail, W
 
 ## Session Continuity
 
-Last session: 2026-10-04T11:28:21.300Z
-Stopped at: Completed 16-04-PLAN.md
+Last session: 2026-10-04T11:52:33.003Z
+Stopped at: Completed 16-03-PLAN.md
 Resume file: None
 Next: plan Phase 16 (PIPE-01 MVP config UI)

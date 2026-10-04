@@ -434,7 +434,7 @@ select count(*) from pg_policies where tablename = 'pipeline_config';   -- expec
 
 Record apply method below when confirmed.
 
-**Applied:** _pending — run step 2 above, then set date/method here._
+**Applied (2026-10-04):** operator applied `011_phase16_pipeline_config.sql` once on the shared knowledge-db VM (Studio SQL / psql path; no `supabase/config.toml` in repo). Operator confirmed the file applied. Post-apply read-only verification via the Supabase PostgREST client against the live project: `select id,yaml,updated_at from public.pipeline_config limit 5` → `[]` (table exists and is reachable; 0 visible rows under RLS deny-by-default with no permissive policy). RLS enabled with zero policies per the migration contract. No destructive statement was run against the shared DB.
 
 ---
 
