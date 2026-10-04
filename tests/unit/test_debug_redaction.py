@@ -67,3 +67,33 @@ def test_sanitize_never_raises_and_masks_on_violation() -> None:
     assert isinstance(result, str)
     assert "leaky-token" not in result
     assert REDACTED in result
+
+
+@pytest.mark.parametrize(
+    "raw",
+    [
+        "secret_key=abcdef123456",
+        "access_token=abcdef123456",
+        "client_secret=abcdef123456",
+        "refresh_token=abcdef123456",
+        "private_key=abcdef123456",
+        "auth=abcdef123456",
+    ],
+)
+def test_sanitize_masks_underscore_compound_credentials(raw: str) -> None:
+    """SC2 / D-07 / D-08: underscore-compound names mask to exactly [redacted]."""
+    assert sanitize(raw) == REDACTED
+
+
+def test_sanitize_underscore_compound_positive_control() -> None:
+    """The plain assignment shapes still mask (no regression from the fix)."""
+    assert sanitize("api_key=abcdef123456") == REDACTED
+    assert sanitize("token=abcdef123456") == REDACTED
+    assert sanitize("secret=abcdef123456") == REDACTED
+
+
+def test_sanitize_masks_control_char_split_bearer() -> None:
+    """T-15-08: a control-char-split token masks fully — no tail fragment survives."""
+    masked = sanitize("Bearer abc\ndef_secondhalf")
+    assert "def_secondhalf" not in masked
+    assert REDACTED in masked
