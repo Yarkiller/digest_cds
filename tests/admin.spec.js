@@ -1014,3 +1014,140 @@ test.describe("Admin pipeline config — validation + save failure (PIPE-02, D-0
     await expect(page.getByText("Конфиг не сохранён", { exact: true })).toHaveCount(0);
   });
 });
+
+test.describe("Admin pipeline config — empty/dirty/reset/nav/no-execution (PIPE-01, D-10/D-12/D-13)", () => {
+  test("pipeline config empty state shows the locked copy and a disabled Save", async ({
+    page,
+  }) => {
+    await gotoAsRole(page, "admin", "/admin/pipeline");
+    const empty = page.getByTestId("pipeline-config-empty");
+    await expect(empty).toBeVisible();
+    await expect(
+      empty.getByRole("heading", { name: "Конфиг ещё не задан", exact: true }),
+    ).toBeVisible();
+    await expect(
+      empty.getByText(
+        "Введите YAML и сохраните — конфиг будет доступен при следующих заходах.",
+        { exact: true },
+      ),
+    ).toBeVisible();
+
+    const editor = page.getByTestId("pipeline-config-editor");
+    await expect(editor).toHaveAttribute("placeholder", "# YAML конфига пайплайна");
+    await expect(editor).toHaveValue("");
+    await expect(page.getByTestId("pipeline-config-save")).toBeDisabled();
+  });
+
+  test("pipeline config dirty gating enables Save and reset on edit", async ({ page }) => {
+    await gotoAsRole(page, "admin", "/admin/pipeline");
+    const save = page.getByTestId("pipeline-config-save");
+    const reload = page.getByTestId("pipeline-config-reload");
+    await expect(page.getByTestId("pipeline-config-status")).toHaveText("Изменений нет");
+    await expect(save).toBeDisabled();
+    await expect(reload).toBeDisabled();
+
+    await page.getByTestId("pipeline-config-editor").fill("template: lecture\n");
+    await expect(save).toBeEnabled();
+    await expect(reload).toBeEnabled();
+  });
+
+  test("pipeline config dirty gating arms the unsaved-leave guard", async ({ page }) => {
+    await gotoAsRole(page, "admin", "/admin/pipeline");
+    const editor = page.getByTestId("pipeline-config-editor");
+
+    const cleanPrevented = await page.evaluate(() => {
+      const event = new Event("beforeunload", { cancelable: true });
+      window.dispatchEvent(event);
+      return event.defaultPrevented;
+    });
+    expect(cleanPrevented).toBe(false);
+
+    await editor.fill("template: lecture\n");
+
+    let message = null;
+    page.once("dialog", async (dialog) => {
+      message = dialog.message();
+      await dialog.dismiss();
+    });
+    const dirtyPrevented = await page.evaluate(() => {
+      const event = new Event("beforeunload", { cancelable: true });
+      window.dispatchEvent(event);
+      return event.defaultPrevented;
+    });
+    expect(dirtyPrevented).toBe(true);
+    await expect.poll(() => message).toBe(
+      "Есть несохранённые изменения. Уйти без сохранения?",
+    );
+  });
+
+  test("pipeline config reset confirm reverts to the last saved version", async ({ page }) => {
+    await gotoAsRole(page, "admin", "/admin/pipeline");
+    const editor = page.getByTestId("pipeline-config-editor");
+    await editor.fill("template: lecture\n");
+
+    let message = null;
+    page.once("dialog", async (dialog) => {
+      message = dialog.message();
+      await dialog.accept();
+    });
+    await page.getByTestId("pipeline-config-reload").click();
+
+    await expect(editor).toHaveValue("");
+    await expect(page.getByTestId("pipeline-config-status")).toHaveText("Изменений нет");
+    await expect.poll(() => message).toBe(
+      "Отменить изменения и вернуть последнюю сохранённую версию?",
+    );
+  });
+
+  test("pipeline config reset confirm cancel keeps the edit", async ({ page }) => {
+    await gotoAsRole(page, "admin", "/admin/pipeline");
+    const editor = page.getByTestId("pipeline-config-editor");
+    await editor.fill("template: lecture\n");
+
+    page.once("dialog", (dialog) => dialog.dismiss());
+    await page.getByTestId("pipeline-config-reload").click();
+
+    await expect(editor).toHaveValue("template: lecture\n");
+  });
+
+  test("pipeline config load error shows retry and recovers after reset", async ({ page }) => {
+    await gotoAsRole(page, "admin", "/admin/pipeline");
+    await page.evaluate(() => window.__DIGEST_PIPELINE_CONFIG_HARNESS__.armFailNextLoad());
+    await page.reload();
+
+    await expect(page.getByText("Не удалось загрузить конфиг", { exact: true })).toBeVisible();
+    const retry = page.getByTestId("pipeline-config-retry");
+    await expect(retry).toBeVisible();
+
+    await page.evaluate(() =>
+      window.__DIGEST_PIPELINE_CONFIG_HARNESS__.resetPipelineConfigHarness(),
+    );
+    await retry.click();
+
+    await expect(page.getByTestId("pipeline-config-editor")).toBeVisible();
+    await expect(page.getByText("Не удалось загрузить конфиг", { exact: true })).toHaveCount(0);
+  });
+
+  test("pipeline config nav item renders only for admin", async ({ page }) => {
+    await gotoAsRole(page, "admin", "/");
+    const link = page.getByRole("link", { name: "Пайплайн", exact: true });
+    await expect(link).toBeVisible();
+    await expect(link).toHaveAttribute("href", "/admin/pipeline");
+  });
+
+  test("pipeline config nav item hidden for employee", async ({ page }) => {
+    await gotoAsRole(page, "employee", "/");
+    await expect(page.getByRole("link", { name: "Пайплайн", exact: true })).toHaveCount(0);
+  });
+
+  test("pipeline config no execution controls render", async ({ page }) => {
+    await gotoAsRole(page, "admin", "/admin/pipeline");
+    const pageText = await page.getByTestId("admin-pipeline-page").innerText();
+    for (const banned of ["Запустить", "Выполнить", "Запуск", "Планировщик", "Расписание"]) {
+      expect(pageText).not.toContain(banned);
+    }
+    for (const banned of ["Запустить", "Выполнить", "Запуск", "Планировщик", "Расписание"]) {
+      await expect(page.getByRole("button", { name: banned, exact: true })).toHaveCount(0);
+    }
+  });
+});
