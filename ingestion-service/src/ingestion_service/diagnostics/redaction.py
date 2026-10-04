@@ -37,6 +37,20 @@ MAX_VALUE_LENGTH = 256
 
 _CONTROL_CHARS = re.compile(r"[\x00-\x1f\x7f]")
 
+DENY_PATTERNS: tuple[re.Pattern[str], ...] = (
+    # Bearer tokens must be masked before the assignment pattern below, otherwise
+    # the assignment match would stop at the scheme word and leak the token value.
+    re.compile(r"(?i)\bbearer\s+[A-Za-z0-9._~+/=-]+"),
+    re.compile(r"\bsk-[A-Za-z0-9_-]{8,}"),
+    re.compile(r"\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+"),
+    re.compile(r"[A-Za-z][A-Za-z0-9+.-]*://[^/@\s]+@"),
+    re.compile(
+        r"(?i)\b(?:api[_-]?key|secret|token|password|passwd|authorization|cookie)"
+        r"\b\s*[=:]\s*\S+"
+    ),
+    _CONTROL_CHARS,
+)
+
 
 class SecretRegistry:
     """Exact runtime secret values; masks each occurrence with ``[redacted]``."""
@@ -52,10 +66,16 @@ class SecretRegistry:
 
 
 def sanitize(text: str, *, registry: SecretRegistry | None = None) -> str:
-    """Mask registered secrets, strip control chars, and cap length (never raises)."""
+    """Mask secrets/denylisted values, strip control chars, cap length (never raises)."""
     if not isinstance(text, str):
         text = str(text)
     if registry is not None:
         text = registry.mask(text)
-    text = _CONTROL_CHARS.sub("", text)
+    for pattern in DENY_PATTERNS:
+        if pattern is _CONTROL_CHARS:
+            # Control characters are stripped, not masked, so a newline/ANSI escape
+            # cannot forge extra debug lines or corrupt the terminal.
+            text = pattern.sub("", text)
+        else:
+            text = pattern.sub(REDACTED, text)
     return text[:MAX_VALUE_LENGTH]

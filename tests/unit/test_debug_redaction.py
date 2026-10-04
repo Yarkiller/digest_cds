@@ -1,0 +1,69 @@
+"""RED→GREEN: redaction denylist + exact-value safety net (D-07, D-08, D-09)."""
+
+from __future__ import annotations
+
+import re
+
+import pytest
+
+from ingestion_service.diagnostics.redaction import (
+    DENY_PATTERNS,
+    MAX_VALUE_LENGTH,
+    REDACTED,
+    SecretRegistry,
+    sanitize,
+)
+
+SECRET = "sk-secret-key-1234567890"
+
+
+def test_secret_registry_masks_exact_value() -> None:
+    registry = SecretRegistry([SECRET])
+    masked = registry.mask(f"key={SECRET} done")
+    assert SECRET not in masked
+    assert REDACTED in masked
+
+
+def test_secret_registry_ignores_empty_and_short_values() -> None:
+    registry = SecretRegistry(["", "abc"])
+    assert registry.mask("abc") == "abc"
+
+
+def test_deny_patterns_is_tuple_of_compiled_patterns() -> None:
+    assert isinstance(DENY_PATTERNS, tuple)
+    assert DENY_PATTERNS
+    assert all(isinstance(pattern, re.Pattern) for pattern in DENY_PATTERNS)
+
+
+@pytest.mark.parametrize(
+    "raw",
+    [
+        "Cookie: sessionid=abc123secret",
+        "Bearer abc123-token-value",
+        "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+        "https://user:p4ssw0rd@proxy.example.com:8080",
+    ],
+)
+def test_sanitize_masks_denylist_credentials(raw: str) -> None:
+    masked = sanitize(raw)
+    assert raw not in masked
+    assert REDACTED in masked
+
+
+def test_sanitize_strips_control_chars_and_caps_length() -> None:
+    stripped = sanitize("a\nb\x1bc\x7fd")
+    assert "\n" not in stripped
+    assert "\x1b" not in stripped
+    assert "\x7f" not in stripped
+    assert stripped == "abcd"
+
+    overlong = "x" * (MAX_VALUE_LENGTH + 500)
+    assert len(sanitize(overlong)) == MAX_VALUE_LENGTH
+
+
+def test_sanitize_never_raises_and_masks_on_violation() -> None:
+    """D-09: a denylist violation is masked, never raised or aborted."""
+    result = sanitize("authorization: Bearer leaky-token")
+    assert isinstance(result, str)
+    assert "leaky-token" not in result
+    assert REDACTED in result
