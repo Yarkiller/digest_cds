@@ -87,11 +87,11 @@ v1 is done only when **all** of the following hold:
 - ✓ Admin shortlist empty-batch HTTP contract — `test_admin_shortlist_no_batches_returns_null_batch_id` + `test_admin_shortlist_empty_unsent_batch_returns_batch_id` (FIX-01) — Phase 12
 - ✓ Admin material preview honesty (body, provenance, counts, reader link, pinned close) — Phase 13
 - ✓ Email preview honesty + interstitial whitespace + `test-header` cleanup; email dialog is subject plus sandboxed HTML only — Phase 13
+- ✓ Admin per-row draft → ready control clears the D-85 send gate without SQL; status-only promote leaves `published_at` untouched (ADUX-05) — Phase 14
+- ✓ Honest shortlist «Обоснование»: populated `score_factors` or the explicit D-15 empty state, never a silent fake (ADUX-06) — Phase 14
 
 ### Active
 
-- [ ] Admin draft → ready control for D-85 send gate
-- [ ] score_factors / justification honesty (config MVP or honest empty)
 - [ ] CLI `--debug` secret-safe operator diagnostics
 - [ ] PIPE-01 MVP: YAML config + validation + admin UI (no execution)
 
@@ -201,4 +201,4 @@ After each phase transition: move validated/invalidated requirements; log decisi
 After milestone: full review of Core Value, Out of Scope, and Context against shipped reality.
 
 ---
-*Last updated: 2026-10-03 after Phase 13*
+*Last updated: 2026-10-04 after Phase 14*
