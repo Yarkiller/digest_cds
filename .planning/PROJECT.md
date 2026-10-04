@@ -89,10 +89,10 @@ v1 is done only when **all** of the following hold:
 - ✓ Email preview honesty + interstitial whitespace + `test-header` cleanup; email dialog is subject plus sandboxed HTML only — Phase 13
 - ✓ Admin per-row draft → ready control clears the D-85 send gate without SQL; status-only promote leaves `published_at` untouched (ADUX-05) — Phase 14
 - ✓ Honest shortlist «Обоснование»: populated `score_factors` or the explicit D-15 empty state, never a silent fake (ADUX-06) — Phase 14
+- ✓ CLI `--debug` secret-safe operator diagnostics: opt-in stderr-only per-stage lines (timings/sizes/params/reasons/identifiers), byte-identical default stdout/JSON/exit-code path, allowlist + `SecretRegistry` + denylist redaction (DBG-01, DBG-02) — Phase 15
 
 ### Active
 
-- [ ] CLI `--debug` secret-safe operator diagnostics
 - [ ] PIPE-01 MVP: YAML config + validation + admin UI (no execution)
 
 ### Out of Scope
@@ -161,6 +161,10 @@ v1 is done only when **all** of the following hold:
 | Composition owns service-role wiring; idempotency lives in the RPC (D-11) | Blank url/key raises ConfigurationError before `create_client`; no Python video_id pre-check | ✓ Phase 9 |
 | RoleKind closed only in Python (D-14a / decision A); no RPC CHECK on `p_roles` | Ingest CLI is the only v1 writer; a direct service_role call can persist unknown roles | ✓ Phase 9 |
 | Latest unsent batch locked `FOR UPDATE`; unique `(batch_id, rank)` (WR-05) | Concurrent persist cannot assign the same rank; sent-batch conflict fallback removed (WR-02) | ✓ Phase 9 |
+| `--debug` as an opt-in stderr side-channel via `StageDiagnostics`/`Clock` ports + `NullDiagnostics` no-op | Default path must stay byte-identical; measurement behind a port keeps the use-case infra-free and testable (D-01…D-13) | ✓ Phase 15 |
+| Sink stays `typer`-free; `cli.py` injects `typer.echo(..., err=True)` as the emitter | Preserves the repo invariant that only `cli.py` imports typer; debug never reaches stdout | ✓ Phase 15 |
+| Redaction = allowlist emission + exact-value `SecretRegistry` + denylist safety net (non-word boundary, compound credential names, control-chars stripped before token patterns) | DBG-02: never leak secrets/proxy credentials/cookies/tokens/bodies; mask-not-fail | ✓ Phase 15 |
+| Debug lines use the domain `Stage` vocabulary (`captions`/`metadata`/`llm`/`persist`) and metadata is `video_id`-only | 1:1 correlation with `IngestError.stage`; no URL/author leakage (D-04/D-06) | ✓ Phase 15 |
 
 <decisions>
 ## Locked decisions (from ADRs / ingest)
@@ -201,4 +205,4 @@ After each phase transition: move validated/invalidated requirements; log decisi
 After milestone: full review of Core Value, Out of Scope, and Context against shipped reality.
 
 ---
-*Last updated: 2026-10-04 after Phase 14*
+*Last updated: 2026-10-04 after Phase 15*

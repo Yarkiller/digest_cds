@@ -22,10 +22,10 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-10-02 — v1.2 milestone)
+See: .planning/PROJECT.md (updated 2026-10-04 — after Phase 15)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Phase 15 — CLI --debug diagnostics
+**Current focus:** Phase 16 — PIPE-01 MVP config UI
 
 ## Current Position
 
@@ -159,4 +159,4 @@ Carried product deferrals to v1.3+: leaderboard, quiz, live SMTP, signup mail, W
 Last session: 2026-10-04T08:43:10.976Z
 Stopped at: Phase 15 complete, ready to plan Phase 16
 Resume file: None
-Next: phase verification
+Next: plan Phase 16 (PIPE-01 MVP config UI)
