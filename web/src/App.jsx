@@ -7,6 +7,7 @@ import KnowledgePage from './pages/KnowledgePage.jsx'
 import LoginPage from './pages/LoginPage.jsx'
 import MaterialPage from './pages/MaterialPage.jsx'
 import AdminDigestPage from './pages/AdminDigestPage.jsx'
+import AdminPipelineConfigPage from './pages/AdminPipelineConfigPage.jsx'
 import ProfilePage from './pages/ProfilePage.jsx'
 import RazborPage from './pages/RazborPage.jsx'
 import RazboryListPage from './pages/RazboryListPage.jsx'
@@ -36,6 +37,7 @@ export default function App() {
           <Route path="razbory/:id" element={<RazborPage />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="admin/digest" element={<AdminDigestPage />} />
+          <Route path="admin/pipeline" element={<AdminPipelineConfigPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>

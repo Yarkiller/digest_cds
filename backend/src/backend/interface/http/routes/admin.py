@@ -12,6 +12,10 @@ from backend.application.use_cases.mark_material_ready import (
     mark_material_ready,
     mark_materials_ready,
 )
+from backend.application.use_cases.pipeline_config import (
+    get_pipeline_config,
+    save_pipeline_config,
+)
 from backend.application.use_cases.preview_digest_email import (
     PreviewMaterialBlock,
     PreviewTextBlock,
@@ -163,6 +167,23 @@ class MarkReadyBatchResponse(BaseModel):
     results: list[MarkReadyBatchItemResult]
 
 
+class PipelineConfigSaveRequest(BaseModel):
+    """PUT /admin/pipeline/config body — the raw YAML document only (D-11, D-13)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    yaml: str
+
+
+class PipelineConfigResponse(BaseModel):
+    """Read DTO {yaml, updated_at} — no version, no secret/credential key (D-11; PIPE-03)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    yaml: str
+    updated_at: datetime | None = None
+
+
 def _require_shortlist(request: Request):
     container = request.app.state.container
     if container is None or getattr(container, "shortlist", None) is None:
@@ -171,6 +192,16 @@ def _require_shortlist(request: Request):
             detail="shortlist_not_configured",
         )
     return container.shortlist
+
+
+def _require_pipeline_config(request: Request):
+    container = request.app.state.container
+    if container is None or getattr(container, "pipeline_config", None) is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="pipeline_config_not_configured",
+        )
+    return container.pipeline_config
 
 
 def _require_container(request: Request):
@@ -490,3 +521,62 @@ def post_shortlist_send(
         recipient_count=result.recipient_count,
         message=result.message,
     )
+
+
+@router.get(
+    "/pipeline/config",
+    response_model=PipelineConfigResponse,
+    summary="Read the saved pipeline config",
+    description=(
+        "Returns the current raw-YAML pipeline config as {yaml, updated_at} (PIPE-01/PIPE-03, "
+        "D-11). An absent singleton row returns the empty state {yaml:'', updated_at:null}. "
+        "Requires profiles.role=admin (D-10). PersistenceError → 503 pipeline_config_unavailable."
+    ),
+)
+def read_pipeline_config(
+    request: Request,
+    _admin: CurrentUser = Depends(require_admin),
+) -> PipelineConfigResponse:
+    repo = _require_pipeline_config(request)
+    try:
+        config = get_pipeline_config(repo)
+    except PersistenceError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="pipeline_config_unavailable",
+        ) from exc
+    if config is None:
+        return PipelineConfigResponse(yaml="", updated_at=None)
+    return PipelineConfigResponse(yaml=config.yaml, updated_at=config.updated_at)
+
+
+@router.put(
+    "/pipeline/config",
+    response_model=PipelineConfigResponse,
+    summary="Save the pipeline config (server-authoritative, no execution)",
+    description=(
+        "Validates then persists the raw-YAML pipeline config and returns the saved "
+        "{yaml, updated_at} (PIPE-01/PIPE-03, D-08/D-11). Requires admin (D-10). "
+        "Unknown JSON fields → 422 (extra=forbid). This surface never triggers a pipeline run."
+    ),
+)
+def put_pipeline_config(
+    body: PipelineConfigSaveRequest,
+    request: Request,
+    _admin: CurrentUser = Depends(require_admin),
+) -> PipelineConfigResponse:
+    repo = _require_pipeline_config(request)
+    validator = getattr(request.app.state.container, "pipeline_config_validator", None)
+    if validator is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="pipeline_config_not_configured",
+        )
+    try:
+        config = save_pipeline_config(repo, validator, yaml_text=body.yaml)
+    except PersistenceError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="pipeline_config_unavailable",
+        ) from exc
+    return PipelineConfigResponse(yaml=config.yaml, updated_at=config.updated_at)

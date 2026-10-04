@@ -17,6 +17,7 @@ from backend.domain.errors import (
 from backend.domain.issue import Issue, IssueItem
 from backend.domain.knowledge import KnowledgeChunk, KnowledgeHit
 from backend.domain.material import Material, MaterialStatus
+from backend.domain.pipeline_config import PipelineConfig
 from backend.domain.razbor import Razbor
 from backend.domain.shortlist import ShortlistBatch, ShortlistItem
 from backend.domain.vote import BallotTopic, PersonalVote
@@ -622,3 +623,27 @@ class InMemoryRazborRepository:
             if razbor.id == razbor_id:
                 return razbor
         return None
+
+
+class InMemoryPipelineConfigRepository:
+    """In-memory PipelineConfigRepository — absent by default (D-11 empty state)."""
+
+    def __init__(self, config: PipelineConfig | None = None) -> None:
+        self._config = config
+
+    def get(self) -> PipelineConfig | None:
+        return self._config
+
+    def save(self, *, yaml: str, updated_at: datetime) -> PipelineConfig:
+        self._config = PipelineConfig(yaml=yaml, updated_at=updated_at)
+        return self._config
+
+
+class InMemoryPipelineConfigValidator:
+    """Accept-all tracer validator (16-01 happy path); records calls for 16-02 asserts."""
+
+    def __init__(self) -> None:
+        self.calls: list[str] = []
+
+    def validate(self, yaml_text: str) -> None:
+        self.calls.append(yaml_text)
