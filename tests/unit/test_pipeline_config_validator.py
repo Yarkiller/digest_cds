@@ -215,7 +215,7 @@ def test_deeply_nested_flow_document_is_rejected_not_recursion_error() -> None:
     assert len(errors) == 1
     assert errors[0].path == ""
     assert errors[0].line is None
-    assert errors[0].message == "YAML nesting too deep (exceeds parser limit)"
+    assert errors[0].message == "Документ YAML имеет слишком глубокую вложенность"
 
 
 # --- 13. unreadable characters (CR-01) ----------------------------------------

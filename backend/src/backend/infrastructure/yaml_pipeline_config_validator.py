@@ -29,7 +29,7 @@ MAX_PIPELINE_CONFIG_CHARS = 20000
 
 _OVER_CAP_MESSAGE = "Документ конфига превышает допустимый размер"
 _NOT_A_TEXT_OBJECT_MESSAGE = "Ожидается объект с текстовыми ключами"
-_TOO_DEEP_MESSAGE = "YAML nesting too deep (exceeds parser limit)"
+_TOO_DEEP_MESSAGE = "Документ YAML имеет слишком глубокую вложенность"
 _UNREADABLE_MESSAGE = "Документ содержит недопустимые символы"
 
 

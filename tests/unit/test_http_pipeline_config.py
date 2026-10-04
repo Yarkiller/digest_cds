@@ -313,7 +313,7 @@ def test_put_deeply_nested_yaml_returns_400_not_500() -> None:
     body = response.json()
     assert "detail" not in body
     assert body["errors"] == [
-        {"path": "", "message": "YAML nesting too deep (exceeds parser limit)"}
+        {"path": "", "message": "Документ YAML имеет слишком глубокую вложенность"}
     ]
     # The reject never reached the repository (D-03/D-07): zero saves.
     assert container.pipeline_config.save_count == 0
