@@ -1,10 +1,11 @@
 ---
 phase: "16"
 slug: "pipe-01-mvp-config-ui"
-status: draft
+status: approved
 shadcn_initialized: false
 preset: none
 created: "2026-10-04"
+reviewed_at: "2026-10-04T12:00:00+03:00"
 ---
 
 # Phase 16 — UI Design Contract
@@ -239,13 +240,13 @@ UI requirements: render one row per error in the summary list; echo `path` / `С
 
 ## UI Considerations
 
-> Shape-rooted state coverage for Phase 16 surfaces. Empty/error **copy** lives in `## Copywriting Contract`; rows reference those rows. Kinds confirmed per surface.
+> Shape-rooted state coverage for Phase 16 surfaces. Empty/error **copy** lives in `## Copywriting Contract`; rows reference those rows. Element kinds confirmed by the user against the probe's detected kinds.
 
-Applicable: **32** · resolved explicit: **15** · resolved backstop: **4** · dismissed: **13** · unresolved: **0**.
+Applicable: **31** · resolved explicit: **11** · resolved backstop: **7** · dismissed: **13** · unresolved: **0** · unclassified: **0**.
 
 Surfaces:
 - **E1** Config editor `form` + `static-content` + `interactive-control`
-- **E2** Toolbar — Save / Отменить / status `interactive-control` + `form`
+- **E2** Toolbar — Save / Отменить / status `interactive-control` + `static-content`
 - **E3** Validation-error panel `list-collection` + `static-content` + `form`
 - **E4** Empty state (no config yet) `static-content` + `interactive-control`
 - **E5** Unsaved-changes / reset confirm `form` + `interactive-control`
@@ -255,27 +256,25 @@ Surfaces:
 |----------|------------|--------|---------------------|
 | empty | E1 editor | ✅ covered | No saved config → editor renders empty with placeholder `# YAML конфига пайплайна`; Empty state block shown above; Save disabled until non-empty |
 | loading | E1 editor | ✅ covered | Load is page-level «Загрузка…» (`aria-busy`); editor is not interactive until `ready`/`empty` |
-| error | E1 editor | ✅ covered | Load failure → «Не удалось загрузить конфиг» + «Повторить загрузку»; reject keeps document editable + dirty (no auto-revert) |
-| populated | E1 editor | ✅ covered | Saved YAML rendered verbatim in the mono editor; `dirty=false`; status «Сохранено» / «Изменений нет» |
-| partial | E1 editor | ✗ dismissed | Not a multi-field form; the YAML document is atomic text — partial-fill is not a meaningful state here (A-1 raw YAML) |
-| long-text | E1 editor | 🧪 backstop | { statement: "A very long YAML body scrolls inside min-h-[20rem]/max-h-[60vh] with horizontal scroll for long lines and never pushes the toolbar off-screen", verification: backstop } |
+| error | E1 editor | ✅ covered | Load failure → «Не удалось загрузить конфиг» + «Повторить загрузку»; a reject keeps the document editable + dirty (no auto-revert) |
+| partial | E1 editor | ✗ dismissed | Raw YAML is atomic text; partial-fill is not a meaningful state here (A-1 raw YAML) |
 | overflow | E1 editor | 🧪 backstop | { statement: "Config longer than the viewport scrolls within the editor container; the page toolbar stays reachable at 1280px and narrow widths", verification: backstop } |
-| loading | E2 toolbar | ✅ covered | Saving → controls disabled, `aria-busy`, status «Сохранение…»; no layout shift |
+| long-text | E1 editor | 🧪 backstop | { statement: "A very long YAML body scrolls inside min-h-[20rem]/max-h-[60vh] with horizontal scroll for long lines and never pushes the toolbar off-screen", verification: backstop } |
+| loading | E2 toolbar | ✅ covered | Saving → both controls disabled, `aria-busy`, status «Сохранение…»; no layout shift |
 | error | E2 toolbar | ✅ covered | Save failure → ErrorPanel «Конфиг не сохранён» + «Повторить сохранение»; document stays dirty |
-| populated | E2 toolbar | ✅ covered | Clean → «Изменений нет»/«Сохранено»; dirty → Save + «Отменить изменения» enabled |
-| partial | E2 toolbar | ✗ dismissed | Save is atomic (whole YAML); no per-field commit |
+| overflow | E2 toolbar | 🧪 backstop | { statement: "The Save toolbar stays reachable and never overlaps the editor at 1280px and narrow widths", verification: backstop } |
 | long-text | E2 toolbar | ✗ dismissed | Fixed CTA labels — long-text N/A |
 | empty | E3 error panel | ✗ dismissed | Panel is not rendered when there are zero errors (absence = valid/clean) |
 | loading | E3 error panel | ✗ dismissed | Errors arrive with the save response; no async load of its own |
 | error | E3 error panel | ✅ covered | One row per structured error; fallback «Конфиг не прошёл проверку»; `role="alert"` |
 | populated | E3 error panel | ✅ covered | Multiple errors render as an ordered list (`space-y-2`), each with mono `Строка {line}`/`{path}` prefix |
-| partial | E3 error panel | ✅ covered | Reject with some fields named and others absent → rows without `line`/`path` still render `{message}` |
+| partial | E3 error panel | ✅ covered | Reject naming some fields and not others → rows without `line`/`path` still render `{message}` |
 | overflow | E3 error panel | 🧪 backstop | { statement: "A long list of validation errors scrolls with the page and never overlaps or hides the editor's Save toolbar", verification: backstop } |
 | zero-one-many | E3 errors | ✅ covered | 0 → panel absent; 1 → single row; many → ordered list; fallback single string when payload has no structured errors |
 | long-text | E3 error row | 🧪 backstop | { statement: "Long server error messages wrap with break-words inside the panel without horizontal overflow", verification: backstop } |
-| empty | E4 empty state | ✅ covered | Heading «Конфиг ещё не задан» + body copy + empty editor placeholder; Save disabled |
 | loading | E4 empty state | ✗ dismissed | Empty is a terminal load state, not in-flight |
 | error | E4 empty state | ✗ dismissed | Load errors use the E1/config error path (ServiceUnavailable), not the empty block |
+| overflow | E4 empty state | 🧪 backstop | { statement: "The empty-state block and editor stay within the page at narrow widths; body copy wraps without horizontal overflow", verification: backstop } |
 | long-text | E4 empty state | ✗ dismissed | Fixed copy strings |
 | empty | E5 confirm | ✗ dismissed | Confirm only fires when `dirty` (non-empty change); trigger ≠ dialog empty-state |
 | loading | E5 confirm | ✅ covered | Browser `confirm` is sync; after accept, the reload/save loading contract applies |
@@ -284,9 +283,10 @@ Surfaces:
 | long-text | E5 confirm | ✗ dismissed | Fixed RU strings |
 | loading | E6 nav | ✗ dismissed | Nav is sync chrome gated by resolved role |
 | error | E6 nav | ✗ dismissed | Role failure renders Forbidden/ServiceUnavailable page, not a nav state |
-| empty | E6 nav | ✅ covered | Nav item is not rendered for non-admins (`appRole !== 'admin'`) |
+| overflow | E6 nav | 🧪 backstop | { statement: "The nav item stays visible and usable when the app shell is narrow", verification: backstop } |
+| long-text | E6 nav | ✗ dismissed | Fixed label «Пайплайн» |
 
-> **Planner note:** the 4 `backstop` rows lift into `must_haves.truths` as `{ statement, verification: backstop }` — verify needs explicit visual/held-out evidence or `insufficient_spec → human_needed`.
+> **Planner note:** the 7 `backstop` rows lift into `must_haves.truths` as `{ statement, verification: backstop }` — verify needs explicit visual/held-out evidence or `insufficient_spec → human_needed`.
 
 **Domain probes (prose, not closed taxonomy):** optimistic-UI does **not** apply — config save is authoritative and visible, so success is shown inline after the server confirms (design canon: silent success when the result is visible; toasts only for failures). Accessibility: editor is labelled (`aria-label`), errors are `role="alert"`, `aria-invalid` marks the editor, all controls keep the 44px target and `:focus-visible` rings. i18n: RU-only copy per `CONTEXT.md`; no RTL work. Reduced-motion: inherits the global `prefers-reduced-motion` rule; no motion added.
 
@@ -304,12 +304,12 @@ No shadcn initialization and no third-party registries declared. Vetting gate no
 
 ## Checker Sign-Off
 
-- [ ] Dimension 1 Copywriting: {pending}
-- [ ] Dimension 2 Visuals: {pending}
-- [ ] Dimension 3 Color: {pending}
-- [ ] Dimension 4 Typography: {pending}
-- [ ] Dimension 5 Spacing: {pending}
-- [ ] Dimension 6 Registry Safety: {pending}
-- [ ] Dimension 7 Inventory Provenance: {pending} — N/A (`Tool: none`; Component Inventory omitted by template)
+- [x] Dimension 1 Copywriting: PASS
+- [x] Dimension 2 Visuals: PASS
+- [x] Dimension 3 Color: PASS
+- [x] Dimension 4 Typography: FLAG — bind one Body size for new editor/control text and one size for the new `pipeline-config-error` row from the locked utility set (`text-base` renders 16px, not the claimed 17px); non-blocking
+- [x] Dimension 5 Spacing: PASS
+- [x] Dimension 6 Registry Safety: PASS
+- [x] Dimension 7 Inventory Provenance: PASS — N/A (`Tool: none`; Component Inventory omitted by template)
 
-**Approval:** pending (awaiting gsd-ui-checker + discuss/plan lock of A-1/A-2)
+**Approval:** approved (gsd-ui-checker 2026-10-04; A-1/A-2 assumptions to be locked by discuss/plan before execute)
