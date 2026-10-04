@@ -5,17 +5,17 @@ milestone_name: Admin UX + diagnostics + PIPE-01 MVP
 current_phase: 16
 current_phase_name: PIPE-01 MVP config UI
 status: executing
-stopped_at: Completed 16-01-PLAN.md
-last_updated: "2026-10-04T10:44:32.827Z"
+stopped_at: Completed 16-02-PLAN.md
+last_updated: "2026-10-04T11:01:05.326Z"
 last_activity: 2026-10-04
 last_activity_desc: Phase 16 execution started
-state_head: 8213ff842e6b093d2e6402fb27e46a506bd95cc5
+state_head: 94b786fd83ec7b90346f4c3d4db35b538310266f
 progress:
   total_phases: 5
   completed_phases: 6
   total_plans: 26
-  completed_plans: 23
-  percent: 88
+  completed_plans: 24
+  percent: 92
 ---
 
 # Project State
@@ -30,11 +30,11 @@ See: .planning/PROJECT.md (updated 2026-10-04 — after Phase 15)
 ## Current Position
 
 Phase: 16 (PIPE-01 MVP config UI) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 Status: Ready to execute
 Last activity: 2026-10-04 — Phase 16 execution started
 
-Progress: [█████████░] 88%
+Progress: [█████████░] 92%
 
 ## Performance Metrics
 
@@ -84,6 +84,7 @@ Progress: [█████████░] 88%
 | Phase 15 P02 | 8 min | 3 tasks | 5 files |
 | Phase 15 P03 | 8min | 3 tasks | 3 files |
 | Phase 16 P01 | 5 min | 2 tasks | 10 files |
+| Phase 16 P02 | 6min | 2 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -138,6 +139,11 @@ v1.2 roadmap locks:
 - [Phase 16]: 16-01 defers the PUT PipelineConfigValidationError reject branch (structured 400 {errors:[...]}) to 16-02 behind the same validator port; tracer proves the happy path only
 - [Phase 16]: 16-01 mock config persists to sessionStorage so a page reload re-reads the saved YAML (PIPE-03 round-trip proof without a reload control)
 - [Phase 16]: 16-01 names the service mock cutover helper mocksEnabled (not useMocks) to avoid new react-hooks lint false positives
+- [Phase 16]: Locked pipeline config schema keys {template, roles, language, max_chars}; template/role Literals defined locally in backend (no data-collection import) (16-02)
+- [Phase 16]: PUT /admin/pipeline/config reject returns top-level JSONResponse(400, {errors:[...]}) with zero writes; never HTTPException detail nesting (16-02, D-05)
+- [Phase 16]: MAX_PIPELINE_CONFIG_CHARS=20000 cap checked before parse; strict _StrictSafeLoader rejects duplicate keys (16-02, T-16-07/T-16-09)
+- [Phase 16]: Rule 2 deviation: added PUT to CORS allow_methods so the live browser preflight reaches the reject path (16-02, RESEARCH Pitfall 1)
+- [Phase 16]: AppContainer.pipeline_config/pipeline_config_validator declared with None defaults; build_in_memory_container wires the real YamlPipelineConfigValidator + InMemoryPipelineConfigRepository (16-02)
 
 ### Pending Todos
 
@@ -161,7 +167,7 @@ Carried product deferrals to v1.3+: leaderboard, quiz, live SMTP, signup mail, W
 
 ## Session Continuity
 
-Last session: 2026-10-04T10:44:32.661Z
-Stopped at: Completed 16-01-PLAN.md
+Last session: 2026-10-04T11:01:05.157Z
+Stopped at: Completed 16-02-PLAN.md
 Resume file: None
 Next: plan Phase 16 (PIPE-01 MVP config UI)
