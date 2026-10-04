@@ -923,3 +923,94 @@ test.describe("Admin pipeline config — view + save (PIPE-01/PIPE-03, D-11/D-13
     await expect(page.getByTestId("pipeline-config-status")).toHaveText("Изменений нет");
   });
 });
+
+test.describe("Admin pipeline config — validation + save failure (PIPE-02, D-05/D-07)", () => {
+  test("pipeline config validation renders every server error row and keeps the document dirty", async ({
+    page,
+  }) => {
+    await gotoAsRole(page, "admin", "/admin/pipeline");
+    const editor = page.getByTestId("pipeline-config-editor");
+    const doc = "template: lecture\nroles:\n  - employee\nlanguage: ru\nmax_chars: 0\n";
+    await editor.fill(doc);
+
+    await page.evaluate(() => {
+      window.__DIGEST_PIPELINE_CONFIG_HARNESS__.armRejectNextSave([
+        { path: "max_chars", message: "Input should be greater than 0" },
+        { path: "template", line: 1, message: "Input should be 'lecture' or 'podcast'" },
+      ]);
+    });
+    await page.getByTestId("pipeline-config-save").click();
+
+    const panel = page.getByTestId("pipeline-config-errors");
+    await expect(panel).toBeVisible();
+    await expect(panel).toHaveAttribute("role", "alert");
+    await expect(
+      panel.getByRole("heading", { name: "Проверьте конфиг перед сохранением" }),
+    ).toBeVisible();
+
+    const rows = panel.getByTestId("pipeline-config-error");
+    await expect(rows).toHaveCount(2);
+    // Row prefix is Строка {line}: when a line is present, else {path}: — message verbatim.
+    await expect(rows.nth(0)).toContainText("max_chars: Input should be greater than 0");
+    await expect(rows.nth(1)).toContainText("Строка 1: Input should be 'lecture' or 'podcast'");
+
+    // The rejected document stays editable + dirty and is never discarded.
+    await expect(editor).toHaveValue(doc);
+    await expect(editor).toHaveAttribute("aria-invalid", "true");
+    await expect(page.getByTestId("pipeline-config-save")).toBeEnabled();
+  });
+
+  test("pipeline config validation falls back to a single generic string when the reject has no structured errors", async ({
+    page,
+  }) => {
+    await gotoAsRole(page, "admin", "/admin/pipeline");
+    await page.getByTestId("pipeline-config-editor").fill("template: lecture\n");
+    await page.evaluate(() => {
+      window.__DIGEST_PIPELINE_CONFIG_HARNESS__.armRejectNextSave();
+    });
+    await page.getByTestId("pipeline-config-save").click();
+
+    const panel = page.getByTestId("pipeline-config-errors");
+    await expect(panel).toBeVisible();
+    await expect(panel.getByTestId("pipeline-config-error")).toHaveCount(0);
+    await expect(panel.getByText("Конфиг не прошёл проверку", { exact: true })).toBeVisible();
+  });
+
+  test("pipeline config validation clears stale errors on edit", async ({ page }) => {
+    await gotoAsRole(page, "admin", "/admin/pipeline");
+    const editor = page.getByTestId("pipeline-config-editor");
+    await editor.fill("template: lecture\n");
+    await page.evaluate(() => {
+      window.__DIGEST_PIPELINE_CONFIG_HARNESS__.armRejectNextSave([
+        { path: "template", message: "bad template" },
+      ]);
+    });
+    await page.getByTestId("pipeline-config-save").click();
+    await expect(page.getByTestId("pipeline-config-errors")).toBeVisible();
+
+    await editor.fill("template: podcast\n");
+    await expect(page.getByTestId("pipeline-config-errors")).toHaveCount(0);
+    await expect(editor).toHaveAttribute("aria-invalid", "false");
+  });
+
+  test("pipeline config save failure shows a retry control and can succeed", async ({
+    page,
+  }) => {
+    await gotoAsRole(page, "admin", "/admin/pipeline");
+    const editor = page.getByTestId("pipeline-config-editor");
+    await editor.fill("template: lecture\n");
+    await page.evaluate(() => {
+      window.__DIGEST_PIPELINE_CONFIG_HARNESS__.armFailNextSave();
+    });
+    await page.getByTestId("pipeline-config-save").click();
+
+    await expect(page.getByText("Конфиг не сохранён", { exact: true })).toBeVisible();
+    const retry = page.getByTestId("pipeline-config-save-retry");
+    await expect(retry).toBeVisible();
+    await expect(retry).toHaveText("Повторить сохранение");
+
+    await retry.click();
+    await expect(page.getByTestId("pipeline-config-status")).toHaveText("Сохранено");
+    await expect(page.getByText("Конфиг не сохранён", { exact: true })).toHaveCount(0);
+  });
+});

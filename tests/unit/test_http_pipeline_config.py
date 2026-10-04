@@ -8,8 +8,10 @@ in-memory PipelineConfigRepository/Validator fakes to the container post-build
 from __future__ import annotations
 
 import json
+import re
 import time
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any
 
 import jwt
@@ -329,3 +331,42 @@ def test_app_container_still_constructs_without_pipeline_kwargs() -> None:
 
     assert bare.pipeline_config is None
     assert bare.pipeline_config_validator is None
+
+
+_SUPABASE_IMPORT = re.compile(
+    r"""(?:from|require\()\s*['"]@?supabase(?:[/'"])""",
+    re.IGNORECASE,
+)
+
+
+def test_pipeline_page_reaches_storage_only_through_service_no_supabase() -> None:
+    """RED→GREEN PIPE-03 / D-10 boundary guard (static-source assertion).
+
+    The admin pipeline page must reach storage only through the SPA service module:
+    it imports ``../services/pipelineConfigApi.js``, neither the page nor the service
+    imports a supabase module, and only the service composes the
+    ``/admin/pipeline/config`` URL. The same service module is the single place that
+    exposes the Playwright mock-control harness (no storage coupling in components).
+    """
+    page_src = Path("web/src/pages/AdminPipelineConfigPage.jsx").read_text(encoding="utf-8")
+    service_src = Path("web/src/services/pipelineConfigApi.js").read_text(encoding="utf-8")
+
+    # The page consumes the service, never a transport/storage SDK directly.
+    assert re.search(
+        r"""from\s+['"]\.\./services/pipelineConfigApi\.js['"]""", page_src
+    ), "AdminPipelineConfigPage must import ../services/pipelineConfigApi.js"
+    assert not _SUPABASE_IMPORT.search(page_src), "page must not import a supabase module"
+    assert not _SUPABASE_IMPORT.search(service_src), "service must not import a supabase module"
+
+    # Only the service composes the transport URL — no component knows the endpoint.
+    assert "/admin/pipeline/config" not in page_src
+    assert "/admin/pipeline/config" in service_src
+
+    # The mock-control harness lives on the service module (Task 1 deliverable).
+    for arm in (
+        "armRejectNextSave",
+        "armFailNextSave",
+        "armFailNextLoad",
+        "resetPipelineConfigHarness",
+    ):
+        assert arm in service_src, f"service must expose {arm}"
