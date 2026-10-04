@@ -52,6 +52,7 @@ dependencies = [
     { name = "httpx" },
     { name = "pyjwt" },
     { name = "python-multipart" },
+    { name = "pyyaml" },
     { name = "structlog" },
     { name = "uvicorn", extra = ["standard"] },
 ]
@@ -63,6 +64,7 @@ requires-dist = [
     { name = "httpx", specifier = "==0.28.1" },
     { name = "pyjwt", specifier = "==2.14.0" },
     { name = "python-multipart", specifier = "==0.0.32" },
+    { name = "pyyaml", specifier = "==6.0.3" },
     { name = "structlog", specifier = "==26.1.0" },
     { name = "uvicorn", extras = ["standard"], specifier = "==0.53.0" },
 ]
