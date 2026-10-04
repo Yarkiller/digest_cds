@@ -3,6 +3,18 @@ phase: 16
 review: 16-REVIEW.md
 titles: json
 findings:
+  - id: CR-01
+    severity: critical
+    disposition: fixed
+    title: "Deep-nesting fix is incomplete — bare `yaml.YAMLError` (`ReaderError`) still escapes as HTTP 500"
+  - id: IN-01
+    severity: info
+    disposition: skipped
+    title: "`_TOO_DEEP_MESSAGE` is English while sibling document-level messages are Russian"
+  - id: IN-02
+    severity: info
+    disposition: skipped
+    title: "New tests hard-code a nesting depth coupled to the interpreter recursion limit"
   - id: WR-01
     severity: warning
     disposition: open
@@ -11,7 +23,6 @@ findings:
     severity: warning
     disposition: fixed
     title: "Validator only catches MarkedYAMLError; deep documents escape as 500"
-    source: "fixed in commit 758ddac (catch RecursionError -> structured 400); VERIFICATION.md re-run passed 49/49"
   - id: WR-03
     severity: warning
     disposition: open
@@ -20,20 +31,10 @@ findings:
     severity: warning
     disposition: deferred
     title: "window.confirm inside beforeunload is unreliable"
-    source: "accepted known limitation; promoted to ROADMAP backlog 999.6 (2026-10-04)"
   - id: WR-05
     severity: warning
     disposition: deferred
     title: "Unsaved edits are lost on in-app (SPA) navigation"
-    source: "accepted known limitation; promoted to ROADMAP backlog 999.6 (2026-10-04)"
-  - id: IN-01
-    severity: info
-    disposition: open
-    title: "Playwright mock-control harness is exposed in every build"
-  - id: IN-02
-    severity: info
-    disposition: open
-    title: "Duplicate imports in test_live_container_wiring.py"
   - id: IN-03
     severity: info
     disposition: open
@@ -42,24 +43,25 @@ findings:
     severity: info
     disposition: open
     title: "Migration relies solely on RLS; consider revoking default grants"
-open: 6
-total: 9
-recorded: 2026-10-04T12:05:00.000Z
+open: 4
+total: 10
+recorded: 2026-10-04T19:14:21.412Z
 ---
 
 # Phase 16: Code Review Disposition
 
 | Finding | Severity | Disposition | Source |
 |---------|----------|-------------|--------|
-| WR-01 | warning | open | - |
-| WR-02 | warning | fixed | fixed in commit 758ddac (catch RecursionError -> structured 400) |
-| WR-03 | warning | open | - |
-| WR-04 | warning | deferred | accepted known limitation; ROADMAP backlog 999.6 |
-| WR-05 | warning | deferred | accepted known limitation; ROADMAP backlog 999.6 |
-| IN-01 | info | open | - |
-| IN-02 | info | open | - |
-| IN-03 | info | open | - |
-| IN-04 | info | open | - |
+| CR-01 | critical | fixed | 16-REVIEW-FIX.md |
+| IN-01 | info | skipped | 16-REVIEW-FIX.md |
+| IN-02 | info | skipped | 16-REVIEW-FIX.md |
+| WR-01 | warning | open | - (not in the current review) |
+| WR-02 | warning | fixed | fixed in commit 758ddac (catch RecursionError -> structured 400) (not in the current review) |
+| WR-03 | warning | open | - (not in the current review) |
+| WR-04 | warning | deferred | accepted known limitation; ROADMAP backlog 999.6 (not in the current review) |
+| WR-05 | warning | deferred | accepted known limitation; ROADMAP backlog 999.6 (not in the current review) |
+| IN-03 | info | open | - (not in the current review) |
+| IN-04 | info | open | - (not in the current review) |
 
 Dispositions: `open` (recorded, not yet triaged), `fixed`, `skipped`, `deferred`.
 Set `deferred` by hand and put the reason in the Source cell; both are preserved. A `|` in the reason is kept as prose and escaped on the next run.
