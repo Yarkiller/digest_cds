@@ -108,7 +108,8 @@ def main(
             )
         )
     except (ConfigurationError, TemplateLoadError) as err:
-        # D-08: pre-video failures stay human text — never mint a new IngestError stage.
+        # D-08/D-12: pre-video failures stay human text — never mint a new IngestError stage.
+        diagnostics.config_error(error_type=type(err).__name__, message=str(err))
         typer.echo(str(err), err=True)
         raise typer.Exit(code=1) from err
     except IngestError as err:

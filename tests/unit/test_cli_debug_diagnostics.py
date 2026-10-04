@@ -233,6 +233,69 @@ def test_debug_url_failure_prints_stage_line_with_zero_elapsed(monkeypatch) -> N
     assert payload["stage"] == "url"
 
 
+def test_debug_config_error_line(monkeypatch) -> None:
+    """D-12: a pre-video ConfigurationError emits stage=config, no IngestError envelope."""
+    from typer.testing import CliRunner
+
+    from ingestion_service import cli as cli_mod
+    from ingestion_service.composition.config_error import ConfigurationError
+
+    def _raise_config() -> object:
+        raise ConfigurationError("SUPABASE_URL is required")
+
+    monkeypatch.setattr(cli_mod, "build_ingest_deps", _raise_config)
+
+    result = CliRunner().invoke(cli_mod.app, [URL, "--template", "lecture", "--debug"])
+    assert result.exit_code != 0
+
+    config_line = _stage_line(_debug_lines(result.stderr), "config")
+    assert "error_type=ConfigurationError" in config_line
+    assert "SUPABASE_URL is required" in result.stderr
+
+    stderr_lines = result.stderr.splitlines()
+    human_line = next(line for line in stderr_lines if line == "SUPABASE_URL is required")
+    assert stderr_lines.index(config_line) < stderr_lines.index(human_line)
+    assert '"ok"' not in result.stderr
+
+
+def test_debug_template_load_error_line(monkeypatch) -> None:
+    """D-12: TemplateLoadError emits stage=config error_type=TemplateLoadError."""
+    from data_collection.templates import TemplateLoadError
+    from typer.testing import CliRunner
+
+    from ingestion_service import cli as cli_mod
+
+    def _raise_template() -> object:
+        raise TemplateLoadError("lecture")
+
+    monkeypatch.setattr(cli_mod, "build_ingest_deps", _raise_template)
+
+    result = CliRunner().invoke(cli_mod.app, [URL, "--template", "lecture", "--debug"])
+    assert result.exit_code != 0
+
+    config_line = _stage_line(_debug_lines(result.stderr), "config")
+    assert "error_type=TemplateLoadError" in config_line
+    assert '"ok"' not in result.stderr
+
+
+def test_config_error_without_debug_has_no_debug_line(monkeypatch) -> None:
+    """DBG-02: with --debug off the config-error path stays human-text only."""
+    from typer.testing import CliRunner
+
+    from ingestion_service import cli as cli_mod
+    from ingestion_service.composition.config_error import ConfigurationError
+
+    def _raise_config() -> object:
+        raise ConfigurationError("SUPABASE_URL is required")
+
+    monkeypatch.setattr(cli_mod, "build_ingest_deps", _raise_config)
+
+    result = CliRunner().invoke(cli_mod.app, [URL, "--template", "lecture"])
+    assert result.exit_code != 0
+    assert "debug stage=" not in result.stderr
+    assert "SUPABASE_URL is required" in result.stderr
+
+
 def test_ingest_pipeline_retains_no_infra_imports() -> None:
     """Structural guard: the use-case stays free of clock/stream/CLI imports."""
     import ingestion_service.application.use_cases.ingest_pipeline as pipeline_mod
