@@ -159,15 +159,35 @@ def test_debug_stage_lines_carry_allowlisted_signals(monkeypatch) -> None:
 
     llm_line = _stage_line(lines, "llm")
     assert "template=lecture" in llm_line
-    assert "response_chars=" in llm_line
+    assert f"response_chars={len(_article().body_markdown)}" in llm_line
     assert "prompt" not in llm_line
     assert "token" not in llm_line
 
     persist_line = _stage_line(lines, "persist")
-    assert "material_id=" in persist_line
-    assert "batch_id=" in persist_line
-    assert "rank=" in persist_line
-    assert "already_saved=" in persist_line
+    assert "material_id=42" in persist_line
+    assert f"slug={EXPECTED_SLUG}" in persist_line
+    assert "batch_id=7" in persist_line
+    assert "rank=1" in persist_line
+    assert "already_saved=False" in persist_line
+
+
+def test_debug_secret_registry_masks_settings_secret(monkeypatch) -> None:
+    """W-2: Settings -> _settings_secrets -> SecretRegistry -> sanitize -> stderr."""
+    from typer.testing import CliRunner
+
+    from ingestion_service import cli as cli_mod
+    from ingestion_service.composition.settings import Settings
+
+    deps = _fake_deps()
+    deps.settings = Settings(deepseek_api_key=VIDEO_ID)
+    monkeypatch.setattr(cli_mod, "build_ingest_deps", lambda: deps)
+
+    result = CliRunner().invoke(cli_mod.app, [URL, "--template", "lecture", "--debug"])
+    assert result.exit_code == 0
+
+    captions_line = _stage_line(_debug_lines(result.stderr), "captions")
+    assert "video_id=[redacted]" in captions_line
+    assert VIDEO_ID not in result.stderr
 
 
 def test_debug_failure_prints_completed_and_failed(monkeypatch) -> None:

@@ -2,12 +2,9 @@
 
 from __future__ import annotations
 
-import re
-
 import pytest
 
 from ingestion_service.diagnostics.redaction import (
-    DENY_PATTERNS,
     MAX_VALUE_LENGTH,
     REDACTED,
     SecretRegistry,
@@ -29,10 +26,10 @@ def test_secret_registry_ignores_empty_and_short_values() -> None:
     assert registry.mask("abc") == "abc"
 
 
-def test_deny_patterns_is_tuple_of_compiled_patterns() -> None:
-    assert isinstance(DENY_PATTERNS, tuple)
-    assert DENY_PATTERNS
-    assert all(isinstance(pattern, re.Pattern) for pattern in DENY_PATTERNS)
+def test_sanitize_masks_plain_assignment_forms() -> None:
+    """W-3: behavioral denylist coverage — the plain assignment shapes mask."""
+    assert sanitize("api_key=abcdef123456") == REDACTED
+    assert sanitize("token=abcdef123456") == REDACTED
 
 
 @pytest.mark.parametrize(
