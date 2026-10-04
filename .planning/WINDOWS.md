@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 15
+open_count: 16
 waived_count: 0
 fixed_count: 3
-total_count: 18
-last_updated: 2026-10-04T08:12:39.822Z
+total_count: 19
+last_updated: 2026-10-04T10:43:11.118Z
 ---
 
 # Broken Windows Ledger
@@ -33,6 +33,7 @@ last_updated: 2026-10-04T08:12:39.822Z
 | 16 | 10 | deviation | ingestion-service/src/ingestion_service/application/ports/persist.py |  | already_saved defaults False for deferred 10-05 call sites | open |  | 2026-09-29T17:58:41.951Z |  |
 | 17 | 11 | deviation | tests/unit/test_cli_ingest_contract.py |  | Unexpected GREEN Task1: CLI sent-batch contract passed without cli.py change (prior plans) | open |  | 2026-10-02T13:36:12.392Z |  |
 | 18 | 15 | deviation | ingestion-service/src/ingestion_service/adapters/stderr_diagnostics.py |  | Deviation: sink emits via injected emitter (cli.py typer.echo err=True) not direct typer import, to satisfy test_ingestion_service_has_no_typer_import | open |  | 2026-10-04T08:12:39.822Z |  |
+| 19 | 16 | stub | backend/src/backend/interface/http/routes/admin.py | 552 | 16-01 tracer: PUT /admin/pipeline/config has no PipelineConfigValidationError reject branch yet; structured 400 {errors:[...]} lands in 16-02 behind the same validator port | open |  | 2026-10-04T10:43:11.118Z |  |
 
 ````json
 [
@@ -252,6 +253,19 @@ last_updated: 2026-10-04T08:12:39.822Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-10-04T08:12:39.822Z",
+    "resolved_at": null,
+    "milestone": "v1.2"
+  },
+  {
+    "id": 19,
+    "kind": "stub",
+    "phase": "16",
+    "file": "backend/src/backend/interface/http/routes/admin.py",
+    "line": 552,
+    "description": "16-01 tracer: PUT /admin/pipeline/config has no PipelineConfigValidationError reject branch yet; structured 400 {errors:[...]} lands in 16-02 behind the same validator port",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-04T10:43:11.118Z",
     "resolved_at": null,
     "milestone": "v1.2"
   }

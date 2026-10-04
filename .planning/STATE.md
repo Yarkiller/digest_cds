@@ -5,17 +5,17 @@ milestone_name: Admin UX + diagnostics + PIPE-01 MVP
 current_phase: 16
 current_phase_name: PIPE-01 MVP config UI
 status: executing
-stopped_at: Phase 16 context gathered
-last_updated: "2026-10-04T10:16:33.594Z"
+stopped_at: Completed 16-01-PLAN.md
+last_updated: "2026-10-04T10:44:32.827Z"
 last_activity: 2026-10-04
-last_activity_desc: Phase 15 complete, transitioned to Phase 16
-state_head: 8ce56d3834a87c9bf399ce3abc9b8ed608a80ac4
+last_activity_desc: Phase 16 execution started
+state_head: 8213ff842e6b093d2e6402fb27e46a506bd95cc5
 progress:
   total_phases: 5
   completed_phases: 6
   total_plans: 26
-  completed_plans: 22
-  percent: 85
+  completed_plans: 23
+  percent: 88
 ---
 
 # Project State
@@ -29,12 +29,12 @@ See: .planning/PROJECT.md (updated 2026-10-04 — after Phase 15)
 
 ## Current Position
 
-Phase: 16 (PIPE-01 MVP config UI) — READY TO EXECUTE
-Plan: Not started
+Phase: 16 (PIPE-01 MVP config UI) — EXECUTING
+Plan: 2 of 4
 Status: Ready to execute
-Last activity: 2026-10-04 — Phase 15 complete, transitioned to Phase 16
+Last activity: 2026-10-04 — Phase 16 execution started
 
-Progress: [█████████░] 85%
+Progress: [█████████░] 88%
 
 ## Performance Metrics
 
@@ -83,6 +83,7 @@ Progress: [█████████░] 85%
 | Phase 15 P01 | 10min | 3 tasks | 10 files |
 | Phase 15 P02 | 8 min | 3 tasks | 5 files |
 | Phase 15 P03 | 8min | 3 tasks | 3 files |
+| Phase 16 P01 | 5 min | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -133,6 +134,10 @@ v1.2 roadmap locks:
 - [Phase 15]: Each mapping except-block emits stage_failed from the mapped IngestError's stage/reason/exit_code so debug lines correlate 1:1 with the JSON envelope; url/consistency failures report elapsed_ms=0 — D-10/D-11/RESEARCH Pattern 4/T-15-05: attribute failures without altering the envelope or exit code
 - [Phase 15]: RecordingDiagnostics call-spy added to tests_support/fakes.py and used for pipeline event-order plus CLI failure assertions — RED-first TDD: the use-case test double records ordered stage events without coupling to the stderr sink
 - [Phase 15]: Gap closure (15-03): assignment denylist now uses a non-word left boundary `(?<![A-Za-z0-9_])` with compound alternatives (access_token/refresh_token/client_secret/secret_key/private_key/auth) before the bare secret/token and NO trailing `\b`, so underscore-compound credentials mask to [redacted]; the control-character strip runs once before the token patterns — T-15-07/T-15-08 close the verifier's single blocker without touching the allowlist, SecretRegistry, sink, use-case, CLI flags, or stdout contract
+- [Phase 16]: 16-01 attaches pipeline_config fakes post-build; AppContainer field declaration + build_in_memory_container wiring are 16-02's slice
+- [Phase 16]: 16-01 defers the PUT PipelineConfigValidationError reject branch (structured 400 {errors:[...]}) to 16-02 behind the same validator port; tracer proves the happy path only
+- [Phase 16]: 16-01 mock config persists to sessionStorage so a page reload re-reads the saved YAML (PIPE-03 round-trip proof without a reload control)
+- [Phase 16]: 16-01 names the service mock cutover helper mocksEnabled (not useMocks) to avoid new react-hooks lint false positives
 
 ### Pending Todos
 
@@ -156,7 +161,7 @@ Carried product deferrals to v1.3+: leaderboard, quiz, live SMTP, signup mail, W
 
 ## Session Continuity
 
-Last session: 2026-10-04T09:19:27.522Z
-Stopped at: Phase 16 context gathered
-Resume file: .planning/phases/16-pipe-01-mvp-config-ui/16-CONTEXT.md
+Last session: 2026-10-04T10:44:32.661Z
+Stopped at: Completed 16-01-PLAN.md
+Resume file: None
 Next: plan Phase 16 (PIPE-01 MVP config UI)
