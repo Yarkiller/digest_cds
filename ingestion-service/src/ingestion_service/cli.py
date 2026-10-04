@@ -64,6 +64,11 @@ def _on_stage(name: str) -> None:
     typer.echo(_STAGE_CHECKMARKS[name])
 
 
+def _emit_debug(line: str) -> None:
+    """D-01: debug lines go to stderr only — never stdout."""
+    typer.echo(line, err=True)
+
+
 @app.command()
 def main(
     url: Annotated[str, typer.Argument(help="YouTube URL or video id")],
@@ -78,7 +83,9 @@ def main(
 ) -> None:
     """Ingest a YouTube URL into a materials draft + shortlist row."""
     diagnostics: StageDiagnostics = (
-        StderrDiagnostics(clock=SystemClock()) if debug else NullDiagnostics()
+        StderrDiagnostics(clock=SystemClock(), emit=_emit_debug)
+        if debug
+        else NullDiagnostics()
     )
     try:
         deps = build_ingest_deps()
@@ -86,6 +93,7 @@ def main(
             diagnostics = StderrDiagnostics(
                 clock=SystemClock(),
                 secrets=_settings_secrets(getattr(deps, "settings", None)),
+                emit=_emit_debug,
             )
         result = asyncio.run(
             run_ingest_pipeline(

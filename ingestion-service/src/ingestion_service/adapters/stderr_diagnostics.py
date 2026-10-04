@@ -2,18 +2,20 @@
 
 Concrete implementation of ``StageDiagnostics``: owns the injected ``Clock``
 (elapsed ms + ``[HH:MM:SS]`` timestamp), the allowlist filter, and redaction.
-Emits exclusively via ``typer.echo(..., err=True)`` (or an injected stream) so
-the machine-readable stdout contract is never contaminated.
+
+Emits exclusively to stderr via the injected stream, an injected emitter, or a
+``sys.stderr`` fallback. The CLI (the only module allowed to import ``typer``)
+passes ``typer.echo(..., err=True)`` as the emitter, so the machine-readable
+stdout contract is never contaminated — this adapter stays framework-free.
 """
 
 from __future__ import annotations
 
+import sys
 import time
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from datetime import datetime
 from typing import TextIO
-
-import typer
 
 from ingestion_service.application.ports.diagnostics import Clock, DebugValue
 from ingestion_service.diagnostics.redaction import (
@@ -41,10 +43,12 @@ class StderrDiagnostics:
         clock: Clock,
         secrets: Sequence[str] = (),
         stream: TextIO | None = None,
+        emit: Callable[[str], None] | None = None,
     ) -> None:
         self._clock = clock
         self._registry = SecretRegistry(secrets)
         self._stream = stream
+        self._emit_fn = emit
         self._started_at: float | None = None
 
     def stage_started(self, stage: str) -> None:
@@ -89,7 +93,12 @@ class StderrDiagnostics:
             parts.append(f"{key}={value}")
         timestamp = self._clock.now().strftime("%H:%M:%S")
         line = sanitize(f"[{timestamp}] debug " + " ".join(parts), registry=self._registry)
-        if self._stream is None:
-            typer.echo(line, err=True)
-        else:
+        self._write(line)
+
+    def _write(self, line: str) -> None:
+        if self._stream is not None:
             self._stream.write(line + "\n")
+        elif self._emit_fn is not None:
+            self._emit_fn(line)
+        else:
+            sys.stderr.write(line + "\n")
