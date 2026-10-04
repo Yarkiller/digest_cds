@@ -4,18 +4,18 @@ milestone: v1.2
 milestone_name: Admin UX + diagnostics + PIPE-01 MVP
 current_phase: 16
 current_phase_name: PIPE-01 MVP config UI
-status: verifying
-stopped_at: Completed 16-03-PLAN.md
-last_updated: "2026-10-04T11:52:33.156Z"
+status: planning
+stopped_at: Phase 12 complete, ready to plan Phase 16
+last_updated: "2026-10-04T16:37:18.710Z"
 last_activity: 2026-10-04
-last_activity_desc: Phase 16 execution started
-state_head: f0e8000881fbc18c003e791f1af8a008dc472d96
+last_activity_desc: Phase 12 complete, transitioned to Phase 16
+state_head: 0cae774ccd97feb33c9fbd2c97c3013c40330b35
 progress:
   total_phases: 5
   completed_phases: 6
   total_plans: 26
   completed_plans: 26
-  percent: 100
+  percent: 86
 ---
 
 # Project State
@@ -25,16 +25,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-04 — after Phase 15)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Phase 16 — PIPE-01 MVP config UI
+**Current focus:** Phase 12 — Admin shortlist empty-batch contract
 
 ## Current Position
 
-Phase: 16 (PIPE-01 MVP config UI) — EXECUTING
-Plan: 4 of 4
-Status: Phase complete — ready for verification
-Last activity: 2026-10-04 — Phase 16 execution started
+Phase: 16 — PIPE-01 MVP config UI
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-10-04 — Phase 12 complete, transitioned to Phase 16
 
-Progress: [██████████] 100%
+Progress: [█████████░] 86%
 
 ## Performance Metrics
 
@@ -176,6 +176,6 @@ Carried product deferrals to v1.3+: leaderboard, quiz, live SMTP, signup mail, W
 ## Session Continuity
 
 Last session: 2026-10-04T11:52:33.003Z
-Stopped at: Completed 16-03-PLAN.md
+Stopped at: Phase 12 complete, ready to plan Phase 16
 Resume file: None
 Next: plan Phase 16 (PIPE-01 MVP config UI)
