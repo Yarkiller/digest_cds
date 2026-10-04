@@ -8,6 +8,7 @@ from supabase_integration.issue_repository import SupabaseIssueRepository
 from supabase_integration.knowledge_chunk_repository import SupabaseKnowledgeChunkRepository
 from supabase_integration.material_repository import SupabaseMaterialRepository
 from supabase_integration.ping_recorder import SupabasePingRecorder
+from supabase_integration.pipeline_config_repository import SupabasePipelineConfigRepository
 from supabase_integration.profile_repository import SupabaseProfileRepository
 from supabase_integration.razbor_repository import SupabaseRazborRepository
 from supabase_integration.shortlist_repository import SupabaseShortlistRepository
@@ -25,6 +26,7 @@ __all__ = [
     "SupabaseKnowledgeChunkRepository",
     "SupabaseMaterialRepository",
     "SupabasePingRecorder",
+    "SupabasePipelineConfigRepository",
     "SupabaseProfileRepository",
     "SupabaseRazborRepository",
     "SupabaseShortlistRepository",

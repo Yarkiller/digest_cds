@@ -396,6 +396,48 @@ Record apply method below when confirmed.
 
 ---
 
+## 4h. Phase 16 pipeline config singleton (PIPE-01…03, D-08)
+
+Checked-in idempotent SQL: `supabase-integration/migrations/011_phase16_pipeline_config.sql`.
+
+**Why:** PIPE-03 requires the validated admin pipeline config to persist behind the
+`PipelineConfigRepository` port and be readable on the next admin session. The MVP stores one
+global row (`id = 1`) holding the raw YAML document + `updated_at` (D-08/D-11). The SPA never
+touches storage — it reaches the config only through `web/src/services/pipelineConfigApi.js`
+(PIPE-03 hard boundary).
+
+**What it does (safe on shared VM):**
+
+- `create table if not exists public.pipeline_config` — singleton `id integer primary key default 1 check (id = 1)`, `yaml text not null default ''`, `updated_at timestamptz not null default now()`
+- `alter table public.pipeline_config enable row level security;` — deny-by-default with **no** permissive policy (only the service_role composition adapter reaches it; admin gating is backend `require_admin`, D-10)
+- Idempotent: re-running creates nothing new and mutates no rows
+
+There is **no `supabase/config.toml`** in this repo, so `supabase db push` is not configured
+locally — use Supabase Studio SQL or `psql` (established 005–010 path).
+
+**Apply once on the shared VM** (`knowledge-db.ru`):
+
+1. Open Supabase Studio → **SQL Editor** → **New query**  
+   URL (self-hosted): `https://knowledge-db.ru/project/default/sql/new`
+2. Paste the **entire** file [`011_phase16_pipeline_config.sql`](../../supabase-integration/migrations/011_phase16_pipeline_config.sql) and **Run** once. Expect success / no rows returned.
+3. Optional: when `POSTGRES_URL` is configured for Supabase MCP, `raw_sql` may run the same DDL — **never** `db reset`.
+
+**Do not** `TRUNCATE` / wipe `pipeline_config` / `db reset` on the shared VM. Never expose `SUPABASE_SECRET_KEY` via `VITE_`.
+
+**Verify after apply** (Studio SQL):
+
+```sql
+select count(*) from public.pipeline_config;                            -- expect 0 or 1
+select relrowsecurity from pg_class where relname = 'pipeline_config';  -- expect t
+select count(*) from pg_policies where tablename = 'pipeline_config';   -- expect 0
+```
+
+Record apply method below when confirmed.
+
+**Applied:** _pending — run step 2 above, then set date/method here._
+
+---
+
 ## 5. Live FE↔BE proof checklist (D-10)
 
 With API on `:8000`, Vite on `:5173`, `APP_CONTAINER=live`, and `VITE_USE_MOCKS=false`:
