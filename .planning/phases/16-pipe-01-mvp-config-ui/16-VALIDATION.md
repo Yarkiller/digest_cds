@@ -42,21 +42,21 @@ created: "2026-10-04"
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| TBD | TBD | TBD | PIPE-01 | V4 | Admin-only GET returns `{yaml,updated_at}`; non-admin 403 / unauth 401 | unit (route + fake repo) | `uv run pytest tests/unit/test_http_pipeline_config.py -k get_returns -x` | ❌ W0 | ⬜ pending |
-| TBD | TBD | TBD | PIPE-01 | — | Page renders editor, loads saved YAML, Save disabled while clean | e2e (Playwright) | `npx playwright test tests/admin.spec.js --project=web -g "pipeline config"` | ❌ W0 | ⬜ pending |
-| TBD | TBD | TBD | PIPE-02 | V5 | Invalid YAML (syntax) rejected with `{errors:[{path,line,message}]}`, no write | unit (validator) | `uv run pytest tests/unit/test_pipeline_config_validator.py -k syntax -x` | ❌ W0 | ⬜ pending |
-| TBD | TBD | TBD | PIPE-02 | V5 | Unknown key rejected (`extra_forbidden`), no write | unit (validator + route) | `uv run pytest tests/unit/test_pipeline_config_validator.py tests/unit/test_http_pipeline_config.py -k unknown -x` | ❌ W0 | ⬜ pending |
-| TBD | TBD | TBD | PIPE-02 | V5 | Duplicate key rejected (strict loader) | unit (validator) | `uv run pytest tests/unit/test_pipeline_config_validator.py -k duplicate -x` | ❌ W0 | ⬜ pending |
-| TBD | TBD | TBD | PIPE-02 | V5 | Reject payload is top-level `{"errors":[...]}`, not nested under `detail` | unit (route) | `uv run pytest tests/unit/test_http_pipeline_config.py -k nested -x` | ❌ W0 | ⬜ pending |
-| TBD | TBD | TBD | PIPE-02 | — | UI renders every error row + fallback copy, document stays dirty | e2e (Playwright) | `npx playwright test tests/admin.spec.js --project=web -g "validation"` | ❌ W0 | ⬜ pending |
-| TBD | TBD | TBD | PIPE-03 | V4 | Valid save round-trips (GET after PUT returns saved text) | unit (route + fake repo) | `uv run pytest tests/unit/test_http_pipeline_config.py -k round_trip -x` | ❌ W0 | ⬜ pending |
-| TBD | TBD | TBD | PIPE-03 | — | Empty state: no row → 200 empty DTO / UI empty block | unit + e2e | `uv run pytest tests/unit/test_http_pipeline_config.py -k empty -x` | ❌ W0 | ⬜ pending |
-| TBD | TBD | TBD | PIPE-03 | V4 | Non-admin GET/PUT → 403; unauthenticated → 401 | unit (route) | `uv run pytest tests/unit/test_http_pipeline_config.py -k admin -x` | ❌ W0 | ⬜ pending |
-| TBD | TBD | TBD | PIPE-03 | V5 | SPA reaches config only via `pipelineConfigApi.js` (no Supabase import in page) | unit (static/AST guard) | `uv run pytest tests/unit/test_http_pipeline_config.py -k no_supabase` | ❌ W0 | ⬜ pending |
-| TBD | TBD | TBD | PIPE-EXEC guard | — | No run/trigger/scheduler control renders | e2e (Playwright) | `npx playwright test tests/admin.spec.js --project=web -g "no execution"` | ❌ W0 | ⬜ pending |
-| TBD | TBD | TBD | — (migration) | V4 | Migration `011` contract: singleton + RLS enabled + no permissive policy + no wipe | unit (migration contract) | `uv run pytest tests/unit/test_phase16_migration_011.py -x` | ❌ W0 | ⬜ pending |
-| TBD | TBD | TBD | — (CORS) | — | CORS advertises `PUT` for the live browser preflight | unit (CORS) | `uv run pytest tests/unit/test_cors.py -k put -x` | ⚠️ extend | ⬜ pending |
-| TBD | TBD | TBD | — (wiring) | V4 | Live container wires `SupabasePipelineConfigRepository` | unit (wiring) | `uv run pytest tests/unit/test_live_container_wiring.py -k pipeline -x` | ⚠️ extend | ⬜ pending |
+| 16-01-T1 | 16-01 | 1 | PIPE-01 | V4 | Admin-only GET returns `{yaml,updated_at}`; non-admin 403 / unauth 401 | unit (route + fake repo) | `uv run pytest tests/unit/test_http_pipeline_config.py -k get_returns -x` | ❌ W0 | ⬜ pending |
+| 16-01-T1 (dirty gating: 16-04-T2) | 16-01 | 1 | PIPE-01 | — | Page renders editor, loads saved YAML, Save disabled while clean | e2e (Playwright) | `npx playwright test tests/admin.spec.js --project=web -g "pipeline config"` | ❌ W0 | ⬜ pending |
+| 16-02-T2 | 16-02 | 2 | PIPE-02 | V5 | Invalid YAML (syntax) rejected with `{errors:[{path,line,message}]}`, no write | unit (validator) | `uv run pytest tests/unit/test_pipeline_config_validator.py -k syntax -x` | ❌ W0 | ⬜ pending |
+| 16-02-T2 | 16-02 | 2 | PIPE-02 | V5 | Unknown key rejected (`extra_forbidden`), no write | unit (validator + route) | `uv run pytest tests/unit/test_pipeline_config_validator.py tests/unit/test_http_pipeline_config.py -k unknown -x` | ❌ W0 | ⬜ pending |
+| 16-02-T2 | 16-02 | 2 | PIPE-02 | V5 | Duplicate key rejected (strict loader) | unit (validator) | `uv run pytest tests/unit/test_pipeline_config_validator.py -k duplicate -x` | ❌ W0 | ⬜ pending |
+| 16-02-T2 | 16-02 | 2 | PIPE-02 | V5 | Reject payload is top-level `{"errors":[...]}`, not nested under `detail` | unit (route) | `uv run pytest tests/unit/test_http_pipeline_config.py -k nested -x` | ❌ W0 | ⬜ pending |
+| 16-04-T1 | 16-04 | 3 | PIPE-02 | — | UI renders every error row + fallback copy, document stays dirty | e2e (Playwright) | `npx playwright test tests/admin.spec.js --project=web -g "validation"` | ❌ W0 | ⬜ pending |
+| 16-01-T1 | 16-01 | 1 | PIPE-03 | V4 | Valid save round-trips (GET after PUT returns saved text) | unit (route + fake repo) | `uv run pytest tests/unit/test_http_pipeline_config.py -k round_trip -x` | ❌ W0 | ⬜ pending |
+| 16-01-T1 (UI empty block: 16-04-T2) | 16-01 | 1 | PIPE-03 | — | Empty state: no row → 200 empty DTO / UI empty block | unit + e2e | `uv run pytest tests/unit/test_http_pipeline_config.py -k empty -x` | ❌ W0 | ⬜ pending |
+| 16-01-T1 | 16-01 | 1 | PIPE-03 | V4 | Non-admin GET/PUT → 403; unauthenticated → 401 | unit (route) | `uv run pytest tests/unit/test_http_pipeline_config.py -k admin -x` | ❌ W0 | ⬜ pending |
+| 16-04-T1 | 16-04 | 3 | PIPE-03 | V5 | SPA reaches config only via `pipelineConfigApi.js` (no Supabase import in page) | unit (static/AST guard) | `uv run pytest tests/unit/test_http_pipeline_config.py -k no_supabase` | ❌ W0 | ⬜ pending |
+| 16-04-T2 | 16-04 | 3 | PIPE-EXEC guard | — | No run/trigger/scheduler control renders | e2e (Playwright) | `npx playwright test tests/admin.spec.js --project=web -g "no execution"` | ❌ W0 | ⬜ pending |
+| 16-03-T1 | 16-03 | 3 | — (migration) | V4 | Migration `011` contract: singleton + RLS enabled + no permissive policy + no wipe | unit (migration contract) | `uv run pytest tests/unit/test_phase16_migration_011.py -x` | ❌ W0 | ⬜ pending |
+| 16-03-T2 | 16-03 | 3 | — (CORS) | — | CORS advertises `PUT` for the live browser preflight | unit (CORS) | `uv run pytest tests/unit/test_cors.py -k put -x` | ⚠️ extend | ⬜ pending |
+| 16-03-T2 | 16-03 | 3 | — (wiring) | V4 | Live container wires `SupabasePipelineConfigRepository` | unit (wiring) | `uv run pytest tests/unit/test_live_container_wiring.py -k pipeline -x` | ⚠️ extend | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 

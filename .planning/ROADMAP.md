@@ -177,7 +177,7 @@ Plans:
   3. Validated config persists and is readable on subsequent admin sessions (storage behind a port; UI has no deep Supabase coupling)
   4. No run/trigger/scheduler execution of the pipeline ships in this phase (execution stays v1.3)
 
-**Plans**: 3 plans
+**Plans**: 4 plans
 
 Plans:
 **Wave 1**
@@ -188,6 +188,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2)*
 - [ ] 16-03-PLAN.md — Live persistence behind the port + migration 011 BLOCKING apply (PIPE-03)
+- [ ] 16-04-PLAN.md — SPA page completeness + validation-error rendering + boundary guard (PIPE-01, PIPE-02, PIPE-03)
 
 **UI hint**: yes
 
