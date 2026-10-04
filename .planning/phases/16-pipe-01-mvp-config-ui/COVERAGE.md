@@ -1,6 +1,8 @@
 # API Coverage — Phase 16 (no external API integration)
 
-No external API integration: Phase 16 adds an admin-only pipeline-config YAML surface backed by an internal FastAPI route (`GET`/`PUT /admin/pipeline/config`) and a Supabase singleton row behind the existing `PipelineConfigRepository` port. It integrates no new external API, SDK, or third-party service.
+No external API integration: internal FastAPI route plus the existing Supabase platform behind the PipelineConfigRepository port; no new external API, SDK, or third-party service.
+
+Phase 16 adds an admin-only pipeline-config YAML surface backed by an internal FastAPI route (`GET`/`PUT /admin/pipeline/config`) and a Supabase singleton row behind the existing `PipelineConfigRepository` port.
 
 Evidence:
 - `node gsd-core/bin/lib/api-coverage.cjs --json` over the Phase 16 ROADMAP scope → `{"detected": false, "signals": []}`.
