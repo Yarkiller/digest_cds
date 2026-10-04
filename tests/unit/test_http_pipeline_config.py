@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import re
+import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -24,7 +25,11 @@ from backend.composition.settings import Settings
 from backend.domain.current_user import CurrentUser
 from backend.domain.errors import PipelineConfigValidationError
 from backend.domain.pipeline_config import PipelineConfig
-from backend.infrastructure.yaml_pipeline_config_validator import YamlPipelineConfigValidator
+from backend.infrastructure.yaml_pipeline_config_validator import (
+    YamlPipelineConfigValidator,
+    _TOO_DEEP_MESSAGE,
+    _UNREADABLE_MESSAGE,
+)
 from backend.interface.http.app import create_app
 from backend.tests_support.in_memory import (
     InMemoryPipelineConfigRepository,
@@ -305,7 +310,8 @@ def test_put_invalid_error_rows_are_verbatim_and_top_level() -> None:
 def test_put_deeply_nested_yaml_returns_400_not_500() -> None:
     """RED→GREEN WR-02: deeply nested flow collections → structured 400, never an unhandled 500."""
     client, headers, container = _real_validator_admin_env()
-    document = ("[" * 3000) + ("]" * 3000)
+    depth = sys.getrecursionlimit() + 500
+    document = ("[" * depth) + ("]" * depth)
 
     response = client.put(CONFIG_URL, headers=headers, json={"yaml": document})
 
@@ -313,7 +319,7 @@ def test_put_deeply_nested_yaml_returns_400_not_500() -> None:
     body = response.json()
     assert "detail" not in body
     assert body["errors"] == [
-        {"path": "", "message": "Документ YAML имеет слишком глубокую вложенность"}
+        {"path": "", "message": _TOO_DEEP_MESSAGE}
     ]
     # The reject never reached the repository (D-03/D-07): zero saves.
     assert container.pipeline_config.save_count == 0
@@ -330,7 +336,7 @@ def test_put_control_char_yaml_returns_400_not_500() -> None:
     body = response.json()
     assert "detail" not in body
     assert body["errors"] == [
-        {"path": "", "message": "Документ содержит недопустимые символы"}
+        {"path": "", "message": _UNREADABLE_MESSAGE}
     ]
     # The reject never reached the repository (D-03/D-07): zero saves.
     assert container.pipeline_config.save_count == 0

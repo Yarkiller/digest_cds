@@ -8,6 +8,8 @@ fixed schema key set (PIPE-03 secret-key guard), and the structured error shape.
 
 from __future__ import annotations
 
+import sys
+
 import pytest
 
 from backend.domain.errors import PipelineConfigValidationError
@@ -16,6 +18,8 @@ from backend.infrastructure.yaml_pipeline_config_validator import (
     MAX_PIPELINE_CONFIG_CHARS,
     PipelineConfigModel,
     YamlPipelineConfigValidator,
+    _TOO_DEEP_MESSAGE,
+    _UNREADABLE_MESSAGE,
 )
 
 VALID_DOC = "template: lecture\nroles:\n  - employee\nlanguage: ru\nmax_chars: 4000\n"
@@ -201,12 +205,15 @@ def test_error_to_dict_omits_line_when_none_and_includes_when_set() -> None:
 
 
 def test_deeply_nested_flow_document_is_rejected_not_recursion_error() -> None:
-    """RED→GREEN WR-02: ~3000 nested flow brackets (under the cap) → structured error.
+    """RED→GREEN WR-02: nested flow brackets (under the cap) → structured error.
 
     Before the fix the parser raises an unhandled ``RecursionError`` (HTTP 500);
     strict validation must instead map it to a ``PipelineConfigValidationError``.
+    The depth is derived from the live recursion limit (plus a margin) so the test
+    keeps exercising the overflow branch even if the limit is raised.
     """
-    document = ("[" * 3000) + ("]" * 3000)
+    depth = sys.getrecursionlimit() + 500
+    document = ("[" * depth) + ("]" * depth)
 
     assert len(document) <= MAX_PIPELINE_CONFIG_CHARS
 
@@ -215,7 +222,7 @@ def test_deeply_nested_flow_document_is_rejected_not_recursion_error() -> None:
     assert len(errors) == 1
     assert errors[0].path == ""
     assert errors[0].line is None
-    assert errors[0].message == "Документ YAML имеет слишком глубокую вложенность"
+    assert errors[0].message == _TOO_DEEP_MESSAGE
 
 
 # --- 13. unreadable characters (CR-01) ----------------------------------------
@@ -236,5 +243,5 @@ def test_unreadable_control_char_document_is_rejected_not_unmarked_yaml_error() 
     assert len(errors) == 1
     assert errors[0].path == ""
     assert errors[0].line is None
-    assert errors[0].message == "Документ содержит недопустимые символы"
+    assert errors[0].message == _UNREADABLE_MESSAGE
 
