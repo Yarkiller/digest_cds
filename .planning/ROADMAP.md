@@ -156,7 +156,10 @@ Plans:
   3. With `--debug` off, existing staged progress and `IngestError.to_dict()` contracts remain unchanged
 
 **Plans**: TBD
+**Wave 1**
 - [x] 15-01-PLAN.md
+
+**Wave 2** *(blocked on Wave 1 completion)*
 - [x] 15-02-PLAN.md
 
 ### Phase 16: PIPE-01 MVP config UI
