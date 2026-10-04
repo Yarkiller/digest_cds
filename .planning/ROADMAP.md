@@ -157,7 +157,7 @@ Plans:
 
 **Plans**: TBD
 - [x] 15-01-PLAN.md
-- [ ] 15-02-PLAN.md
+- [x] 15-02-PLAN.md
 
 ### Phase 16: PIPE-01 MVP config UI
 
@@ -182,7 +182,7 @@ Plans:
 | 12. Admin shortlist empty-batch contract | v1.2 | 3/3 | Complete    | 2026-10-02 |
 | 13. Admin material & email preview honesty | v1.2 | 8/8 | Complete    | 2026-10-03 |
 | 14. Draft→ready & justification honesty | v1.2 | 8/8 | Complete    | 2026-10-04 |
-| 15. CLI --debug diagnostics | v1.2 | 1/2 | In Progress|  |
+| 15. CLI --debug diagnostics | v1.2 | 2/2 | In Progress|  |
 | 16. PIPE-01 MVP config UI | v1.2 | 0/? | Not started | - |
 
 **Coverage:** 12/12 v1.2 requirements mapped (FIX-01, ADUX-01…06, DBG-01…02, PIPE-01…03). No orphans.

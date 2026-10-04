@@ -4,18 +4,18 @@ milestone: v1.2
 milestone_name: Admin UX + diagnostics + PIPE-01 MVP
 current_phase: 15
 current_phase_name: CLI --debug diagnostics
-status: executing
-stopped_at: Completed 15-01-PLAN.md
-last_updated: "2026-10-04T08:13:39.761Z"
+status: verifying
+stopped_at: Completed 15-02-PLAN.md
+last_updated: "2026-10-04T08:22:07.560Z"
 last_activity: 2026-10-04
 last_activity_desc: Phase 15 execution started
-state_head: 7fe240bba54b51ac430b07db76d9013ebd3307f1
+state_head: 55c5816db6becbec437cfdf778b53ef58066c650
 progress:
   total_phases: 5
   completed_phases: 5
   total_plans: 21
-  completed_plans: 20
-  percent: 95
+  completed_plans: 21
+  percent: 100
 ---
 
 # Project State
@@ -31,10 +31,10 @@ See: .planning/PROJECT.md (updated 2026-10-02 — v1.2 milestone)
 
 Phase: 15 (CLI --debug diagnostics) — EXECUTING
 Plan: 2 of 2
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-10-04 — Phase 15 execution started
 
-Progress: [█████████░] 95%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -80,6 +80,7 @@ Progress: [█████████░] 95%
 | Phase 14 P07 | 5min | 1 tasks | 3 files |
 | Phase 14 P08 | 5min | 1 tasks | 2 files |
 | Phase 15 P01 | 10min | 3 tasks | 10 files |
+| Phase 15 P02 | 8 min | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -126,6 +127,9 @@ v1.2 roadmap locks:
 - [Phase 15]: Sink stays typer-free: cli.py injects typer.echo(err=True) as emitter; adapter falls back to sys.stderr
 - [Phase 15]: Redaction order: SecretRegistry.mask -> DENY_PATTERNS -> control-char strip -> length cap; Bearer before assignment pattern
 - [Phase 15]: Captions stage emits domain token 'captions' for 1:1 correlation with IngestError.stage
+- [Phase 15]: Metadata debug line emits only video_id; failed-stage lines emit reason/exit_code/elapsed_ms and never IngestError.message or context — D-06/D-08/T-15-04: minimize disclosure while the JSON envelope keeps the allowlisted context
+- [Phase 15]: Each mapping except-block emits stage_failed from the mapped IngestError's stage/reason/exit_code so debug lines correlate 1:1 with the JSON envelope; url/consistency failures report elapsed_ms=0 — D-10/D-11/RESEARCH Pattern 4/T-15-05: attribute failures without altering the envelope or exit code
+- [Phase 15]: RecordingDiagnostics call-spy added to tests_support/fakes.py and used for pipeline event-order plus CLI failure assertions — RED-first TDD: the use-case test double records ordered stage events without coupling to the stderr sink
 
 ### Pending Todos
 
@@ -149,7 +153,7 @@ Carried product deferrals to v1.3+: leaderboard, quiz, live SMTP, signup mail, W
 
 ## Session Continuity
 
-Last session: 2026-10-04T08:13:39.571Z
-Stopped at: Completed 15-01-PLAN.md
+Last session: 2026-10-04T08:21:35.603Z
+Stopped at: Completed 15-02-PLAN.md
 Resume file: None
 Next: phase verification
