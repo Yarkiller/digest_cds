@@ -189,7 +189,7 @@ Plans:
 | 12. Admin shortlist empty-batch contract | v1.2 | 3/3 | Complete    | 2026-10-02 |
 | 13. Admin material & email preview honesty | v1.2 | 8/8 | Complete    | 2026-10-03 |
 | 14. Draft→ready & justification honesty | v1.2 | 8/8 | Complete    | 2026-10-04 |
-| 15. CLI --debug diagnostics | v1.2 | 3/3 | Complete | 2026-10-04 |
+| 15. CLI --debug diagnostics | v1.2 | 3/3 | Complete    | 2026-10-04 |
 | 16. PIPE-01 MVP config UI | v1.2 | 0/? | Not started | - |
 
 **Coverage:** 12/12 v1.2 requirements mapped (FIX-01, ADUX-01…06, DBG-01…02, PIPE-01…03). No orphans.
