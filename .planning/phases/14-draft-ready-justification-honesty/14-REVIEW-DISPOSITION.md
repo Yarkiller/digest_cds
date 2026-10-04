@@ -35,13 +35,13 @@ findings:
     severity: info
     disposition: open
     title: "Mock `sendDigest` order validation is weaker than the backend"
-  - id: CR-01
-    severity: critical
-    disposition: fixed
-    title: "Live `markReady` rolls back UI after successful promote when shortlist refetch fails"
-open: 8
+  - id: IN-06
+    severity: info
+    disposition: open
+    title: "Stale-refetch regression test relies on a fixed sleep (timing-dependent false-pass window)"
+open: 9
 total: 9
-recorded: 2026-10-03T19:05:00.000Z
+recorded: 2026-10-04T17:00:00Z
 ---
 
 # Phase 14: Code Review Disposition
@@ -56,12 +56,8 @@ recorded: 2026-10-03T19:05:00.000Z
 | IN-03 | info | open | - |
 | IN-04 | info | open | - |
 | IN-05 | info | open | - |
-| CR-01 | critical | fixed | 14-REVIEW-FIX.md (not in the current review) |
+| IN-06 | info | open | - |
 
 Dispositions: `open` (recorded, not yet triaged), `fixed`, `skipped`, `deferred`.
-
 Set `deferred` by hand and put the reason in the Source cell; both are preserved. A `|` in the reason is kept as prose and escaped on the next run.
-
 Re-running the gate keeps every row it can. A row the current review no longer reports is kept and its Source cell flagged, so a finding does not leave this record silently. ONE exception: when a finding id is REUSED by a different finding, the earlier decision cannot keep a row — the id is taken — and it is dropped. A RECORDED decision (anything but `open`) is named on the console when that happens; a row still at `open` is replaced silently, because `open` records no decision to lose.
-
-The re-review renumbered/narrowed several ids: WR-03, IN-01, IN-02, IN-03 and IN-04 now name different findings than the previous ledger recorded (all previously `open`, so no decision was lost). The fix report's WR-01 and WR-02 entries title their findings differently from the current review, so they were not reconciled into rows — CR-01 is the only carried, fixed finding.
