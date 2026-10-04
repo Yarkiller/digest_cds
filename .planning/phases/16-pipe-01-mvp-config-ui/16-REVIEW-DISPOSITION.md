@@ -5,11 +5,11 @@ titles: json
 findings:
   - id: IN-01
     severity: info
-    disposition: open
+    disposition: fixed
     title: "`_TOO_DEEP_MESSAGE` is English while every other hand-authored document-level message is Russian"
   - id: IN-02
     severity: info
-    disposition: open
+    disposition: fixed
     title: "Deep-nesting tests pin a depth coupled to the interpreter recursion limit and duplicate message literals"
   - id: CR-01
     severity: critical
@@ -43,17 +43,17 @@ findings:
     severity: info
     disposition: open
     title: "Migration relies solely on RLS; consider revoking default grants"
-open: 6
+open: 4
 total: 10
-recorded: 2026-10-04T19:24:23.225Z
+recorded: 2026-10-04T19:24:43.499Z
 ---
 
 # Phase 16: Code Review Disposition
 
 | Finding | Severity | Disposition | Source |
 |---------|----------|-------------|--------|
-| IN-01 | info | open | - |
-| IN-02 | info | open | - |
+| IN-01 | info | fixed | 16-REVIEW-FIX.md |
+| IN-02 | info | fixed | 16-REVIEW-FIX.md |
 | CR-01 | critical | fixed | 16-REVIEW-FIX.md (not in the current review) |
 | WR-01 | warning | open | - (not in the current review) |
 | WR-02 | warning | fixed | fixed in commit 758ddac (catch RecursionError -> structured 400) (not in the current review) |
