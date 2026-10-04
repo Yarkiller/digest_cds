@@ -29,6 +29,7 @@ MAX_PIPELINE_CONFIG_CHARS = 20000
 
 _OVER_CAP_MESSAGE = "Документ конфига превышает допустимый размер"
 _NOT_A_TEXT_OBJECT_MESSAGE = "Ожидается объект с текстовыми ключами"
+_TOO_DEEP_MESSAGE = "YAML nesting too deep (exceeds parser limit)"
 
 
 class _StrictSafeLoader(yaml.SafeLoader):
@@ -101,6 +102,13 @@ class YamlPipelineConfigValidator:
                         message=str(exc.problem or exc),
                     ),
                 )
+            ) from exc
+        except RecursionError as exc:
+            # WR-02: deeply nested flow collections (< cap) overflow the parser's
+            # recursive scanner. Map it to a structured reject at this boundary so
+            # the route returns a 400 {"errors":[...]} instead of an unhandled 500.
+            raise PipelineConfigValidationError(
+                (PipelineConfigError(path="", message=_TOO_DEEP_MESSAGE),)
             ) from exc
 
         if not isinstance(data, dict) or not all(isinstance(key, str) for key in data):

@@ -195,3 +195,25 @@ def test_error_to_dict_omits_line_when_none_and_includes_when_set() -> None:
         "message": "m",
         "line": 3,
     }
+
+
+# --- 12. deep-nesting robustness (WR-02) --------------------------------------
+
+
+def test_deeply_nested_flow_document_is_rejected_not_recursion_error() -> None:
+    """RED→GREEN WR-02: ~3000 nested flow brackets (under the cap) → structured error.
+
+    Before the fix the parser raises an unhandled ``RecursionError`` (HTTP 500);
+    strict validation must instead map it to a ``PipelineConfigValidationError``.
+    """
+    document = ("[" * 3000) + ("]" * 3000)
+
+    assert len(document) <= MAX_PIPELINE_CONFIG_CHARS
+
+    errors = _errors(document)
+
+    assert len(errors) == 1
+    assert errors[0].path == ""
+    assert errors[0].line is None
+    assert errors[0].message == "YAML nesting too deep (exceeds parser limit)"
+

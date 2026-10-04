@@ -302,6 +302,23 @@ def test_put_invalid_error_rows_are_verbatim_and_top_level() -> None:
     assert container.pipeline_config.save_count == 0
 
 
+def test_put_deeply_nested_yaml_returns_400_not_500() -> None:
+    """RED→GREEN WR-02: deeply nested flow collections → structured 400, never an unhandled 500."""
+    client, headers, container = _real_validator_admin_env()
+    document = ("[" * 3000) + ("]" * 3000)
+
+    response = client.put(CONFIG_URL, headers=headers, json={"yaml": document})
+
+    assert response.status_code == 400
+    body = response.json()
+    assert "detail" not in body
+    assert body["errors"] == [
+        {"path": "", "message": "YAML nesting too deep (exceeds parser limit)"}
+    ]
+    # The reject never reached the repository (D-03/D-07): zero saves.
+    assert container.pipeline_config.save_count == 0
+
+
 def test_build_in_memory_container_wires_real_validator_and_repo() -> None:
     """RED→GREEN wiring: default container yields the in-memory repo + real YAML validator."""
     default_container = build_in_memory_container()
