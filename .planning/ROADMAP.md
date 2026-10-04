@@ -239,3 +239,19 @@ Plans:
 **Deferred at:** 2026-10-04 during /gsd-verify-work 14 session completion
 **Follow-ups:**
 - [ ] Test 1: UX (для Phase 15+): две операции на одно editorial-решение избыточны для single-operator workflow — объединить Approve (decision) + Mark ready (material_status) в одну кнопку «Одобрить и подготовить → ready»; переименовать «Сделать ready» → «Отобрать», ready → «Отобран». (deferred 2026-10-03)
+
+### Phase 999.5: Follow-up — Phase 16 deferred UAT follow-up: admin nav grouping (BACKLOG)
+
+**Goal:** Resolve the UAT checkpoint deferred during Phase 16 verification
+**Source phase:** 16
+**Deferred at:** 2026-10-04 during /gsd-verify-work 16 session completion
+**Follow-ups:**
+- [ ] Test 0: UX (предпочтение, не SPEC): убрать top-level nav-пункт «Пайплайн»; открывать конфиг только из админ-раздела. Вариант C — tab-bar «Дайджест | Пайплайн» на админ-страницах, top-level «Админ» → /admin/digest. Route /admin/pipeline не меняется, новый route не нужен. При реализации обновить 16-UI-SPEC A-2 и писать TDD (failing Playwright test first). (deferred 2026-10-04)
+
+### Phase 999.6: Follow-up — Phase 16 deferred UAT follow-up: unsaved-changes guard WR-04/WR-05 (BACKLOG)
+
+**Goal:** Resolve the UAT checkpoint deferred during Phase 16 verification
+**Source phase:** 16
+**Deferred at:** 2026-10-04 during /gsd-verify-work 16 session completion
+**Follow-ups:**
+- [ ] Test 3: WR-04/WR-05 — unsaved-changes guard принят как known limitation: window.confirm внутри beforeunload ненадёжен в реальных браузерах, router-level guard не зарегистрирован, поэтому in-app SPA-навигация молча теряет черновик. БД безопасна (не сохранил → не записано); теряется только набранный текст. Fix: корректный beforeunload (event.preventDefault/returnValue) + router guard (useBlocker) с той же копией «Есть несохранённые изменения. Уйти без сохранения?». (deferred 2026-10-04)
