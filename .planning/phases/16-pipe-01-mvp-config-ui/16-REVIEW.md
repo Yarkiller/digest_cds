@@ -1,213 +1,152 @@
 ---
 phase: 16-pipe-01-mvp-config-ui
-reviewed: 2026-10-04T11:55:00Z
+reviewed: 2026-10-04T18:45:00Z
 depth: standard
-files_reviewed: 26
+files_reviewed: 3
 files_reviewed_list:
-  - backend/pyproject.toml
-  - backend/src/backend/application/ports/pipeline_config.py
-  - backend/src/backend/application/use_cases/pipeline_config.py
-  - backend/src/backend/composition/container.py
-  - backend/src/backend/composition/live.py
-  - backend/src/backend/domain/errors.py
-  - backend/src/backend/domain/pipeline_config.py
   - backend/src/backend/infrastructure/yaml_pipeline_config_validator.py
-  - backend/src/backend/interface/http/app.py
-  - backend/src/backend/interface/http/routes/admin.py
-  - backend/src/backend/tests_support/in_memory.py
-  - supabase-integration/migrations/011_phase16_pipeline_config.sql
-  - supabase-integration/src/supabase_integration/__init__.py
-  - supabase-integration/src/supabase_integration/pipeline_config_repository.py
-  - tests/admin.spec.js
-  - tests/unit/test_cors.py
   - tests/unit/test_http_pipeline_config.py
-  - tests/unit/test_live_container_wiring.py
-  - tests/unit/test_phase16_migration_011.py
   - tests/unit/test_pipeline_config_validator.py
-  - tests/unit/test_supabase_pipeline_config_repository_contract.py
-  - web/src/App.jsx
-  - web/src/components/AppShell.jsx
-  - web/src/main.jsx
-  - web/src/pages/AdminPipelineConfigPage.jsx
-  - web/src/services/pipelineConfigApi.js
 findings:
-  critical: 0
-  warning: 5
-  info: 4
-  total: 9
+  critical: 1
+  warning: 0
+  info: 2
+  total: 3
 status: issues_found
 ---
 
-# Phase 16: Code Review Report
+# Phase 16: Code Review Report (incremental re-review — WR-02 fix)
 
-**Reviewed:** 2026-10-04T11:55:00Z
+**Reviewed:** 2026-10-04T18:45:00Z
 **Depth:** standard
-**Files Reviewed:** 26
+**Files Reviewed:** 3
+**Scope:** changes since prior review commit `6b9e8581b79834de897033487fdc32f8d26e2018` (+47 lines)
 **Status:** issues_found
 
 ## Summary
 
-Reviewed the PIPE-01 MVP config surface end-to-end: the port/use-case/domain layers,
-the strict PyYAML+Pydantic validator adapter, the FastAPI read/write routes, the RLS
-singleton Supabase adapter + migration 011, and the React admin page + service module.
+This increment is the WR-02 remediation: a `except RecursionError` handler around
+`yaml.load` in `yaml_pipeline_config_validator.py`, mapping deep flow-nesting to a
+structured `PipelineConfigValidationError` (`_TOO_DEEP_MESSAGE`), plus one unit test and
+one HTTP test. I verified the delivered behavior: both new tests pass, and a deep document
+(`"["*3000 + "]"*3000`) is now mapped to
+`PipelineConfigError(path="", message="YAML nesting too deep (exceeds parser limit)")`
+instead of an unhandled `RecursionError` (confirmed by direct probe).
 
-The core architecture holds up. Dependencies point inward (no `yaml`/`pydantic`/Supabase
-import in `domain/` or `use_cases/`); the adapter maps SDK/parse failures at the boundary;
-the validator runs before `repo.save` so a reject writes nothing; the reject payload is a
-top-level `{"errors":[...]}` 400; the DTO exposes exactly `{yaml, updated_at}`; the SPA
-reaches storage only through `pipelineConfigApi.js`; and no execution control renders.
-RLS is enabled with no permissive policy and the table is only touched by the service_role
-client. I found no Critical/blocking defect.
+However, the fix closes only **half** of the prior WR-02. The prior finding explicitly
+named two escapes: `RecursionError` **and** "a bare `yaml.YAMLError` raised without marks."
+Only `RecursionError` was caught. The sibling bare-`yaml.YAMLError` path (`yaml.reader.ReaderError`,
+raised for non-printable/control characters) still propagates out of `validate()` and yields
+an unhandled **HTTP 500** on `PUT /admin/pipeline/config` — reproduced end-to-end at the
+route layer (see CR-01). This is the same defect class the fix was meant to eliminate, so
+the contract "never an unhandled 500 for user-supplied text" is still not met.
 
-The remaining findings are robustness and honesty issues: an undeclared direct `pydantic`
-dependency, an incomplete exception boundary in the parser (deep nesting → 500 instead of a
-structured 400), an overstated DoS comment around the length cap, and two real
-unsaved-changes gaps in the editor. No source files were modified.
+No source files were modified (review is read-only).
+
+## Structural Findings (fallow)
+
+None provided for this increment.
 
 ## Narrative Findings (AI reviewer)
 
-### Critical Issues
+## Critical Issues
 
-None. No authentication bypass, injection, data-corruption, or write-on-reject path was
-found. (`PUT` validates through `PipelineConfigValidator` before `repo.save` at
-`application/use_cases/pipeline_config.py:32-33`, and the reject branch at
-`interface/http/routes/admin.py:579-586` returns before any repository call.)
+### CR-01: Deep-nesting fix is incomplete — bare `yaml.YAMLError` (`ReaderError`) still escapes as HTTP 500
 
-### Warnings
+**File:** `backend/src/backend/infrastructure/yaml_pipeline_config_validator.py:95-112`
+**Issue:** The only `yaml` exception handlers are `except yaml.MarkedYAMLError` (line 95)
+and the new `except RecursionError` (line 106). `yaml.reader.ReaderError` is a subclass of
+`yaml.YAMLError` but **not** of `yaml.MarkedYAMLError`, and it is raised by
+`Reader.check_printable` when the document contains a non-printable/control character
+(e.g. `\x00`, `\x01`, `\x1f`, `\x7f`) — a payload a legitimate SPA client can emit (pasted
+text with stray control bytes, or `\u0000` in JSON) and well under the 20 000-char cap.
+There is no global FastAPI exception handler in `backend/src` for `YAMLError`, and the
+route only catches `PipelineConfigValidationError` / `PersistenceError`
+(`interface/http/routes/admin.py:579-590`), so the exception surfaces as an unhandled 500 —
+contradicting the module docstring ("never a silent accept, never an execution path") and
+PIPE-02's structured-400 contract.
 
-#### WR-01: `pydantic` imported directly but not declared as a dependency
+Reproduced end-to-end (project venv, real validator via the HTTP test harness):
 
-**File:** `backend/pyproject.toml:7-14`, `backend/src/backend/infrastructure/yaml_pipeline_config_validator.py:21`
-**Issue:** The validator does `from pydantic import BaseModel, ConfigDict, Field, ValidationError`
-and this phase correctly added `pyyaml==6.0.3` to `[project].dependencies`, but `pydantic`
-was **not** added even though it is now a direct runtime import. It only resolves today as a
-transitive dependency of `fastapi`. A future FastAPI major, a stricter resolver, or a
-`uv lock` change can silently drop it and break `import backend` at runtime. Direct imports
-must be declared as direct dependencies.
-**Fix:**
-```toml
-dependencies = [
-    ...
-    "pydantic==2.11.7",   # pin to the version fastapi 0.141.1 resolves
-    "pyyaml==6.0.3",
-    ...
-]
+```text
+PUT /admin/pipeline/config  body={"yaml": "template: lecture\nroles:\n  - ds\nlanguage: \x00ru\nmax_chars: 100\n"}
+-> yaml.reader.ReaderError: unacceptable character #x0000 ... position 42   (unhandled; 500 in production)
 ```
 
-#### WR-02: Validator only catches `MarkedYAMLError`; deep documents escape as 500
+The prior WR-02 fix text already called this out ("The same is true for a bare
+`yaml.YAMLError` raised without marks") and recommended `except (yaml.YAMLError, RecursionError)`.
+The shipped fix used a narrower `except RecursionError` only.
 
-**File:** `backend/src/backend/infrastructure/yaml_pipeline_config_validator.py:87-107`
-**Issue:** The only exception boundary around `yaml.load` is `except yaml.MarkedYAMLError`.
-Deeply nested flow collections (e.g. ~2–5k nested `[` characters, trivially under the 20k
-cap) drive PyYAML's recursive-descent parser into a Python `RecursionError`, which is **not**
-a `MarkedYAMLError`. It propagates past the adapter and surfaces as an unhandled 500 rather
-than a structured 400 `{"errors":[...]}`. The same is true for a bare `yaml.YAMLError`
-raised without marks. The route only maps `PipelineConfigValidationError`, so the client sees
-an opaque server error instead of the contract this phase promises.
-**Fix:**
+**Fix:** Add a sibling `except yaml.YAMLError` *after* the `MarkedYAMLError` handler
+(subclass first) so unmarked parse/reader errors also map to a structured reject. Use a
+distinct, accurate message rather than reusing `_TOO_DEEP_MESSAGE`:
+
 ```python
+_UNREADABLE_MESSAGE = "Документ содержит недопустимые символы"
+
         try:
             data = yaml.load(yaml_text, Loader=_StrictSafeLoader)
         except yaml.MarkedYAMLError as exc:
-            ...
-        except (yaml.YAMLError, RecursionError) as exc:
+            mark = exc.problem_mark
             raise PipelineConfigValidationError(
-                (PipelineConfigError(path="", message=str(exc) or "Некорректный YAML"),)
+                (
+                    PipelineConfigError(
+                        path="",
+                        line=(mark.line + 1) if mark is not None else None,
+                        message=str(exc.problem or exc),
+                    ),
+                )
+            ) from exc
+        except RecursionError as exc:
+            # WR-02: deep flow collections overflow the recursive scanner.
+            raise PipelineConfigValidationError(
+                (PipelineConfigError(path="", message=_TOO_DEEP_MESSAGE),)
+            ) from exc
+        except yaml.YAMLError as exc:
+            # ReaderError and other unmarked YAMLErrors (e.g. non-printable chars).
+            raise PipelineConfigValidationError(
+                (PipelineConfigError(path="", message=_UNREADABLE_MESSAGE),)
             ) from exc
 ```
-(Consider also lowering the effective nesting bound via a catch-all at the route boundary so
-the surface can never emit a 500 for user-supplied text.)
 
-#### WR-03: Length cap does not mitigate YAML alias expansion as the comment claims
+Add a RED test first (mandatory TDD) covering a control-character document at both the
+validator unit level and the HTTP level (assert 400 + top-level `{"errors":[...]}` +
+`save_count == 0`).
 
-**File:** `backend/src/backend/infrastructure/yaml_pipeline_config_validator.py:26-28, 87-94`
-**Issue:** The comment at line 26 states the 20 000-char cap covers "T-16-07: YAML alias /
-oversized document DoS". A character cap does **not** bound anchor/alias expansion — the
-classic "billion laughs" payload expands to gigabytes from a few hundred bytes, well inside
-20k chars, and `SafeLoader` still expands aliases (SafeLoader only restricts *types*, not
-expansion). There is also no request-body size limit on the PUT route, so the body is fully
-read before the cap is even evaluated. The comment overstates the guarantee and may mislead
-future maintainers into believing the surface is bounded.
-**Fix:** Either reject aliases outright in `_StrictSafeLoader` (e.g. override `compose_node`
-to raise on any anchor/alias), or lower the cap plus add an explicit alias-count limit, and
-correct the comment so it does not claim alias-DoS protection the cap cannot provide.
+## Warnings
 
-#### WR-04: `window.confirm` inside `beforeunload` is unreliable
+None.
 
-**File:** `web/src/pages/AdminPipelineConfigPage.jsx:110-120`
-**Issue:** The unsaved-changes guard calls `window.confirm(UNSAVED_LEAVE_CONFIRM)`
-**inside** the `beforeunload` handler. Modal dialogs are suppressed/ignored by browsers
-during `beforeunload`; the platform-native prompt is driven by setting `event.returnValue`,
-not by a scripted `confirm()`. In real browsers the custom prompt is a no-op (or a
-double-prompt), so the guard's behavior is inconsistent, and the Playwright suite currently
-only passes because it dispatches a synthetic event and stubs the dialog. This couples the
-production code to a test-only interaction.
-**Fix:** Drop `window.confirm` from the unload handler; the standard guard is:
-```js
-function onBeforeUnload(event) {
-  event.preventDefault()
-  event.returnValue = ''
-}
-```
+## Info
 
-#### WR-05: Unsaved edits are lost on in-app (SPA) navigation
+### IN-01: `_TOO_DEEP_MESSAGE` is English while sibling document-level messages are Russian
 
-**File:** `web/src/pages/AdminPipelineConfigPage.jsx:107-121`, `web/src/components/AppShell.jsx:64-96`
-**Issue:** The only dirty guard is the `beforeunload` listener, which fires on tab
-close/reload. Clicking any shell `NavLink` (`/`, `/archive`, `/admin/digest`, …) performs a
-client-side route change that unmounts `AdminPipelineConfigPage` without firing
-`beforeunload`, so the edited YAML is discarded silently. For an editor whose status copy
-explicitly promises "Есть несохранённые изменения. Уйти без сохранения?", losing the draft
-on every nav click is a real bug.
-**Fix:** Add a router-level guard (e.g. `useBlocker` from `react-router-dom` v6 data/router
-APIs) around the dirty state, prompting with the same `UNSAVED_LEAVE_CONFIRM` before allowing
-in-app navigation, in addition to the unload guard.
+**File:** `backend/src/backend/infrastructure/yaml_pipeline_config_validator.py:30-32`
+**Issue:** `_OVER_CAP_MESSAGE` and `_NOT_A_TEXT_OBJECT_MESSAGE` are Russian, but the new
+`_TOO_DEEP_MESSAGE = "YAML nesting too deep (exceeds parser limit)"` is English. D-05
+requires error rows to be rendered as verbatim server text (the route forwards
+`error.to_dict()` unchanged), so a Russian-language admin UI will surface an English
+message for this one reject case. Inconsistent with the other two document-level messages.
+**Fix:** Use a Russian message consistent with the siblings (e.g.
+`"Документ YAML имеет слишком глубокую вложенность"`) and update
+`test_pipeline_config_validator.py:217` and `test_http_pipeline_config.py:314` accordingly.
 
-### Info
+### IN-02: New tests hard-code a nesting depth coupled to the interpreter recursion limit
 
-#### IN-01: Playwright mock-control harness is exposed in every build
-
-**File:** `web/src/main.jsx:63-68`
-**Issue:** `window.__DIGEST_PIPELINE_CONFIG_HARNESS__` (and the other `__DIGEST_*` harnesses)
-is assigned unconditionally on `window`, including production bundles. The handlers only take
-effect while `isMocksEnabled()` is true, so this is low risk, but it still publishes mutation
-controls (`armRejectNextSave`, `armFailNextSave`, …) to any script on the page.
-**Fix:** Gate the harness assignment behind `import.meta.env.DEV || isMocksEnabled()` so
-production bundles do not expose test-only globals.
-
-#### IN-02: Duplicate imports in `test_live_container_wiring.py`
-
-**File:** `tests/unit/test_live_container_wiring.py:11-19`
-**Issue:** `InMemoryPingRecorder` and `InMemoryProfileRepository` are imported twice — once on
-line 13 and again in the multi-name block on lines 11-19. Harmless but noisy and will trip
-linters (F811).
-**Fix:** Delete line 13 and keep the single consolidated import block.
-
-#### IN-03: Mocks default to ON, so the new service silently no-ops without `VITE_USE_MOCKS=false`
-
-**File:** `web/src/services/pipelineConfigApi.js:15,51,149-165,203-228`, `web/src/services/authEnv.js:7-11`
-**Issue:** `isMocksEnabled()` returns `true` when `VITE_USE_MOCKS` is unset/empty, so a build
-that forgets `VITE_USE_MOCKS=false` makes `savePipelineConfig` write only to
-`sessionStorage` — the admin sees "Сохранено", nothing reaches Supabase, and no error is
-raised. This default is inherited from D-09 (offline Playwright) and is broader than this
-phase, but the pipeline surface is exactly where silent non-persistence is most damaging.
-**Fix:** Ensure the production build/pipeline always sets `VITE_USE_MOCKS=false` (build-time
-assert or fail-fast), and consider surfacing a visible "mock mode" banner when it is on.
-
-#### IN-04: Migration relies solely on RLS; consider revoking default grants
-
-**File:** `supabase-integration/migrations/011_phase16_pipeline_config.sql:14`
-**Issue:** The table relies entirely on `enable row level security` (no policy) for
-deny-by-default. That is correct for the current RLS-on state, but Supabase grants default
-table privileges to `anon`/`authenticated`; if RLS is ever disabled or a policy is later added
-accidentally, the grants become live. Defense-in-depth would revoke them explicitly.
-**Fix:**
-```sql
-revoke all on public.pipeline_config from anon, authenticated;
-```
+**File:** `tests/unit/test_pipeline_config_validator.py:209`, `tests/unit/test_http_pipeline_config.py:308`
+**Issue:** Both tests pin `"[ " "*3000` and assert the `RecursionError` path. This only
+holds while `sys.getrecursionlimit()` stays near its default (1000): if any code in the
+suite/process raises the limit above the nesting depth, PyYAML parses the document and the
+tests fail ("DID NOT RAISE"/wrong status) rather than exercising the intended branch. The
+tests also duplicate the literal English message string instead of sharing a constant, so
+the message and its assertions must be edited in lockstep (see IN-01). Both tests currently
+pass; this is a maintenance/flakiness note, not a present failure.
+**Fix:** Derive the depth from the live limit (e.g.
+`depth = sys.getrecursionlimit() + 500`) so the RecursionError assertion stays robust, and/or
+export the message constant for tests to import instead of duplicating the literal.
 
 ---
 
-_Reviewed: 2026-10-04T11:55:00Z_
+_Reviewed: 2026-10-04T18:45:00Z_
 _Reviewer: Claude (gsd-code-reviewer)_
 _Depth: standard_
