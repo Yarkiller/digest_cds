@@ -29,6 +29,12 @@ import {
   resetAdminHarness,
   getMockMarkReadyBatchCalls,
 } from './services/adminApi.js'
+import {
+  armFailNextLoad,
+  armFailNextSave,
+  armRejectNextSave,
+  resetPipelineConfigHarness,
+} from './services/pipelineConfigApi.js'
 
 // Playwright harness (mirrors votingApi arm-fail pattern).
 window.__DIGEST_AUTH_HARNESS__ = {
@@ -53,6 +59,12 @@ window.__DIGEST_ADMIN_HARNESS__ = {
   armAlreadySentOnSend,
   resetAdminHarness,
   getMockMarkReadyBatchCalls,
+}
+window.__DIGEST_PIPELINE_CONFIG_HARNESS__ = {
+  armFailNextLoad,
+  armRejectNextSave,
+  armFailNextSave,
+  resetPipelineConfigHarness,
 }
 
 createRoot(document.getElementById('root')).render(

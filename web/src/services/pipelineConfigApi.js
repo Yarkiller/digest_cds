@@ -26,8 +26,59 @@ export class PipelineConfigError extends Error {
 /** Mock-only seed store: survives an in-session reload, resets per browser context. */
 const MOCK_STORAGE_KEY = 'digest:pipeline-config-mock'
 
+/**
+ * Mock-only control arm (Playwright): one armed reject/failure. Stored in
+ * sessionStorage so it survives a reload (an initial-load failure must be armed
+ * before the page mounts) and clears on reset.
+ */
+const ARM_STORAGE_KEY = 'digest:pipeline-config-mock-arm'
+
 function mocksEnabled() {
   return isMocksEnabled()
+}
+
+/** @returns {{ failLoad?: boolean, failSave?: boolean, rejectSave?: unknown[] }} */
+function readArm() {
+  if (typeof window === 'undefined') return {}
+  try {
+    const raw = window.sessionStorage.getItem(ARM_STORAGE_KEY)
+    if (!raw) return {}
+    const parsed = JSON.parse(raw)
+    return parsed && typeof parsed === 'object' ? parsed : {}
+  } catch {
+    return {}
+  }
+}
+
+/** @param {Record<string, unknown>} arm */
+function writeArm(arm) {
+  if (typeof window === 'undefined') return
+  if (!arm || Object.keys(arm).length === 0) {
+    window.sessionStorage.removeItem(ARM_STORAGE_KEY)
+    return
+  }
+  window.sessionStorage.setItem(ARM_STORAGE_KEY, JSON.stringify(arm))
+}
+
+/** Arm the next save to be rejected as invalid (mock). Pass the structured errors array. */
+export function armRejectNextSave(errors = []) {
+  writeArm({ ...readArm(), rejectSave: Array.isArray(errors) ? errors : [] })
+}
+
+/** Arm the next save to fail as a network/5xx error (mock). */
+export function armFailNextSave() {
+  writeArm({ ...readArm(), failSave: true })
+}
+
+/** Arm the next config load to fail (mock). Persists until reset. */
+export function armFailNextLoad() {
+  writeArm({ ...readArm(), failLoad: true })
+}
+
+/** Clear every armed mock control (Playwright reset); the saved mock config is kept. */
+export function resetPipelineConfigHarness() {
+  if (typeof window === 'undefined') return
+  window.sessionStorage.removeItem(ARM_STORAGE_KEY)
 }
 
 function apiBase() {
@@ -100,6 +151,13 @@ function mapHttpError(response, fallbackMessage, body = null) {
 export async function fetchPipelineConfig(accessToken) {
   if (mocksEnabled()) {
     await delay(80)
+    const arm = readArm()
+    if (arm.failLoad) {
+      throw new PipelineConfigError('Не удалось загрузить конфиг', {
+        code: 'NETWORK',
+        retryable: true,
+      })
+    }
     return readMockConfig()
   }
 
@@ -145,6 +203,27 @@ export async function savePipelineConfig(yaml, accessToken) {
 
   if (mocksEnabled()) {
     await delay(80)
+    const arm = readArm()
+    if ('rejectSave' in arm) {
+      const errors = Array.isArray(arm.rejectSave) ? arm.rejectSave : []
+      const next = { ...arm }
+      delete next.rejectSave
+      writeArm(next)
+      throw new PipelineConfigError('Конфиг не прошёл проверку', {
+        code: 'INVALID_CONFIG',
+        retryable: false,
+        errors: errors.length ? errors : null,
+      })
+    }
+    if (arm.failSave) {
+      const next = { ...arm }
+      delete next.failSave
+      writeArm(next)
+      throw new PipelineConfigError('Конфиг не сохранён', {
+        code: 'NETWORK',
+        retryable: true,
+      })
+    }
     return writeMockConfig(text)
   }
 

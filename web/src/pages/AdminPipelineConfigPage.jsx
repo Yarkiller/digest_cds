@@ -10,6 +10,17 @@ import {
 } from '../services/pipelineConfigApi.js'
 
 /**
+ * Human-readable prefix for a structured server validation error (D-05):
+ * «Строка {line}: » when the parser supplied a line, else «{path}: » when a path
+ * is present, else nothing. The server message is rendered verbatim afterwards.
+ */
+function errorPrefix(error) {
+  if (typeof error?.line === 'number') return `Строка ${error.line}: `
+  if (error?.path) return `${error.path}: `
+  return ''
+}
+
+/**
  * Admin pipeline config — view + edit the raw YAML config without running the
  * pipeline (PIPE-01/PIPE-03; D-10/D-11/D-12/D-13). Minimal tracer surface:
  * editor + Save toolbar. No run/trigger/scheduler control ships here.
@@ -24,6 +35,8 @@ export default function AdminPipelineConfigPage() {
   const [status, setStatus] = useState('loading')
   const [loadError, setLoadError] = useState('')
   const [saveError, setSaveError] = useState('')
+  const [rejected, setRejected] = useState(false)
+  const [validationErrors, setValidationErrors] = useState([])
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
@@ -62,6 +75,8 @@ export default function AdminPipelineConfigPage() {
     setStatus('loading')
     setLoadError('')
     setSaveError('')
+    setRejected(false)
+    setValidationErrors([])
     fetchPipelineConfig()
       .then((dto) => {
         if (cancelled) return
@@ -69,7 +84,7 @@ export default function AdminPipelineConfigPage() {
         setYaml(text)
         setSavedYaml(text)
         setLoadState('ready')
-        setStatus(text ? 'ready' : 'empty')
+        setStatus('clean')
       })
       .catch((err) => {
         if (cancelled) return
@@ -96,7 +111,9 @@ export default function AdminPipelineConfigPage() {
   function onEdit(nextValue) {
     setYaml(nextValue)
     setSaveError('')
-    setStatus(nextValue === savedYaml ? (savedYaml ? 'ready' : 'empty') : 'dirty')
+    setRejected(false)
+    setValidationErrors([])
+    setStatus(nextValue === savedYaml ? 'clean' : 'dirty')
   }
 
   async function onSave() {
@@ -104,6 +121,8 @@ export default function AdminPipelineConfigPage() {
     setSaving(true)
     setStatus('saving')
     setSaveError('')
+    setRejected(false)
+    setValidationErrors([])
     try {
       const dto = await savePipelineConfig(yaml)
       const saved = typeof dto?.yaml === 'string' ? dto.yaml : yaml
@@ -111,8 +130,16 @@ export default function AdminPipelineConfigPage() {
       setSavedYaml(saved)
       setStatus('saved')
     } catch (err) {
-      setSaveError(err instanceof PipelineConfigError ? err.message : 'Конфиг не сохранён')
-      setStatus('failed')
+      if (err instanceof PipelineConfigError && err.code === 'INVALID_CONFIG') {
+        // Server rejected a structurally invalid document: render every structured
+        // error and keep the document dirty (never auto-revert or discard).
+        setValidationErrors(Array.isArray(err.errors) ? err.errors : [])
+        setRejected(true)
+        setStatus('dirty')
+      } else {
+        setSaveError('Конфиг не сохранён')
+        setStatus('failed')
+      }
     } finally {
       setSaving(false)
     }
@@ -177,10 +204,10 @@ export default function AdminPipelineConfigPage() {
       ? 'Сохранение…'
       : status === 'saved'
         ? 'Сохранено'
-        : status === 'failed'
-          ? 'Конфиг не сохранён'
-          : status === 'dirty'
-            ? 'Есть несохранённые изменения'
+        : status === 'dirty'
+          ? 'Есть несохранённые изменения'
+          : status === 'failed'
+            ? ''
             : 'Изменений нет'
 
   return (
@@ -208,16 +235,59 @@ export default function AdminPipelineConfigPage() {
         </p>
       </div>
 
+      {rejected ? (
+        <div
+          data-testid="pipeline-config-errors"
+          role="alert"
+          className="mt-4 rounded-2xl border border-[oklch(70%_0.12_25)] bg-[oklch(96%_0.03_25)] p-4"
+        >
+          <h2 className="font-sans text-2xl font-semibold text-[oklch(45%_0.14_25)]">
+            Проверьте конфиг перед сохранением
+          </h2>
+          {validationErrors.length > 0 ? (
+            <ol className="mt-2 space-y-2">
+              {validationErrors.map((error, index) => (
+                <li
+                  key={`${error?.path ?? 'error'}-${index}`}
+                  data-testid="pipeline-config-error"
+                  className="break-words text-sm text-[oklch(45%_0.14_25)]"
+                >
+                  {errorPrefix(error) ? (
+                    <span className="font-mono">{errorPrefix(error)}</span>
+                  ) : null}
+                  {String(error?.message ?? '')}
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <p className="mt-2 text-sm text-[oklch(45%_0.14_25)]">Конфиг не прошёл проверку</p>
+          )}
+        </div>
+      ) : null}
+
       {saveError ? (
-        <p className="mt-3 text-sm text-[oklch(45%_0.14_25)]" role="alert">
-          {saveError}
-        </p>
+        <div
+          role="alert"
+          className="mt-4 rounded-2xl border border-[oklch(70%_0.12_25)] bg-[oklch(96%_0.03_25)] p-4"
+        >
+          <h2 className="font-sans text-base font-semibold text-[oklch(35%_0.12_25)]">
+            Конфиг не сохранён
+          </h2>
+          <button
+            type="button"
+            data-testid="pipeline-config-save-retry"
+            className="mt-2 inline-flex min-h-11 items-center font-medium text-accent hover:underline"
+            onClick={onSave}
+          >
+            Повторить сохранение
+          </button>
+        </div>
       ) : null}
 
       <textarea
         data-testid="pipeline-config-editor"
         aria-label="YAML конфига пайплайна"
-        aria-invalid={Boolean(saveError)}
+        aria-invalid={rejected}
         spellCheck={false}
         autoComplete="off"
         autoCorrect="off"
