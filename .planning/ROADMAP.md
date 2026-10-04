@@ -177,7 +177,18 @@ Plans:
   3. Validated config persists and is readable on subsequent admin sessions (storage behind a port; UI has no deep Supabase coupling)
   4. No run/trigger/scheduler execution of the pipeline ships in this phase (execution stays v1.3)
 
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+**Wave 1**
+- [ ] 16-01-PLAN.md — Tracer: admin views + saves pipeline config end-to-end (PIPE-01, PIPE-03)
+
+**Wave 2** *(blocked on Wave 1)*
+- [ ] 16-02-PLAN.md — Strict validate-before-save + structured error payload (PIPE-02)
+
+**Wave 3** *(blocked on Wave 2)*
+- [ ] 16-03-PLAN.md — Live persistence behind the port + migration 011 BLOCKING apply (PIPE-03)
+
 **UI hint**: yes
 
 ## Progress
