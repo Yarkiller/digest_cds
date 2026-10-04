@@ -41,7 +41,7 @@ findings:
     title: "Stale-refetch regression test relies on a fixed sleep (timing-dependent false-pass window)"
 open: 9
 total: 9
-recorded: 2026-10-04T17:00:00Z
+recorded: 2026-10-04T16:55:00Z
 ---
 
 # Phase 14: Code Review Disposition
