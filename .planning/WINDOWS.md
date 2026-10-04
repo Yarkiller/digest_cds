@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 14
+open_count: 15
 waived_count: 0
 fixed_count: 3
-total_count: 17
-last_updated: 2026-10-02T13:36:12.392Z
+total_count: 18
+last_updated: 2026-10-04T08:12:39.822Z
 ---
 
 # Broken Windows Ledger
@@ -32,6 +32,7 @@ last_updated: 2026-10-02T13:36:12.392Z
 | 15 | 05 | deviation | web/src/services/adminPreviewComposition.js |  | Extracted pure composition helpers for node --test (Vite import.meta boundary) | open |  | 2026-09-21T18:31:58.934Z |  |
 | 16 | 10 | deviation | ingestion-service/src/ingestion_service/application/ports/persist.py |  | already_saved defaults False for deferred 10-05 call sites | open |  | 2026-09-29T17:58:41.951Z |  |
 | 17 | 11 | deviation | tests/unit/test_cli_ingest_contract.py |  | Unexpected GREEN Task1: CLI sent-batch contract passed without cli.py change (prior plans) | open |  | 2026-10-02T13:36:12.392Z |  |
+| 18 | 15 | deviation | ingestion-service/src/ingestion_service/adapters/stderr_diagnostics.py |  | Deviation: sink emits via injected emitter (cli.py typer.echo err=True) not direct typer import, to satisfy test_ingestion_service_has_no_typer_import | open |  | 2026-10-04T08:12:39.822Z |  |
 
 ````json
 [
@@ -240,6 +241,19 @@ last_updated: 2026-10-02T13:36:12.392Z
     "recorded_at": "2026-10-02T13:36:12.392Z",
     "resolved_at": null,
     "milestone": "v1.1"
+  },
+  {
+    "id": 18,
+    "kind": "deviation",
+    "phase": "15",
+    "file": "ingestion-service/src/ingestion_service/adapters/stderr_diagnostics.py",
+    "line": null,
+    "description": "Deviation: sink emits via injected emitter (cli.py typer.echo err=True) not direct typer import, to satisfy test_ingestion_service_has_no_typer_import",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-04T08:12:39.822Z",
+    "resolved_at": null,
+    "milestone": "v1.2"
   }
 ]
 ````

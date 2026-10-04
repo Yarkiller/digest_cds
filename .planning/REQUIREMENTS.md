@@ -20,8 +20,8 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Operator diagnostics
 
-- [ ] **DBG-01**: `ingestion-service` CLI accepts `--debug` and prints richer stage diagnostics on stderr/stdout without leaking secrets, proxy credentials, cookies, or full transcript bodies
-- [ ] **DBG-02**: With `--debug` off, existing staged progress / `IngestError.to_dict()` contracts remain unchanged
+- [x] **DBG-01**: `ingestion-service` CLI accepts `--debug` and prints richer stage diagnostics on stderr/stdout without leaking secrets, proxy credentials, cookies, or full transcript bodies
+- [x] **DBG-02**: With `--debug` off, existing staged progress / `IngestError.to_dict()` contracts remain unchanged
 
 ### Pipeline config (PIPE-01 MVP)
 
@@ -80,8 +80,8 @@ Deferred. Not in this milestone's roadmap.
 | ADUX-04 | Phase 13 | Complete |
 | ADUX-05 | Phase 14 | Complete |
 | ADUX-06 | Phase 14 | Complete |
-| DBG-01 | Phase 15 | Pending |
-| DBG-02 | Phase 15 | Pending |
+| DBG-01 | Phase 15 | Complete |
+| DBG-02 | Phase 15 | Complete |
 | PIPE-01 | Phase 16 | Pending |
 | PIPE-02 | Phase 16 | Pending |
 | PIPE-03 | Phase 16 | Pending |

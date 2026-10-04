@@ -5,17 +5,17 @@ milestone_name: Admin UX + diagnostics + PIPE-01 MVP
 current_phase: 15
 current_phase_name: CLI --debug diagnostics
 status: executing
-stopped_at: Phase 15 context gathered
-last_updated: "2026-10-04T07:48:50.196Z"
+stopped_at: Completed 15-01-PLAN.md
+last_updated: "2026-10-04T08:13:39.761Z"
 last_activity: 2026-10-04
-last_activity_desc: Phase 14 complete, transitioned to Phase 15
-state_head: 273ae3df5c6419a8930e477ad7740feaef902715
+last_activity_desc: Phase 15 execution started
+state_head: 7fe240bba54b51ac430b07db76d9013ebd3307f1
 progress:
   total_phases: 5
   completed_phases: 5
   total_plans: 21
-  completed_plans: 19
-  percent: 90
+  completed_plans: 20
+  percent: 95
 ---
 
 # Project State
@@ -29,12 +29,12 @@ See: .planning/PROJECT.md (updated 2026-10-02 — v1.2 milestone)
 
 ## Current Position
 
-Phase: 15 (CLI --debug diagnostics) — READY TO EXECUTE
-Plan: Not started
+Phase: 15 (CLI --debug diagnostics) — EXECUTING
+Plan: 2 of 2
 Status: Ready to execute
-Last activity: 2026-10-04 — Phase 14 complete, transitioned to Phase 15
+Last activity: 2026-10-04 — Phase 15 execution started
 
-Progress: [█████████░] 90%
+Progress: [█████████░] 95%
 
 ## Performance Metrics
 
@@ -79,6 +79,7 @@ Progress: [█████████░] 90%
 | Phase 14 P06 | 6min | 1 tasks | 2 files |
 | Phase 14 P07 | 5min | 1 tasks | 3 files |
 | Phase 14 P08 | 5min | 1 tasks | 2 files |
+| Phase 15 P01 | 10min | 3 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -122,6 +123,9 @@ v1.2 roadmap locks:
 - [Phase 14]: Mock DEFAULT_ITEMS seed owned by getMockDefaultItems (material 104 empty factor_labels)
 - [Phase 14]: Batch mock call counter on harness for D-08 Playwright proof
 - [Phase 14]: Empty Обоснование is exact D-15 sentence; populated join unchanged
+- [Phase 15]: Sink stays typer-free: cli.py injects typer.echo(err=True) as emitter; adapter falls back to sys.stderr
+- [Phase 15]: Redaction order: SecretRegistry.mask -> DENY_PATTERNS -> control-char strip -> length cap; Bearer before assignment pattern
+- [Phase 15]: Captions stage emits domain token 'captions' for 1:1 correlation with IngestError.stage
 
 ### Pending Todos
 
@@ -145,7 +149,7 @@ Carried product deferrals to v1.3+: leaderboard, quiz, live SMTP, signup mail, W
 
 ## Session Continuity
 
-Last session: 2026-10-04T07:29:15.274Z
-Stopped at: Phase 15 context gathered
-Resume file: .planning/phases/15-cli-debug-diagnostics/15-CONTEXT.md
+Last session: 2026-10-04T08:13:39.571Z
+Stopped at: Completed 15-01-PLAN.md
+Resume file: None
 Next: phase verification
