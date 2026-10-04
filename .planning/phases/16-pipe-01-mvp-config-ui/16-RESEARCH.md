@@ -525,23 +525,26 @@ Source: `web/src/services/adminApi.js:23-31` (error class), `:59` (`useMocks`), 
 | A4 | Duplicate-key rejection is in-scope strictness (not explicitly in CONTEXT) | Pattern 1, Pitfall 3 | Low — extends "no silent accept"; if excluded, remove Pattern 1's override and the RED test |
 | A5 | Malformed request-body 422 may surface as `{detail:[...]}`; the SPA maps it to generic copy | Pitfall 8 | Low — request DTO is `{yaml: string}` only |
 
-**If this table were empty:** No — A1–A5 need confirmation; A3 in particular is a locked-in-plan decision.
+**If this table were empty:** No — A1–A5 needed confirmation at research time; A1 and A3 are now resolved in `## Open Questions (RESOLVED)` above (16-02 locks the 4-key set and the 400 reject).
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Exact config key names and defaults (A1)**
    - What we know: D-01 enumerates template kind, roles/audiences, generation limits; D-02 requires fixed keys; template/role closed sets exist elsewhere (`TemplateKind` = lecture|podcast; `VALID_ROLES` = employee|analyst|ds, but `backend` does **not** depend on `data-collection`). `[VERIFIED: data-collection/src/data_collection/dto/template_kind.py:6-8]`, `[VERIFIED: data-collection/src/data_collection/dto/role_kind.py:7-8]`, `[VERIFIED: backend/pyproject.toml:6-12 — no data-collection dep]`
    - What's unclear: whether `roles` uses the material audience set (`employee|analyst|ds`) and whether more limit keys are wanted.
    - Recommendation: lock the 4-key set in the plan; define the role Literal **in backend** (cannot import `data-collection`).
+   - **RESOLVED:** 16-02 locks the schema to the 4-key set `{template, roles, language, max_chars}` with `template: Literal["lecture","podcast"]`, `roles: list[Literal["employee","analyst","ds"]]` (`min_length=1`), `language: str` (`min_length=1`), `max_chars: int` (`gt=0`), defined locally in backend (no `data-collection` import), and asserts `PipelineConfigModel.model_fields` equals exactly those four keys.
 
 2. **HTTP status for a rejected save (A3)**
    - What we know: admin routes use 400 for `invalid_*`, 422 is FastAPI's body-shape default.
    - What's unclear: 400 vs 422 for semantic config rejection.
    - Recommendation: 400 with `JSONResponse({"errors":[...]})`; document in the route docstring.
+   - **RESOLVED:** reject status is locked to **400** returned as a top-level `JSONResponse(status_code=400, content={"errors":[...]})` (never `HTTPException(detail=...)`, which nests under `detail`); implemented in 16-02's `put_pipeline_config` reject branch.
 
 3. **Live migration apply path**
    - What we know: migrations 005–010 were applied by the operator via Supabase Studio SQL (some via MCP PostgREST); `raw_sql`/`transaction` need an extra `POSTGRES_URL`. `[CITED: docs/agents/local-platform-runbook.md §4c, §4g]`
    - Recommendation: author `011`, add a runbook section, plan an `apply-after-sql` checkpoint like 010 — no destructive reset.
+   - **RESOLVED:** 16-03 authors `011_phase16_pipeline_config.sql`, adds runbook **§4h** with the apply + verify SQL (count 0/1, RLS enabled, zero policies, dated Applied line), and gates the live DoD behind the `[BLOCKING]` apply checkpoint — no destructive reset.
 
 ## Environment Availability
 
