@@ -9,20 +9,23 @@ findings:
     title: "pydantic imported directly but not declared as a dependency"
   - id: WR-02
     severity: warning
-    disposition: open
+    disposition: fixed
     title: "Validator only catches MarkedYAMLError; deep documents escape as 500"
+    source: "fixed in commit 758ddac (catch RecursionError -> structured 400); VERIFICATION.md re-run passed 49/49"
   - id: WR-03
     severity: warning
     disposition: open
     title: "Length cap does not mitigate YAML alias expansion as the comment claims"
   - id: WR-04
     severity: warning
-    disposition: open
+    disposition: deferred
     title: "window.confirm inside beforeunload is unreliable"
+    source: "accepted known limitation; promoted to ROADMAP backlog 999.6 (2026-10-04)"
   - id: WR-05
     severity: warning
-    disposition: open
+    disposition: deferred
     title: "Unsaved edits are lost on in-app (SPA) navigation"
+    source: "accepted known limitation; promoted to ROADMAP backlog 999.6 (2026-10-04)"
   - id: IN-01
     severity: info
     disposition: open
@@ -39,7 +42,7 @@ findings:
     severity: info
     disposition: open
     title: "Migration relies solely on RLS; consider revoking default grants"
-open: 9
+open: 6
 total: 9
 recorded: 2026-10-04T12:05:00.000Z
 ---
@@ -49,10 +52,10 @@ recorded: 2026-10-04T12:05:00.000Z
 | Finding | Severity | Disposition | Source |
 |---------|----------|-------------|--------|
 | WR-01 | warning | open | - |
-| WR-02 | warning | open | - |
+| WR-02 | warning | fixed | fixed in commit 758ddac (catch RecursionError -> structured 400) |
 | WR-03 | warning | open | - |
-| WR-04 | warning | open | - |
-| WR-05 | warning | open | - |
+| WR-04 | warning | deferred | accepted known limitation; ROADMAP backlog 999.6 |
+| WR-05 | warning | deferred | accepted known limitation; ROADMAP backlog 999.6 |
 | IN-01 | info | open | - |
 | IN-02 | info | open | - |
 | IN-03 | info | open | - |
