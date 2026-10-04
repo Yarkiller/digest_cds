@@ -20,7 +20,9 @@ from jwt.algorithms import ECAlgorithm
 from backend.composition.container import AppContainer, build_in_memory_container
 from backend.composition.settings import Settings
 from backend.domain.current_user import CurrentUser
+from backend.domain.errors import PipelineConfigValidationError
 from backend.domain.pipeline_config import PipelineConfig
+from backend.infrastructure.yaml_pipeline_config_validator import YamlPipelineConfigValidator
 from backend.interface.http.app import create_app
 from backend.tests_support.in_memory import (
     InMemoryPipelineConfigRepository,
@@ -100,10 +102,28 @@ def _admin_env(
     private_key = ec.generate_private_key(ec.SECP256R1())
     jwk = _public_jwk(private_key)
     container = build_in_memory_container()
-    if attach_repo:
-        container.pipeline_config = InMemoryPipelineConfigRepository(config)
-    if attach_validator:
-        container.pipeline_config_validator = InMemoryPipelineConfigValidator()
+    container.pipeline_config = (
+        InMemoryPipelineConfigRepository(config) if attach_repo else None
+    )
+    container.pipeline_config_validator = (
+        InMemoryPipelineConfigValidator() if attach_validator else None
+    )
+    _seed_profile(
+        container,
+        user_id="admin-uuid-1",
+        email="admin@sberbank.ru",
+        role="admin",
+    )
+    client = _client(jwk, container)
+    token = _mint(private_key, email="admin@sberbank.ru", sub="admin-uuid-1")
+    return client, {"Authorization": f"Bearer {token}"}, container
+
+
+def _real_validator_admin_env() -> tuple[TestClient, dict[str, str], Any]:
+    """Admin client on the default wiring: real YamlPipelineConfigValidator + recording repo."""
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    container = build_in_memory_container()
     _seed_profile(
         container,
         user_id="admin-uuid-1",
@@ -235,3 +255,77 @@ def test_missing_pipeline_config_returns_503() -> None:
     put = client.put(CONFIG_URL, headers=headers, json={"yaml": "template: lecture"})
     assert put.status_code == 503
     assert put.json()["detail"] == "pipeline_config_not_configured"
+
+
+def test_put_invalid_yaml_returns_400_top_level_errors_and_writes_nothing() -> None:
+    """RED→GREEN PIPE-02, D-03/D-05: invalid YAML → 400 with top-level errors, zero writes."""
+    client, headers, container = _real_validator_admin_env()
+
+    response = client.put(CONFIG_URL, headers=headers, json={"yaml": "template: [unclosed\n"})
+
+    assert response.status_code == 400
+    body = response.json()
+    assert "detail" not in body
+    assert isinstance(body["errors"], list)
+    assert len(body["errors"]) >= 1
+    first = body["errors"][0]
+    assert first["path"] == ""
+    assert "message" in first
+    # The reject never reached the repository (D-03/D-07): zero saves.
+    assert container.pipeline_config.save_count == 0
+
+
+def test_put_invalid_error_rows_are_verbatim_and_top_level() -> None:
+    """RED→GREEN D-05: error rows expose path/message (+ optional line), verbatim server text."""
+    client, headers, container = _real_validator_admin_env()
+    document = (
+        "template: lecture\nroles:\n  - ds\nlanguage: ru\nmax_chars: 100\nscore_factors: 1.0\n"
+    )
+    try:
+        YamlPipelineConfigValidator().validate(document)
+        raise AssertionError("expected the validator to reject the unknown key")
+    except PipelineConfigValidationError as exc:
+        expected = [error.to_dict() for error in exc.errors]
+
+    response = client.put(CONFIG_URL, headers=headers, json={"yaml": document})
+
+    assert response.status_code == 400
+    body = response.json()
+    assert "detail" not in body
+    assert body["errors"] == expected
+    row = body["errors"][0]
+    assert set(row.keys()) <= {"path", "message", "line"}
+    assert row["path"] == "score_factors"
+    assert "line" not in row
+    assert container.pipeline_config.save_count == 0
+
+
+def test_build_in_memory_container_wires_real_validator_and_repo() -> None:
+    """RED→GREEN wiring: default container yields the in-memory repo + real YAML validator."""
+    default_container = build_in_memory_container()
+
+    assert isinstance(default_container.pipeline_config, InMemoryPipelineConfigRepository)
+    assert isinstance(default_container.pipeline_config_validator, YamlPipelineConfigValidator)
+
+
+def test_app_container_still_constructs_without_pipeline_kwargs() -> None:
+    """RED→GREEN Pitfall 6: the new fields default to None so AppContainer(...) keeps working."""
+    template = build_in_memory_container()
+    bare = AppContainer(
+        materials=template.materials,
+        chunks=template.chunks,
+        profiles=template.profiles,
+        pings=template.pings,
+        issues=template.issues,
+        voting_cycles=template.voting_cycles,
+        votes=template.votes,
+        embedder=template.embedder,
+        razbors=template.razbors,
+        notebook_storage=template.notebook_storage,
+        shortlist=template.shortlist,
+        mailer=template.mailer,
+        publisher=template.publisher,
+    )
+
+    assert bare.pipeline_config is None
+    assert bare.pipeline_config_validator is None
