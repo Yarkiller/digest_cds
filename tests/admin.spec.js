@@ -893,3 +893,33 @@ test.describe("Admin Digest — material preview honesty (ADUX-01, D-04…D-06)"
     ).toBeInViewport();
   });
 });
+
+test.describe("Admin pipeline config — view + save (PIPE-01/PIPE-03, D-11/D-13)", () => {
+  test("pipeline config happy path", async ({ page }) => {
+    await gotoAsRole(page, "admin", "/admin/pipeline");
+    await expect(page.getByTestId("admin-pipeline-page")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Конфиг пайплайна", exact: true }),
+    ).toBeVisible();
+    // No-execution honesty (PIPE-EXEC-* deferred): the surface states its scope.
+    await expect(page.getByText("Просмотр и правка без запуска пайплайна", { exact: true })).toBeVisible();
+
+    const editor = page.getByTestId("pipeline-config-editor");
+    await expect(editor).toBeVisible();
+    await expect(editor).toHaveValue("");
+
+    const doc = "template: lecture\nroles:\n  - employee\nlanguage: ru\nmax_chars: 4000\n";
+    await editor.fill(doc);
+
+    const save = page.getByTestId("pipeline-config-save");
+    await expect(save).toBeEnabled();
+    await save.click();
+    await expect(page.getByTestId("pipeline-config-status")).toHaveText("Сохранено");
+    await expect(save).toBeDisabled();
+
+    // PIPE-03: a subsequent read returns the saved YAML.
+    await page.reload();
+    await expect(page.getByTestId("pipeline-config-editor")).toHaveValue(doc);
+    await expect(page.getByTestId("pipeline-config-status")).toHaveText("Изменений нет");
+  });
+});
