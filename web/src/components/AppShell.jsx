@@ -84,9 +84,14 @@ export default function AppShell() {
               Разборы
             </NavLink>
             {appRole === 'admin' ? (
-              <NavLink to="/admin/digest" className={linkClass}>
-                Админ
-              </NavLink>
+              <>
+                <NavLink to="/admin/digest" className={linkClass}>
+                  Админ
+                </NavLink>
+                <NavLink to="/admin/pipeline" className={linkClass}>
+                  Пайплайн
+                </NavLink>
+              </>
             ) : null}
           </nav>
           <SearchPill />

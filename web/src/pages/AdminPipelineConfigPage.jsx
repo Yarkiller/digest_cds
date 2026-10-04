@@ -20,6 +20,12 @@ function errorPrefix(error) {
   return ''
 }
 
+/** Reset-to-saved confirm copy (UI-SPEC; D-12). */
+const RESET_CONFIRM = 'Отменить изменения и вернуть последнюю сохранённую версию?'
+
+/** Unsaved-changes leave confirm copy (UI-SPEC; D-12). */
+const UNSAVED_LEAVE_CONFIRM = 'Есть несохранённые изменения. Уйти без сохранения?'
+
 /**
  * Admin pipeline config — view + edit the raw YAML config without running the
  * pipeline (PIPE-01/PIPE-03; D-10/D-11/D-12/D-13). Minimal tracer surface:
@@ -100,12 +106,36 @@ export default function AdminPipelineConfigPage() {
 
   const dirty = yaml !== savedYaml
 
+  useEffect(() => {
+    if (!dirty) return undefined
+    function onBeforeUnload(event) {
+      if (typeof window.confirm === 'function' && !window.confirm(UNSAVED_LEAVE_CONFIRM)) {
+        event.preventDefault()
+        event.returnValue = ''
+      }
+    }
+    window.addEventListener('beforeunload', onBeforeUnload)
+    return () => {
+      window.removeEventListener('beforeunload', onBeforeUnload)
+    }
+  }, [dirty])
+
   function reloadRole() {
     setRoleKey((k) => k + 1)
   }
 
   function reloadConfig() {
     setLoadKey((k) => k + 1)
+  }
+
+  function onReset() {
+    if (!dirty) return
+    if (!window.confirm(RESET_CONFIRM)) return
+    setYaml(savedYaml)
+    setSaveError('')
+    setRejected(false)
+    setValidationErrors([])
+    setStatus('clean')
   }
 
   function onEdit(nextValue) {
@@ -216,6 +246,18 @@ export default function AdminPipelineConfigPage() {
       <h1 className="mt-2 font-sans text-3xl font-semibold text-ink">Конфиг пайплайна</h1>
       <p className="mt-2 text-sm text-muted">Просмотр и правка без запуска пайплайна</p>
 
+      {!savedYaml ? (
+        <div
+          data-testid="pipeline-config-empty"
+          className="mt-6 rounded-2xl border border-rule bg-paper-2/40 p-6"
+        >
+          <h2 className="font-sans text-2xl font-semibold text-ink">Конфиг ещё не задан</h2>
+          <p className="mt-2 text-sm text-muted">
+            Введите YAML и сохраните — конфиг будет доступен при следующих заходах.
+          </p>
+        </div>
+      ) : null}
+
       <div className="mt-6 flex flex-wrap items-center gap-3" aria-busy={saving}>
         <button
           type="button"
@@ -225,6 +267,15 @@ export default function AdminPipelineConfigPage() {
           onClick={onSave}
         >
           Сохранить конфиг
+        </button>
+        <button
+          type="button"
+          data-testid="pipeline-config-reload"
+          className="inline-flex min-h-11 items-center justify-center rounded-full border border-rule px-5 text-sm font-medium text-ink-2 disabled:cursor-not-allowed disabled:opacity-45"
+          disabled={!dirty || saving}
+          onClick={onReset}
+        >
+          Отменить изменения
         </button>
         <p
           data-testid="pipeline-config-status"

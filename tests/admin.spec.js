@@ -134,7 +134,10 @@ test.describe("Admin Digest — shortlist triage (ADMIN-01…03, ADMIN-05, D-79,
       page.getByRole("heading", { name: "Кандидатов пока нет", exact: true }),
     ).toBeVisible();
     await expect(page.getByRole("button", { name: /обновить список/i })).toBeVisible();
-    await expect(page.getByText(/пайплайн/i)).toHaveCount(0);
+    // Scoped to the digest page content: the AppShell now has a global «Пайплайн» nav item.
+    await expect(
+      page.getByTestId("admin-digest-page").getByText(/пайплайн/i),
+    ).toHaveCount(0);
     await expect(page.getByTestId("admin-shortlist-row")).toHaveCount(0);
     // G-05-2: genuine empty (digest_rest=false) must not show post-send rest copy
     await expect(page.getByText(/дайджест успешно выпущен/i)).toHaveCount(0);
@@ -152,7 +155,10 @@ test.describe("Admin Digest — shortlist triage (ADMIN-01…03, ADMIN-05, D-79,
       page.getByRole("heading", { name: "Кандидатов пока нет", exact: true }),
     ).toBeVisible();
     await expect(page.getByRole("button", { name: /обновить список/i })).toBeVisible();
-    await expect(page.getByText(/пайплайн/i)).toHaveCount(0);
+    // Scoped to the digest page content: the AppShell now has a global «Пайплайн» nav item.
+    await expect(
+      page.getByTestId("admin-digest-page").getByText(/пайплайн/i),
+    ).toHaveCount(0);
     await expect(page.getByTestId("admin-shortlist-row")).toHaveCount(0);
     await expect(page.getByText(/дайджест успешно выпущен/i)).toHaveCount(0);
     await expect(page.getByTestId("admin-digest-rest")).toHaveCount(0);
@@ -1063,6 +1069,7 @@ test.describe("Admin pipeline config — empty/dirty/reset/nav/no-execution (PIP
     expect(cleanPrevented).toBe(false);
 
     await editor.fill("template: lecture\n");
+    await expect(page.getByTestId("pipeline-config-reload")).toBeEnabled();
 
     let message = null;
     page.once("dialog", async (dialog) => {
