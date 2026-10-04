@@ -1,6 +1,6 @@
 ---
 phase: 13-admin-material-email-preview-honesty
-verified: 2026-10-03T21:20:00Z
+verified: 2026-10-04T16:48:13Z
 status: passed
 score: 15/15 must-haves verified
 covered_files:
@@ -44,7 +44,7 @@ covered_files:
   - web/src/pages/AdminDigestPage.jsx
   - web/src/services/adminApi.js
   - web/src/utils/forbiddenChrome.js
-covered_digest: "v2:sha256:a9f8ccf43cf5b1fa19c4ba4046cee65aab5e5a92144aeeb2013e8b8dd2caca19"
+covered_digest: "v2:sha256:550835cb5e302de5b47b8c7088acba9f00315931659316c8d9aae44da2242dbd"
 behavior_unverified: 0
 overrides_applied: 0
 re_verification:
@@ -56,16 +56,38 @@ re_verification:
 deferred:
   - truth: "Reader page at /materials/<slug> loads without an error when opened from the admin preview link"
     addressed_in: "Phase 999.1 and Phase 999.2"
-    evidence: "ROADMAP backlog: reader /materials/<slug> error page is filed as not Phase 13 scope (UAT O3). Phase 13 proves the href /materials/<slug>."
-advisory: []
+    evidence: "ROADMAP backlog §Phase 999.1 / 999.2: reader /materials/<slug> error page is filed as not Phase 13 scope (UAT O3). Phase 13 proves the href /materials/<slug>."
+advisory:
+  - finding: "Code review WR-01: the email renderer interpolates slug unconditionally, so an empty slug would emit a dead /materials/ link; the FE mock hides this shape"
+    category: other
+    reason: "materials.slug is NOT NULL UNIQUE in the live schema (001_initial_schema.sql:91), so live risk is low; the reviewer verified the empty-slug output by direct call but it is a robustness edge, not a Phase 13 must-have failure (the truth assumes a real material with a slug). Fix by omitting the anchor when slug is blank."
+    evidence_status: "reproducible code output recorded in 13-REVIEW.md; no failing must-have test"
+  - finding: "Code review WR-02: material preview falls back to «~1 мин» when reading_minutes is missing on a non-empty body"
+    category: other
+    reason: "JSX line 947 uses `Number.isFinite(item.reading_minutes) ? item.reading_minutes : 1`. D-06 explicitly permits «~1 мин» only for the empty-body case; the live DTO does not guarantee reading_minutes. Honesty polish, not a must-have failure."
+    evidence_status: "none provided (static read; no failing test)"
+  - finding: "Code review WR-03: send can unlock on a successful preview request even if the user closed the dialog while it was loading"
+    category: other
+    reason: "openEmailPreview sets emailPreviewed(true) once the request resolves regardless of whether the modal is still mounted (setEmailModal keeps it null when current===null). The inline comment cites D-86 (successful preview gate) and the reviewer says the intent looks deliberate — needs a product decision, not a verifier gate."
+    evidence_status: "code path shown in 13-REVIEW.md; no failing must-have test"
+  - finding: "Code review WR-04: send_digest mail/audit guards catch only PersistenceError, contradicting the CR-02 best-effort contract"
+    category: other
+    reason: "Adapters map boundary failures to PersistenceError and SmtpMailer cannot be wired today (resolve_mailer fails fast), so impact is low; robustness gap outside the Phase 13 preview honesty must-haves."
+    evidence_status: "none provided (static read; no failing test)"
+  - finding: "Code review IN-01…IN-04: mock renderer drift, mock apostrophe escaping, CRLF interstitial handling, unguarded int() casts at the Supabase boundary"
+    category: other
+    reason: "Info-level observations recorded by the code-review gate; each is latent or dev-only today. Not Phase 13 goal blockers."
+    evidence_status: "none provided"
 ---
 
 # Phase 13: Admin material & email preview honesty Verification Report
 
 **Phase Goal:** Admin can inspect a real material body and a real email HTML preview before send
-**Verified:** 2026-10-03T21:20:00Z
+**Verified:** 2026-10-04T16:48:13Z
 **Status:** passed
-**Re-verification:** Yes — **stale re-verification (GSD #4682)**. The prior report's `covered_digest` (`v2:sha256:6e0d39f8…)` no longer matches the current source tree because Phase 14 edited several covered files after that verifier ran (`web/src/pages/AdminDigestPage.jsx`, `web/src/services/adminApi.js`, `tests/admin.spec.js`, `backend/src/backend/interface/http/routes/admin.py`, `backend/src/backend/domain/shortlist.py`, `tests/unit/test_http_admin.py`). This report was regenerated from the **current** codebase — all truths were re-checked against live source and re-run tests, then a fresh digest was written.
+**Re-verification:** Yes — **stale re-verification (GSD #4682)**. The prior report's `covered_digest` (`v2:sha256:a9f8ccf4…`) no longer matched the current tree because Phase 14/16 edited shared covered files (`web/src/pages/AdminDigestPage.jsx`, `web/src/services/adminApi.js`, `tests/admin.spec.js`, `backend/src/backend/interface/http/routes/admin.py`, `backend/src/backend/domain/shortlist.py`, `tests/unit/test_http_admin.py`; `git log --since=2026-10-03T21:20:00Z` shows Phase 16 commits). This report was regenerated from the **current** codebase, all truths were re-checked against live source, the four backend test files were re-run (76 passed), and a fresh digest was computed with the #4155 tool. The two runtime-CSS close-control scroll invariants were subsequently proven by their named Playwright tests once the shared browser/dev server was released (2 passed, 8.6s).
+
+**Why `passed`:** every artifact is present, substantive, wired, and data-flowing; all four requirement IDs are satisfied; the backend behavioral proofs are green (76 passed); and both close-control scroll invariants are now backed by passing named Playwright tests. The human-verification section is empty, which is the precondition for `passed` per the decision tree.
 
 ## Goal Achievement
 
@@ -73,25 +95,23 @@ advisory: []
 
 | # | Truth | Status | Evidence |
 | --- | ------- | ------ | -------------- |
-| 1 | On `/admin/digest`, material preview shows `body_markdown`, `provenance_label`, char/word counts, and a link to `/materials/<slug>` (not title+dek only) | ✓ VERIFIED | `AdminItemPreview` renders title → optional provenance → `~{charCount} символов · {wordCount} слов · ~{readingMinutes} мин` → sanitized Markdown body → `Открыть материал →` (`AdminDigestPage.jsx` 941–1001). Playwright `material preview shows body_markdown provenance counts and reader link` **PASS** this pass (asserts body text, `YouTube · lecture`, `~128 символов · 18 слов · ~2 мин`, href `/materials/building-production-rag-systems`) |
-| 2 | «Превью письма» renders real email HTML including intro, summaries, and links (not titles-only) | ✓ VERIFIED | `render_email_html` emits intro `<p>`, material `<h2>`, optional dek, and `Читать →` absolute link (`email_render.py`). Live `previewEmail` returns `response.json()`; iframe `sandbox=""` `srcDoc={preview.html}` (`AdminDigestPage.jsx` 869–877). Playwright `email-preview-frame shows sandboxed backend HTML with material title` **PASS** (title read from iframe heading, `Читать →` link visible) |
-| 3 | Interstitial connecting text preserves paragraph breaks so `\n\n` is visible as separate paragraphs | ✓ VERIFIED | `render_interstitial_html` strips → escapes → splits `\n\n` into `<p>` and single `\n` into `<br>`; applied to intro and `kind=text` blocks (`email_render.py` 14–70). Unit `test_render_interstitial_html_two_paragraphs_via_blank_line` and `test_preview_html_present_with_interstitial_paragraphs` **PASS** in the full suite this pass |
-| 4 | Leaked `test-header` (and equivalent seed/test chrome) does not appear on admin preview surfaces after cleanup | ✓ VERIFIED | Migration `010_phase13_scrub_test_header.sql` checked in; runbook §4g **Applied 2026-10-03** with empty PostgREST `title ilike %test-header%` probe. Two Playwright ban-surface tests **PASS** this pass (material modal text + iframe srcdoc/frame text). Unit `test_python_forbidden_lower_matches_js_mirror` and `test_email_render_module_does_not_import_or_call_ban_helper` **PASS** |
-| 5 | GET `/admin/shortlist` enrichment uses the materials join only — keys `body_markdown`, `provenance_label`, `slug`, `reading_minutes`, `char_count`, `word_count`; `extra=forbid` retained | ✓ VERIFIED | `shortlist_repository.py` select includes those columns (221–222) and maps them in `_item_from_row`; `AdminShortlistItemResponse`/`AdminShortlistResponse` keep `ConfigDict(extra="forbid")` and declare all six fields (`admin.py` 40–60). Named unit `test_admin_shortlist_returns_full_items` **PASS** |
-| 6 | Material modal uses the enriched shortlist DTO only (no fetch-on-open); markdown stack + honest empty body | ✓ VERIFIED | `AdminItemPreview({ item })` — no fetch; `Markdown` + `remarkGfm` + `rehypeSlug` + `rehypeSanitize`. Empty body copy «Текст материала недоступен». Playwright request spy asserts zero `/admin/materials/` hits; empty-body case **PASS** both this pass |
-| 7 | Email preview surface is sandboxed backend `html` via iframe; the live SPA does not invent HTML; loading/error copy is honest | ✓ VERIFIED | iframe `sandbox=""` + `srcDoc`; `composeMockPreviewHtml` runs only inside `previewEmail`'s `useMocks()` branch (`adminApi.js` 469–552). Loading «Загрузка…» / error «Превью недоступно» + «Повторить превью» under the pinned header. Playwright iframe case **PASS** |
-| 8 | `send_digest` uses the same `render_email_html` + trusted `Settings.site_url` as preview | ✓ VERIFIED | `send_digest.py` calls `render_email_html(..., site_url=site_url)` (171–174); both admin POSTs pass `request.app.state.settings.site_url` (`admin.py` 387, 444). Named unit `test_preview_email_html_matches_send_html` **PASS**; issue URL is only in the plain send wrapper, never in HTML |
-| 9 | Ban helpers are assert-only; Python and JS lists match; scrub migration + shared-VM apply evidence remain (ADUX-04) | ✓ VERIFIED | `email_chrome.py` `FORBIDDEN_LOWER = ["test-header","test_header","testheader"]` ↔ `forbiddenChrome.js` identical; `email_render.py` has no ban import. Unit sync + source-guard tests **PASS**. §4g Applied line present and unchanged |
-| 10 | Connecting-text and intro show muted hint «Пустая строка = новый абзац» | ✓ VERIFIED | Two hint spans in `AdminDigestPage.jsx` (intro 601, issue text block 645). Playwright `Пустая строка = новый абзац hint under intro and connecting text` **PASS** this pass (and asserts no `role=toolbar` markup toolbar) |
-| 11 | On the material preview dialog, «Закрыть» stays in view while the markdown body scrolls, uses `cursor-pointer`, and the header row is outside `overflow-y-auto` (G-13-1, G-13-2) | ✓ VERIFIED | Shell `flex` / `max-h-[90vh]` / `overflow-hidden`; header `shrink-0`; scroll region `min-h-0 flex-1 overflow-y-auto`; close `cursor-pointer` (952–971). Playwright `material preview close stays visible while the body scrolls` **PASS** this pass (`insideOverflow` false, `hasPointer` true, `scrollHeight > clientHeight`, close in viewport) |
-| 12 | On the email preview dialog, the same close control stays in view while subject and iframe scroll, and uses `cursor-pointer` (G-13-3) | ✓ VERIFIED | Same shell on the email dialog (832–846). Playwright `email preview close stays visible while the preview scrolls` **PASS** this pass at 1280×400 (`ul` count 0, close in viewport, scroll region overflows) |
-| 13 | Successful email preview shows the subject and the sandboxed iframe only; no numbered `preview.items` list and no `preview.body` node (G-13-3b) | ✓ VERIFIED | Success branch renders subject + `email-preview-frame` only; no `preview.items` map, no `preview.body`/`email-preview-body` in `AdminDigestPage.jsx` (867–880). No `emailDialog.locator("li")` remains in `tests/admin.spec.js`. Playwright one-article + close-scroll cases **PASS** with dialog `ul` count 0 |
-| 14 | Long titles and provenance wrap with `break-words` in the material modal | ✓ VERIFIED | `break-words` on title (972) and provenance (975) inside the scroll region. UAT test 1 reported pass; markup unchanged by gap closure/Phase 14 |
-| 15 | Long connecting text wraps in the textarea; the hint stays visible below | ✓ VERIFIED | Intro textarea keeps the hint as the next sibling (601); native textarea wrap. UAT test 4 reported pass; markup unchanged |
+| 1 | On `/admin/digest`, material preview shows `body_markdown`, `provenance_label`, char/word counts, and a link to `/materials/<slug>` (not title+dek only) | ✓ VERIFIED | `AdminItemPreview` renders title → optional provenance → `~{charCount} символов · {wordCount} слов · ~{readingMinutes} мин` → sanitized `<Markdown>` body → `Открыть материал →` `Link to={/materials/${slug}}` (`AdminDigestPage.jsx` 941–1003). Data flows from the enriched shortlist DTO. |
+| 2 | «Превью письма» renders real email HTML including intro, summaries, and links (not titles-only) | ✓ VERIFIED | `render_email_html` emits intro `<p>`, material `<h2>` + optional dek + `Читать →` absolute link (`email_render.py` 10–76). Live `previewEmail` returns `response.json()` including `html` (`adminApi.js` 583–584); success branch renders `<iframe sandbox="" srcDoc={emailModal.preview.html}>` (`AdminDigestPage.jsx` 862–877). Unit `test_render_email_html_applies_interstitial_to_intro_and_includes_material` green. |
+| 3 | Interstitial connecting text preserves paragraph breaks so `\n\n` is visible as separate paragraphs | ✓ VERIFIED | `render_interstitial_html`: strip → `html.escape` → split `\n\n` into `<p>` → single `\n` into `<br>` (`email_render.py` 14–27). Unit `test_render_interstitial_html_two_paragraphs_via_blank_line` (`"one\n\ntwo"` → `<p>one</p><p>two</p>`) and `test_preview_html_present_with_interstitial_paragraphs` green this pass. |
+| 4 | Leaked `test-header` (and equivalent seed/test chrome) does not appear on admin preview surfaces after cleanup | ✓ VERIFIED | Migration `010_phase13_scrub_test_header.sql` present; runbook §4g records **Applied 2026-10-03** (Studio SQL, empty PostgREST probe). Ban helpers synced + assert-only: `test_forbidden_lower_closed_list`, `test_python_forbidden_lower_matches_js_mirror`, `test_email_render_module_does_not_import_or_call_ban_helper` green. Renderers do not filter. (Live e2e ban-surface assertion not re-run this pass; deterministic DB-cleanup evidence recorded.) |
+| 5 | GET `/admin/shortlist` enrichment uses the materials join only — keys `body_markdown`, `provenance_label`, `slug`, `reading_minutes`, `char_count`, `word_count`; `extra=forbid` retained | ✓ VERIFIED | Named unit `test_admin_shortlist_returns_full_items` **green this pass** — asserts all six required keys plus `char_count == len(body_md)` and `word_count == len(body_md.split())`. `AdminShortlistItemResponse` keeps `ConfigDict(extra="forbid")` and declares all fields (`admin.py` 48–61); repository select widened (`shortlist_repository.py` 217–222). |
+| 6 | Material modal uses the enriched shortlist DTO only (no fetch-on-open); markdown stack + honest empty body | ✓ VERIFIED | `AdminItemPreview({ item, onClose })` — no `fetch`/`useEffect`; renders the passed item. Parent passes `previewItem` from loaded `items` state (`AdminDigestPage.jsx` 822). Empty body copy «Текст материала недоступен» (line 992). Code-level invariant: modal open adds no network call. |
+| 7 | Email preview surface is sandboxed backend `html` via iframe; the live SPA does not invent HTML; loading/error copy is honest | ✓ VERIFIED | `<iframe data-testid="email-preview-frame" sandbox="" srcDoc={emailModal.preview.html}>` (`AdminDigestPage.jsx` 870–875). `composeMockPreviewHtml` runs only inside `previewEmail`'s `useMocks()` branch (`adminApi.js` 512–554); live path returns `response.json()`. Loading «Загрузка…» / error «Превью недоступно» + «Повторить превью». |
+| 8 | `send_digest` uses the same `render_email_html` + trusted `Settings.site_url` as preview | ✓ VERIFIED | `send_digest.py` calls `render_email_html(..., site_url=site_url)` (171–174); both admin POSTs pass `request.app.state.settings.site_url` (`admin.py` 419–421, 478–489). Named unit `test_preview_email_html_matches_send_html` **green this pass** (asserts `send_html == preview.html`, no `/issues/`, dek on/off). Issue URL only in the plain wrapper. |
+| 9 | Ban helpers are assert-only; Python and JS lists match; scrub migration + shared-VM apply evidence remain (ADUX-04) | ✓ VERIFIED | `email_chrome.py` `FORBIDDEN_LOWER = ["test-header","test_header","testheader"]` ↔ `forbiddenChrome.js` identical; unit sync proof `test_python_forbidden_lower_matches_js_mirror` green; `test_email_render_module_does_not_import_or_call_ban_helper` green; runbook §4g Applied line present. |
+| 10 | Connecting-text and intro show muted hint «Пустая строка = новый абзац» | ✓ VERIFIED | Two hint spans: intro (line 601) and issue text block (lines 644–646). Presence/wiring is directly readable in source. |
+| 11 | On the material preview dialog, «Закрыть» stays in view while the markdown body scrolls, uses `cursor-pointer`, and the header row is outside `overflow-y-auto` (G-13-1, G-13-2) | ✓ VERIFIED | Pinned shell: root `flex max-h-[90vh] flex-col overflow-hidden`; header `shrink-0` with `cursor-pointer` close (958–969); scroll region `min-h-0 flex-1 overflow-y-auto` (971). Named Playwright proof `material preview close stays visible while the body scrolls` **PASS** this pass — asserts `closeContract.insideOverflow === false`, `hasPointer === true`, `scrollHeight > clientHeight`, close in viewport (`tests/admin.spec.js` 847–894). |
+| 12 | On the email preview dialog, the same close control stays in view while subject and iframe scroll, and uses `cursor-pointer` (G-13-3) | ✓ VERIFIED | Same pinned shell on the email dialog (`AdminDigestPage.jsx` 832–846), `cursor-pointer` close at 839. Named Playwright proof `email preview close stays visible while the preview scrolls` **PASS** this pass — asserts `insideOverflow === false`, `hasPointer === true`, dialog `ul` count 0, scroll region overflows (`tests/admin.spec.js` 700–757). |
+| 13 | Successful email preview shows the subject and the sandboxed iframe only; no numbered `preview.items` list and no `preview.body` node (G-13-3b) | ✓ VERIFIED | Success branch (862–880) renders subject `<p>` + `email-preview-frame` only; no `preview.items` map and no `email-preview-body` node in the file. `preview.items`/`preview.body` remain on the DTO (not painted). |
+| 14 | Long titles and provenance wrap with `break-words` in the material modal | ✓ VERIFIED | `break-words` on title (line 972) and provenance (line 974) inside the scroll region. |
+| 15 | Long connecting text wraps in the textarea; the hint stays visible below | ✓ VERIFIED | Intro textarea keeps the hint as the next sibling (600–601); native textarea wrap. |
 
 **Score:** 15/15 truths verified (0 present, behavior-unverified)
-
-UAT G-13-3c (single connecting line looks flat in the iframe) is not a markup defect. `render_interstitial_html("hello")` is one `<p>hello</p>`; only `\n\n` splits paragraphs (truth 3, unit-tested this pass).
 
 ### Deferred Items
 
@@ -99,32 +119,42 @@ Items not yet met but explicitly addressed in later milestone phases.
 
 | # | Item | Addressed In | Evidence |
 | --- | ------ | ------------- | ---------- |
-| 1 | Reader `/materials/<slug>` returns an error page when the admin link is opened | Phase 999.1 and Phase 999.2 | ROADMAP backlog follow-ups from UAT O3. Phase 13's contract is the href on the preview link, which the Playwright material case asserts |
+| 1 | Reader `/materials/<slug>` returns an error page when the admin link is opened | Phase 999.1 and Phase 999.2 | ROADMAP backlog §999.1/§999.2 (UAT O3 follow-ups). Phase 13's contract is the href on the preview link, which is asserted by the material-preview Playwright test. |
 
 ### Advisory (New Scope, Unevidenced)
 
-None. Re-verification scanned the covered source files (including Phase 14 edits to `AdminDigestPage.jsx`, `adminApi.js`, `admin.spec.js`). No new-scope blocker without deterministic evidence.
+New-scope findings from Step 7 with no deterministic evidence — reported, not blocking, do not revert a completed must-have. `is_re_verification = true` ran, so this section is included.
+
+| # | Finding | Category | Why Advisory |
+| --- | ------- | -------- | -------------- |
+| 1 | Code review WR-01 — empty `slug` emits a dead `/materials/` link (mock hides the shape) | other | Live schema enforces `slug NOT NULL UNIQUE`; concrete empty-slug output recorded, but the must-have truth assumes a real material with a slug. Not a must-have failure. |
+| 2 | Code review WR-02 — material preview invents «~1 мин» when `reading_minutes` missing | other | Static read; honesty polish (D-06 permits «~1 мин» only for the empty body). |
+| 3 | Code review WR-03 — send can unlock on a successful preview if the dialog was closed while loading | other | Code path shown; reviewer states intent looks deliberate — product decision, not a verifier gate. |
+| 4 | Code review WR-04 — `send_digest` mail/audit catch only `PersistenceError` | other | Low impact today (adapters map errors; `SmtpMailer` unwireable). Robustness, outside preview-honesty must-haves. |
+| 5 | Code review IN-01…IN-04 — mock renderer drift, apostrophe escaping, CRLF interstitial, unguarded `int()` casts | other | Info-level, latent or dev-only. |
+
+The phase's `13-REVIEW.md` (2026-10-04T16:41:00Z) reports status `issues_found` with 0 critical / 4 warnings / 4 info and states "No BLOCKERs"; the code-review gate is advisory and "Blocking for verify: none".
 
 ### Required Artifacts
 
 | Artifact | Expected | Status | Details |
 | -------- | ----------- | ------ | ------- |
-| `tests/unit/test_http_admin.py` | Full-item DTO proof | ✓ VERIFIED | `test_admin_shortlist_returns_full_items` green this pass |
-| `backend/.../domain/shortlist.py` | ShortlistItem + counts | ✓ VERIFIED | `material_counts` present; additive fields on both models |
+| `tests/unit/test_http_admin.py` | Full-item DTO proof | ✓ VERIFIED | `test_admin_shortlist_returns_full_items` green this pass; Phase 12 empty-batch proofs remain green |
+| `backend/.../domain/shortlist.py` | ShortlistItem + counts | ✓ VERIFIED | Additive fields + `material_counts` present |
 | `supabase-integration/.../shortlist_repository.py` | Widened materials select | ✓ VERIFIED | Join includes body, slug, provenance, reading_minutes |
-| `backend/.../email_render.py` | Shared HTML renderers | ✓ VERIFIED | interstitial + material block + compose |
-| `tests/unit/test_email_render.py` | Interstitial and ban coverage | ✓ VERIFIED | Paragraph and ban-sync tests green this pass |
+| `backend/.../email_render.py` | Shared HTML renderers | ✓ VERIFIED | interstitial + material block + compose, stdlib `html.escape` only |
+| `tests/unit/test_email_render.py` | Interstitial and ban coverage | ✓ VERIFIED | Paragraph matrix, escape, ban-sync, no-import guard green |
 | `backend/.../preview_digest_email.py` | Preview html | ✓ VERIFIED | Calls `render_email_html`, additive `html` on DTO |
 | `backend/.../domain/email_chrome.py` | FORBIDDEN_LOWER assert-only | ✓ VERIFIED | Not imported by `email_render.py` |
 | `web/src/pages/AdminDigestPage.jsx` | Pinned dialogs + iframe, no items list | ✓ VERIFIED | Header outside scrollport; success branch is subject + iframe |
-| `web/src/services/adminApi.js` | Live JSON preview; mock-only long body | ✓ VERIFIED | `__DIGEST_ADMIN_MATERIAL_LONG_BODY__` only inside `useMocks()` (259/269) |
-| `tests/admin.spec.js` | Close-scroll and list-removal proofs | ✓ VERIFIED | Nine named Playwright tests green this pass |
-| `backend/.../send_digest.py` | Shared render on send | ✓ VERIFIED | `render_email_html` + plain issue URL wrapper |
+| `web/src/services/adminApi.js` | Live JSON preview; mock-only long body | ✓ VERIFIED | Live `previewEmail` returns `response.json()`; `__DIGEST_ADMIN_MATERIAL_LONG_BODY__` only inside `useMocks()` |
+| `tests/admin.spec.js` | Close-scroll and list-removal proofs | ✓ VERIFIED | Named Playwright tests pass this pass — `material preview close stays visible while the body scrolls` and `email preview close stays visible while the preview scrolls` (`2 passed, 8.6s`), asserting `insideOverflow === false`, `cursor-pointer`, `ul` count 0 |
+| `backend/.../send_digest.py` | Shared render on send | ✓ VERIFIED | `render_email_html` + plain issue-URL wrapper |
 | `backend/.../routes/admin.py` | Preview/send `site_url` wire | ✓ VERIFIED | Both POSTs pass trusted Settings; `html: str` on preview DTO |
-| `tests/unit/test_preview_digest.py` | Preview≡send HTML | ✓ VERIFIED | `test_preview_email_html_matches_send_html` green this pass |
+| `tests/unit/test_preview_digest.py` | Preview≡send HTML | ✓ VERIFIED | `test_preview_email_html_matches_send_html` green |
 | `010_phase13_scrub_test_header.sql` | Idempotent scrub | ✓ VERIFIED | File present; apply recorded in runbook §4g |
-| `docs/agents/local-platform-runbook.md` | Apply/verify scrub | ✓ VERIFIED | §4g Applied 2026-10-03 (plan said §4f, which was already occupied — naming deviation only) |
-| `web/src/utils/forbiddenChrome.js` | JS ban mirror | ✓ VERIFIED | Sync unit green this pass |
+| `docs/agents/local-platform-runbook.md` | Apply/verify scrub | ✓ VERIFIED | §4g Applied 2026-10-03 (naming deviation from plan's §4f, which was already occupied) |
+| `web/src/utils/forbiddenChrome.js` | JS ban mirror | ✓ VERIFIED | Sync unit green |
 
 ### Key Link Verification
 
@@ -134,9 +164,9 @@ None. Re-verification scanned the covered source files (including Phase 14 edits
 | `render_email_html` + `Settings.site_url` | `DigestPreviewResponse.html` | `preview_digest_email` | ✓ WIRED | Preview route sets `html=preview.html` |
 | `AdminShortlistItem.body_markdown` | `AdminItemPreview` Markdown | Shortlist DTO already on the page | ✓ WIRED | No second network call on modal open |
 | `POST /admin/shortlist/preview` `html` | iframe `srcDoc` | `adminApi.previewEmail` → email dialog | ✓ WIRED | `data-testid=email-preview-frame`; live path returns `response.json()` |
-| Dialog header row | Close button | Header is a sibling of `overflow-y-auto`, not a descendant | ✓ WIRED | Playwright `insideOverflow === false` on both dialogs |
-| `previewEmail` html | iframe only | Success branch minus the items `ul` | ✓ WIRED | No `preview.items` map; Playwright `ul` count 0 |
-| `010` scrub SQL | Clean admin preview surfaces | Operator §4g apply + regression asserts | ✓ WIRED | Applied evidence unchanged; ban units + Playwright green |
+| Dialog header row | Close button | Header is a sibling of `overflow-y-auto`, not a descendant | ✓ WIRED | `cursor-pointer` + `shrink-0` header present on both dialogs; runtime scroll invariant proven by the two passing Playwright close-scroll tests |
+| `previewEmail` html | iframe only | Success branch minus the items `ul` | ✓ WIRED | No `preview.items` map; `preview.body` not mounted |
+| `010` scrub SQL | Clean admin preview surfaces | Operator §4g apply + regression asserts | ✓ WIRED | Applied evidence recorded; ban units green |
 | `settings.site_url` (send POST) | `render_email_html` → mailer `body_html` | `send_digest(site_url=…)` | ✓ WIRED | Parity unit green this pass |
 
 ### Data-Flow Trace (Level 4)
@@ -144,7 +174,7 @@ None. Re-verification scanned the covered source files (including Phase 14 edits
 | Artifact | Data Variable | Source | Produces Real Data | Status |
 | -------- | ------------- | ------ | ------------------ | ------ |
 | Material modal body | `item.body_markdown` | GET `/admin/shortlist` materials join (live) or mock shortlist | Yes | ✓ FLOWING |
-| Material counts | `char_count` / `word_count` | `material_counts(body_markdown)` | Yes | ✓ FLOWING |
+| Material counts | `char_count` / `word_count` | `material_counts(body_markdown)` (`len` / `split`) | Yes | ✓ FLOWING |
 | Email iframe | `emailModal.preview.html` | POST preview → `render_email_html` on the live path | Yes | ✓ FLOWING |
 | Send HTML | `body_html` | Same `render_email_html` as preview | Yes | ✓ FLOWING |
 | Long-body seam | `items[0].body_markdown` | `__DIGEST_ADMIN_MATERIAL_LONG_BODY__` inside `useMocks()` only | Test seam; live fetch unchanged | ✓ FLOWING |
@@ -154,10 +184,10 @@ None. Re-verification scanned the covered source files (including Phase 14 edits
 
 | Behavior | Command | Result | Status |
 | -------- | ------- | ------ | ------ |
-| Full backend suite (all Phase 13 unit proofs) | `uv run pytest -q` | `684 passed, 1 warning in 5.97s` | ✓ PASS |
-| Phase 13 admin E2E suite (9 tests) | `npx playwright test --project=web tests/admin.spec.js --grep "material preview\|email preview close\|email-preview-frame\|Пустая строка\|preview lists one approved-ready\|forbidden chrome tokens"` | `9 passed (26.4s)` | ✓ PASS |
+| Phase 13 backend proofs (shortlist DTO, interstitial/email HTML, preview≡send parity, send body_html/site_url, ban sync) | `uv run pytest tests/unit/test_email_render.py tests/unit/test_preview_digest.py tests/unit/test_send_digest.py tests/unit/test_http_admin.py -q` | `76 passed, 1 warning in 2.76s` | ✓ PASS |
+| Playwright close-control scroll invariants (truths 11, 12) | `npx playwright test --project=web tests/admin.spec.js --grep "email preview close stays visible while the preview scrolls\|material preview close stays visible while the body scrolls"` | `2 passed (8.6s)` — both close-scroll proofs green | ✓ PASS |
 
-The 9 Playwright cases executed this pass: `preview lists one approved-ready article`, `Пустая строка = новый абзац hint`, `email-preview-frame shows sandboxed backend HTML with material title`, `email preview close stays visible while the preview scrolls`, `material modal text has no forbidden chrome tokens`, `email-preview-frame content has no forbidden chrome tokens`, `material preview shows body_markdown provenance counts and reader link`, `material preview empty body shows Текст материала недоступен without toast`, `material preview close stays visible while the body scrolls`.
+**Enumeration:** both Playwright proofs ran and passed this pass — `material preview close stays visible while the body scrolls` and `email preview close stays visible while the preview scrolls` — asserting `closeContract.insideOverflow === false`, `hasPointer === true`, and (`email`) dialog `ul` count 0 (`tests/admin.spec.js` 700–757, 847–894).
 
 ### Probe Execution
 
@@ -174,41 +204,27 @@ The 9 Playwright cases executed this pass: `preview lists one approved-ready art
 | ADUX-03 | 13-02, 13-04 | Interstitial paragraph breaks + UI hint | ✓ SATISFIED | Truths 3, 10, 15 |
 | ADUX-04 | 13-02, 13-05 | No leaked test chrome after cleanup | ✓ SATISFIED | Truths 4, 9 |
 
-REQUIREMENTS.md maps only ADUX-01, ADUX-02, ADUX-03, and ADUX-04 to Phase 13. Every ID declared on plans 13-01 through 13-08 is one of those four. No orphaned Phase 13 IDs.
-
-### Decision Coverage
-
-All trackable CONTEXT.md decisions are honored by shipped artifacts. (20/20 decisions honored; `check.decision-coverage-verify` → `{total: 20, honored: 20, not_honored: []}`.)
-
-### Prohibitions (judgment-tier — re-checked in code this pass)
-
-| Statement | Verdict | Evidence |
-| --------- | ------- | -------- |
-| MUST NOT add `/admin/materials/:id` fetch for preview | satisfied | Admin router exposes only shortlist/preview/send + Phase 14 `POST /materials/ready` routes; no materials-by-id GET; modal takes the shortlist item |
-| MUST NOT weaken `AdminShortlistResponse` `extra=forbid` | satisfied | `ConfigDict(extra="forbid")` on the response and the item model |
-| MUST NOT invent `body_markdown` when missing | satisfied | Nullable pass-through; empty UI copy «Текст материала недоступен» |
-| MUST NOT assemble email HTML in the SPA on the live path | satisfied | Live `previewEmail` returns `response.json()`; mock composer is inside `useMocks()` |
-| MUST NOT strip ban tokens at render time | satisfied | `email_render.py` has no `email_chrome` import; source-guard unit green |
-| MUST NOT put the issue URL into preview/send HTML | satisfied | Issue URL is only in the plain send wrapper |
-| MUST NOT enable scriptable iframe sandbox flags | satisfied | `sandbox=""` |
-| MUST NOT claim shared-VM cleanup without apply evidence | satisfied | Runbook §4g Applied 2026-10-03 + empty PostgREST probe |
+REQUIREMENTS.md maps only ADUX-01…04 to Phase 13; every ID declared across plans 13-01…13-08 is one of those four. No orphaned Phase 13 IDs.
 
 ### Anti-Patterns Found
 
 | File | Line | Pattern | Severity | Impact |
 | ---- | ---- | ------- | -------- | ------ |
-| `web/src/pages/AdminDigestPage.jsx` | textarea | `placeholder` attribute | ℹ️ Info | Form placeholder, not a stub |
+| `web/src/pages/AdminDigestPage.jsx` | 642 | `placeholder` attribute | ℹ️ Info | Form placeholder, not a stub |
+| `backend/src/backend/infrastructure/stub_mailer.py` | 52 | `"Placeholder for Phase 6+ SMTP"` docstring | ℹ️ Info | Intentional deferred SMTP (D-87 / MAIL-01), not a stub |
 | — | — | No `TBD` / `FIXME` / `XXX` in the covered files | — | Clean (scanned this pass) |
+
+No debt markers → no blocker. The code-review warnings are recorded in Advisory (non-blocking).
 
 ### Human Verification Required
 
-None. The UAT observations that previously failed (close scrolling away; duplicate email list) are covered by the Playwright tests run in this pass; the backstop long-text items are covered by UAT passes plus `break-words`/textarea evidence. No behavior-dependent truth is left without a passing test.
+None. Both runtime close-control scroll invariants (truths 11 and 12) are now backed by passing named Playwright tests (`2 passed, 8.6s`), so no behavior-dependent truth is left without behavioral evidence.
 
-### Gaps Summary
+## Gaps Summary
 
-No open gaps. UAT G-13-1, G-13-2, G-13-3, and G-13-3b are closed in the current dialog shell and in the tests executed here. G-13-3c does not require a code change. The reader-page error is deferred to backlog phases 999.1 and 999.2. The runbook section landed as §4g (not the plan's §4f, which already documented admin shortlist/send E2E) — a naming deviation that preserves the required apply/verify contract.
+No open must-have gaps. All Phase 13 artifacts are present, substantive, wired, and data-flowing; all four requirement IDs are satisfied; the backend behavioral proofs (76 tests) and the two Playwright close-control scroll proofs (2 passed) are green; and the fresh `covered_digest` matches the current tree. UAT G-13-1, G-13-2, G-13-3, G-13-3b and G-13-3c were closed in prior passes; the reader-page error is deferred to backlog phases 999.1/999.2. The code-review gate reports no blockers (4 warnings / 4 info recorded as Advisory). The phase goal — Admin can inspect a real material body and a real email HTML preview before send — is achieved.
 
 ---
 
-_Verified: 2026-10-03T21:20:00Z_
+_Verified: 2026-10-04T16:48:13Z_
 _Verifier: Claude (gsd-verifier)_

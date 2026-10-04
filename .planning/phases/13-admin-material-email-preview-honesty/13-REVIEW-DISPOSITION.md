@@ -1,20 +1,58 @@
 ---
-phase: 13-admin-material-email-preview-honesty
-source: 13-REVIEW.md
-updated: 2026-10-03T09:30:00Z
+phase: 13
+review: 13-REVIEW.md
+titles: json
+findings:
+  - id: WR-01
+    severity: warning
+    disposition: open
+    title: "Empty slug produces a dead `/materials/` link in mail — and the mock hides it"
+  - id: WR-02
+    severity: warning
+    disposition: open
+    title: "Material preview invents «~1 мин» when `reading_minutes` is missing"
+  - id: WR-03
+    severity: warning
+    disposition: open
+    title: "Send unlocks even if the preview was closed before it rendered"
+  - id: WR-04
+    severity: warning
+    disposition: open
+    title: "Post-publish mail/audit only tolerates `PersistenceError`"
+  - id: IN-01
+    severity: info
+    disposition: open
+    title: "Mock email HTML re-implements the backend renderer (drift risk)"
+  - id: IN-02
+    severity: info
+    disposition: open
+    title: "Mock `escapeHtml` omits apostrophe escaping"
+  - id: IN-03
+    severity: info
+    disposition: open
+    title: "`render_interstitial_html` does not handle CRLF line endings"
+  - id: IN-04
+    severity: info
+    disposition: open
+    title: "Numeric casts at the Supabase boundary can raise uncaught `ValueError`"
+open: 8
+total: 8
+recorded: 2026-10-04T16:50:00Z
 ---
 
-# Phase 13 — Review Disposition
+# Phase 13: Code Review Disposition
 
-Ledger for the review committed in `abade75` (plans 13-07, 13-08, and post-merge fix `0c6dd13`). Each finding is `open` until triaged. The previous ledger's IDs referred to an earlier review and are superseded by this file.
+| Finding | Severity | Disposition | Source |
+|---------|----------|-------------|--------|
+| WR-01 | warning | open | - |
+| WR-02 | warning | open | - |
+| WR-03 | warning | open | - |
+| WR-04 | warning | open | - |
+| IN-01 | info | open | - |
+| IN-02 | info | open | - |
+| IN-03 | info | open | - |
+| IN-04 | info | open | - |
 
-| ID | Severity | Disposition | Rationale |
-|----|----------|-------------|-----------|
-| WR-01 | warning | open | Welcome toast state lives in the banner effect, so IssuePage's loading-to-ready remount drops a toast that is already on screen and restarts the dismiss timer. |
-| WR-02 | warning | open | `armWelcomeToast()` can throw if sessionStorage is blocked, and login/register treat that as a failed sign-in after the session already exists. |
-| WR-03 | warning | open | Material preview renders «~1 мин» when `reading_minutes` is missing. |
-| IN-01 | info | open | `postPing` has no remaining caller and does not share the sticky `/me` outage flag. |
-| IN-02 | info | open | Mock email HTML invents a slug when the backend can emit an empty segment. |
-| IN-03 | info | open | Mock `escapeHtml` does not escape apostrophes the way Python `html.escape(..., quote=True)` does. |
-
-**Blocking for verify:** none (code-review gate is advisory).
+Dispositions: `open` (recorded, not yet triaged), `fixed`, `skipped`, `deferred`.
+Set `deferred` by hand and put the reason in the Source cell; both are preserved. A `|` in the reason is kept as prose and escaped on the next run.
+Re-running the gate keeps every row it can. A row the current review no longer reports is kept and its Source cell flagged, so a finding does not leave this record silently. ONE exception: when a finding id is REUSED by a different finding, the earlier decision cannot keep a row — the id is taken — and it is dropped. A RECORDED decision (anything but `open`) is named on the console when that happens; a row still at `open` is replaced silently, because `open` records no decision to lose.
