@@ -47,7 +47,7 @@ Full phase detail: [milestones/v1.1-ROADMAP.md](milestones/v1.1-ROADMAP.md)
 - [x] **Phase 12: Admin shortlist empty-batch contract** - Fix Phase 10 carry unit so empty shortlist returns 200 with empty items (completed 2026-10-02)
 - [x] **Phase 13: Admin material & email preview honesty** - Preview shows body/provenance/counts/reader link; email HTML + interstitial + no test chrome (completed 2026-10-03)
 - [x] **Phase 14: Draft→ready & justification honesty** - Admin promotes draft→ready in UI; Обоснование is real or honestly empty (completed 2026-10-04)
-- [ ] **Phase 15: CLI --debug diagnostics** - Richer secret-safe stage diagnostics; default progress contracts unchanged
+- [x] **Phase 15: CLI --debug diagnostics** - Richer secret-safe stage diagnostics; default progress contracts unchanged (completed 2026-10-04)
 - [ ] **Phase 16: PIPE-01 MVP config UI** - View/edit/validate/persist pipeline YAML; no run/trigger execution
 
 ## Phase Details
@@ -155,12 +155,16 @@ Plans:
   2. Debug output never leaks secrets, proxy credentials, cookies, or full transcript bodies
   3. With `--debug` off, existing staged progress and `IngestError.to_dict()` contracts remain unchanged
 
-**Plans**: TBD
+**Plans**: 3/3 plans complete (2 executed + 1 gap closure)
+
 **Wave 1**
 - [x] 15-01-PLAN.md
 
 **Wave 2** *(blocked on Wave 1 completion)*
 - [x] 15-02-PLAN.md
+
+**Wave 3** *(gap closure, blocked on Wave 2)*
+- [x] 15-03-PLAN.md — G-15-1/W-1: redaction assignment boundary + control-char ordering
 
 ### Phase 16: PIPE-01 MVP config UI
 
@@ -185,7 +189,7 @@ Plans:
 | 12. Admin shortlist empty-batch contract | v1.2 | 3/3 | Complete    | 2026-10-02 |
 | 13. Admin material & email preview honesty | v1.2 | 8/8 | Complete    | 2026-10-03 |
 | 14. Draft→ready & justification honesty | v1.2 | 8/8 | Complete    | 2026-10-04 |
-| 15. CLI --debug diagnostics | v1.2 | 2/2 | In Progress|  |
+| 15. CLI --debug diagnostics | v1.2 | 3/3 | Complete | 2026-10-04 |
 | 16. PIPE-01 MVP config UI | v1.2 | 0/? | Not started | - |
 
 **Coverage:** 12/12 v1.2 requirements mapped (FIX-01, ADUX-01…06, DBG-01…02, PIPE-01…03). No orphans.

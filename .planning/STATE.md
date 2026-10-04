@@ -4,18 +4,18 @@ milestone: v1.2
 milestone_name: Admin UX + diagnostics + PIPE-01 MVP
 current_phase: 15
 current_phase_name: CLI --debug diagnostics
-status: executing
-stopped_at: Completed 15-02-PLAN.md
-last_updated: "2026-10-04T08:37:42.287Z"
+status: verifying
+stopped_at: Completed 15-03-PLAN.md
+last_updated: "2026-10-04T08:43:11.154Z"
 last_activity: 2026-10-04
 last_activity_desc: Phase 15 execution started
-state_head: ab365d76144227a9b0e8656ddd4dae2887494480
+state_head: 325dfad3e01a58f877c426249a08477b5356fcaa
 progress:
   total_phases: 5
   completed_phases: 5
   total_plans: 22
-  completed_plans: 21
-  percent: 95
+  completed_plans: 22
+  percent: 100
 ---
 
 # Project State
@@ -29,12 +29,12 @@ See: .planning/PROJECT.md (updated 2026-10-02 — v1.2 milestone)
 
 ## Current Position
 
-Phase: 15 (CLI --debug diagnostics) — READY TO EXECUTE
-Plan: 2 of 2
-Status: Ready to execute
+Phase: 15 (CLI --debug diagnostics) — COMPLETE
+Plan: 3 of 3
+Status: Phase complete — ready for verification
 Last activity: 2026-10-04 — Phase 15 execution started
 
-Progress: [█████████░] 95%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -53,7 +53,7 @@ Progress: [█████████░] 95%
 | 12. Empty-batch contract | 3/3 | complete | see per-plan |
 | 13. Preview honesty | 0/? | not started | - |
 | 14. Draft→ready & justification | 0/? | not started | - |
-| 15. CLI --debug | 0/? | not started | - |
+| 15. CLI --debug | 3/3 | complete | see per-plan |
 | 16. PIPE-01 MVP UI | 0/? | not started | - |
 | 13 | 8 | - | - |
 | 12 | 3 | - | - |
@@ -81,6 +81,7 @@ Progress: [█████████░] 95%
 | Phase 14 P08 | 5min | 1 tasks | 2 files |
 | Phase 15 P01 | 10min | 3 tasks | 10 files |
 | Phase 15 P02 | 8 min | 3 tasks | 5 files |
+| Phase 15 P03 | 8min | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -130,6 +131,7 @@ v1.2 roadmap locks:
 - [Phase 15]: Metadata debug line emits only video_id; failed-stage lines emit reason/exit_code/elapsed_ms and never IngestError.message or context — D-06/D-08/T-15-04: minimize disclosure while the JSON envelope keeps the allowlisted context
 - [Phase 15]: Each mapping except-block emits stage_failed from the mapped IngestError's stage/reason/exit_code so debug lines correlate 1:1 with the JSON envelope; url/consistency failures report elapsed_ms=0 — D-10/D-11/RESEARCH Pattern 4/T-15-05: attribute failures without altering the envelope or exit code
 - [Phase 15]: RecordingDiagnostics call-spy added to tests_support/fakes.py and used for pipeline event-order plus CLI failure assertions — RED-first TDD: the use-case test double records ordered stage events without coupling to the stderr sink
+- [Phase 15]: Gap closure (15-03): assignment denylist now uses a non-word left boundary `(?<![A-Za-z0-9_])` with compound alternatives (access_token/refresh_token/client_secret/secret_key/private_key/auth) before the bare secret/token and NO trailing `\b`, so underscore-compound credentials mask to [redacted]; the control-character strip runs once before the token patterns — T-15-07/T-15-08 close the verifier's single blocker without touching the allowlist, SecretRegistry, sink, use-case, CLI flags, or stdout contract
 
 ### Pending Todos
 
@@ -153,7 +155,7 @@ Carried product deferrals to v1.3+: leaderboard, quiz, live SMTP, signup mail, W
 
 ## Session Continuity
 
-Last session: 2026-10-04T08:21:35.603Z
-Stopped at: Completed 15-02-PLAN.md
+Last session: 2026-10-04T08:43:10.976Z
+Stopped at: Completed 15-03-PLAN.md
 Resume file: None
 Next: phase verification
