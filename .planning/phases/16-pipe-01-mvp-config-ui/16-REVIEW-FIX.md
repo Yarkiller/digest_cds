@@ -27,7 +27,7 @@ previous revision of this file is untouched and still in place.
 
 ## Fixed Issues
 
-### IN-01: `_TOO_DEEP_MESSAGE` is English while sibling document-level messages are Russian
+### IN-01: `_TOO_DEEP_MESSAGE` is English while every other hand-authored document-level message is Russian
 
 **Files modified:** `backend/src/backend/infrastructure/yaml_pipeline_config_validator.py`, `tests/unit/test_pipeline_config_validator.py`, `tests/unit/test_http_pipeline_config.py`
 **Commit:** `722ee05` — `fix(16): IN-01 localize _TOO_DEEP_MESSAGE to Russian`
@@ -52,7 +52,7 @@ previous revision of this file is untouched and still in place.
    verbatim-rendering admin surface (D-05) shows consistent copy.
 3. **Verification** — reran the two-file suite: **29 passed**.
 
-### IN-02: Deep-nesting tests pin a depth coupled to the recursion limit and duplicate message literals
+### IN-02: Deep-nesting tests pin a depth coupled to the interpreter recursion limit and duplicate message literals
 
 **Files modified:** `tests/unit/test_pipeline_config_validator.py`, `tests/unit/test_http_pipeline_config.py`
 **Commit:** `c336865` — `fix(16): IN-02 derive deep-nesting depth and import message constants`

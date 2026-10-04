@@ -65,17 +65,17 @@ The accompanying tests
 `test_put_control_char_yaml_returns_400_not_500`) exercise both the adapter boundary and
 the route contract (400 + top-level `{"errors":[...]}` + `save_count == 0`).
 
-### Critical Issues
+## Critical Issues
 
 None.
 
-### Warnings
+## Warnings
 
 None.
 
-### Info
+## Info
 
-#### IN-01: `_TOO_DEEP_MESSAGE` is English while every other hand-authored document-level message is Russian
+### IN-01: `_TOO_DEEP_MESSAGE` is English while every other hand-authored document-level message is Russian
 
 **File:** `backend/src/backend/infrastructure/yaml_pipeline_config_validator.py:30-32`
 **Issue:** `_OVER_CAP_MESSAGE` (`"Документ конфига превышает допустимый размер"`),
@@ -97,7 +97,7 @@ Then update `tests/unit/test_pipeline_config_validator.py:217` and
 `tests/unit/test_http_pipeline_config.py:314-316` (and the probe note in
 `16-VERIFICATION.md:171`) to the new literal.
 
-#### IN-02: Deep-nesting tests pin a depth coupled to the interpreter recursion limit and duplicate message literals
+### IN-02: Deep-nesting tests pin a depth coupled to the interpreter recursion limit and duplicate message literals
 
 **File:** `tests/unit/test_pipeline_config_validator.py:209`, `tests/unit/test_http_pipeline_config.py:308`
 **Issue:** Both deep-nesting tests hard-code `("[" * 3000) + ("]" * 3000)` and assert the
