@@ -20,6 +20,8 @@ Stack: FastAPI, React/Vite, self-hosted Supabase + pgvector, `data-collection` +
 
 **Goal:** Admin can honestly review and promote ingested drafts, operators get secret-safe `--debug` diagnostics, and PIPE-01 ships as config + validation + UI only (no full pipeline execution).
 
+**Status:** all five phases (12–16) executed; Phase 16 verified (49/49) and marked complete 2026-10-04 — milestone ready to close.
+
 **Target features:**
 - Admin material preview shows body, provenance, counts, reader link (not title+dek only)
 - Email preview honesty (HTML / intro / summaries) + interstitial whitespace + purge leaked `test-header`
@@ -90,10 +92,13 @@ v1 is done only when **all** of the following hold:
 - ✓ Admin per-row draft → ready control clears the D-85 send gate without SQL; status-only promote leaves `published_at` untouched (ADUX-05) — Phase 14
 - ✓ Honest shortlist «Обоснование»: populated `score_factors` or the explicit D-15 empty state, never a silent fake (ADUX-06) — Phase 14
 - ✓ CLI `--debug` secret-safe operator diagnostics: opt-in stderr-only per-stage lines (timings/sizes/params/reasons/identifiers), byte-identical default stdout/JSON/exit-code path, allowlist + `SecretRegistry` + denylist redaction (DBG-01, DBG-02) — Phase 15
+- ✓ PIPE-01 MVP: YAML pipeline config + validation + admin UI (no execution) — Phase 16
+- ✓ PIPE-02: strict validate-before-save; invalid config rejected with a structured top-level 400 `{errors:[...]}` and zero writes (no silent accept) — Phase 16
+- ✓ PIPE-03: validated config persists behind a `PipelineConfigRepository` port and reads back on later sessions; SPA has no deep Supabase coupling — Phase 16
 
 ### Active
 
-- [ ] PIPE-01 MVP: YAML config + validation + admin UI (no execution)
+_(none — all mapped v1.2 requirements validated)_
 
 ### Out of Scope
 
@@ -165,6 +170,9 @@ v1 is done only when **all** of the following hold:
 | Sink stays `typer`-free; `cli.py` injects `typer.echo(..., err=True)` as the emitter | Preserves the repo invariant that only `cli.py` imports typer; debug never reaches stdout | ✓ Phase 15 |
 | Redaction = allowlist emission + exact-value `SecretRegistry` + denylist safety net (non-word boundary, compound credential names, control-chars stripped before token patterns) | DBG-02: never leak secrets/proxy credentials/cookies/tokens/bodies; mask-not-fail | ✓ Phase 15 |
 | Debug lines use the domain `Stage` vocabulary (`captions`/`metadata`/`llm`/`persist`) and metadata is `video_id`-only | 1:1 correlation with `IngestError.stage`; no URL/author leakage (D-04/D-06) | ✓ Phase 15 |
+| Pipeline config persistence sits behind a `PipelineConfigRepository` port; the Supabase adapter is wired only in `composition/live.py` | PIPE-03: the SPA reaches storage only through `pipelineConfigApi.js`; no deep Supabase coupling in UI | ✓ Phase 16 |
+| Strict validator maps parser `RecursionError` to a structured 400 (WR-02) | Deeply nested flow collections (< 20k cap) must not surface as an unhandled 500; strict validation stays honest | ✓ Phase 16 |
+| Unsaved-changes guard (WR-04/WR-05) and admin nav grouping deferred to ROADMAP backlog 999.5/999.6 | Optional UX, not v1.2 success criteria; DB is safe (no save → no write) | — Deferred → backlog |
 
 <decisions>
 ## Locked decisions (from ADRs / ingest)
@@ -205,4 +213,4 @@ After each phase transition: move validated/invalidated requirements; log decisi
 After milestone: full review of Core Value, Out of Scope, and Context against shipped reality.
 
 ---
-*Last updated: 2026-10-04 after Phase 15*
+*Last updated: 2026-10-04 after Phase 16*

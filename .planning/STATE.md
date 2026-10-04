@@ -3,44 +3,43 @@ gsd_state_version: "1.0"
 milestone: v1.2
 milestone_name: Admin UX + diagnostics + PIPE-01 MVP
 current_phase: 16
-current_phase_name: PIPE-01 MVP config UI
-status: planning
-stopped_at: Phase 14 complete, ready to plan Phase 16
-last_updated: "2026-10-04T17:02:36.138Z"
+status: completed
+stopped_at: Phase 16 complete — all phases complete
+last_updated: "2026-10-04T18:23:25.985Z"
 last_activity: 2026-10-04
-last_activity_desc: Phase 14 complete, transitioned to Phase 16
-state_head: 916a549f79ed26a621ee53c16db95f7d868ede75
+last_activity_desc: Phase 16 complete
+state_head: 20200dc7864b8802456dfda404cd3fbba9a8a45c
 progress:
   total_phases: 5
-  completed_phases: 6
+  completed_phases: 7
   total_plans: 26
   completed_plans: 26
-  percent: 86
+  percent: 100
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-10-04 — after Phase 15)
+See: .planning/PROJECT.md (updated 2026-10-04 — after Phase 16)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Phase 12 — Admin shortlist empty-batch contract
+**Current focus:** v1.2 milestone complete (Phases 12–16) — ready to close
 
 ## Current Position
 
-Phase: 16 — PIPE-01 MVP config UI
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-10-04 — Phase 14 complete, transitioned to Phase 16
+Phase: 16
+Plan: n/a — all 4 plans executed
+Status: All phases complete
+Last activity: 2026-10-04 — Phase 16 complete
 
-Progress: [█████████░] 86%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 22 (40 v1 + 23 v1.1)
+- Total plans completed: 26 (40 v1 + 23 v1.1)
 - v1.2 plans completed: 19
 - Prior milestone velocity: see MILESTONES.md / archived STATE
 
@@ -59,6 +58,7 @@ Progress: [█████████░] 86%
 | 12 | 3 | - | - |
 | 14 | 8 | - | - |
 | 15 | 3 | - | - |
+| 16 | 4 | - | - |
 **Per-Plan Metrics:**
 
 | Plan | Duration | Tasks | Files |
@@ -152,6 +152,8 @@ v1.2 roadmap locks:
 - [Phase 16]: 16-04 exposed window.__DIGEST_PIPELINE_CONFIG_HARNESS__ in Task 1 (plan scheduled it for Task 2) so Task 1 Playwright verify could pass
 - [Phase 16]: 16-03: singleton pipeline_config (id=1) with RLS enabled and no permissive policy; only the service_role composition adapter reaches it (D-08, T-16-10)
 - [Phase 16]: 16-03: migration 011 applied on shared knowledge-db VM 2026-10-04; read-only PostgREST probe returned [] (0 rows under RLS deny-by-default) — PIPE-03 live DoD satisfied
+- [Phase 16]: UAT complete 4/4 (live round-trip operator-confirmed; 7 visual backstops auto-verified at 1280/480; unsaved-guard accepted; deep-nesting fixed). WR-02 fixed in commit 758ddac — yaml.load RecursionError mapped to a structured 400 {errors:[...]} instead of a 500; verifier re-run passed 49/49.
+- [Phase 16]: Deferred to ROADMAP backlog — 999.5 admin nav grouping (option C tab-bar; top-level «Пайплайн» removed) and 999.6 unsaved-changes guard (WR-04/WR-05). Optional UX, not SC; DB safe (no save → no write).
 
 ### Pending Todos
 
@@ -161,6 +163,8 @@ None. Phase 13 plans 01–08 are complete and ready for verification.
 
 Signup confirmation mail (`g-01-3b-signup-mailer`) remains open from v1 (not this milestone).
 Nyquist VALIDATION.md drafts for phases 6–8 remain historical debt (not a v1.2 product requirement).
+[Phase 16] Backlog 999.5 (admin nav grouping) and 999.6 (WR-04/WR-05 unsaved-changes guard) — deferred optional UX.
+[Phase 16] Open advisory review warnings: WR-01 (pydantic undeclared direct dep) and WR-03 (overstated 20k-cap comment) — non-blocking.
 
 ## Deferred Items
 
@@ -175,7 +179,7 @@ Carried product deferrals to v1.3+: leaderboard, quiz, live SMTP, signup mail, W
 
 ## Session Continuity
 
-Last session: 2026-10-04T11:52:33.003Z
-Stopped at: Phase 14 complete, ready to plan Phase 16
+Last session: 2026-10-04T18:23:25.985Z
+Stopped at: Phase 16 complete — v1.2 (Phases 12–16) all phases complete, ready to close
 Resume file: None
-Next: plan Phase 16 (PIPE-01 MVP config UI)
+Next: close v1.2 milestone (`/gsd-complete-milestone v1.2`)

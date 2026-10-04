@@ -48,7 +48,7 @@ Full phase detail: [milestones/v1.1-ROADMAP.md](milestones/v1.1-ROADMAP.md)
 - [x] **Phase 13: Admin material & email preview honesty** - Preview shows body/provenance/counts/reader link; email HTML + interstitial + no test chrome (completed 2026-10-03)
 - [x] **Phase 14: Draft→ready & justification honesty** - Admin promotes draft→ready in UI; Обоснование is real or honestly empty (completed 2026-10-04)
 - [x] **Phase 15: CLI --debug diagnostics** - Richer secret-safe stage diagnostics; default progress contracts unchanged (completed 2026-10-04)
-- [ ] **Phase 16: PIPE-01 MVP config UI** - View/edit/validate/persist pipeline YAML; no run/trigger execution
+- [x] **Phase 16: PIPE-01 MVP config UI** - View/edit/validate/persist pipeline YAML; no run/trigger execution (completed 2026-10-04)
 
 ## Phase Details
 
@@ -177,7 +177,7 @@ Plans:
   3. Validated config persists and is readable on subsequent admin sessions (storage behind a port; UI has no deep Supabase coupling)
   4. No run/trigger/scheduler execution of the pipeline ships in this phase (execution stays v1.3)
 
-**Plans**: 4/4 plans executed
+**Plans**: 4/4 plans complete
 
 Plans:
 **Wave 1**
@@ -202,7 +202,7 @@ Plans:
 | 13. Admin material & email preview honesty | v1.2 | 8/8 | Complete    | 2026-10-03 |
 | 14. Draft→ready & justification honesty | v1.2 | 8/8 | Complete    | 2026-10-04 |
 | 15. CLI --debug diagnostics | v1.2 | 3/3 | Complete    | 2026-10-04 |
-| 16. PIPE-01 MVP config UI | v1.2 | 4/4 | In Progress|  |
+| 16. PIPE-01 MVP config UI | v1.2 | 4/4 | Complete    | 2026-10-04 |
 
 **Coverage:** 12/12 v1.2 requirements mapped (FIX-01, ADUX-01…06, DBG-01…02, PIPE-01…03). No orphans.
 
