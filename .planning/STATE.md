@@ -2,20 +2,20 @@
 gsd_state_version: "1.0"
 milestone: v1.2
 milestone_name: Admin UX + diagnostics + PIPE-01 MVP
-current_phase: 14
-current_phase_name: Draft→ready & justification honesty
+current_phase: 15
+current_phase_name: CLI --debug diagnostics
 status: planning
-stopped_at: Phase 13 complete, ready to plan Phase 14
-last_updated: "2026-10-03T21:06:47.015Z"
+stopped_at: Phase 14 complete, ready to plan Phase 15
+last_updated: "2026-10-04T07:14:14.457Z"
 last_activity: 2026-10-04
-last_activity_desc: Phase 13 complete, transitioned to Phase 14
-state_head: 9d3ccab968b48b96365c9c5da46c5660da5a284f
+last_activity_desc: Phase 14 complete, transitioned to Phase 15
+state_head: 0acb3b8e56076bafc840e45cabc1d6d225e4ac67
 progress:
   total_phases: 5
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 19
   completed_plans: 19
-  percent: 57
+  percent: 71
 ---
 
 # Project State
@@ -29,18 +29,18 @@ See: .planning/PROJECT.md (updated 2026-10-02 — v1.2 milestone)
 
 ## Current Position
 
-Phase: 14 — Draft→ready & justification honesty
+Phase: 15 — CLI --debug diagnostics
 Plan: Not started
 Status: Ready to plan
-Last activity: 2026-10-04 — Phase 13 complete, transitioned to Phase 14
+Last activity: 2026-10-04 — Phase 14 complete, transitioned to Phase 15
 
-Progress: [██████░░░░] 57%
+Progress: [███████░░░] 71%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 11 (40 v1 + 23 v1.1)
+- Total plans completed: 19 (40 v1 + 23 v1.1)
 - v1.2 plans completed: 0
 - Prior milestone velocity: see MILESTONES.md / archived STATE
 
@@ -57,6 +57,7 @@ Progress: [██████░░░░] 57%
 | 16. PIPE-01 MVP UI | 0/? | not started | - |
 | 13 | 8 | - | - |
 | 12 | 3 | - | - |
+| 14 | 8 | - | - |
 **Per-Plan Metrics:**
 
 | Plan | Duration | Tasks | Files |
@@ -145,6 +146,6 @@ Carried product deferrals to v1.3+: leaderboard, quiz, live SMTP, signup mail, W
 ## Session Continuity
 
 Last session: 2026-10-03T18:55:08.811Z
-Stopped at: Phase 13 complete, ready to plan Phase 14
+Stopped at: Phase 14 complete, ready to plan Phase 15
 Resume file: .planning/phases/14-draft-ready-justification-honesty/14-UAT.md
 Next: phase verification

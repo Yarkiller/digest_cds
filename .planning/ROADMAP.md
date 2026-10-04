@@ -46,7 +46,7 @@ Full phase detail: [milestones/v1.1-ROADMAP.md](milestones/v1.1-ROADMAP.md)
 
 - [x] **Phase 12: Admin shortlist empty-batch contract** - Fix Phase 10 carry unit so empty shortlist returns 200 with empty items (completed 2026-10-02)
 - [x] **Phase 13: Admin material & email preview honesty** - Preview shows body/provenance/counts/reader link; email HTML + interstitial + no test chrome (completed 2026-10-03)
-- [ ] **Phase 14: Draft→ready & justification honesty** - Admin promotes draft→ready in UI; Обоснование is real or honestly empty
+- [x] **Phase 14: Draft→ready & justification honesty** - Admin promotes draft→ready in UI; Обоснование is real or honestly empty (completed 2026-10-04)
 - [ ] **Phase 15: CLI --debug diagnostics** - Richer secret-safe stage diagnostics; default progress contracts unchanged
 - [ ] **Phase 16: PIPE-01 MVP config UI** - View/edit/validate/persist pipeline YAML; no run/trigger execution
 
@@ -118,7 +118,7 @@ Plans:
   2. After promotion, D-85 send gate no longer blocks that material solely for still being draft
   3. Shortlist «Обоснование» shows populated `score_factors` when available from pipeline config MVP, or an explicit empty/unavailable state (never a silent fake justification)
 
-**Plans**: 8/8 plans executed (5 executed + 3 gap closure)
+**Plans**: 8/8 plans complete (5 executed + 3 gap closure)
 
 Plans:
 **Wave 1**
@@ -179,7 +179,7 @@ Plans:
 | 6–11 | v1.1 | 23/23 | Complete | 2026-10-02 |
 | 12. Admin shortlist empty-batch contract | v1.2 | 3/3 | Complete    | 2026-10-02 |
 | 13. Admin material & email preview honesty | v1.2 | 8/8 | Complete    | 2026-10-03 |
-| 14. Draft→ready & justification honesty | v1.2 | 8/8 | In Progress|  |
+| 14. Draft→ready & justification honesty | v1.2 | 8/8 | Complete    | 2026-10-04 |
 | 15. CLI --debug diagnostics | v1.2 | 0/? | Not started | - |
 | 16. PIPE-01 MVP config UI | v1.2 | 0/? | Not started | - |
 

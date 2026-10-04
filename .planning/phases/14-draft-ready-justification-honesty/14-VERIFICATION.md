@@ -1,7 +1,7 @@
 ---
 phase: 14-draft-ready-justification-honesty
 verified: 2026-10-04T00:20:00Z
-status: human_needed
+status: passed
 score: 22/24 must-haves verified
 covered_files:
   - .planning/phases/14-draft-ready-justification-honesty/14-01-PLAN.md
@@ -43,6 +43,7 @@ covered_files:
   - web/src/services/adminApi.js
   - web/src/services/adminReadyMock.js
   - web/src/services/adminReadyReconcile.js
+
 covered_digest: "v2:sha256:650f9aef2368fa5fd603c6ef48a4dcd8cb3d0dca13846979f8a9e504cae7e065"
 behavior_unverified: 0
 overrides_applied: 0
@@ -62,6 +63,7 @@ re_verification:
     - "Prior truth: batch stale-refetch no-clobber reconcile (14-04 must_have #4) — no FE batch caller remains"
     - "Prior truth: quantified batch CTA «Сделать ready все одобренные черновики (N)» (14-05) — control removed by 14-07"
     - "Prior truth: sticky-footer batch-CTA geometry backstop (14-03) — batch CTA removed"
+
 human_verification:
   - test: "Live per-row promote on real Supabase data (VITE_USE_MOCKS=false): approve a draft with a non-empty body, then click per-row «Сделать ready»"
     expected: "POST /admin/materials/{id}/ready returns 200 (not 503) and the row badge flips to «готов»; re-promote is a 200 no-op (idempotent) and published_at is untouched"
