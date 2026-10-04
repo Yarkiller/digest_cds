@@ -170,6 +170,69 @@ def test_debug_stage_lines_carry_allowlisted_signals(monkeypatch) -> None:
     assert "already_saved=" in persist_line
 
 
+def test_debug_failure_prints_completed_and_failed(monkeypatch) -> None:
+    """D-10/D-11: completed stages + failed reason/exit_code/elapsed precede the JSON line."""
+    import json
+
+    from data_collection.errors.article import ArticleNetworkError
+    from typer.testing import CliRunner
+
+    from ingestion_service import cli as cli_mod
+
+    deps = _fake_deps()
+    deps.article = FakeArticleGenerator(
+        result=_article(),
+        failures={VIDEO_ID: ArticleNetworkError(VIDEO_ID)},
+    )
+    monkeypatch.setattr(cli_mod, "build_ingest_deps", lambda: deps)
+
+    result = CliRunner().invoke(cli_mod.app, [URL, "--template", "lecture", "--debug"])
+    assert result.exit_code != 0
+    assert [line for line in result.stdout.splitlines() if line.strip()] == ["✓ transcript"]
+
+    stderr_lines = result.stderr.strip().splitlines()
+    payload = json.loads(stderr_lines[-1])
+    assert payload["ok"] is False
+    assert payload["stage"] == "llm"
+
+    lines = _debug_lines(result.stderr)
+    _stage_line(lines, "captions")
+    _stage_line(lines, "metadata")
+    llm_line = _stage_line(lines, "llm")
+    assert "reason=network_error" in llm_line
+    assert "exit_code=1" in llm_line
+    assert "elapsed_ms=" in llm_line
+    assert payload["message"] not in llm_line
+
+    json_index = next(
+        index for index, line in enumerate(stderr_lines) if line.startswith("{")
+    )
+    for debug_line in lines:
+        assert stderr_lines.index(debug_line) < json_index
+
+
+def test_debug_url_failure_prints_stage_line_with_zero_elapsed(monkeypatch) -> None:
+    """RESEARCH Pattern 4: a url failure has no prior stage → elapsed_ms=0."""
+    import json
+
+    from typer.testing import CliRunner
+
+    from ingestion_service import cli as cli_mod
+
+    monkeypatch.setattr(cli_mod, "build_ingest_deps", lambda: _fake_deps())
+
+    bad_url = "https://example.com/watch?v=dQw4w9WgXcQ"
+    result = CliRunner().invoke(cli_mod.app, [bad_url, "--template", "lecture", "--debug"])
+    assert result.exit_code != 0
+
+    url_line = _stage_line(_debug_lines(result.stderr), "url")
+    assert "elapsed_ms=0" in url_line
+
+    payload = json.loads(result.stderr.strip().splitlines()[-1])
+    assert payload["ok"] is False
+    assert payload["stage"] == "url"
+
+
 def test_ingest_pipeline_retains_no_infra_imports() -> None:
     """Structural guard: the use-case stays free of clock/stream/CLI imports."""
     import ingestion_service.application.use_cases.ingest_pipeline as pipeline_mod

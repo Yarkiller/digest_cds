@@ -42,14 +42,24 @@ async def run_ingest_pipeline(
     try:
         video_id = extract_video_id(url)
     except InvalidYouTubeUrl as err:
-        raise map_url_error(err) from err
+        mapped = map_url_error(err)
+        if diagnostics is not None:
+            diagnostics.stage_failed(
+                mapped.stage, reason=mapped.reason, exit_code=mapped.exit_code
+            )
+        raise mapped from err
 
     if diagnostics is not None:
         diagnostics.stage_started("captions")
     try:
         transcript = await captions.get(video_id)
     except CaptionsError as err:
-        raise map_captions_error(err) from err
+        mapped = map_captions_error(err)
+        if diagnostics is not None:
+            diagnostics.stage_failed(
+                mapped.stage, reason=mapped.reason, exit_code=mapped.exit_code
+            )
+        raise mapped from err
     if diagnostics is not None:
         diagnostics.stage_completed(
             "captions",
@@ -68,13 +78,18 @@ async def run_ingest_pipeline(
     try:
         metadata = await metadata_provider.get(video_id)
     except MetadataError as err:
-        raise map_metadata_error(err) from err
+        mapped = map_metadata_error(err)
+        if diagnostics is not None:
+            diagnostics.stage_failed(
+                mapped.stage, reason=mapped.reason, exit_code=mapped.exit_code
+            )
+        raise mapped from err
     if diagnostics is not None:
         diagnostics.stage_completed("metadata", {"video_id": metadata.video_id})
 
     # CONSISTENCY-01: fail closed before LLM when DTO video ids diverge.
     if transcript.video_id != metadata.video_id:
-        raise IngestError(
+        consistency_error = IngestError(
             stage="consistency",
             reason="video_id_mismatch",
             message="transcript and metadata video_id mismatch",
@@ -83,6 +98,13 @@ async def run_ingest_pipeline(
                 "metadata_video_id": metadata.video_id,
             },
         )
+        if diagnostics is not None:
+            diagnostics.stage_failed(
+                consistency_error.stage,
+                reason=consistency_error.reason,
+                exit_code=consistency_error.exit_code,
+            )
+        raise consistency_error
 
     provenance = f"YouTube · {metadata.author}"
     if transcript.language != "ru":
@@ -93,7 +115,12 @@ async def run_ingest_pipeline(
     try:
         article_draft = await article.process(transcript, template)
     except ArticleError as err:
-        raise map_article_error(err) from err
+        mapped = map_article_error(err)
+        if diagnostics is not None:
+            diagnostics.stage_failed(
+                mapped.stage, reason=mapped.reason, exit_code=mapped.exit_code
+            )
+        raise mapped from err
     if diagnostics is not None:
         diagnostics.stage_completed(
             "llm",
@@ -111,7 +138,12 @@ async def run_ingest_pipeline(
     try:
         result = persist_draft(material, persist)
     except DraftPersistError as err:
-        raise map_persist_error(err) from err
+        mapped = map_persist_error(err)
+        if diagnostics is not None:
+            diagnostics.stage_failed(
+                mapped.stage, reason=mapped.reason, exit_code=mapped.exit_code
+            )
+        raise mapped from err
     if diagnostics is not None:
         diagnostics.stage_completed(
             "persist",

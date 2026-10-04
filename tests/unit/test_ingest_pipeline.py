@@ -9,6 +9,7 @@ from data_collection.dto.article_draft import ArticleDraft
 from data_collection.dto.template_kind import TemplateKind
 from data_collection.dto.transcript import Transcript
 from data_collection.dto.video_metadata import VideoMetadata
+from data_collection.errors.article import ArticleNetworkError
 from data_collection.errors.captions import CaptionsUnavailable
 from data_collection.tests_support.fakes import (
     FakeArticleGenerator,
@@ -230,3 +231,86 @@ def test_pipeline_emits_stage_events_in_order() -> None:
     assert completed["persist"]["batch_id"] == result.batch_id
     assert completed["persist"]["rank"] == result.rank
     assert completed["persist"]["already_saved"] == result.already_saved
+
+
+def test_captions_failure_records_stage_failed() -> None:
+    """D-10: a captions failure emits stage_failed with the mapped reason/exit code."""
+    diagnostics = RecordingDiagnostics()
+    captions = FakeTranscriptProvider(
+        result=_transcript(),
+        failures={VIDEO_ID: CaptionsUnavailable(VIDEO_ID)},
+    )
+
+    with pytest.raises(IngestError):
+        asyncio.run(
+            run_ingest_pipeline(
+                URL,
+                TemplateKind.LECTURE,
+                captions=captions,
+                metadata_provider=FakeVideoMetadataProvider(result=_metadata()),
+                article=FakeArticleGenerator(result=_article()),
+                persist=_persist(),
+                diagnostics=diagnostics,
+            )
+        )
+
+    assert diagnostics.calls == [
+        ("started", "captions"),
+        ("failed", "captions", "no_captions", 1),
+    ]
+
+
+def test_article_failure_records_stage_failed_after_completed_stages() -> None:
+    """D-10/D-11: completed stages precede stage_failed(llm, network_error, 1)."""
+    diagnostics = RecordingDiagnostics()
+    article = FakeArticleGenerator(
+        result=_article(),
+        failures={VIDEO_ID: ArticleNetworkError(VIDEO_ID)},
+    )
+
+    with pytest.raises(IngestError):
+        asyncio.run(
+            run_ingest_pipeline(
+                URL,
+                TemplateKind.LECTURE,
+                captions=FakeTranscriptProvider(result=_transcript()),
+                metadata_provider=FakeVideoMetadataProvider(result=_metadata()),
+                article=article,
+                persist=_persist(),
+                diagnostics=diagnostics,
+            )
+        )
+
+    projection = [(call[0], call[1]) for call in diagnostics.calls]
+    assert projection == [
+        ("started", "captions"),
+        ("completed", "captions"),
+        ("started", "metadata"),
+        ("completed", "metadata"),
+        ("started", "llm"),
+        ("failed", "llm"),
+    ]
+    assert diagnostics.calls[-1] == ("failed", "llm", "network_error", 1)
+
+
+def test_invalid_url_records_stage_failed_without_stage_start() -> None:
+    """RESEARCH Pattern 4: a url failure fires before any stage started."""
+    diagnostics = RecordingDiagnostics()
+
+    with pytest.raises(IngestError) as exc_info:
+        asyncio.run(
+            run_ingest_pipeline(
+                "https://example.com/watch?v=dQw4w9WgXcQ",
+                TemplateKind.LECTURE,
+                captions=FakeTranscriptProvider(result=_transcript()),
+                metadata_provider=FakeVideoMetadataProvider(result=_metadata()),
+                article=FakeArticleGenerator(result=_article()),
+                persist=_persist(),
+                diagnostics=diagnostics,
+            )
+        )
+
+    assert exc_info.value.stage == "url"
+    assert diagnostics.calls == [
+        ("failed", "url", exc_info.value.reason, exc_info.value.exit_code),
+    ]
