@@ -10,6 +10,7 @@ from backend.infrastructure.stub_mailer import resolve_mailer
 from backend.infrastructure.yaml_pipeline_config_validator import YamlPipelineConfigValidator
 from supabase_integration import (
     SupabaseDigestPublisher,
+    SupabaseHealthProbe,
     SupabaseIssueRepository,
     SupabaseKnowledgeChunkRepository,
     SupabaseMaterialRepository,
@@ -64,4 +65,5 @@ def build_live_container(settings: Settings) -> AppContainer:
         mailer=resolve_mailer(settings.mailer),
         # Atomic claim+publish via claim_and_publish_digest RPC (CR-01/WR-01, migration 005)
         publisher=SupabaseDigestPublisher(admin_client),
+        health_probes=(SupabaseHealthProbe(admin_client),),
     )

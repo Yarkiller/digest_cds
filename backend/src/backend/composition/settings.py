@@ -21,6 +21,8 @@ class Settings:
     supabase_jwt_issuer: str = ""
     # memory (default, unit tests) | live (Supabase adapters via composition/live.py)
     app_container: str = "memory"
+    # Backend structured-log level: debug | info | warning | error (LOG_LEVEL).
+    log_level: str = "info"
     # Local filesystem root for authenticated .ipynb FileResponse (RAZB-03 / A5)
     notebook_root: str = ""
     # stub (default, D-87) | smtp (fail-fast at resolve — not implemented)
@@ -43,6 +45,7 @@ class Settings:
         if mode not in ("memory", "live"):
             mode = "memory"
         mailer = (env.get("MAILER") or "stub").strip().lower() or "stub"
+        log_level = (env.get("LOG_LEVEL") or "info").strip().lower() or "info"
         default_site = "http://127.0.0.1:5173"
         site_url = (
             (env.get("SITE_URL") or "").strip()
@@ -58,6 +61,7 @@ class Settings:
             supabase_jwks_url=env.get("SUPABASE_JWKS_URL", ""),
             supabase_jwt_issuer=env.get("SUPABASE_JWT_ISSUER", ""),
             app_container=mode,
+            log_level=log_level,
             notebook_root=env.get("NOTEBOOK_ROOT", ""),
             mailer=mailer,
             site_url=site_url,

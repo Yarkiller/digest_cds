@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 from backend.application.ports.digest_publisher import DigestPublication
+from backend.application.ports.health_probe import ComponentHealth
 from backend.domain.current_user import CurrentUser
 from backend.domain.errors import (
     AlreadySentError,
@@ -275,7 +276,7 @@ class InMemoryShortlistRepository:
             raise AlreadySentError(batch_id)
         # Persist overlaid statuses so claim+publish pool matches live materials join (ADUX-05).
         overlaid = self._overlay_batch(self._batch)
-        assert overlaid is not None
+        assert overlaid is not None  # nosec B101 — test-support invariant, not production code
         self._batch = ShortlistBatch(
             id=overlaid.id,
             week_start=overlaid.week_start,
@@ -658,3 +659,15 @@ class InMemoryPipelineConfigValidator:
 
     def validate(self, yaml_text: str) -> None:
         self.calls.append(yaml_text)
+
+
+class InMemoryHealthProbe:
+    """Configurable probe for the in-memory container (offline readiness tests)."""
+
+    def __init__(self, name: str = "database", healthy: bool = True, detail: str = "") -> None:
+        self.name = name
+        self._healthy = healthy
+        self._detail = detail
+
+    def check(self) -> ComponentHealth:
+        return ComponentHealth(name=self.name, healthy=self._healthy, detail=self._detail)

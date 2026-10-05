@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from backend.application.ports.digest_publisher import DigestPublisher
+from backend.application.ports.health_probe import HealthProbe
 from backend.application.ports.issue_repository import IssueRepository
 from backend.application.ports.knowledge_chunk_repository import KnowledgeChunkRepository
 from backend.application.ports.mailer import Mailer
@@ -34,6 +35,7 @@ from backend.infrastructure.stub_mailer import StubMailer
 from backend.infrastructure.yaml_pipeline_config_validator import YamlPipelineConfigValidator
 from backend.tests_support.in_memory import (
     InMemoryDigestPublisher,
+    InMemoryHealthProbe,
     InMemoryIssueRepository,
     InMemoryKnowledgeChunkRepository,
     InMemoryMaterialRepository,
@@ -66,6 +68,8 @@ class AppContainer:
     # still constructs; build_in_memory_container wires the real adapter.
     pipeline_config: PipelineConfigRepository | None = None
     pipeline_config_validator: PipelineConfigValidator | None = None
+    # Readiness probes for GET /health/ready (database, external services). Empty = ready.
+    health_probes: tuple[HealthProbe, ...] = ()
 
     def publish(self, material_id: int) -> Material:
         return publish_material(self.materials, material_id)
@@ -133,4 +137,5 @@ def build_in_memory_container(
     )
     container.pipeline_config = InMemoryPipelineConfigRepository()
     container.pipeline_config_validator = YamlPipelineConfigValidator()
+    container.health_probes = (InMemoryHealthProbe(name="database"),)
     return container
