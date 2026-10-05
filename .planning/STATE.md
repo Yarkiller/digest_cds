@@ -24,7 +24,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-04 — after Phase 16)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Phase 16 — PIPE-01 MVP config UI
+**Current focus:** v1.2 milestone complete (Phases 12–16) — ready to close
 
 ## Current Position
 
@@ -164,7 +164,7 @@ None. Phase 13 plans 01–08 are complete and ready for verification.
 Signup confirmation mail (`g-01-3b-signup-mailer`) remains open from v1 (not this milestone).
 Nyquist VALIDATION.md drafts for phases 6–8 remain historical debt (not a v1.2 product requirement).
 [Phase 16] Backlog 999.5 (admin nav grouping) and 999.6 (WR-04/WR-05 unsaved-changes guard) — deferred optional UX.
-[Phase 16] Open advisory review warnings: WR-01 (pydantic undeclared direct dep) and WR-03 (overstated 20k-cap comment) — non-blocking.
+[Phase 16] Open advisory review warnings (16-REVIEW.md, post stale re-verification): WR-01 (valid YAML merge-key `<<` rejected with a cryptic internal-tag message in `_StrictSafeLoader.construct_mapping` — fails closed, still a structured 400) plus IN-01/IN-02/IN-03 — non-blocking, no must-have impact; verifier passed 49/49.
 
 ## Deferred Items
 
@@ -179,7 +179,7 @@ Carried product deferrals to v1.3+: leaderboard, quiz, live SMTP, signup mail, W
 
 ## Session Continuity
 
-Last session: 2026-10-04T18:23:25.985Z
-Stopped at: Phase 16 complete — all phases complete
+Last session: 2026-10-05T08:12:10.595Z
+Stopped at: Phase 16 complete — verification refreshed via stale re-verification; all phases complete
 Resume file: None
 Next: close v1.2 milestone (`/gsd-complete-milestone v1.2`)
