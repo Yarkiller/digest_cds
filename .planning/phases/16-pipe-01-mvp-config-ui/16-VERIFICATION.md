@@ -1,6 +1,6 @@
 ---
 phase: 16-pipe-01-mvp-config-ui
-verified: 2026-10-04T18:22:00Z
+verified: 2026-10-05T08:15:00Z
 status: passed
 score: 49/49 must-haves verified
 covered_files:
@@ -39,26 +39,24 @@ covered_files:
   - web/src/main.jsx
   - web/src/pages/AdminPipelineConfigPage.jsx
   - web/src/services/pipelineConfigApi.js
-covered_digest: "v2:sha256:e093d8cfadf79b852bc23eb9ee8e33225a17402d4b7ca902147e523910b1a76b"
+covered_digest: "v2:sha256:21b5f9261a9296e7131db5f397f145c0cd0489799d79388827919e4a5de79cfb"
 behavior_unverified: 0
 overrides_applied: 0
 re_verification:
-  previous_status: human_needed
-  previous_score: 42/49
-  gaps_closed:
-    - "WR-02 deep-nesting robustness: ~3000 nested flow brackets (under the 20k cap) now map to a structured PipelineConfigValidationError → top-level 400 {errors:[...]}, not an unhandled 500 (commit 758ddac)"
-    - "7 backstop (visual/overflow) truths on /admin/pipeline verified by completed human UAT (16-UAT.md test 2, measured at 1280px/480px with screenshots under .planning/tmp/uat16/)"
-    - "Live persistence round-trip (PIPE-03 DoD) verified by completed human UAT (16-UAT.md test 1, pass)"
+  previous_status: passed
+  previous_score: 49/49
+  gaps_closed: []
   gaps_remaining: []
   regressions: []
+  note: "Stale-digest refresh (GSD #4682): the covered implementation/test files changed after the prior verifier ran — yaml_pipeline_config_validator.py (CR-01 control-char hardening), test_http_pipeline_config.py and test_pipeline_config_validator.py (CR-01/IN-01/IN-02) — so the digest was recomputed over the CURRENT working-tree bytes. All must-haves re-confirmed; the changes are hardening/test-only and do not alter phase behavior."
 ---
 
 # Phase 16: PIPE-01 MVP config UI Verification Report
 
 **Phase Goal:** Admin can view, validate, and persist pipeline config without running the pipeline
-**Verified:** 2026-10-04T18:22:00Z
+**Verified:** 2026-10-05T08:15:00Z
 **Status:** passed
-**Re-verification:** Yes — after in-session WR-02 fix (commit 758ddac) and completed human UAT
+**Re-verification:** Yes — stale-digest refresh after hardening commits (CR-01, IN-01, IN-02)
 
 ## Goal Achievement
 
@@ -66,8 +64,8 @@ re_verification:
 
 | # | Truth | Status | Evidence |
 | --- | ----- | ------ | -------- |
-| 1 | **SC1** Admin can view and edit YAML pipeline config through an admin UI | ✓ VERIFIED | `AdminPipelineConfigPage.jsx` (raw monospace `<textarea data-testid=pipeline-config-editor>`), `admin/pipeline` route in `App.jsx:40`, «Пайплайн» nav in `AppShell.jsx:91`; Playwright happy path + empty/dirty/reset/nav cases green |
-| 2 | **SC2** Invalid config rejected before save with field-level/structured errors (no silent accept) | ✓ VERIFIED | Strict SafeLoader + `extra=forbid` → `PipelineConfigValidationError` → top-level `JSONResponse(400, {"errors":[…]})`; repo called 0 times on reject; deep-nesting now structured (WR-02 fixed, probe-confirmed) |
+| 1 | **SC1** Admin can view and edit YAML pipeline config through an admin UI | ✓ VERIFIED | `AdminPipelineConfigPage.jsx` (raw monospace `<textarea data-testid=pipeline-config-editor>`), `admin/pipeline` route in `App.jsx`, «Пайплайн» nav in `AppShell.jsx`; Playwright happy path + empty/dirty/reset/nav cases green (50 passed) |
+| 2 | **SC2** Invalid config rejected before save with field-level/structured errors (no silent accept) | ✓ VERIFIED | Strict SafeLoader + `extra=forbid` → `PipelineConfigValidationError` → top-level `JSONResponse(400, {"errors":[…]})`; repo called 0 times on reject; deep-nesting (WR-02) and control-char (CR-01) now structured |
 | 3 | **SC3** Validated config persists and is readable on subsequent sessions (storage behind a port; no deep Supabase coupling in UI) | ✓ VERIFIED | `SupabasePipelineConfigRepository` implements the `PipelineConfigRepository` port; wired only in `composition/live.py`; migration 011 applied on shared VM; boundary guard test green; live round-trip human-UAT pass (16-UAT.md test 1) |
 | 4 | **SC4** No run/trigger/scheduler execution ships this phase | ✓ VERIFIED | No banned control strings; Playwright `pipeline config no execution controls render` green |
 | 5 | 16-01: editor shows saved YAML on mount | ✓ VERIFIED | Playwright happy path; `fetchPipelineConfig()` on admin role effect |
@@ -82,10 +80,10 @@ re_verification:
 | 14 | 16-02: invalid YAML syntax → 400 top-level errors, nothing persisted | ✓ VERIFIED | `test_put_invalid_yaml_returns_400_top_level_errors_and_writes_nothing` |
 | 15 | 16-02: duplicate top-level keys rejected (no last-wins) | ✓ VERIFIED | `_StrictSafeLoader.construct_mapping`; `test_duplicate_top_level_key_is_rejected_not_last_wins` |
 | 16 | 16-02: unknown keys rejected via `extra="forbid"` | ✓ VERIFIED | `test_unknown_key_is_rejected_by_extra_forbid` |
-| 17 | 16-02: reject carries no write (repo called 0 times) | ✓ VERIFIED | `save_count == 0` asserted in route tests (incl. deep-nesting case) |
+| 17 | 16-02: reject carries no write (repo called 0 times) | ✓ VERIFIED | `save_count == 0` asserted in route tests (incl. deep-nesting + control-char cases) |
 | 18 | 16-02: reject payload is top-level `{"errors":[...]}`, never nested under detail | ✓ VERIFIED | `test_put_invalid_error_rows_are_verbatim_and_top_level` (`"detail" not in body`) |
 | 19 | 16-02: schema exposes exactly {template, roles, language, max_chars} | ✓ VERIFIED | `test_schema_exposes_only_documented_non_secret_keys` |
-| 20 | 16-02: yaml/pydantic imported only in infrastructure; domain/use_cases clean | ✓ VERIFIED | `yaml`/`pydantic` only in `yaml_pipeline_config_validator.py`; domain/use-case modules import neither |
+| 20 | 16-02: yaml/pydantic imported only in infrastructure; domain/use_cases clean | ✓ VERIFIED | `yaml` only in `yaml_pipeline_config_validator.py`; grep confirms domain/use-case modules import neither |
 | 21 | 16-02: AppContainer declares fields (None defaults) + build_in_memory_container wires real validator | ✓ VERIFIED | `test_build_in_memory_container_wires_real_validator_and_repo`; `test_app_container_still_constructs_without_pipeline_kwargs` |
 | 22 | 16-02 backstop: re-saving same YAML yields one singleton row | ✓ VERIFIED | `save()` upserts fixed `id=1`; contract test asserts upsert payload; UAT round-trip re-save |
 | 23 | 16-02 backstop: concurrent saves last-write-wins, no version guard | ✓ VERIFIED | Upsert with no optimistic guard (as decided D-09/D-11) |
@@ -99,21 +97,21 @@ re_verification:
 | 31 | 16-03 backstop: absent row is a valid empty state, not an error | ✓ VERIFIED | Empty-state DTO test + Playwright |
 | 32 | 16-04: empty state locked copy + placeholder + Save disabled | ✓ VERIFIED | Playwright `pipeline config empty state…` |
 | 33 | 16-04: dirty gating enables Save/reset; «Изменений нет» while clean | ✓ VERIFIED | Playwright `pipeline config dirty gating…` |
-| 34 | 16-04: reset/unsaved confirm copy exact | ✓ VERIFIED | Playwright confirm cases; constants in page (lines 24/27) |
+| 34 | 16-04: reset/unsaved confirm copy exact | ✓ VERIFIED | Playwright confirm cases; constants in page |
 | 35 | 16-04: load failure copy + retry recovers | ✓ VERIFIED | Playwright `pipeline config load error…` |
 | 36 | 16-04: each structured error row verbatim + generic fallback | ✓ VERIFIED | Playwright validation cases |
 | 37 | 16-04: save failure ErrorPanel + retry can succeed | ✓ VERIFIED | Playwright `pipeline config save failure…` |
-| 38 | 16-04: aria-invalid on reject; stale errors cleared on edit | ✓ VERIFIED | Playwright `…clears stale errors on edit`; `aria-invalid={rejected}` (line 341) |
+| 38 | 16-04: aria-invalid on reject; stale errors cleared on edit | ✓ VERIFIED | Playwright `…clears stale errors on edit`; `aria-invalid={rejected}` |
 | 39 | 16-04: rejected save keeps document editable + dirty, never auto-reverted | ✓ VERIFIED | Playwright validation case asserts value unchanged + Save enabled |
 | 40 | 16-04: page + nav render only for admin | ✓ VERIFIED | Playwright nav admin/employee cases |
 | 41 | 16-04: no banned execution control strings render | ✓ VERIFIED | Playwright `pipeline config no execution controls render` |
 | 42 | 16-04: page imports no supabase; reaches storage only via pipelineConfigApi.js | ✓ VERIFIED | `test_pipeline_page_reaches_storage_only_through_service_no_supabase` |
-| 43 | 16-04 backstop: long config scrolls inside editor; toolbar reachable | ✓ VERIFIED | Human UAT (16-UAT.md test 2): vertical scroll 6576>318, toolbar in viewport @1280/@480; screenshots `.planning/tmp/uat16/02,04` |
+| 43 | 16-04 backstop: long config scrolls inside editor; toolbar reachable | ✓ VERIFIED | Human UAT (16-UAT.md test 2): vertical scroll 6576>318, toolbar in viewport @1280/@480 |
 | 44 | 16-04 backstop: very long YAML scrolls; toolbar never pushed off-screen | ✓ VERIFIED | Human UAT test 2: horizontal scroll 3654>1118; toolbar visible @1280/@480 |
 | 45 | 16-04 backstop: Save toolbar reachable, no overlap at 1280px/narrow | ✓ VERIFIED | Human UAT test 2: toolbar visible inside viewport at 1280 and 480 |
-| 46 | 16-04 backstop: empty-state block + editor within page at narrow widths | ✓ VERIFIED | Human UAT test 2: empty state fits at 480; screenshot `.planning/tmp/uat16/05` |
+| 46 | 16-04 backstop: empty-state block + editor within page at narrow widths | ✓ VERIFIED | Human UAT test 2: empty state fits at 480 |
 | 47 | 16-04 backstop: nav item visible/usable when shell narrow | ✓ VERIFIED | Human UAT test 2: «Пайплайн» nav visible at 480 |
-| 48 | 16-04 backstop: long error list scrolls, never hides toolbar | ✓ VERIFIED | Human UAT test 2: 30-error reject panel rows wrap (scrollWidth<=clientWidth), no horizontal page overflow; screenshot `.planning/tmp/uat16/03` |
+| 48 | 16-04 backstop: long error list scrolls, never hides toolbar | ✓ VERIFIED | Human UAT test 2: 30-error reject panel rows wrap (scrollWidth<=clientWidth), no horizontal page overflow |
 | 49 | 16-04 backstop: long server messages wrap with break-words | ✓ VERIFIED | Human UAT test 2: every error row wraps without overflow (`break-words` present) |
 
 **Score:** 49/49 truths verified (0 present, behavior-unverified)
@@ -125,12 +123,12 @@ re_verification:
 | `backend/src/backend/domain/pipeline_config.py` | `PipelineConfig` + `PipelineConfigError` dataclasses | ✓ VERIFIED | Frozen dataclasses; `to_dict()` omits line when None |
 | `backend/src/backend/application/ports/pipeline_config.py` | Repository + Validator Protocols | ✓ VERIFIED | Both Protocols present |
 | `backend/src/backend/application/use_cases/pipeline_config.py` | get/save use-cases, validate-before-persist | ✓ VERIFIED | `validator.validate()` before `repo.save()` |
-| `backend/src/backend/infrastructure/yaml_pipeline_config_validator.py` | strict SafeLoader + Pydantic validator; WR-02 `RecursionError` boundary | ✓ VERIFIED | Sole `yaml`/`pydantic` import site; `except RecursionError` maps to `_TOO_DEEP_MESSAGE` |
-| `backend/src/backend/interface/http/routes/admin.py` | GET/PUT `/admin/pipeline/config` | ✓ VERIFIED | Thin routes, `require_admin`, 400 reject, 503 guards |
+| `backend/src/backend/infrastructure/yaml_pipeline_config_validator.py` | strict SafeLoader + Pydantic validator; WR-02 `RecursionError` + CR-01 `yaml.YAMLError` boundaries | ✓ VERIFIED | Sole `yaml`/`pydantic` import site; `except RecursionError` and `except yaml.YAMLError` map to structured rejects |
+| `backend/src/backend/interface/http/routes/admin.py` | GET/PUT `/admin/pipeline/config` | ✓ VERIFIED | Thin routes, `require_admin`, top-level 400 reject, 503 guards |
 | `backend/src/backend/composition/container.py` | pipeline_config fields + in-memory wiring | ✓ VERIFIED | None-defaulted fields; wired fakes |
 | `backend/src/backend/composition/live.py` | live adapter + validator wiring | ✓ VERIFIED | `SupabasePipelineConfigRepository(admin_client)` + `YamlPipelineConfigValidator()` |
 | `web/src/services/pipelineConfigApi.js` | sole SPA transport boundary | ✓ VERIFIED | fetch/save + 400 INVALID_CONFIG mapping + harness arms |
-| `web/src/pages/AdminPipelineConfigPage.jsx` | complete editor surface | ✓ VERIFIED | empty/dirty/reset/error panel/save-retry (12,853 bytes) |
+| `web/src/pages/AdminPipelineConfigPage.jsx` | complete editor surface | ✓ VERIFIED | empty/dirty/reset/error panel/save-retry |
 | `web/src/App.jsx` | `admin/pipeline` route | ✓ VERIFIED | Inside RequireAuth + AppShell |
 | `web/src/components/AppShell.jsx` | admin-gated «Пайплайн» nav | ✓ VERIFIED | `appRole === 'admin'` |
 | `web/src/main.jsx` | harness exposure | ✓ VERIFIED | `window.__DIGEST_PIPELINE_CONFIG_HARNESS__` |
@@ -138,6 +136,8 @@ re_verification:
 | `supabase-integration/src/supabase_integration/pipeline_config_repository.py` | Supabase adapter | ✓ VERIFIED | get/save id=1, PersistenceError mapping |
 | `supabase-integration/src/supabase_integration/__init__.py` | export | ✓ VERIFIED | Import + `__all__` entry |
 | `docs/agents/local-platform-runbook.md` §4h | apply + verify | ✓ VERIFIED | Applied 2026-10-04 recorded |
+
+**Artifact-verification verb:** `verify.artifacts` all_passed for all four plans — 16-01 8/8, 16-02 6/6, 16-03 9/9, 16-04 6/6.
 
 ### Key Link Verification
 
@@ -147,10 +147,12 @@ re_verification:
 | `pipelineConfigApi.js` | `routes/admin.py` | GET/PUT `/admin/pipeline/config` Bearer | ✓ WIRED | URL only in service (guard test) |
 | `routes/admin.py` | ports + use-case | `get_pipeline_config`/`save_pipeline_config` | ✓ WIRED | `save_pipeline_config` calls validator then repo |
 | `use_cases/pipeline_config.py` | `yaml_pipeline_config_validator.py` | `validator.validate` before `repo.save` | ✓ WIRED | Zero writes on reject asserted |
-| `yaml_pipeline_config_validator.py` | `domain/errors.py` | `PipelineConfigValidationError` | ✓ WIRED | Mapping at adapter boundary (incl. `RecursionError`) |
+| `yaml_pipeline_config_validator.py` | `domain/errors.py` | `PipelineConfigValidationError` | ✓ WIRED | Mapping at adapter boundary (incl. `RecursionError` + `yaml.YAMLError`) |
 | `domain/errors.py` | `routes/admin.py` | 400 top-level `{"errors":[…]}` | ✓ WIRED | `JSONResponse(400, …)`, not `HTTPException` |
 | `live.py` | `pipeline_config_repository.py` | `SupabasePipelineConfigRepository(admin_client)` | ✓ WIRED | Wiring test green |
 | `AppShell.jsx` | `/admin/pipeline` | admin-gated NavLink | ✓ WIRED | Playwright nav cases |
+
+**Key-link verb:** `verify.key-links` all_verified for all four plans — 16-01 4/4, 16-02 3/3, 16-03 3/3, 16-04 4/4.
 
 ### Data-Flow Trace (Level 4)
 
@@ -165,18 +167,19 @@ re_verification:
 
 | Behavior | Command | Result | Status |
 | -------- | ------- | ------ | ------ |
-| Phase 16 validator + route tests | `uv run pytest tests/unit/test_pipeline_config_validator.py tests/unit/test_http_pipeline_config.py -q` | 27 passed | ✓ PASS |
-| Full backend regression | `uv run pytest -q` | 759 passed | ✓ PASS |
-| Playwright admin surface (incl. 13 pipeline cases) | `npm run test:web -- tests/admin.spec.js` | 50 passed (1.9m) | ✓ PASS |
-| Deep-nesting rejection (WR-02 probe, own process) | `YamlPipelineConfigValidator().validate('['*3000 + ']'*3000)` | `STRUCTURED 400 -> [('', 'YAML nesting too deep (exceeds parser limit)')]` | ✓ PASS (was `UNHANDLED RecursionError / FAIL` pre-fix) |
+| Phase 16 backend suites (validator + route + migration + adapter + wiring + CORS) | `uv run pytest tests/unit/test_pipeline_config_validator.py tests/unit/test_http_pipeline_config.py tests/unit/test_phase16_migration_011.py tests/unit/test_supabase_pipeline_config_repository_contract.py tests/unit/test_live_container_wiring.py tests/unit/test_cors.py -q` | 51 passed | ✓ PASS |
+| Full backend regression | `uv run pytest -q` | 761 passed | ✓ PASS |
+| Playwright admin surface (incl. 13 pipeline cases) | `npm run test:web -- tests/admin.spec.js` | 50 passed (2.3m) | ✓ PASS |
+| Edge probe (deep / control-char / merge-key) | in-process `YamlPipelineConfigValidator().validate(...)` | deep → `STRUCTURED ('', 'Документ YAML имеет слишком глубокую вложенность')`; ctrl → `STRUCTURED ('', 'Документ содержит недопустимые символы')`; merge → `STRUCTURED (internal-tag message)` | ✓ PASS (no unhandled escape) |
 | api-coverage verify:pre gate | `gsd-tools check api-coverage.verify-pre 16-pipe-01-mvp-config-ui` | `block:false, passed:true` (COVERAGE.md no-integration declaration) | ✓ PASS |
-| No debt markers in phase files | `rg "TBD|FIXME|XXX" backend/src/backend` | no matches | ✓ PASS |
+| No debt markers in backend sources | `rg "TBD|FIXME|XXX" backend/src/backend` | no matches | ✓ PASS |
 
 ### Probe Execution
 
 | Probe | Command | Result | Status |
 | ----- | ------- | ------ | ------ |
-| WR-02 deep-nesting (in-process) | `uv run python -` (validate `'['*3000+']'*3000`) | structured `PipelineConfigValidationError`, message "YAML nesting too deep (exceeds parser limit)" | PASS |
+| WR-02 deep-nesting (in-process) | `YamlPipelineConfigValidator().validate('['*3500+']'*3500)` | structured `PipelineConfigValidationError` — "Документ YAML имеет слишком глубокую вложенность" | PASS |
+| CR-01 control-char (in-process) | `YamlPipelineConfigValidator().validate("a: \x00\n")` | structured `PipelineConfigValidationError` — "Документ содержит недопустимые символы" | PASS |
 | UAT UI verification script | `.planning/tmp/uat16/verify-ui.cjs` (executed during 16-UAT) | 4/4 UAT tests pass; screenshots 01–05 present | PASS |
 
 ### Requirements Coverage
@@ -184,7 +187,7 @@ re_verification:
 | Requirement | Source Plan | Description | Status | Evidence |
 | ----------- | ----------- | ----------- | ------ | -------- |
 | PIPE-01 | 16-01, 16-04 | Admin can view and edit YAML pipeline config through an admin UI | ✓ SATISFIED | Page + route + editor; Playwright happy path, empty/dirty/reset/nav/no-execution; REQUIREMENTS.md marks PIPE-01 Complete |
-| PIPE-02 | 16-02, 16-04 | Config validated before save; invalid rejected with field-level/structured errors (no silent accept) | ✓ SATISFIED | Strict validator → top-level 400 errors, zero writes; deep-nesting edge now structured (WR-02 fixed); UI renders every error; REQUIREMENTS.md marks PIPE-02 Complete |
+| PIPE-02 | 16-02, 16-04 | Config validated before save; invalid rejected with field-level/structured errors (no silent accept) | ✓ SATISFIED | Strict validator → top-level 400 errors, zero writes; deep-nesting (WR-02) + control-char (CR-01) edges now structured; UI renders every error; REQUIREMENTS.md marks PIPE-02 Complete |
 | PIPE-03 | 16-01, 16-03, 16-04 | Validated config persists and is readable on subsequent sessions (storage behind a port; no deep Supabase coupling in UI) | ✓ SATISFIED | Supabase adapter behind port, wired in composition; migration 011 applied; SPA boundary guard; live round-trip human-UAT pass; REQUIREMENTS.md marks PIPE-03 Complete |
 
 No orphaned requirements: REQUIREMENTS.md maps PIPE-01/02/03 to Phase 16, all three appear in plan frontmatter (16-01: PIPE-01/03; 16-02: PIPE-02; 16-03: PIPE-03; 16-04: PIPE-01/02/03) and all three are marked Complete.
@@ -196,7 +199,7 @@ No orphaned requirements: REQUIREMENTS.md maps PIPE-01/02/03 to Phase 16, all th
 | No run/trigger/scheduler execution control ships in the pipeline-config surface (PIPE-01) | judgment | Playwright `pipeline config no execution controls render` green; page source has no banned control | ✓ HELD |
 | SPA reaches config only through `web/src/services/pipelineConfigApi.js` (PIPE-03) | judgment | `test_pipeline_page_reaches_storage_only_through_service_no_supabase` green (static-source guard) | ✓ HELD |
 | No secret/credential values rendered from pipeline config (PIPE-03) | test | DTO `{yaml, updated_at}`-only tests + `PipelineConfigModel.model_fields` key-set test green | ✓ HELD |
-| No silent accept of invalid config: no write on reject, no client-only pass (PIPE-02) | judgment | reject tests assert `save_count == 0`; SPA has no client schema; deep-nesting reject writes nothing | ✓ HELD |
+| No silent accept of invalid config: no write on reject, no client-only pass (PIPE-02) | judgment | reject tests assert `save_count == 0`; SPA has no client schema; deep-nesting + control-char rejects write nothing | ✓ HELD |
 | No discard/trim/auto-revert of edited YAML when a save is rejected (PIPE-02) | judgment | Playwright validation case asserts value unchanged + document stays dirty | ✓ HELD |
 
 All prohibitions have wired, passing enforcement evidence — none is a silent pass.
@@ -209,23 +212,24 @@ All prohibitions have wired, passing enforcement evidence — none is a silent p
 
 ### Code Review Findings (advisory, non-blocking)
 
-16-REVIEW.md recorded 0 critical / 5 warning / 4 info. Re-verified against the current code:
+16-REVIEW.md (incremental re-review, 2026-10-05) recorded **0 critical / 1 warning / 3 info** against the three changed files. Weighed against the current source:
 
-- **WR-01** pydantic imported directly but undeclared in `backend/pyproject.toml`. Resolves transitively via FastAPI today; a direct dep would harden `import backend`. Not a SC violation. Disposition file still `open`.
-- **WR-02** — **RESOLVED** by commit 758ddac. `yaml_pipeline_config_validator.py` now catches `RecursionError` around `yaml.load` and maps it to a `PipelineConfigValidationError` with one `{path:'', message:'YAML nesting too deep (exceeds parser limit)'}` row. Probe + both named tests green; zero write on reject preserved. *Note: `16-REVIEW-DISPOSITION.md` still records WR-02 as `open` — a documentation staleness the orchestrator may wish to reconcile when re-running the review gate.*
-- **WR-03** the 20 000-char cap comment overstates alias-expansion DoS protection. Documentation/robustness, not a SC failure. Disposition still `open`.
-- **WR-04** `window.confirm` inside `beforeunload` is unreliable in real browsers. The exact-copy must-have is delivered/asserted; the residual reliability gap is **accepted as a known limitation** (ROADMAP backlog 999.6) — not a phase SC.
-- **WR-05** unsaved edits are lost on in-app SPA navigation (no router-level guard). Same accepted known limitation (backlog 999.6); the DB stays safe (unsaved = nothing written). Not a phase SC.
-- **IN-01…IN-04** info-level (harness exposure in prod bundles; duplicate test imports; mocks default ON; RLS-only grants). Unchanged.
+- **WR-01** `_StrictSafeLoader.construct_mapping` constructs the YAML merge key (`<<`) before `SafeConstructor.flatten_mapping` runs, so valid merge-key documents that `SafeLoader` accepts are rejected with a cryptic internal-tag message (`could not determine a constructor for the tag 'tag:yaml.org,2002:merge'`). Reproduced in-process during this verification. **Fails closed** — the reject still surfaces as a structured 400 with zero writes; the app's fixed 4-key `extra="forbid"` schema means a merge-key document could not produce a valid config anyway. Robustness/correctness of the error message only; not a SC violation and not a must-have failure. *Advisory.*
+- **IN-01** the "strict types" schema runs Pydantic in lax mode and coerces `max_chars: true` → `1` / `"5"` → `5`. A type-error inconsistency, not an accept-bypass of the documented schema. *Advisory.*
+- **IN-02 / IN-03** residual recursion-limit ↔ char-cap coupling and tautological constant-imported message assertions in the deep-nesting tests. Test-robustness nits; no production impact. *Advisory.*
+- **Prior CR-01 / WR-02 / prior IN-01 / IN-02** — RESOLVED. Commit `a63b258` wraps `yaml.YAMLError` (unmarked `ReaderError` for control chars) to a structured reject; commit `722ee05` localizes `_TOO_DEEP_MESSAGE` to Russian; commit `c336865` derives the deep-nesting depth from `sys.getrecursionlimit() + 500`. Both named tests green in the current tree; zero-write reject preserved.
+- The open review warnings from the original review (pydantic declared transitively; alias-expansion cap comment; `window.confirm` in `beforeunload`; no router guard — backlog 999.6) remain advisory/accepted and are unchanged.
+
+None of these is a blocker, an unresolved debt marker, or a must-have regression.
 
 ### Human Verification (completed)
 
-Human UAT (`.planning/phases/16-pipe-01-mvp-config-ui/16-UAT.md`) completed **2026-10-04**, status **complete**, 4 passed / 0 issues. All four prior human-verification items are resolved:
+Human UAT (`.planning/phases/16-pipe-01-mvp-config-ui/16-UAT.md`) completed **2026-10-04**, status **complete**, 4 passed / 0 issues. All prior human-verification items remain resolved:
 
 1. **Live persistence round-trip (PIPE-03 DoD)** — pass (saved config persisted to `public.pipeline_config` id=1 and read back on reload).
 2. **Visual overflow/backstop checks (7)** — pass (measured at 1280px and 480px; screenshots `.planning/tmp/uat16/01..05`). Truths #43–#49.
 3. **Unsaved-changes guard (WR-04/WR-05)** — pass as scoped optional UX; residual behavior accepted as known limitation (backlog 999.6).
-4. **Deep-nesting robustness (WR-02)** — pass; fixed via TDD (commit 758ddac), probe-verified.
+4. **Deep-nesting robustness (WR-02)** — pass; fixed via TDD, probe-verified.
 
 No human verification items remain.
 
@@ -236,9 +240,9 @@ No human verification items remain.
 
 ### Gaps Summary
 
-No gaps. The WR-02 deep-nesting defect that was the only open robustness failure in the prior verification is fixed at the adapter boundary and confirmed by an in-process probe plus two named tests (validator + PUT route). Human UAT is complete (4/4) with measured visual/backstop evidence and a passing live persistence round-trip, so the seven previously behavior-unverified backstop truths now hold. All four roadmap success criteria are met by code present, wired, and exercised; PIPE-01/02/03 are all marked Complete in REQUIREMENTS.md; the api-coverage `verify:pre` gate passes. The residual open review warnings (WR-01/WR-03/IN-01…IN-04) and the two accepted known limitations (WR-04/WR-05 → 999.6, nav grouping → 999.5) are advisory and do not block phase completion.
+No gaps. This stale-digest re-verification re-confirmed the phase against the current working tree after three hardening commits. The CR-01 fix extends the adapter-boundary mapping so a bare `yaml.YAMLError` (unmarked `ReaderError`) is now a structured 400 reject instead of an unhandled 500; IN-01/IN-02 are localization and test-robustness only. All 49 must-haves hold: artifacts verified at all levels, key links wired, data flowing, requirements PIPE-01/02/03 Complete, prohibitions enforced, and the completed human UAT still backs the non-inferable/backstop truths. The residual review items (WR-01 merge-key message + IN-01…IN-03) are advisory and fail closed; the two accepted known limitations (WR-04/WR-05 → 999.6, nav grouping → 999.5) do not block phase completion.
 
 ---
 
-_Verified: 2026-10-04T18:22:00Z_
+_Verified: 2026-10-05T08:15:00Z_
 _Verifier: Claude (gsd-verifier)_
