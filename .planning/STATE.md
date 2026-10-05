@@ -5,10 +5,10 @@ milestone_name: Admin UX + diagnostics + PIPE-01 MVP
 current_phase: 16
 status: completed
 stopped_at: Phase 16 complete — all phases complete
-last_updated: "2026-10-04T18:23:25.985Z"
-last_activity: 2026-10-04
+last_updated: "2026-10-05T08:12:10.595Z"
+last_activity: 2026-10-05
 last_activity_desc: Phase 16 complete
-state_head: 20200dc7864b8802456dfda404cd3fbba9a8a45c
+state_head: d4099156fa1f1b9a393e1ad2f87d62bc2ef5ecd9
 progress:
   total_phases: 5
   completed_phases: 7
@@ -24,14 +24,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-04 — after Phase 16)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** v1.2 milestone complete (Phases 12–16) — ready to close
+**Current focus:** Phase 16 — PIPE-01 MVP config UI
 
 ## Current Position
 
 Phase: 16
-Plan: n/a — all 4 plans executed
+Plan: Not started
 Status: All phases complete
-Last activity: 2026-10-04 — Phase 16 complete
+Last activity: 2026-10-05 — Phase 16 complete
 
 Progress: [██████████] 100%
 
@@ -180,6 +180,6 @@ Carried product deferrals to v1.3+: leaderboard, quiz, live SMTP, signup mail, W
 ## Session Continuity
 
 Last session: 2026-10-04T18:23:25.985Z
-Stopped at: Phase 16 complete — v1.2 (Phases 12–16) all phases complete, ready to close
+Stopped at: Phase 16 complete — all phases complete
 Resume file: None
 Next: close v1.2 milestone (`/gsd-complete-milestone v1.2`)
