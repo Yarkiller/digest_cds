@@ -1,5 +1,54 @@
 # Milestones
 
+## v1.2 Admin UX + diagnostics + PIPE-01 MVP (Shipped: 2026-10-05)
+
+**Phases completed:** 5 phases, 26 plans, 56 tasks
+
+**Key accomplishments:**
+- Locked both empty GET /admin/shortlist shapes via in-memory HTTP units (no-batch null batch_id vs empty-unsent batch_id) with required-key asserts; production untouched.
+- Authoritative `12-FIX-01-LOCK.md` empty-shape tables plus REQUIREMENTS/ROADMAP/PROJECT proof strings citing both 12-01 D-05 HTTP unit names.
+- Wired `emptyUnsentDto` + `__DIGEST_ADMIN_EMPTY_UNSENT__` sticky harness and locked Playwright empty-unsent to D-80 empty UI (not digest_rest).
+- GET /admin/shortlist items now carry full material preview fields (body, provenance, slug, reading minutes, char/word counts) proven by `test_admin_shortlist_returns_full_items`.
+- Backend-owned `render_email_html` ships with interstitial `<p>`/`<br>` matrix, additive preview `html`, SITE_URL settings, and assert-only ban helpers — send parity deferred to 13-06.
+- AdminItemPreview renders enriched shortlist markdown with provenance, counts, honest empty body, and reader link — Playwright green for ADUX-01 / D-04…D-06.
+- Admin email preview displays backend/mock HTML in a fully sandboxed iframe; Playwright honesty moved to frameLocator; intro/connecting-text show paragraph-break hint.
+- Synced Python↔JS ban helpers, idempotent migration 010 + runbook §4g, Playwright admin ban asserts, and shared-VM Studio SQL apply evidenced for ADUX-04 / D-20 live honesty.
+- Send path reuses Plan 02 `render_email_html` with trusted `Settings.site_url`, optional StubMailer `body_html`, and green D-12 preview≡send parity proof.
+- Material and email preview dialogs keep «Закрыть» in view with cursor-pointer while their bodies scroll
+- Email preview success view is the subject plus a sandboxed iframe; the numbered preview.items list is gone
+- Admin JWT can promote one draft to triage-ready without publishing; shortlist and D-85 send gate follow materials.status.
+- Collection `POST /admin/materials/ready` returns order-preserving partial-success `results[]`; Approve still never flips `material_status` (D-02).
+- Admin can promote draft→ready in the SPA (per-row + approved-drafts batch) against Plan 01/02 APIs, and empty shortlist «Обоснование» shows the exact D-15 honesty sentence.
+- Per-row and batch «Сделать ready» now treat the POST response as authoritative — a still-draft shortlist refetch is reconciled by a pure `preservePromotedReady` helper and can no longer silently revert a promoted row.
+- Approved drafts no longer read as a contradiction — the material_status pill is localised («черновик»/«готов») and the triage caption is qualified («одобрен (в шортлист)»), and the sticky footer drops its duplicate title list for a count-only hint plus a quantified batch CTA.
+- The admin promote 503 is fixed at its shared root cause — `_fetch_one` now emits the FK-hinted `material_relations!material_relations_from_material_id_fkey(to_material_id)` embed, so live `get()`/`get_by_slug()` return a Material instead of raising PGRST201 → PersistenceError, with an offline PGRST201-rejecting fake locking the shape.
+- The admin footer no longer advertises or performs a batch promote — the «Сделать ready все одобренные черновики (N)» CTA, its `promoteApprovedDrafts` handler/import, and the «Уберите черновики из одобренных или дождитесь ready.» copy are gone; the per-row «Сделать ready» and the D-85 send gate stay intact, and `sendHint` now reads a neutral «Отправка недоступна.» while an approved draft blocks send.
+- A single global `@layer base` rule `button:not(:disabled) { cursor: pointer }` restores the pointer affordance across the admin surface — the shortlist «Превью материала» button, the per-row «Сделать ready», and the toolbar «Выбрать все» now compute `cursor: pointer`, while the disabled Send button stays non-pointer; the behavior is locked by a computed-cursor Playwright assertion.
+- Opt-in `--debug` prints a secret-safe `[HH:MM:SS] debug stage=captions …` line on stderr through a Clock-injected sink and hybrid allowlist/denylist redaction, while the default stdout contract stays byte-identical.
+- Full per-stage `--debug` lines across captions/metadata/llm/persist plus completed-stage + failed `reason`/`exit_code`/`elapsed_ms` failure lines and a `stage=config` line for pre-video errors — the default stdout/JSON/exit-code contracts stay byte-identical.
+- The assignment denylist now masks underscore-compound credentials (`secret_key`/`access_token`/`client_secret`/`refresh_token`/`private_key`/`auth` → `[redacted]`) and strips control characters before the token patterns, closing the verifier's single blocker with committed regressions plus the review's W-2/W-3 coverage.
+- Admin-only GET/PUT pipeline-config route with a raw-YAML editor, validate-then-persist use-case behind a repository port, and the SPA reaching storage only through `pipelineConfigApi.js` — no execution control ships
+- Server-authoritative strict YAML + Pydantic `extra="forbid"` validator whose rejects return a top-level `{"errors":[{path,line?,message}]}` 400 with zero repository writes, wired into the default container as PyYAML 6.0.3
+
+**Delivered:** Admin preview/email honesty (body, provenance, counts, reader link; sandboxed HTML preview; interstitial whitespace; `test-header` purge), admin draft→ready promote that clears the D-85 send gate without SQL, honest «Обоснование» (populated or explicit D-15 empty), secret-safe opt-in CLI `--debug` diagnostics with byte-identical default contracts, and PIPE-01 MVP — YAML pipeline config view/edit/validate/persist behind a `PipelineConfigRepository` port (no execution). Plus the Phase 10 carry: admin shortlist empty-batch HTTP contract.
+
+**Git range:** `c2ca098` → `d29e318` (258 commits, 2026-10-02 → 2026-10-05). 237 files, +32475 / −1467.
+
+**Closeout type:** override_closeout
+
+**Known verification overrides:** 10 newly acknowledged, 5 carried forward from a prior close (see STATE.md Deferred Items)
+
+**Known Gaps / Deferred:**
+- Backlog 999.1–999.4: Phase 13/14 deferred UAT outcomes (reader route errors, preview cursor, Appr+ready unification)
+- Backlog 999.5 admin nav grouping (option C tab-bar) and 999.6 unsaved-changes guard WR-04/WR-05
+- Backlog 999.7: Phase 16 code-review advisory WR-01 — YAML merge-key (`<<`) rejected with a cryptic message (fails closed, structured 400)
+- Advisory review INF-01/IN-02/IN-03 on the pipeline-config validator (non-blocking)
+- Known debt carried from v1.1: Nyquist VALIDATION.md for phases 6–8; signup confirmation mail (MAIL-02) still open
+
+Archives: [roadmap](milestones/v1.2-ROADMAP.md) · [requirements](milestones/v1.2-REQUIREMENTS.md) · [phases](milestones/v1.2-phases/)
+
+---
+
 ## v1.1 YouTube → LLM → Supabase ingestion (Shipped: 2026-10-02)
 
 **Phases completed:** 6 phases (6–11), 23 plans, 60 tasks

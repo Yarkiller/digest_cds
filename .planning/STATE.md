@@ -2,19 +2,19 @@
 gsd_state_version: "1.0"
 milestone: v1.2
 milestone_name: Admin UX + diagnostics + PIPE-01 MVP
-current_phase: 16
-status: completed
+status: Awaiting next milestone
 stopped_at: Phase 16 complete — all phases complete
-last_updated: "2026-10-05T08:12:10.595Z"
+last_updated: "2026-10-05T10:47:22.521Z"
 last_activity: 2026-10-05
-last_activity_desc: Phase 16 complete
-state_head: d4099156fa1f1b9a393e1ad2f87d62bc2ef5ecd9
+last_activity_desc: Milestone v1.2 completed and archived
+state_head: d29e31827275d27a64fe8e477269b8565965217e
 progress:
   total_phases: 5
   completed_phases: 7
   total_plans: 26
   completed_plans: 26
   percent: 100
+current_phase: 16
 ---
 
 # Project State
@@ -24,16 +24,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-04 — after Phase 16)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** v1.2 milestone complete (Phases 12–16) — ready to close
+**Current focus:** v1.2 shipped — planning next milestone
 
 ## Current Position
 
-Phase: 16
-Plan: Not started
-Status: All phases complete
-Last activity: 2026-10-05 — Phase 16 complete
-
-Progress: [██████████] 100%
+Phase: Milestone v1.2 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-10-05 — Milestone v1.2 completed and archived
 
 ## Performance Metrics
 
@@ -174,6 +172,16 @@ Items acknowledged and deferred at milestone close, most recent first:
 |----------|------|--------|-------------|-----------|
 | deferred_items | 10/deferred-items.md: pre-existing test_admin_shortlist_empty_batch failure → FIX-01 / Phase 12 | in_roadmap | 2026-10-02 | v1.1→v1.2 |
 | debug_sessions | (4 items from v1 close — see MILESTONES.md) | acknowledged | 2026-09-22 | v1 |
+| debug_sessions | admin-batch-cta-removal | unknown | 2026-10-05 | v1.2 |
+| debug_sessions | draft-approved-contradiction | investigating | 2026-10-05 | v1.2 |
+| debug_sessions | email-plain-body-rendered | diagnosed | 2026-10-05 | v1.2 |
+| debug_sessions | footer-duplicates-cta-label | investigating | 2026-10-05 | v1.2 |
+| debug_sessions | interstitial-not-paragraph | diagnosed | 2026-10-05 | v1.2 |
+| debug_sessions | mark-ready-503 | unknown | 2026-10-05 | v1.2 |
+| debug_sessions | modal-close-not-sticky | diagnosed | 2026-10-05 | v1.2 |
+| debug_sessions | per-row-ready-click-noop | investigating | 2026-10-05 | v1.2 |
+| debug_sessions | preview-cursor | unknown | 2026-10-05 | v1.2 |
+| deferred_items | 13/deferred-items.md: admin.spec.js `/me network failure shows ServiceUnavailable not Forbidden` flake (pre-existing, not G-13-*) | acknowledged | 2026-10-05 | v1.2 |
 
 Carried product deferrals to v1.3+: leaderboard, quiz, live SMTP, signup mail, Whisper/Foundry ASR, ingest HTTP/scheduler, PIPE execution.
 
@@ -183,3 +191,7 @@ Last session: 2026-10-05T08:12:10.595Z
 Stopped at: Phase 16 complete — verification refreshed via stale re-verification; all phases complete
 Resume file: None
 Next: close v1.2 milestone (`/gsd-complete-milestone v1.2`)
+
+## Operator Next Steps
+
+- Start the next milestone with /gsd-new-milestone

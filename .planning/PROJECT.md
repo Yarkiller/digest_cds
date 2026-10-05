@@ -10,17 +10,19 @@ Authorized СВА staff can read a trustworthy weekly issue of prepared articles
 
 ## Current State
 
+v1.2 Admin UX + diagnostics + PIPE-01 MVP shipped 2026-10-05 (Phases 12–16, 26 plans). Admin preview/email honesty, draft→ready promote without SQL, CLI `--debug` secret-safe diagnostics, and PIPE-01 MVP (YAML config view/edit/validate/persist behind a `PipelineConfigRepository` port; no execution). Phase 16 verified 49/49 after a stale re-verification (covered-digest restamp + code-review advisory only).
+
 v1.1 YouTube → LLM → Supabase ingestion shipped 2026-10-02 (Phases 6–11). Operator CLI turns a YouTube URL into a `materials` draft + shortlist row via captions → DeepSeek → `persist_draft_and_enqueue` (migrations 007–009). Backend/SPA remain readers; four-video UAT confirmed drafts in `/admin/digest`. Mail still StubMailer; signup confirmation mail unresolved.
 
 v1 MVP (Phases 1–5) remains the editorial read/vote/admin publish surface (shipped 2026-09-22).
 
-Stack: FastAPI, React/Vite, self-hosted Supabase + pgvector, `data-collection` + `ingestion-service`, Playwright, pytest. v1.1 git range ~`45db99f` → `fff73a3` (218 commits, 2026-09-26 → 2026-10-02; +30.5k / −0.5k LOC across 225 files).
+Stack: FastAPI, React/Vite, self-hosted Supabase + pgvector, `data-collection` + `ingestion-service`, Playwright, pytest.
 
-## Current Milestone: v1.2 Admin UX + diagnostics + PIPE-01 MVP
+## Shipped Milestone: v1.2 Admin UX + diagnostics + PIPE-01 MVP (SHIPPED 2026-10-05)
 
 **Goal:** Admin can honestly review and promote ingested drafts, operators get secret-safe `--debug` diagnostics, and PIPE-01 ships as config + validation + UI only (no full pipeline execution).
 
-**Status:** all five phases (12–16) executed; Phase 16 verified (49/49) and marked complete 2026-10-04 — milestone ready to close.
+**Status:** shipped 2026-10-05 — all five phases (12–16) complete and verified; Phase 16 re-verified 49/49 after a stale re-verification. Requirements 12/12 validated. Closeout: override (10 artifact items acknowledged/deferred; see STATE.md Deferred Items).
 
 **Target features:**
 - Admin material preview shows body, provenance, counts, reader link (not title+dek only)
@@ -213,4 +215,4 @@ After each phase transition: move validated/invalidated requirements; log decisi
 After milestone: full review of Core Value, Out of Scope, and Context against shipped reality.
 
 ---
-*Last updated: 2026-10-04 after Phase 16*
+*Last updated: 2026-10-05 after v1.2 milestone*
