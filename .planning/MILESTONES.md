@@ -45,7 +45,7 @@
 - Advisory review INF-01/IN-02/IN-03 on the pipeline-config validator (non-blocking)
 - Known debt carried from v1.1: Nyquist VALIDATION.md for phases 6–8; signup confirmation mail (MAIL-02) still open
 
-Archives: [roadmap](milestones/v1.2-ROADMAP.md) · [requirements](milestones/v1.2-REQUIREMENTS.md) · [phases](milestones/v1.2-phases/)
+Archives: [roadmap](milestones/v1.2-ROADMAP.md) · [requirements](milestones/v1.2-REQUIREMENTS.md) · [audit](milestones/v1.2-MILESTONE-AUDIT.md) · [phases](milestones/v1.2-phases/)
 
 ---
 
