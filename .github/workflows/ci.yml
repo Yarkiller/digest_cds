@@ -76,7 +76,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm ci
+          npm ci --ignore-scripts
           npm ci --prefix web
 
       - name: JS unit tests (node:test)
@@ -121,6 +121,8 @@ jobs:
   e2e:
     name: E2E (Playwright web)
     runs-on: ubuntu-latest
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: .playwright-browsers
     steps:
       - uses: actions/checkout@v4
 
@@ -135,7 +137,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm ci
+          npm ci --ignore-scripts
           npm ci --prefix web
 
       - name: Install Playwright browsers
