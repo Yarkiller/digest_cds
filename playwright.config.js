@@ -51,6 +51,7 @@ if (wantsProject("web")) {
     env: {
       ...process.env,
       VITE_USE_MOCKS: "true",
+      VITE_ENABLE_YANDEX_OAUTH: "true",
     },
   });
 }

@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
-import { getSession } from '../services/authApi.js'
+import { getSession, signOut } from '../services/authApi.js'
 import { isMocksEnabled } from '../services/authEnv.js'
+import { isCorporateSession } from '../services/oauthSession.js'
 
 /**
  * Auth gate: when mocks enabled (default), render children immediately (D-09).
@@ -27,6 +28,13 @@ export default function RequireAuth({ children }) {
       try {
         const session = await getSession()
         if (!cancelled) {
+          // OAuth sessions must still carry a corporate email (ADR-0003).
+          if (session?.access_token && !isCorporateSession(session)) {
+            await signOut()
+            setAuthed(false)
+            setReady(true)
+            return
+          }
           setAuthed(Boolean(session?.access_token))
           setReady(true)
         }

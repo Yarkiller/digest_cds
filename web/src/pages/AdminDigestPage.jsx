@@ -20,6 +20,7 @@ import {
   setDecision,
 } from '../services/adminApi.js'
 import { compositionFingerprint } from '../services/adminPreviewComposition.js'
+import { ANALYTICS_GOALS, trackGoal } from '../services/analyticsRuntime.js'
 import { preservePromotedReady } from '../services/adminReadyReconcile.js'
 
 const TOAST_DISMISS_MS = 4000
@@ -441,6 +442,7 @@ export default function AdminDigestPage() {
       })
       setBanner(result.message || 'Отправка записана')
       setIssueUrl(typeof result.issue_url === 'string' ? result.issue_url : '')
+      trackGoal(ANALYTICS_GOALS.digest_send)
       setBatchSent(true)
       setDigestRest(true)
       setDaysUntilNextBatch(DIGEST_WEEKLY_CADENCE_DAYS)

@@ -5,9 +5,13 @@ import {
   AuthApiError,
   getSignInInvocationCount,
   signIn,
+  signInWithYandex,
+  signOut,
 } from '../services/authApi.js'
 import { sanitizeReturnUrl } from '../services/authEnv.js'
 import { isAllowedCorporateEmail } from '../services/emailDomain.js'
+import { YANDEX_OAUTH_LABEL, isCorporateSession, oauthEnabled } from '../services/oauthSession.js'
+import { ANALYTICS_GOALS, trackGoal } from '../services/analyticsRuntime.js'
 import { armWelcomeToast } from '../services/welcomeSession.js'
 
 const DOMAIN_MESSAGE = 'Вход только с корпоративного домена СВА'
@@ -47,11 +51,43 @@ export default function LoginPage() {
     try {
       await signIn({ email: email.trim(), password })
       setSignInCalls(getSignInInvocationCount())
+      trackGoal(ANALYTICS_GOALS.login)
       armWelcomeToast()
       const dest = sanitizeReturnUrl(searchParams.get('returnUrl'))
       navigate(dest, { replace: true })
     } catch (err) {
       setSignInCalls(getSignInInvocationCount())
+      const message =
+        err instanceof AuthApiError
+          ? err.message
+          : 'Сервис входа временно недоступен. Проверьте соединение и повторите попытку.'
+      const retryable = err instanceof AuthApiError ? err.retryable : true
+      setNetworkError({ message, retryable })
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  async function handleYandex() {
+    setNetworkError(null)
+    setDomainError('')
+    setSubmitting(true)
+    try {
+      const session = await signInWithYandex()
+      if (session && !isCorporateSession(session)) {
+        // Yandex ID returned a non-corporate email — enforce ADR-0003 and drop the session.
+        await signOut()
+        setDomainError(DOMAIN_MESSAGE)
+        return
+      }
+      if (session) {
+        trackGoal(ANALYTICS_GOALS.login_oauth)
+        armWelcomeToast()
+        const dest = sanitizeReturnUrl(searchParams.get('returnUrl'))
+        navigate(dest, { replace: true })
+      }
+      // Live mode: signInWithYandex triggers a redirect to Yandex; nothing else runs here.
+    } catch (err) {
       const message =
         err instanceof AuthApiError
           ? err.message
@@ -159,6 +195,25 @@ export default function LoginPage() {
           >
             {submitting ? 'Вход…' : 'Войти'}
           </button>
+
+          {oauthEnabled(import.meta.env) ? (
+            <>
+              <div className="flex items-center gap-3 text-xs uppercase tracking-wide text-muted">
+                <span className="h-px flex-1 bg-rule" />
+                или
+                <span className="h-px flex-1 bg-rule" />
+              </div>
+              <button
+                type="button"
+                data-testid="yandex-oauth"
+                className="min-h-11 w-full rounded-full border border-rule px-4 text-sm font-medium disabled:opacity-60"
+                onClick={handleYandex}
+                disabled={submitting}
+              >
+                {YANDEX_OAUTH_LABEL}
+              </button>
+            </>
+          ) : null}
         </form>
 
         <p className="mt-6 text-center text-sm text-ink-2">

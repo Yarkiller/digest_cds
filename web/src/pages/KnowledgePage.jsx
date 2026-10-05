@@ -10,6 +10,7 @@ import {
 import MaterialListRow from '../components/MaterialListRow.jsx'
 import ActionButton from '../components/ActionButton.jsx'
 import ErrorPanel from '../components/ErrorPanel.jsx'
+import { ANALYTICS_GOALS, trackGoal } from '../services/analyticsRuntime.js'
 
 /** Topic hint chips fill the query only — do not execute search (D-60). */
 const HINT_CHIPS = ['RAG', 'SQL', 'качество данных', 'pgvector']
@@ -88,6 +89,10 @@ export default function KnowledgePage() {
       setHasMore(Boolean(dto.has_more))
       setNextOffset(offset + (dto.items?.length ?? 0))
       setError(null)
+      if (!append && q) {
+        // Privacy: send only the role filter, never the raw user query, to Metrika.
+        trackGoal(ANALYTICS_GOALS.search, { role: roleValue })
+      }
     } catch (err) {
       const failure = searchFailureState(err, { roleValue, append, q })
       if (failure.invalidRole) {

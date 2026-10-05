@@ -5,6 +5,7 @@ import App from './App.jsx'
 import {
   armFailNextSignIn,
   armFailNextSignUp,
+  armOAuthEmail,
   resetAuthHarness,
 } from './services/authApi.js'
 import {
@@ -35,11 +36,15 @@ import {
   armRejectNextSave,
   resetPipelineConfigHarness,
 } from './services/pipelineConfigApi.js'
+import { initAnalytics } from './services/analyticsRuntime.js'
+
+initAnalytics()
 
 // Playwright harness (mirrors votingApi arm-fail pattern).
 window.__DIGEST_AUTH_HARNESS__ = {
   armFailNextSignIn,
   armFailNextSignUp,
+  armOAuthEmail,
   resetAuthHarness,
 }
 window.__DIGEST_ME_HARNESS__ = { armFailNextMeFetch, resetMeHarness, setMockMeRole }

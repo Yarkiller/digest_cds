@@ -1,4 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import AnalyticsPageViews from './components/AnalyticsPageViews.jsx'
 import AppShell from './components/AppShell.jsx'
 import RequireAuth from './components/RequireAuth.jsx'
 import ArchivePage from './pages/ArchivePage.jsx'
@@ -17,6 +18,7 @@ import VotingPage from './pages/VotingPage.jsx'
 export default function App() {
   return (
     <BrowserRouter>
+      <AnalyticsPageViews />
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />

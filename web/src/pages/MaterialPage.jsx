@@ -6,6 +6,7 @@ import rehypeSanitize from 'rehype-sanitize'
 import rehypeSlug from 'rehype-slug'
 import ServiceUnavailable from '../components/ServiceUnavailable.jsx'
 import { ContentApiError, clearFailNextContentFetch, fetchMaterial } from '../services/contentApi.js'
+import { ANALYTICS_GOALS, trackGoal } from '../services/analyticsRuntime.js'
 import { extractMarkdownHeadings } from '../utils/markdownToc.js'
 
 function formatPublishedLabel(material) {
@@ -76,6 +77,7 @@ export default function MaterialPage() {
         if (cancelled) return
         setMaterial(dto)
         setStatus('ready')
+        trackGoal(ANALYTICS_GOALS.material_open, { slug })
       })
       .catch((err) => {
         if (cancelled) return

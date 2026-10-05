@@ -13,6 +13,7 @@ import {
   submitVote,
 } from '../services/votingApi.js'
 import { leaderStripText, voteButtonLabel, voteStatusText } from '../utils/voting.js'
+import { ANALYTICS_GOALS, trackGoal } from '../services/analyticsRuntime.js'
 
 const FALLBACK_CYCLE = {
   label: 'Цикл голосования',
@@ -226,6 +227,7 @@ export default function VotingPage() {
       const snapshot = await submitVote(selectedId, expectedUpdatedAt)
       applySnapshot(snapshot, snapshotSetters)
       setButtonState('idle')
+      trackGoal(ANALYTICS_GOALS.vote, { topic_id: selectedId })
       setToast(hadConfirmed ? 'Голос изменён' : 'Голос сохранён')
       setAttemptCount(0)
     } catch (err) {
