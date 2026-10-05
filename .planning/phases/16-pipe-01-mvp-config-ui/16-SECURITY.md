@@ -77,6 +77,7 @@ created: "2026-10-04"
 |------------|---------------|--------|------|--------|
 | 2026-10-04 | 18 | 18 | 0 | gsd-secure-phase (L1 grep-depth) |
 | 2026-10-04 | 18 | 18 | 0 | gsd-secure-phase re-audit (L1 grep-depth, short-circuit: threats_open 0) |
+| 2026-10-05 | 18 | 18 | 0 | gsd-secure-phase re-run, stale re-verification (L1 grep-depth, short-circuit: threats_open 0, register_authored_at_plan_time true, ASVS L1). Re-verified validator mitigations T-16-05/06/07/08/09 against the only changed sources — `yaml_pipeline_config_validator.py`, `tests/unit/test_http_pipeline_config.py`, `tests/unit/test_pipeline_config_validator.py`; hardening only (CR-01/WR-02/IN-01/IN-02), no new trust boundary |
 
 ---
 
