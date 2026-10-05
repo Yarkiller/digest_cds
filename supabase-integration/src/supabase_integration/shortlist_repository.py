@@ -43,6 +43,17 @@ def _item_from_row(row: dict[str, Any]) -> ShortlistItem:
         factors = {}
     score_raw = row.get("score")
     reading_raw = material.get("reading_minutes")
+    reading_minutes: int | None = None
+    if reading_raw is not None:
+        try:
+            reading_minutes = int(reading_raw)
+        except (TypeError, ValueError) as exc:
+            # W-5: a malformed joined column must map to the domain error at the
+            # adapter boundary — never escape as an unhandled ValueError -> HTTP 500.
+            raise PersistenceError(
+                "shortlist item material_id="
+                f"{row.get('material_id')!r} has non-numeric reading_minutes {reading_raw!r}"
+            ) from exc
     return ShortlistItem(
         material_id=int(row["material_id"]),
         rank=int(row["rank"]),
@@ -65,7 +76,7 @@ def _item_from_row(row: dict[str, Any]) -> ShortlistItem:
             else None
         ),
         slug=(str(material["slug"]) if material.get("slug") is not None else None),
-        reading_minutes=int(reading_raw) if reading_raw is not None else None,
+        reading_minutes=reading_minutes,
     )
 
 

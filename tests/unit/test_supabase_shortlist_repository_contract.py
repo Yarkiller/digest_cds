@@ -211,6 +211,36 @@ def test_get_current_batch_returns_latest_unsent_with_material_status() -> None:
     assert by_id[11].material_status == "draft"
 
 
+def test_get_current_batch_maps_non_numeric_reading_minutes_to_persistence_error() -> None:
+    """W-5: a malformed joined `reading_minutes` must map to PersistenceError (contract),
+    never escape as an unhandled ValueError -> HTTP 500."""
+    from supabase_integration.shortlist_repository import SupabaseShortlistRepository
+
+    client = FakeSupabaseClient()
+    _seed_shortlist(client)
+    # Corrupt material 10's joined reading_minutes with a non-numeric value.
+    client.tables["materials"].rows[0]["reading_minutes"] = "not-a-number"
+    repo = SupabaseShortlistRepository(client)
+
+    with pytest.raises(PersistenceError):
+        repo.get_current_batch()
+
+
+def test_get_current_batch_accepts_numeric_string_reading_minutes() -> None:
+    """W-5 guard: a numeric string is valid input (PostgREST can return numeric-as-text)."""
+    from supabase_integration.shortlist_repository import SupabaseShortlistRepository
+
+    client = FakeSupabaseClient()
+    _seed_shortlist(client)
+    client.tables["materials"].rows[0]["reading_minutes"] = "7"
+    repo = SupabaseShortlistRepository(client)
+
+    batch = repo.get_current_batch()
+    assert batch is not None
+    by_id = {item.material_id: item for item in batch.items}
+    assert by_id[10].reading_minutes == 7
+
+
 def test_get_current_batch_empty_when_no_unsent() -> None:
     from supabase_integration.shortlist_repository import SupabaseShortlistRepository
 
