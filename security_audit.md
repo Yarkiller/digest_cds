@@ -1,0 +1,132 @@
+# Отчёт по безопасности — Digest CDS
+
+Аудит проведён для домашнего задания «Настройка CI/CD и интеграция сервисов».
+Область: backend (FastAPI, Python 3.12), frontend (React/Vite), CI/CD (GitHub Actions),
+контейнеризация (Docker), интеграции (Supabase Auth/OAuth2 Яндекс ID, Яндекс.Метрика).
+
+## Методология и инструменты
+
+| Инструмент | Назначение | Команда |
+|---|---|---|
+| `npm audit` | уязвимости npm-зависимостей (корень + `web/`) | `npm audit --audit-level=high` |
+| `pip-audit` | уязвимости Python-зависимостей | `uv run --with pip-audit pip-audit` |
+| `bandit` | SAST Python-кода (CWE) | `uv run --with bandit bandit -r backend/src supabase-integration/src data-collection/src ingestion-service/src` |
+| AI security review | ручной разбор диффа по OWASP Top 10 | Cursor `security-review` subagent |
+
+Все сканеры выполняются автоматически в CI (job `security` в `.github/workflows/ci.yml`),
+поэтому регрессии по зависимостям и коду ловятся на каждом push.
+
+## Сводка
+
+| ID | Серьёзность | Область | Статус |
+|---|---|---|---|
+| SEC-01 | High | CI/CD (`deploy.yml`) | Исправлено |
+| SEC-02 | Medium | Backend (`/health/ready`) | Исправлено |
+| SEC-03 | Medium | Frontend (аналитика) | Исправлено |
+| SEC-04 | Low | Docker (`.dockerignore`) | Исправлено |
+| SEC-05 | Medium | Зависимости (`pyjwt`) | Исправлено |
+| SEC-06 | Low | Backend (YAML) | Принято (false positive, `nosec`) |
+| SEC-07 | Low | Тестовая поддержка | Принято (test-only, `nosec`) |
+
+## Найденные и исправленные проблемы
+
+### SEC-01 (High) — Запуск недоверенного кода с секретами в `workflow_run`
+
+**Где:** `.github/workflows/deploy.yml`.
+**Суть:** job деплоя, запускаемый по `workflow_run`, делал checkout `head_sha` и запускал
+сборку репозитория (`vercel build`) с доступом к `VERCEL_TOKEN`. Условие опиралось только
+на фильтр `branches: [main]`, который сопоставляется с именем head-ветки, — этого
+недостаточно, чтобы гарантировать, что запуск пришёл именно от push в `main` этого
+репозитория, а не из форка/PR с одноимённой веткой.
+**Исправление:** добавлено строгое условие `if` для обоих job:
+
+```yaml
+github.event.workflow_run.event == 'push' &&
+github.event.workflow_run.head_branch == 'main' &&
+github.event.workflow_run.head_repository.full_name == github.repository
+```
+
+Теперь деплой выполняется только для push в `main` основного репозитория (либо вручную
+через `workflow_dispatch`).
+
+### SEC-02 (Medium) — Утечка деталей ошибок в `/health/ready`
+
+**Где:** `backend/src/backend/interface/http/routes/health.py`.
+**Суть:** публичный (без авторизации) endpoint возвращал `detail` пробы как есть —
+в случае ошибки БД это могло раскрыть строку подключения, хост или текст SDK-ошибки.
+**Исправление:** добавлен `ReadinessReport.to_public_dict()`: наружу отдаётся только
+`healthy` и нормализованный `detail` (`ok` / `unhealthy`); полный текст остаётся в логах.
+Покрыто тестом `test_ready_does_not_leak_probe_error_detail`.
+
+### SEC-03 (Medium) — Передача пользовательских данных в Яндекс.Метрику
+
+**Где:** `web/src/pages/KnowledgePage.jsx`, `web/src/components/AnalyticsPageViews.jsx`.
+**Суть:** goal поиска отправлял сырой текст запроса (`{ q }`), а page-view — полный URL
+вместе с query-строкой. Это могло отправлять во внешний сервис аналитики
+пользовательский ввод и параметры (`returnUrl` и т.п.).
+**Исправление:** search-goal отправляет только фильтр роли (`{ role }`); page-view
+отправляет только `location.pathname` (без query-строки). Персональные данные не уходят.
+
+### SEC-04 (Low) — `.dockerignore` не исключал вложенные `.env`
+
+**Где:** `.dockerignore`.
+**Суть:** шаблоны `.env`/`.env.*` матчили только корень и могли оставить в образе
+вложенные файлы (например `web/.env.local`) со значениями окружения.
+**Исправление:** добавлены `**/.env` и `**/.env.*`.
+
+### SEC-05 (Medium) — Уязвимая зависимость `pyjwt 2.14.0`
+
+**Где:** `backend/pyproject.toml`.
+**Суть:** `pip-audit` обнаружил `PYSEC-2026-4141` (исправлено в `2.15.0`).
+**Исправление:** версия поднята до `pyjwt==2.15.0`, `uv.lock` обновлён; после этого
+`pip-audit` — `No known vulnerabilities found`.
+
+## Принятые риски (false positives)
+
+### SEC-06 (Low) — `bandit B506: yaml_load`
+
+`yaml.load(yaml_text, Loader=_StrictSafeLoader)` в
+`backend/src/backend/infrastructure/yaml_pipeline_config_validator.py` помечен `# nosec B506`.
+`_StrictSafeLoader` — подкласс `yaml.SafeLoader`, добавляющий только отказ на дубликаты
+ключей; конструирование произвольных объектов невозможно. Риск отсутствует.
+
+### SEC-07 (Low) — `bandit B101: assert_used`
+
+`assert` в `backend/src/backend/tests_support/in_memory.py` относится к тестовой поддержке,
+не к production-коду; помечен `# nosec B101`.
+
+## Проверенные и подтверждённые защиты
+
+- **Секреты не в репозитории:** `.env*` в `.gitignore`; `.env.example` содержит только имена
+  переменных. Секреты хостингов — в GitHub Secrets / дашбордах Vercel и Railway.
+- **OAuth2 без open redirect:** `redirectTo` строится из `window.location.origin`
+  (`web/src/services/authApi.js`), не из пользовательского ввода.
+- **Доменная политика на сервере:** backend (`deps.get_principal`) отклоняет
+  не-корпоративный email (`403 domain_not_allowed`), включая OAuth-сессии — фронтенд-проверка
+  лишь дополняет серверную.
+- **CSRF:** авторизация по `Authorization: Bearer` (без cookie-сессий), CORS ограничен
+  allow-list `API_CORS_ORIGINS`.
+- **XSS:** Markdown рендерится с `rehype-sanitize`; статья выводится в sandbox-iframe.
+- **SQL-инъекции:** доступ к данным только через параметризованный Supabase SDK, без
+  конкатенации SQL.
+- **Логи:** middleware пишет только method/path/status/request_id; `Authorization` не логируется.
+- **Readiness:** не раскрывает деталей зависимостей (см. SEC-02).
+
+## Результаты сканеров (после исправлений)
+
+```text
+npm audit (root)  → found 0 vulnerabilities
+npm audit (web)   → found 0 vulnerabilities
+pip-audit         → No known vulnerabilities found
+bandit            → Total issues: 0 (High 0, Medium 0, Low 0)
+```
+
+## Рекомендации
+
+1. Включить GitHub Dependabot для `uv.lock` и `package-lock.json`, чтобы обновления
+   безопасности приходили автоматически.
+2. Включить branch protection для `main` с обязательным зелёным CI перед merge.
+3. Добавить `gitleaks` в CI для обнаружения случайных секретов в истории.
+4. Для продакшена вынести Яндекс.Метрику за согласие (consent) в соответствии с политикой
+   обработки данных; при необходимости — ограничить `webvisor`/clickmap.
+5. Периодически (раз в квартал) прогонять AI security review по крупным изменениям.
