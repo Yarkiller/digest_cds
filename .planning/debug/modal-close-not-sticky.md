@@ -3,6 +3,10 @@ status: diagnosed
 trigger: "G-13-1/G-13-2/G-13-3: material and email preview modal close (✕) scrolls away with content; cursor:pointer missing. find_root_cause_only."
 created: 2026-10-03T08:10:00Z
 updated: 2026-10-03T08:20:00Z
+audit_acknowledged:
+  milestone: v1.2
+  at: 2026-10-05
+  status: diagnosed
 ---
 
 ## Current Focus

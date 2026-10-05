@@ -1,3 +1,10 @@
+---
+audit_acknowledged:
+  milestone: v1.2
+  at: 2026-10-05
+  status: unknown
+---
+
 # DEBUG — live promote `503` / batch all-fail (G-14-1, G-14-4)
 
 **Status:** root cause found

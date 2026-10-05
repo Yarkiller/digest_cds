@@ -3,6 +3,10 @@ status: diagnosed
 trigger: "Gap G-13-3c (test 3, minor): interstitial connecting text «Связывающий текст - тест» renders flat in the email iframe; expected <p> per ADUX-03 / Phase 12 interstitial_html. Goal: find_root_cause_only."
 created: 2026-10-03T11:14:00+03:00
 updated: 2026-10-03T11:25:00+03:00
+audit_acknowledged:
+  milestone: v1.2
+  at: 2026-10-05
+  status: diagnosed
 ---
 
 ## Current Focus

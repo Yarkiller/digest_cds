@@ -1,3 +1,10 @@
+---
+audit_acknowledged:
+  milestone: v1.2
+  at: 2026-10-05
+  status: unknown
+---
+
 # DEBUG — «Превью материала» has no pointer cursor (G-14-3)
 
 **Status:** root cause found

@@ -3,6 +3,10 @@ status: investigating
 trigger: "UX: sticky send footer duplicates approved-draft titles already visible in the shortlist; batch CTA label «одобренные черновики» confusing. (Phase 14 UAT gap G-14-2b)"
 created: 2026-10-03T16:08:00Z
 updated: 2026-10-03T16:08:00Z
+audit_acknowledged:
+  milestone: v1.2
+  at: 2026-10-05
+  status: investigating
 ---
 
 ## Current Focus

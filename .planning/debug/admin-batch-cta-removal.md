@@ -1,3 +1,10 @@
+---
+audit_acknowledged:
+  milestone: v1.2
+  at: 2026-10-05
+  status: unknown
+---
+
 # DEBUG — remove batch promote CTA + approved-drafts hint (G-14-2)
 
 **Status:** root cause found (intentional product change, not a defect)

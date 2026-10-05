@@ -5,6 +5,10 @@ created: 2026-10-03T11:12:00+03:00
 updated: 2026-10-03T11:20:00+03:00
 goal: find_root_cause_only
 bug_class: Bohrbug
+audit_acknowledged:
+  milestone: v1.2
+  at: 2026-10-05
+  status: diagnosed
 ---
 
 ## Current Focus

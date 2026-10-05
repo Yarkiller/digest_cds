@@ -3,9 +3,14 @@ status: investigating
 trigger: "Per-row «Сделать ready» click does nothing — state unchanged (ADUX-05, D-85 unblock broken). Discovered during UAT verification of Phase 14."
 created: 2026-10-03T18:58:00Z
 updated: 2026-10-03T19:10:00Z
+audit_acknowledged:
+  milestone: v1.2
+  at: 2026-10-05
+  status: investigating
 ---
 
 ## Current Focus
+
 <!-- OVERWRITE on each update - reflects NOW -->
 
 hypothesis: Per-row promote is a silent no-op in the LIVE path because the optimistic
@@ -23,6 +28,7 @@ expecting: Confirm optimistic→refetch overwrite is the silent-revert mechanism
 next_action: Record evidence + write Resolution.root_cause; return ROOT CAUSE FOUND.
 
 ## Symptoms
+
 <!-- Written during gathering, then IMMUTABLE -->
 
 expected: Clicking per-row «Сделать ready» next to a draft badge promotes draft→ready,
@@ -33,6 +39,7 @@ reproduction: Open Admin Digest page, click per-row «Сделать ready» on 
 started: Discovered during UAT verification of Phase 14.
 
 ## Eliminated
+
 <!-- APPEND only - prevents re-investigating -->
 
 - hypothesis: Button is disabled by `mutating` stuck true
@@ -68,6 +75,7 @@ started: Discovered during UAT verification of Phase 14.
   timestamp: 2026-10-03T19:08:00Z
 
 ## Evidence
+
 <!-- APPEND only - facts discovered -->
 
 - timestamp: 2026-10-03T19:01:00Z
@@ -120,6 +128,7 @@ started: Discovered during UAT verification of Phase 14.
   implication: No test covers the live silent-revert reconcile — the gap that let it ship.
 
 ## Resolution
+
 <!-- OVERWRITE as understanding evolves -->
 
 root_cause: "Per-row «Сделать ready» is a silent no-op in the LIVE path because the

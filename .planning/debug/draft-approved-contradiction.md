@@ -3,9 +3,14 @@ status: investigating
 trigger: "UX: admin shortlist row shows `[draft]` badge AND «одобрен» on the same row, reads as a contradiction. Discovered during UAT verification of Phase 14 (G-14-2a)."
 created: 2026-10-03T16:07:00Z
 updated: 2026-10-03T16:07:00Z
+audit_acknowledged:
+  milestone: v1.2
+  at: 2026-10-05
+  status: investigating
 ---
 
 ## Current Focus
+
 <!-- OVERWRITE on each update - reflects NOW -->
 
 hypothesis: The row renders two INDEPENDENT status dimensions side by side with no
@@ -19,6 +24,7 @@ expecting: Confirm both badges render from separate fields in the same flex cont
 next_action: Record evidence + Resolution.root_cause; return ROOT CAUSE FOUND (diagnose only).
 
 ## Symptoms
+
 <!-- Written during gathering, then IMMUTABLE -->
 
 expected: The admin shortlist row's status indicators read unambiguously — a row should not
@@ -30,11 +36,13 @@ reproduction: Open Admin Digest page and look at an approved draft row's status 
 started: Discovered during UAT verification of Phase 14.
 
 ## Eliminated
+
 <!-- APPEND only - prevents re-investigating -->
 
 (none yet)
 
 ## Evidence
+
 <!-- APPEND only - facts discovered -->
 
 - timestamp: 2026-10-03T16:07:00Z
@@ -74,6 +82,7 @@ started: Discovered during UAT verification of Phase 14.
     readiness while «одобрен» = shortlist triage decision.
 
 ## Resolution
+
 <!-- OVERWRITE as understanding evolves -->
 
 root_cause: "The shortlist row renders two independent status dimensions side by side with
