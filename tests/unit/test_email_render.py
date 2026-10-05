@@ -88,6 +88,45 @@ def test_render_material_email_block_escapes_title_and_dek() -> None:
     assert "&quot;y" in html or "&#x27;" in html or "&quot;" in html
 
 
+def test_render_material_email_block_omits_read_link_when_slug_blank() -> None:
+    """W-2: a blank slug must not emit a dead `/materials/` link (ADUX-02 honesty)."""
+    html = render_material_email_block(
+        title="No Slug",
+        dek="Kept dek",
+        slug="",
+        site_url="http://127.0.0.1:5173",
+    )
+    assert "No Slug" in html
+    assert "Kept dek" in html
+    assert "Читать →" not in html
+    assert "/materials/" not in html
+
+
+def test_render_material_email_block_omits_read_link_when_slug_whitespace() -> None:
+    """W-2: whitespace-only slug is blank too — no dead link."""
+    html = render_material_email_block(
+        title="Only Title",
+        dek=None,
+        slug="   ",
+        site_url="http://example.test",
+    )
+    assert "Only Title" in html
+    assert "Читать →" not in html
+    assert "/materials/" not in html
+
+
+def test_render_email_html_omits_read_link_for_blank_slug_material_block() -> None:
+    """W-2: block-level path (render_email_html) also skips the reader link for a blank slug."""
+    html = render_email_html(
+        intro="",
+        blocks=({"kind": "material", "title": "Blank Slug", "dek": None, "slug": ""},),
+        site_url="http://127.0.0.1:5173",
+    )
+    assert "Blank Slug" in html
+    assert "Читать →" not in html
+    assert "/materials/" not in html
+
+
 def test_render_email_html_applies_interstitial_to_intro_and_includes_material() -> None:
     html = render_email_html(
         intro="Intro para one\n\nIntro para two",

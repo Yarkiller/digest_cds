@@ -34,13 +34,18 @@ def render_material_email_block(
     slug: str,
     site_url: str = DEFAULT_SITE_URL,
 ) -> str:
-    """Title + optional dek + Читать → absolute material link (D-11)."""
+    """Title + optional dek + Читать → absolute material link (D-11).
+
+    W-2: a blank/whitespace slug emits no reader link — never a dead `/materials/` href.
+    """
     base = site_url.rstrip("/")
-    href = html.escape(f"{base}/materials/{slug}", quote=True)
     parts = [f"<h2>{html.escape(title, quote=True)}</h2>"]
     if dek and dek.strip():
         parts.append(f"<p>{html.escape(dek.strip(), quote=True)}</p>")
-    parts.append(f'<p><a href="{href}">Читать →</a></p>')
+    clean_slug = slug.strip()
+    if clean_slug:
+        href = html.escape(f"{base}/materials/{clean_slug}", quote=True)
+        parts.append(f'<p><a href="{href}">Читать →</a></p>')
     return "".join(parts)
 
 

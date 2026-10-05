@@ -65,13 +65,17 @@ _compose_body = compose_digest_body
 
 
 def _plain_material_segment(item: ShortlistItem, *, site_url: str) -> str:
-    """Title + optional dek + absolute reader URL for StubMailer log honesty (Q3)."""
+    """Title + optional dek + absolute reader URL for StubMailer log honesty (Q3).
+
+    W-2: a blank/whitespace slug emits no reader URL — never a dead `/materials/` link.
+    """
     parts = [item.title]
     if item.dek and item.dek.strip():
         parts.append(item.dek.strip())
     base = site_url.rstrip("/")
-    slug = item.slug or ""
-    parts.append(f"{base}/materials/{slug}")
+    slug = (item.slug or "").strip()
+    if slug:
+        parts.append(f"{base}/materials/{slug}")
     return "\n".join(parts)
 
 

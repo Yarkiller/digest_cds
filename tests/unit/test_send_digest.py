@@ -556,6 +556,36 @@ def test_send_body_html_uses_site_url_for_chitat_href() -> None:
     assert "Читать →" in html
 
 
+def test_send_omits_reader_link_in_html_and_plain_body_when_slug_blank() -> None:
+    """W-2: a blank slug emits no reader link in either body (HTML or StubMailer plain text)."""
+    from backend.application.use_cases.preview_digest_email import PreviewMaterialBlock
+
+    shortlist = InMemoryShortlistRepository(
+        batch=_batch(_item(material_id=101, rank=1, title="Blank Slug", slug=None))
+    )
+    mailer = StubMailer()
+
+    send_digest(
+        shortlist,
+        _publisher(shortlist, InMemoryIssueRepository()),
+        mailer,
+        InMemoryPingRecorder(),
+        actor_user_id="admin-uuid-1",
+        now=datetime(2026, 9, 21, 15, 0, tzinfo=timezone.utc),
+        blocks=[PreviewMaterialBlock(material_id=101)],
+        site_url="https://digest.example",
+    )
+
+    html = mailer.last_body_html or ""
+    assert "Blank Slug" in html
+    assert "Читать →" not in html
+    assert "/materials/" not in html
+
+    plain = mailer.last_body_text or ""
+    assert "Blank Slug" in plain
+    assert "/materials/" not in plain
+
+
 def test_post_shortlist_send_passes_settings_site_url() -> None:
     """ADUX-02 / D-11 / D-12: send HTTP path uses trusted Settings.site_url like preview."""
     from pathlib import Path
