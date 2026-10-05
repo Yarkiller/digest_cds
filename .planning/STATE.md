@@ -21,7 +21,7 @@ current_phase: 16
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-10-04 — after Phase 16)
+See: .planning/PROJECT.md (updated 2026-10-05 — after v1.2)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
 **Current focus:** v1.2 shipped — planning next milestone
@@ -187,8 +187,8 @@ Carried product deferrals to v1.3+: leaderboard, quiz, live SMTP, signup mail, W
 
 ## Session Continuity
 
-Last session: 2026-10-05T08:12:10.595Z
-Stopped at: Phase 16 complete — verification refreshed via stale re-verification; all phases complete
+Last session: 2026-10-05T10:47:22.521Z
+Stopped at: Milestone v1.2 complete and archived (Phases 12–16 shipped 2026-10-05)
 Resume file: None
 Next: close v1.2 milestone (`/gsd-complete-milestone v1.2`)
 
