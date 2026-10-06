@@ -544,9 +544,20 @@ CI-прогон (все 6 job зелёные, включая сборку Docker
 
 `Deploy` регистрируется в Actions только после появления файла в ветке по умолчанию
 (`main`), поэтому автодеплой выполняется при push в `main` после зелёного CI.
+Workflow `Deploy` уже **проверен end-to-end** (коммит `9531a62`): CI успешен, `Deploy`
+запустился автоматически, и smoke-job подтвердил живое приложение —
 
-1. Добавить секреты (шаги 4–5 выше): `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`,
-   `RAILWAY_DEPLOY_HOOK`.
+- `Deploy frontend (Vercel)` → success;
+- `Deploy backend (Railway)` → success;
+- `Post-deploy smoke (live endpoints)`:
+  - `Frontend responds 200` → success;
+  - `Backend readiness returns ready` → success.
+
+Run: [github.com/Yarkiller/digest_cds/actions/runs/37463500346](https://github.com/Yarkiller/digest_cds/actions/runs/37463500346).
+
+1. Для реального деплоя фронтенда/бэкенда из CI добавьте секреты (шаги 4–5 выше):
+   `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`, `RAILWAY_DEPLOY_HOOK`.
+   (Фронтенд уже деплоится автоматически через Vercel Git — секреты для него не обязательны.)
 2. Перевести изменения в `main` (merge или push) — после этого `CI → Deploy` публикует
-   фронтенд на Vercel и backend на Railway.
-3. Ссылка на деплой добавляется в описание репозитория/README.
+   приложение и проверяет живые URL.
+3. Ссылка на деплой — в описании репозитория/README.
