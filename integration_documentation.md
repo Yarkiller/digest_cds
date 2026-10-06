@@ -420,6 +420,17 @@ unit-тестами) + [`web/src/services/analyticsRuntime.js`](web/src/services
 Алерты: UptimeRobot (шаг 6). Railway автоматически перезапускает сервис по
 `restartPolicyType: ON_FAILURE` (`railway.json`) и проверяет `/health`.
 
+### Настроенные мониторы (UptimeRobot)
+
+| Монитор | URL | Ожидание |
+|---|---|---|
+| Frontend | `https://digest-cds.vercel.app/` | HTTP 200 |
+| Backend liveness | `https://digest-cds-api-production.up.railway.app/health` | HTTP 200, тело `{"status":"ok"}` |
+| Backend readiness | `https://digest-cds-api-production.up.railway.app/health/ready` | HTTP 200 (503 = зависимость недоступна) |
+
+Для readiness включите keyword-монитор по строке `"status":"ready"` — тогда алерт сработает
+не только на 503, но и на деградацию БД. Интервал — 5 минут, Alert Contacts — email/Telegram.
+
 ---
 
 ## 7. Логирование
