@@ -52,3 +52,52 @@ describe('yandexProviderId', () => {
     assert.equal(yandexProviderId({ VITE_YANDEX_OAUTH_PROVIDER: '   ' }), 'custom:yandex')
   })
 })
+
+describe('parseAllowedDomains', () => {
+  it('normalizes a comma-separated list', async () => {
+    const { parseAllowedDomains } = await import('../../web/src/services/oauthSession.js')
+    assert.deepEqual(parseAllowedDomains('@sberbank.ru, @omega.sbrf.ru'), [
+      '@sberbank.ru',
+      '@omega.sbrf.ru',
+    ])
+    assert.deepEqual(parseAllowedDomains('sberbank.ru'), ['@sberbank.ru'])
+    assert.deepEqual(parseAllowedDomains('@SBERBANK.RU'), ['@sberbank.ru'])
+  })
+
+  it('returns null for empty or non-string input', async () => {
+    const { parseAllowedDomains } = await import('../../web/src/services/oauthSession.js')
+    assert.equal(parseAllowedDomains(''), null)
+    assert.equal(parseAllowedDomains('   '), null)
+    assert.equal(parseAllowedDomains(undefined), null)
+    assert.equal(parseAllowedDomains(' , '), null)
+  })
+})
+
+describe('corporateAllowedDomains', () => {
+  it('falls back to the strict corporate allow-list by default', async () => {
+    const { corporateAllowedDomains, DEFAULT_ALLOWED_EMAIL_DOMAINS } = await import(
+      '../../web/src/services/oauthSession.js'
+    )
+    assert.deepEqual(corporateAllowedDomains({}), DEFAULT_ALLOWED_EMAIL_DOMAINS)
+    assert.deepEqual(corporateAllowedDomains(undefined), DEFAULT_ALLOWED_EMAIL_DOMAINS)
+  })
+
+  it('honours VITE_ALLOWED_EMAIL_DOMAINS for demo/test overrides', async () => {
+    const { corporateAllowedDomains } = await import('../../web/src/services/oauthSession.js')
+    assert.deepEqual(
+      corporateAllowedDomains({ VITE_ALLOWED_EMAIL_DOMAINS: '@sberbank.ru,@yandex.ru' }),
+      ['@sberbank.ru', '@yandex.ru'],
+    )
+  })
+
+  it('lets an OAuth session from an added domain pass when configured', async () => {
+    const { isCorporateSession, corporateAllowedDomains } = await import(
+      '../../web/src/services/oauthSession.js'
+    )
+    const env = { VITE_ALLOWED_EMAIL_DOMAINS: '@yandex.ru' }
+    assert.equal(
+      isCorporateSession({ user: { email: 'someone@yandex.ru' } }, corporateAllowedDomains(env)),
+      true,
+    )
+  })
+})

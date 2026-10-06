@@ -139,15 +139,21 @@ github.event.workflow_run.head_repository.full_name == github.repository
 |---|---|---|
 | `VITE_ENABLE_YANDEX_OAUTH` | `true` | показать кнопку «Продолжить с Яндекс ID» |
 | `VITE_YANDEX_OAUTH_PROVIDER` | `custom:yandex` | идентификатор провайдера в Supabase |
+| `VITE_ALLOWED_EMAIL_DOMAINS` | пусто (строго) | allow-list доменов для SPA (см. ниже) |
 
-> **Политика домена (ADR-0003).** Вход разрешён только с `@sberbank.ru` / `@omega.sbrf.ru`.
-> Яндекс отдаёт `@yandex.ru`, поэтому такой вход **по замыслу** будет отклонён: фронтенд
-> сбрасывает сессию и показывает сообщение, а backend отвечает `403 domain_not_allowed`.
-> Это демонстрирует корректную обработку отказа. Чтобы Яндекс-вход стал рабочим для
-> тестового аккаунта, добавьте его домен в `ALLOWED_EMAIL_DOMAINS` (бэкенд) и в
-> `DEFAULT_ALLOWED_EMAIL_DOMAINS` (фронтенд `web/src/services/emailDomain.js`).
-> Дополнительно проверьте, что Supabase получил `email` из UserInfo Яндекса
-> (Яндекс возвращает `default_email`); при пустом email вход так же будет отклонён.
+> **Политика домена (ADR-0003).** По умолчанию вход разрешён только с `@sberbank.ru` /
+> `@omega.sbrf.ru`. Яндекс отдаёт `@yandex.ru`, поэтому такой вход **по умолчанию** будет
+> отклонён: фронтенд сбрасывает сессию и показывает сообщение, а backend отвечает
+> `403 domain_not_allowed`. Это демонстрирует корректную обработку отказа.
+>
+> Чтобы **продемонстрировать успешный вход** (критерий ДЗ «проверить успешный вход»),
+> добавьте домен аккаунта в allow-list через конфиг (без изменения кода):
+> - фронтенд: `VITE_ALLOWED_EMAIL_DOMAINS=@sberbank.ru,@omega.sbrf.ru,@yandex.ru`
+> - бэкенд: `ALLOWED_EMAIL_DOMAINS=@sberbank.ru,@omega.sbrf.ru,@yandex.ru`
+>
+> Значения по умолчанию остаются строгими; переопределение действует только там, где задано.
+> Убедитесь также, что Supabase получает `email` из UserInfo Яндекса (поле `default_email`);
+> при пустом email вход так же будет отклонён.
 
 ### Шаг 3. Аналитика — Яндекс.Метрика
 

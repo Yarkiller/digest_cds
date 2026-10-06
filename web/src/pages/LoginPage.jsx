@@ -10,7 +10,12 @@ import {
 } from '../services/authApi.js'
 import { sanitizeReturnUrl } from '../services/authEnv.js'
 import { isAllowedCorporateEmail } from '../services/emailDomain.js'
-import { YANDEX_OAUTH_LABEL, isCorporateSession, oauthEnabled } from '../services/oauthSession.js'
+import {
+  YANDEX_OAUTH_LABEL,
+  corporateAllowedDomains,
+  isCorporateSession,
+  oauthEnabled,
+} from '../services/oauthSession.js'
 import { ANALYTICS_GOALS, trackGoal } from '../services/analyticsRuntime.js'
 import { armWelcomeToast } from '../services/welcomeSession.js'
 
@@ -40,7 +45,7 @@ export default function LoginPage() {
       return
     }
 
-    if (!isAllowedCorporateEmail(email.trim())) {
+    if (!isAllowedCorporateEmail(email.trim(), corporateAllowedDomains(import.meta.env))) {
       setDomainError(DOMAIN_MESSAGE)
       setSignInCalls(getSignInInvocationCount())
       return
@@ -74,7 +79,7 @@ export default function LoginPage() {
     setSubmitting(true)
     try {
       const session = await signInWithYandex()
-      if (session && !isCorporateSession(session)) {
+      if (session && !isCorporateSession(session, corporateAllowedDomains(import.meta.env))) {
         // Yandex ID returned a non-corporate email — enforce ADR-0003 and drop the session.
         await signOut()
         setDomainError(DOMAIN_MESSAGE)

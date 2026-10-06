@@ -4,6 +4,7 @@ import ErrorPanel from '../components/ErrorPanel.jsx'
 import { AuthApiError, getSignUpInvocationCount, signUp, updateAuthDisplayName } from '../services/authApi.js'
 import { sanitizeReturnUrl } from '../services/authEnv.js'
 import { isAllowedCorporateEmail } from '../services/emailDomain.js'
+import { corporateAllowedDomains } from '../services/oauthSession.js'
 import { MeApiError, updateDisplayName } from '../services/meApi.js'
 import { armWelcomeToast } from '../services/welcomeSession.js'
 
@@ -41,7 +42,7 @@ export default function RegisterPage() {
       return
     }
 
-    if (!isAllowedCorporateEmail(email.trim())) {
+    if (!isAllowedCorporateEmail(email.trim(), corporateAllowedDomains(import.meta.env))) {
       setDomainError(DOMAIN_MESSAGE)
       setSignUpCalls(getSignUpInvocationCount())
       return

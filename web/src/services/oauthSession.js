@@ -1,6 +1,8 @@
 /** OAuth2 (Yandex ID via Supabase) helpers — pure, node-testable. */
 
-import { isAllowedCorporateEmail } from './emailDomain.js'
+import { DEFAULT_ALLOWED_EMAIL_DOMAINS, isAllowedCorporateEmail } from './emailDomain.js'
+
+export { DEFAULT_ALLOWED_EMAIL_DOMAINS }
 
 export const YANDEX_OAUTH_LABEL = 'Продолжить с Яндекс ID'
 
@@ -24,6 +26,33 @@ export function yandexProviderId(env) {
  */
 export function oauthEnabled(env) {
   return env?.VITE_ENABLE_YANDEX_OAUTH === 'true'
+}
+
+/**
+ * Parse a comma-separated domain allow-list; each entry is normalized to `@domain`.
+ * @param {unknown} value
+ * @returns {string[] | null} null when no usable entries (caller keeps the default)
+ */
+export function parseAllowedDomains(value) {
+  if (typeof value !== 'string') {
+    return null
+  }
+  const parsed = value
+    .split(',')
+    .map((part) => part.trim().toLowerCase())
+    .filter(Boolean)
+    .map((domain) => (domain.startsWith('@') ? domain : `@${domain}`))
+  return parsed.length ? parsed : null
+}
+
+/**
+ * Corporate allow-list for the SPA: VITE_ALLOWED_EMAIL_DOMAINS overrides the strict
+ * default (mirrors backend ALLOWED_EMAIL_DOMAINS). Defaults stay strict.
+ * @param {Record<string, unknown> | null | undefined} env
+ * @returns {readonly string[]}
+ */
+export function corporateAllowedDomains(env) {
+  return parseAllowedDomains(env?.VITE_ALLOWED_EMAIL_DOMAINS) ?? DEFAULT_ALLOWED_EMAIL_DOMAINS
 }
 
 /**
