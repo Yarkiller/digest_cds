@@ -75,16 +75,15 @@
 
 ### Часть C. Запуск автодеплоя
 
-1. Убедитесь, что секреты добавлены (шаги A7, B4).
-2. Влейте изменения в `main`: откройте PR #1 → **Merge pull request** (или попросите меня — я
-   смерджу, если подтвердите).
-3. После merge: вкладка **Actions** → workflow **Deploy** → он запустится автоматически после
-   зелёного **CI**. Откройте его — оба job должны завершиться успешно.
+> **Уже настроено:** push в `main` автоматически деплоит и фронтенд (Vercel Git), и backend
+> (Railway deployment trigger на ветку `main`). Проверено эмпирически (см. Часть E).
+
+1. Убедитесь, что секреты добавлены (шаги A7, B4) — только если хотите деплой через workflow
+   `Deploy` в GitHub Actions. Нативные git-интеграции работают и без них.
+2. Влейте изменения в `main` (merge или push) — `main` уже синхронизирован.
+3. Вкладка **Actions** → workflow **Deploy** → запускается автоматически после зелёного **CI**.
 4. Проверьте: URL Vercel (фронтенд) открывается; `https://<railway-domain>/health/ready`
    возвращает `{"status":"ready",...}`.
-
-> Пока секреты не добавлены, `Deploy` не падает: job печатают «skipped». Как только секреты
-> появятся — тот же push в `main` выполнит реальный деплой.
 
 ### Часть D. OAuth2 (Яндекс ID) и Метрика — кратко
 
@@ -108,8 +107,9 @@
   production branch `main` — push в `main` автоматически запускает сборку и деплой.
   Проверено эмпирически: push `609b41d` → Vercel-деплой `source=git`, `target=production`, `READY`.
 - **Автодеплой backend:** включён (Railway deployment trigger на ветку `main`,
-  `deploymentTriggerCreate` → id `d02db748-ca51-41d2-a4ec-969365558403`). Push в `main`
-  автоматически пересобирает и деплоит сервис `digest-cds-api`. Проверяется пушем в `main`.
+  `deploymentTriggerCreate` → id `d02db748-ca51-41d2-a4ec-969365558403`).
+  Проверено эмпирически: push `3a7f4f1` → Railway **сам** создал деплой
+  (id `c246e806-3dd6-4351-815a-63aa643a954e`, `createdAt 12:48:20Z`, `SUCCESS`) без ручного запуска.
 - **Значения для GitHub Secrets (Vercel):** `VERCEL_ORG_ID` = `team_ZOvU4Mna7rW6Mcch7xZA5WJs`,
   `VERCEL_PROJECT_ID` = `prj_aPuyodDVW8W4V4slflvWcpDgFIwq`, `VERCEL_TOKEN` = ваш токен.
   (Фронтенд и backend уже деплоятся по push через нативные git-интеграции — секреты GitHub
