@@ -375,12 +375,12 @@ unit-тестами) + [`web/src/services/analyticsRuntime.js`](web/src/services
 
 ---
 
-## 11. Доказательства (локальная проверка)
+## 11. Доказательства (локальная и CI-проверка)
 
 | Проверка | Команда | Результат |
 |---|---|---|
 | Backend unit | `uv run pytest -q` | 782 passed |
-| Frontend unit | `npm run test:js` | 48 passed |
+| Frontend unit | `npm run test:js` | 53 passed |
 | E2E | `npx playwright test --project=web` | 106 passed |
 | Lint Python | `uv run ruff check .` | All checks passed |
 | Lint JS | `npm run lint --prefix web` | без ошибок |
@@ -388,5 +388,17 @@ unit-тестами) + [`web/src/services/analyticsRuntime.js`](web/src/services
 | Секреты зависимостей | `npm audit`, `pip-audit` | 0 уязвимостей |
 | SAST | `bandit -r …` | 0 issues |
 
-После добавления секретов (шаги 4–5) пайплайн `CI → Deploy` публикует фронтенд на Vercel
-и backend на Railway; ссылка на деплой — в описании репозитория/README.
+CI-прогон (все 5 job зелёные): [github.com/Yarkiller/digest_cds/actions/runs/37451504977](https://github.com/Yarkiller/digest_cds/actions/runs/37451504977).
+Аудит зависимостей в CI обнаружил и подтвердил исправление двух реальных уязвимостей
+(SEC-08, SEC-09 в `security_audit.md`).
+
+### Что нужно для запуска деплоя
+
+`Deploy` регистрируется в Actions только после появления файла в ветке по умолчанию
+(`main`), поэтому автодеплой выполняется при push в `main` после зелёного CI.
+
+1. Добавить секреты (шаги 4–5 выше): `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`,
+   `RAILWAY_DEPLOY_HOOK`.
+2. Перевести изменения в `main` (merge или push) — после этого `CI → Deploy` публикует
+   фронтенд на Vercel и backend на Railway.
+3. Ссылка на деплой добавляется в описание репозитория/README.
