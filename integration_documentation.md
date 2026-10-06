@@ -103,6 +103,10 @@
   CORS preflight с origin `https://digest-cds.vercel.app` → `200`.
   Переменные окружения сервиса заданы (`APP_CONTAINER=live`, `SUPABASE_*`, `ALLOWED_EMAIL_DOMAINS`,
   `API_CORS_ORIGINS`, `SITE_URL`, `LOG_LEVEL`).
+- **Аналитика live:** Яндекс.Метрика, счётчик **113475972** (`VITE_YM_COUNTER_ID` в Vercel).
+  Проверено в продакшн-бандле: присутствуют `mc.yandex.ru`, `tag.js`, `?id=`, `webvisor`,
+  `dataLayer`, `reachGoal`, `accurateTrackBounce`, число `113475972`. Page-view уходит на каждой
+  смене маршрута; события — `login/login_oauth/vote/search/material_open/digest_send`.
 - **Автодеплой frontend:** Vercel Git-интеграция подключена к `Yarkiller/digest_cds`,
   production branch `main` — push в `main` автоматически запускает сборку и деплой.
   Проверено эмпирически: push `609b41d` → Vercel-деплой `source=git`, `target=production`, `READY`.
