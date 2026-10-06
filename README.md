@@ -12,7 +12,7 @@ Digest CDS — корпоративный сервис сбора, структ�
 |-----|------|
 | GitHub | [https://github.com/Yarkiller/digest_cds](https://github.com/Yarkiller/digest_cds) |
 | Демо (Vercel) | [https://digest-cds.vercel.app](https://digest-cds.vercel.app) |
-| API (Railway) | `https://digestcds-production.up.railway.app` (health: `/health/ready`) |
+| API (Railway) | [https://digest-cds-api-production.up.railway.app](https://digest-cds-api-production.up.railway.app) (health: `/health/ready`) |
 | CI/CD и интеграции | [`integration_documentation.md`](integration_documentation.md) |
 | Отчёт по безопасности | [`security_audit.md`](security_audit.md) |
 | Отчёт о разработке | [`development_report.md`](development_report.md) |

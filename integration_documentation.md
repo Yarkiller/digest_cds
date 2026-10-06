@@ -91,21 +91,25 @@
 Ещё не сделано? Не обязательно для деплоя. Когда будете готовы — инструкции в §3 (шаги 2–3)
 и §5. Там же, как провести **успешный** Яндекс-вход (через `VITE_ALLOWED_EMAIL_DOMAINS`).
 
-### Часть E. Статус деплоя (что уже сделано)
+### Часть E. Статус деплоя (LIVE)
 
 - **Frontend LIVE:** [https://digest-cds.vercel.app](https://digest-cds.vercel.app) —
-  Vercel-проект `digest-cds` (team `bender-s-park`). Проверено: HTTP 200, отдаётся наш
-  бандл, deep-link `/voting` и `/knowledge` работают (SPA-rewrite).
-- **Значения для GitHub Secrets (Vercel):**
-  - `VERCEL_ORG_ID` = `team_ZOvU4Mna7rW6Mcch7xZA5WJs`
-  - `VERCEL_PROJECT_ID` = `prj_aPuyodDVW8W4V4slflvWcpDgFIwq`
-  - `VERCEL_TOKEN` = ваш токен (`vcp_…`)
-- **Backend:** Railway-сервис `digest_cds`, публичный домен
-  `https://digestcds-production.up.railway.app`. Осталось: в Railway переключить
-  **Settings → Source → Branch** на `main` (сейчас стоит `temp`), задать переменные окружения
-  (Часть B, шаг 3) и выполнить Deploy. После этого открыть
-  `https://digestcds-production.up.railway.app/health/ready` — ожидается
-  `{"status":"ready",...}`.
+  Vercel-проект `digest-cds` (team `bender-s-park`). Проверено: HTTP 200, отдаётся наш бандл,
+  deep-link `/voting` и `/knowledge` работают (SPA-rewrite). В сборку «запечены»
+  OAuth-кнопка Яндекс ID, `custom:yandex` и адрес Railway API.
+- **Backend LIVE:** [https://digest-cds-api-production.up.railway.app](https://digest-cds-api-production.up.railway.app) —
+  Railway-сервис `digest-cds-api` (source `Yarkiller/digest_cds`, ветка `main`, Docker).
+  Проверено: `GET /health` → `200 {"status":"ok"}`;
+  `GET /health/ready` → `200 {"status":"ready","components":{"database":{"healthy":true,...}}}`;
+  CORS preflight с origin `https://digest-cds.vercel.app` → `200`.
+  Переменные окружения сервиса заданы (`APP_CONTAINER=live`, `SUPABASE_*`, `ALLOWED_EMAIL_DOMAINS`,
+  `API_CORS_ORIGINS`, `SITE_URL`, `LOG_LEVEL`).
+- **Значения для GitHub Secrets (Vercel):** `VERCEL_ORG_ID` = `team_ZOvU4Mna7rW6Mcch7xZA5WJs`,
+  `VERCEL_PROJECT_ID` = `prj_aPuyodDVW8W4V4slflvWcpDgFIwq`, `VERCEL_TOKEN` = ваш токен.
+- **Осталось для полного автодеплоя по push:** добавить GitHub Secrets (`VERCEL_TOKEN`,
+  `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`, `RAILWAY_DEPLOY_HOOK`) — либо включить в дашбордах
+  авто-деплой: Vercel → Git Integration, Railway → Settings → Auto Deploy.
+  Deploy Hook URL: Railway → сервис `digest-cds-api` → Settings → Deploy → Deploy Hook.
 
 ---
 
