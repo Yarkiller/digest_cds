@@ -91,6 +91,22 @@
 Ещё не сделано? Не обязательно для деплоя. Когда будете готовы — инструкции в §3 (шаги 2–3)
 и §5. Там же, как провести **успешный** Яндекс-вход (через `VITE_ALLOWED_EMAIL_DOMAINS`).
 
+### Часть E. Статус деплоя (что уже сделано)
+
+- **Frontend LIVE:** [https://digest-cds.vercel.app](https://digest-cds.vercel.app) —
+  Vercel-проект `digest-cds` (team `bender-s-park`). Проверено: HTTP 200, отдаётся наш
+  бандл, deep-link `/voting` и `/knowledge` работают (SPA-rewrite).
+- **Значения для GitHub Secrets (Vercel):**
+  - `VERCEL_ORG_ID` = `team_ZOvU4Mna7rW6Mcch7xZA5WJs`
+  - `VERCEL_PROJECT_ID` = `prj_aPuyodDVW8W4V4slflvWcpDgFIwq`
+  - `VERCEL_TOKEN` = ваш токен (`vcp_…`)
+- **Backend:** Railway-сервис `digest_cds`, публичный домен
+  `https://digestcds-production.up.railway.app`. Осталось: в Railway переключить
+  **Settings → Source → Branch** на `main` (сейчас стоит `temp`), задать переменные окружения
+  (Часть B, шаг 3) и выполнить Deploy. После этого открыть
+  `https://digestcds-production.up.railway.app/health/ready` — ожидается
+  `{"status":"ready",...}`.
+
 ---
 
 ## 1. Архитектура и потоки

@@ -19,3 +19,4 @@ dist/
 .playwright-browsers/
 test-results/
 .cursor/mcp.json
+.vercel
