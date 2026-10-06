@@ -58,6 +58,7 @@ flowchart LR
 | `frontend-tests` | `npm ci`, `node --test`, `npm run build` |
 | `security` | `npm audit` (root + web), `pip-audit`, `bandit` |
 | `e2e` | Playwright (`--project=web`), отчёт выгружается в artifact |
+| `docker` | сборка backend-образа по `Dockerfile` + запуск контейнера и smoke-проверка `/health` и `/health/ready` |
 
 ### 2.3. Автодеплой
 
@@ -387,6 +388,7 @@ unit-тестами) + [`web/src/services/analyticsRuntime.js`](web/src/services
 | Build | `npm run build` | успешно |
 | Секреты зависимостей | `npm audit`, `pip-audit` | 0 уязвимостей |
 | SAST | `bandit -r …` | 0 issues |
+| Docker deploy-путь | `docker build` + `docker run` + `/health` | образ собран, 200/ready |
 
 CI-прогон (все 5 job зелёные): [github.com/Yarkiller/digest_cds/actions/runs/37451504977](https://github.com/Yarkiller/digest_cds/actions/runs/37451504977).
 Аудит зависимостей в CI обнаружил и подтвердил исправление двух реальных уязвимостей
