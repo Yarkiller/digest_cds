@@ -398,6 +398,10 @@ unit-тестами) + [`web/src/services/analyticsRuntime.js`](web/src/services
 (привязка к `window`/env). Счётчик инициализируется в `main.jsx`; page-view отправляется на
 каждой смене маршрута (`AnalyticsPageViews`).
 
+Счётчик: **113475972** (задан в Vercel как `VITE_YM_COUNTER_ID`). Инициализация соответствует
+официальному сниппету Яндекс.Метрики: скрипт `https://mc.yandex.ru/metrika/tag.js?id=<id>`,
+далее `ym(<id>, 'init', { ssr, webvisor, clickmap, ecommerce, trackLinks, accurateTrackBounce })`.
+
 | Событие (goal) | Где | Параметры |
 |---|---|---|
 | `login` | успешный вход по email/паролю | — |

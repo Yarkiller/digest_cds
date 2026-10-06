@@ -47,7 +47,7 @@ describe('trackHit', () => {
 })
 
 describe('initAnalytics', () => {
-  it('injects the Metrika script and queues init when enabled', async () => {
+  it('injects the Metrika script with the counter id and queues init when enabled', async () => {
     const { initAnalytics } = await import('../../web/src/services/analytics.js')
     const appended = []
     const doc = {
@@ -58,9 +58,15 @@ describe('initAnalytics', () => {
     assert.equal(initAnalytics({ counterId: '123', doc, win }), true)
     assert.equal(typeof win.ym, 'function')
     assert.equal(appended.length, 1)
-    assert.equal(appended[0].src, 'https://mc.yandex.ru/metrika/tag.js')
+    assert.equal(appended[0].src, 'https://mc.yandex.ru/metrika/tag.js?id=123')
     assert.equal(win.ym.a.length, 1)
+    assert.equal(win.ym.a[0][0], '123')
     assert.equal(win.ym.a[0][1], 'init')
+    const options = win.ym.a[0][2]
+    assert.equal(options.webvisor, true)
+    assert.equal(options.clickmap, true)
+    assert.equal(options.trackLinks, true)
+    assert.equal(options.accurateTrackBounce, true)
   })
 
   it('does nothing without a valid counter id', async () => {

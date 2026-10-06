@@ -76,14 +76,16 @@ export function initAnalytics({ counterId, doc, win } = {}) {
 
     const script = doc.createElement('script')
     script.async = true
-    script.src = METRIKA_TAG_URL
+    script.src = `${METRIKA_TAG_URL}?id=${String(counterId).trim()}`
     doc.head.appendChild(script)
   }
   win.ym(String(counterId).trim(), 'init', {
+    ssr: true,
+    webvisor: true,
     clickmap: true,
+    ecommerce: 'dataLayer',
     trackLinks: true,
     accurateTrackBounce: true,
-    webvisor: false,
   })
   return true
 }
