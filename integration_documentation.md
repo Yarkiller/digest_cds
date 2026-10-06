@@ -60,6 +60,24 @@ flowchart LR
 | `e2e` | Playwright (`--project=web`), отчёт выгружается в artifact |
 | `docker` | сборка backend-образа по `Dockerfile` + запуск контейнера и smoke-проверка `/health` и `/health/ready` |
 
+Контрактные тесты deploy-конфигов: [`tests/unit/test_deploy_configs.py`](tests/unit/test_deploy_configs.py)
+(SPA-rewrite и immutable-кэш Vercel, health-чек Railway/Render, отсутствие секретов в
+`render.yaml`, стадии CI, guard деплоя, корректный workspace-install в Dockerfile).
+
+### Оптимизация (Шаг 8)
+
+Рекомендации получены с помощью AI по итогам сборки и проверены:
+
+- **Кэширование статики на Vercel** (применено): `Cache-Control: public, max-age=31536000, immutable`
+  для `/assets/*` (хешированные бандлы Vite) и недельный кэш для `/covers/*` — повторные заходы
+  не перекачивают бандлы.
+- **Разбиение чанков** (рекомендация, не применена): сборка предупреждает о чанке > 500 kB
+  (`index-*.js` ~760 kB). Безопасный следующий шаг — `build.rolldownOptions.output` code-splitting
+  для vendor-зависимостей (`react`, `@supabase/supabase-js`); требует отдельной проверки
+  Playwright, поэтому вынесено как рекомендация.
+- **Docker-образ** (проверено): многоступенчатая установка (`--no-install-workspace` → `--no-install-project`)
+  переиспользует кэш слоёв и не тянет dev-зависимости (`--no-dev`); образ собирается CI-job `docker`.
+
 ### 2.3. Автодеплой
 
 `deploy.yml` запускается по `workflow_run` **только** когда CI на `main` завершился успешно
