@@ -72,3 +72,38 @@ jobs:
       - name: Trigger Railway deployment
         if: ${{ env.RAILWAY_DEPLOY_HOOK != '' }}
         run: curl -fsS -X POST "$RAILWAY_DEPLOY_HOOK"
+
+  smoke:
+    name: Post-deploy smoke (live endpoints)
+    runs-on: ubuntu-latest
+    needs: [deploy-frontend, deploy-backend]
+    if: always()
+    env:
+      FRONTEND_URL: ${{ vars.FRONTEND_URL || 'https://digest-cds.vercel.app' }}
+      BACKEND_READY_URL: ${{ vars.BACKEND_READY_URL || 'https://digest-cds-api-production.up.railway.app/health/ready' }}
+    steps:
+      - name: Frontend responds 200
+        run: |
+          for attempt in $(seq 1 10); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" "$FRONTEND_URL" || true)
+            if [ "$code" = "200" ]; then
+              echo "frontend OK ($FRONTEND_URL -> 200)"
+              exit 0
+            fi
+            sleep 6
+          done
+          echo "frontend not healthy: last status=$code ($FRONTEND_URL)"
+          exit 1
+
+      - name: Backend readiness returns ready
+        run: |
+          for attempt in $(seq 1 10); do
+            body=$(curl -s "$BACKEND_READY_URL" || true)
+            if printf '%s' "$body" | grep -q '"status":"ready"'; then
+              echo "backend ready ($BACKEND_READY_URL -> $body)"
+              exit 0
+            fi
+            sleep 6
+          done
+          echo "backend not ready: last body=$body ($BACKEND_READY_URL)"
+          exit 1

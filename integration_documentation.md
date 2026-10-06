@@ -203,6 +203,9 @@ github.event.workflow_run.head_repository.full_name == github.repository
 
 - Frontend → Vercel CLI (`vercel pull/build/deploy --prod`).
 - Backend → POST на Railway Deploy Hook.
+- **Post-deploy smoke** (`smoke`): после деплой-job автоматически проверяет живые URL —
+  фронтенд отвечает `200`, а `/health/ready` возвращает `"status":"ready"`. Так пайплайн
+  подтверждает, что развёрнутое приложение действительно работает.
 
 Если тот или иной секрет не задан, соответствующий job печатает «skipped» и не падает —
 пайплайн остаётся зелёным до момента, когда вы добавите ключи.

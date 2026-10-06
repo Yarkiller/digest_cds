@@ -82,10 +82,24 @@ def test_deploy_workflow_triggers_after_ci_on_main_only() -> None:
     workflow = _workflow("deploy.yml")
     triggers = workflow.get(True) or workflow.get("on")
     assert "workflow_run" in triggers
-    for job_name, job in workflow["jobs"].items():
+    deploy_jobs = {name: job for name, job in workflow["jobs"].items() if name.startswith("deploy-")}
+    assert deploy_jobs, "expected deploy-* jobs"
+    for job_name, job in deploy_jobs.items():
         condition = " ".join(job["if"].split())
         assert "head_branch == 'main'" in condition, job_name
         assert "head_repository.full_name == github.repository" in condition, job_name
+
+
+def test_deploy_workflow_smoke_checks_live_endpoints() -> None:
+    workflow = _workflow("deploy.yml")
+    smoke = workflow["jobs"].get("smoke")
+    assert smoke is not None, "missing post-deploy smoke job"
+    needs = smoke.get("needs")
+    needs = needs if isinstance(needs, list) else [needs]
+    assert {"deploy-frontend", "deploy-backend"} <= set(needs)
+    haystack = "\n".join(step.get("run", "") for step in smoke["steps"]) + "\n" + str(smoke.get("env"))
+    assert "/health/ready" in haystack
+    assert '"status":"ready"' in haystack
 
 
 def test_dockerfile_installs_workspace_members() -> None:
