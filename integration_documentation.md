@@ -214,8 +214,10 @@ github.event.workflow_run.head_repository.full_name == github.repository
 | `LOG_LEVEL` | `info` |
 
 > Альтернатива Railway: Railway сам умеет автодеплой из GitHub по push в выбранную ветку —
-> тогда `RAILWAY_DEPLOY_HOOK` можно не задавать. Render подключается аналогично:
-> Web Service → Docker, health check path `/health`.
+> тогда `RAILWAY_DEPLOY_HOOK` можно не задавать. **Render** как альтернатива
+> сконфигурирован в [`render.yaml`](render.yaml) (Render Blueprint: Docker, health check
+> `/health`, секреты помечены `sync: false` и задаются в дашборде). Достаточно
+> «New → Blueprint» и указать репозиторий.
 
 ### Шаг 6. UptimeRobot (внешний мониторинг)
 
@@ -372,7 +374,7 @@ unit-тестами) + [`web/src/services/analyticsRuntime.js`](web/src/services
 Полные файлы: [`.github/workflows/ci.yml`](.github/workflows/ci.yml),
 [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml),
 [`Dockerfile`](Dockerfile), [`.dockerignore`](.dockerignore),
-[`railway.json`](railway.json), [`vercel.json`](vercel.json).
+[`railway.json`](railway.json), [`vercel.json`](vercel.json), [`render.yaml`](render.yaml).
 
 ---
 
