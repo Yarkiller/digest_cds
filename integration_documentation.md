@@ -106,8 +106,14 @@
   `API_CORS_ORIGINS`, `SITE_URL`, `LOG_LEVEL`).
 - **Автодеплой фронтенда:** Vercel Git-интеграция подключена к `Yarkiller/digest_cds`,
   production branch `main` — push в `main` автоматически запускает сборку и деплой (без GitHub-секретов).
+  Проверено эмпирически: push `609b41d` → Vercel-деплой `source=git`, `target=production`, `READY`.
 - **Значения для GitHub Secrets (Vercel):** `VERCEL_ORG_ID` = `team_ZOvU4Mna7rW6Mcch7xZA5WJs`,
   `VERCEL_PROJECT_ID` = `prj_aPuyodDVW8W4V4slflvWcpDgFIwq`, `VERCEL_TOKEN` = ваш токен.
+- **Автодеплой backend — не включён (проверено):** push `609b41d` не создал новый Railway-деплой;
+  проектный токен не позволяет менять `auto-deploy`/`deployment trigger` («Bad Access»).
+  Включить может только владелец в дашборде: Railway → сервис `digest-cds-api` →
+  **Settings → Source → Auto Deploy**. Альтернатива — Deploy Hook + секрет `RAILWAY_DEPLOY_HOOK`
+  (тогда деплой запускает workflow `Deploy` в GitHub Actions).
 - **Осталось для полного автодеплоя по push:** добавить GitHub Secrets (`VERCEL_TOKEN`,
   `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`, `RAILWAY_DEPLOY_HOOK`) — либо включить в дашбордах
   авто-деплой: Vercel → Git Integration, Railway → Settings → Auto Deploy.
