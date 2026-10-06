@@ -104,6 +104,8 @@
   CORS preflight с origin `https://digest-cds.vercel.app` → `200`.
   Переменные окружения сервиса заданы (`APP_CONTAINER=live`, `SUPABASE_*`, `ALLOWED_EMAIL_DOMAINS`,
   `API_CORS_ORIGINS`, `SITE_URL`, `LOG_LEVEL`).
+- **Автодеплой фронтенда:** Vercel Git-интеграция подключена к `Yarkiller/digest_cds`,
+  production branch `main` — push в `main` автоматически запускает сборку и деплой (без GitHub-секретов).
 - **Значения для GitHub Secrets (Vercel):** `VERCEL_ORG_ID` = `team_ZOvU4Mna7rW6Mcch7xZA5WJs`,
   `VERCEL_PROJECT_ID` = `prj_aPuyodDVW8W4V4slflvWcpDgFIwq`, `VERCEL_TOKEN` = ваш токен.
 - **Осталось для полного автодеплоя по push:** добавить GitHub Secrets (`VERCEL_TOKEN`,
