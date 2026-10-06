@@ -27,6 +27,7 @@
 | SEC-05 | Medium | Зависимости (`pyjwt`) | Исправлено |
 | SEC-06 | Low | Backend (YAML) | Принято (false positive, `nosec`) |
 | SEC-07 | Low | Тестовая поддержка | Принято (test-only, `nosec`) |
+| SEC-08 | High | Зависимости (`source-map-js`) | Исправлено (найдено в CI) |
 
 ## Найденные и исправленные проблемы
 
@@ -80,6 +81,17 @@ github.event.workflow_run.head_repository.full_name == github.repository
 **Суть:** `pip-audit` обнаружил `PYSEC-2026-4141` (исправлено в `2.15.0`).
 **Исправление:** версия поднята до `pyjwt==2.15.0`, `uv.lock` обновлён; после этого
 `pip-audit` — `No known vulnerabilities found`.
+
+### SEC-08 (High) — Уязвимая транзитивная зависимость `source-map-js`
+
+**Где:** `web/package-lock.json` (транзитивная зависимость Vite).
+**Суть:** `npm audit` в CI обнаружил `GHSA-68fv-2mgg-jv7q` — DoS через offsets
+indexed source-map в `source-map-js` `1.0.0–1.2.1`.
+**Исправление:** `npm audit fix --prefix web` → `source-map-js 1.2.2`; `npm audit`
+(root + web) — `found 0 vulnerabilities`. Сборка и тесты после обновления зелёные.
+
+> Находка получена автоматически из CI-джоба `security` — подтверждает, что аудит
+> зависимостей встроен в пайплайн и ловит новые advisories.
 
 ## Принятые риски (false positives)
 
