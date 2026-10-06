@@ -24,6 +24,16 @@ def test_vercel_rewrites_deep_links_to_index() -> None:
     assert "/index.html" in destinations
 
 
+def test_web_vercel_config_is_a_self_contained_fallback() -> None:
+    # Safety net: if the Vercel project's Root Directory is set to `web`, the repo-root
+    # vercel.json is ignored. web/vercel.json must still provide SPA routing + build.
+    config = _json("web/vercel.json")
+    destinations = {rewrite["destination"] for rewrite in config["rewrites"]}
+    assert "/index.html" in destinations
+    assert config["outputDirectory"] == "dist"
+    assert config["buildCommand"] == "npm run build"
+
+
 def test_vercel_caches_immutable_assets() -> None:
     config = _json("vercel.json")
     asset_rule = next(
