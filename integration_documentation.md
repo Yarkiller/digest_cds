@@ -11,6 +11,86 @@
 
 ---
 
+## 0. Быстрый старт: включить автодеплой (пошагово, для новичка)
+
+Цель: чтобы после merge в `main` фронтенд сам развернулся на Vercel, а backend — на Railway.
+
+> **Важно:** ключи Supabase уже есть — в локальном файле `.env` (строки `SUPABASE_URL`,
+> `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `SUPABASE_JWKS_URL`, `SUPABASE_JWT_ISSUER`).
+> Получать их не нужно, достаточно скопировать значения оттуда в панели хостингов.
+
+### Часть A. Vercel (фронтенд)
+
+1. Откройте <https://vercel.com> → **Sign Up** → **Continue with GitHub** → разрешите доступ.
+2. Нажмите **Add New… → Project** → в списке найдите репозиторий **digest_cds** →
+   **Import**. (Если репозитория нет — нажмите «Adjust GitHub App Permissions» и дайте доступ.)
+3. Framework Preset определится как **Vite** (настройки берутся из `vercel.json`).
+   Ничего не меняйте → **Deploy**. Дождитесь сборки.
+4. Создайте токен для CI: правый верхний угол → **Settings** (аккаунт) → **Tokens** →
+   **Create Token** → имя `github-actions` → **Create** → **скопируйте строку** (показывается
+   один раз). Это значение `VERCEL_TOKEN`.
+5. Узнайте ID проекта и аккаунта: **Project → Settings → General**.
+   - `Project ID` → это `VERCEL_PROJECT_ID`.
+   - `Team ID` (или Org ID; у личного аккаунта — в **Account Settings → General**) → `VERCEL_ORG_ID`.
+6. Переменные приложения: **Project → Settings → Environment Variables** → добавьте (Environment: Production):
+
+   | Name | Value |
+   |---|---|
+   | `VITE_SUPABASE_URL` | скопируйте из `.env` (значение `SUPABASE_URL`) |
+   | `VITE_SUPABASE_PUBLISHABLE_KEY` | скопируйте из `.env` (`SUPABASE_PUBLISHABLE_KEY`) |
+   | `VITE_API_BASE_URL` | URL backend из Части B (получите на шаге B1) |
+   | `VITE_USE_MOCKS` | `false` |
+   | `VITE_ENABLE_YANDEX_OAUTH` | `true` |
+   | `VITE_YANDEX_OAUTH_PROVIDER` | `custom:yandex` |
+   | `VITE_YM_COUNTER_ID` | номер счётчика Метрики (см. Часть D) |
+
+7. Добавьте секреты в GitHub: репозиторий → **Settings → Secrets and variables → Actions →
+   New repository secret** — по одному: `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`.
+
+### Часть B. Railway (backend)
+
+1. Откройте <https://railway.app> → **Login with GitHub** → **New Project** →
+   **Deploy from GitHub repo** → выберите **digest_cds**.
+   Railway найдёт `Dockerfile` и `railway.json` сам.
+2. **Settings → Networking → Generate Domain** → появится публичный URL (например
+   `https://digest-cds-api.up.railway.app`). Это `VITE_API_BASE_URL` для Части A, шаг 6.
+3. **Variables → New Variable** — добавьте:
+
+   | Name | Value |
+   |---|---|
+   | `APP_CONTAINER` | `live` |
+   | `SUPABASE_URL` | из `.env` |
+   | `SUPABASE_SECRET_KEY` | из `.env` |
+   | `SUPABASE_JWKS_URL` | из `.env` |
+   | `SUPABASE_JWT_ISSUER` | из `.env` |
+   | `ALLOWED_EMAIL_DOMAINS` | `@sberbank.ru,@omega.sbrf.ru` |
+   | `API_CORS_ORIGINS` | URL Vercel, например `https://digest-cds.vercel.app` |
+   | `SITE_URL` | то же, `https://digest-cds.vercel.app` |
+   | `LOG_LEVEL` | `info` |
+
+4. Создайте deploy hook: **Settings → Deploy → Deploy Hook** → скопируйте URL →
+   добавьте в GitHub Secrets как `RAILWAY_DEPLOY_HOOK`.
+
+### Часть C. Запуск автодеплоя
+
+1. Убедитесь, что секреты добавлены (шаги A7, B4).
+2. Влейте изменения в `main`: откройте PR #1 → **Merge pull request** (или попросите меня — я
+   смерджу, если подтвердите).
+3. После merge: вкладка **Actions** → workflow **Deploy** → он запустится автоматически после
+   зелёного **CI**. Откройте его — оба job должны завершиться успешно.
+4. Проверьте: URL Vercel (фронтенд) открывается; `https://<railway-domain>/health/ready`
+   возвращает `{"status":"ready",...}`.
+
+> Пока секреты не добавлены, `Deploy` не падает: job печатают «skipped». Как только секреты
+> появятся — тот же push в `main` выполнит реальный деплой.
+
+### Часть D. OAuth2 (Яндекс ID) и Метрика — кратко
+
+Ещё не сделано? Не обязательно для деплоя. Когда будете готовы — инструкции в §3 (шаги 2–3)
+и §5. Там же, как провести **успешный** Яндекс-вход (через `VITE_ALLOWED_EMAIL_DOMAINS`).
+
+---
+
 ## 1. Архитектура и потоки
 
 ```mermaid
