@@ -28,6 +28,7 @@
 | SEC-06 | Low | Backend (YAML) | Принято (false positive, `nosec`) |
 | SEC-07 | Low | Тестовая поддержка | Принято (test-only, `nosec`) |
 | SEC-08 | High | Зависимости (`source-map-js`) | Исправлено (найдено в CI) |
+| SEC-09 | High | Зависимости (`multidict`) | Исправлено (найдено в CI) |
 
 ## Найденные и исправленные проблемы
 
@@ -92,6 +93,14 @@ indexed source-map в `source-map-js` `1.0.0–1.2.1`.
 
 > Находка получена автоматически из CI-джоба `security` — подтверждает, что аудит
 > зависимостей встроен в пайплайн и ловит новые advisories.
+
+### SEC-09 (High) — Уязвимая транзитивная зависимость `multidict`
+
+**Где:** `pyproject.toml` (`[tool.uv] constraint-dependencies`), `uv.lock`.
+**Суть:** `pip-audit` в CI обнаружил `CVE-2026-104874` в `multidict 6.9.0`
+(тянется через `yarl`).
+**Исправление:** добавлен constraint `multidict>=6.9.1` (зафиксировано `7.0.0`);
+`pip-audit` — `No known vulnerabilities found`. Тесты, ruff, bandit — зелёные.
 
 ## Принятые риски (false positives)
 
