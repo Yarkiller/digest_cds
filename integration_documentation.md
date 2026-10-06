@@ -390,9 +390,11 @@ unit-тестами) + [`web/src/services/analyticsRuntime.js`](web/src/services
 | SAST | `bandit -r …` | 0 issues |
 | Docker deploy-путь | `docker build` + `docker run` + `/health` | образ собран, 200/ready |
 
-CI-прогон (все 5 job зелёные): [github.com/Yarkiller/digest_cds/actions/runs/37451504977](https://github.com/Yarkiller/digest_cds/actions/runs/37451504977).
+CI-прогон (все 6 job зелёные, включая сборку Docker-образа и health smoke):
+[github.com/Yarkiller/digest_cds/actions/runs/37452697394](https://github.com/Yarkiller/digest_cds/actions/runs/37452697394).
 Аудит зависимостей в CI обнаружил и подтвердил исправление двух реальных уязвимостей
-(SEC-08, SEC-09 в `security_audit.md`).
+(SEC-08, SEC-09 в `security_audit.md`); Docker-проверка в CI поймала и подтвердила
+исправление дефекта сборки образа (см. `Dockerfile`: `--no-install-workspace`).
 
 ### Что нужно для запуска деплоя
 
