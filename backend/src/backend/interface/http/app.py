@@ -12,6 +12,7 @@ from backend.composition.container import AppContainer, build_in_memory_containe
 from backend.composition.settings import Settings
 from backend.interface.http.middleware import (
     RequestIdMiddleware,
+    SecurityHeadersMiddleware,
     configure_structlog,
     resolve_log_level,
 )
@@ -42,6 +43,7 @@ def create_app(
 
     # Starlette runs the last added middleware first. CORS must be outermost.
     app.add_middleware(RequestIdMiddleware)
+    app.add_middleware(SecurityHeadersMiddleware)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=list(settings.cors_origins),

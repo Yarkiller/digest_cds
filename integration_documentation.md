@@ -466,9 +466,11 @@ unit-тестами) + [`web/src/services/analyticsRuntime.js`](web/src/services
 ## 8. Безопасность
 
 Полный отчёт: [`security_audit.md`](security_audit.md). Кратко: проведён аудит
-(`npm audit`, `pip-audit`, `bandit`, AI security review), исправлены 1 High, 3 Medium,
-1 Low; сканеры запускаются в CI. Подтверждены защиты от XSS, CSRF, SQL-инъекций,
-утечек секретов и деталей ошибок.
+(`npm audit`, `pip-audit`, `bandit`, AI security review) и **структурная проверка OWASP
+Top 10 (2021)** по всем категориям A01–A10 (см. раздел «Проверка OWASP Top 10» в отчёте).
+Исправлены 7 находок (SEC-01…SEC-10), включая High-уязвимости зависимостей и заголовки
+безопасности (A05); сканеры запускаются в CI. Подтверждены защиты от XSS, CSRF,
+SQL-инъекций, path traversal, SSRF, утечек секретов и деталей ошибок.
 
 ---
 
@@ -477,7 +479,7 @@ unit-тестами) + [`web/src/services/analyticsRuntime.js`](web/src/services
 | Этап | Как использован AI | Артефакт |
 |---|---|---|
 | CI/CD | генерация базовых workflow `ci.yml`/`deploy.yml`, разбор ошибок пайплайна | `.github/workflows/*` |
-| Аудит безопасности | AI security review диффа по OWASP Top 10 | `security_audit.md` |
+| Аудит безопасности | AI security review диффа + структурная проверка OWASP Top 10 (2021) | `security_audit.md` |
 | Анализ логов | набор промптов для разбора JSON-логов и инцидентов | `docs/agents/log-analysis-prompts.md` |
 | Интеграции | помощь в настройке OAuth2 (Supabase custom provider) и событий Метрики | `integration_documentation.md` |
 | Разработка | Red–Green–Refactor для новых функций (health, OAuth, аналитика, логи) | unit + Playwright тесты |

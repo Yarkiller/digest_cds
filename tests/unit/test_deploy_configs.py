@@ -50,6 +50,18 @@ def test_vercel_caches_immutable_assets() -> None:
     assert "max-age" in cache
 
 
+def test_vercel_sets_spa_security_headers() -> None:
+    config = _json("vercel.json")
+    keys = {
+        header["key"].lower()
+        for rule in config.get("headers", [])
+        for header in rule["headers"]
+    }
+    assert "x-content-type-options" in keys
+    assert "x-frame-options" in keys
+    assert "referrer-policy" in keys
+
+
 def test_railway_healthcheck_points_at_liveness() -> None:
     config = _json("railway.json")
     assert config["deploy"]["healthcheckPath"] == "/health"

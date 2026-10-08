@@ -11,7 +11,7 @@
 | `npm audit` | уязвимости npm-зависимостей (корень + `web/`) | `npm audit --audit-level=high` |
 | `pip-audit` | уязвимости Python-зависимостей | `uv run --with pip-audit pip-audit` |
 | `bandit` | SAST Python-кода (CWE) | `uv run --with bandit bandit -r backend/src supabase-integration/src data-collection/src ingestion-service/src` |
-| AI security review | ручной разбор диффа по OWASP Top 10 | Cursor `security-review` subagent |
+| AI security review | разбор диффа + структурная проверка OWASP Top 10 (2021) | Cursor `security-review` subagent + ручной разбор |
 
 Все сканеры выполняются автоматически в CI (job `security` в `.github/workflows/ci.yml`),
 поэтому регрессии по зависимостям и коду ловятся на каждом push.
@@ -29,6 +29,7 @@
 | SEC-07 | Low | Тестовая поддержка | Принято (test-only, `nosec`) |
 | SEC-08 | High | Зависимости (`source-map-js`) | Исправлено (найдено в CI) |
 | SEC-09 | High | Зависимости (`multidict`) | Исправлено (найдено в CI) |
+| SEC-10 | Medium | Заголовки безопасности (A05) | Исправлено (проверка OWASP Top 10) |
 
 ## Найденные и исправленные проблемы
 
@@ -101,6 +102,38 @@ indexed source-map в `source-map-js` `1.0.0–1.2.1`.
 (тянется через `yarl`).
 **Исправление:** добавлен constraint `multidict>=6.9.1` (зафиксировано `7.0.0`);
 `pip-audit` — `No known vulnerabilities found`. Тесты, ruff, bandit — зелёные.
+
+### SEC-10 (Medium) — Отсутствовали заголовки безопасности (A05)
+
+**Где:** `backend/.../interface/http/middleware.py`, `backend/.../interface/http/app.py`,
+`vercel.json`.
+**Суть:** API и SPA не отдавали базовых заголовков безопасности
+(`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, HSTS) —
+это позволяло MIME-sniffing и clickjacking при встраивании страницы в iframe.
+**Исправление:** добавлен `SecurityHeadersMiddleware` (backend, покрыт
+`tests/unit/test_security_headers.py`) и такой же набор заголовков для SPA в `vercel.json`
+(контрактный тест `test_vercel_sets_spa_security_headers`).
+
+## Проверка OWASP Top 10 (2021)
+
+Структурная проверка по категориям с фактическими доказательствами в коде.
+
+| Кат. | Название | Статус | Доказательство / меры |
+|---|---|---|---|
+| A01 | Broken Access Control | OK | Каждый маршрут за `Depends(get_principal)`; админ-маршруты — `require_admin` (роль из `profiles.role`, не из JWT-claim); path traversal отклоняется в `LocalNotebookStorage` (`..`, абсолютные пути, `relative_to`) + тест `test_http_razbory.py:../outside-secret.ipynb` |
+| A02 | Cryptographic Failures | OK | HTTPS на хостингах; `SUPABASE_SECRET_KEY` только на сервере (никогда не `VITE_`); JWT проверяется по ES256 c `audience`/`issuer`/`exp`/`role` (`auth_jwt.py`); секреты не в репо; токены не логируются (SEC-02, middleware) |
+| A03 | Injection | OK | Нет склейки SQL — Supabase SDK (параметризованно); XSS: `rehype-sanitize` + sandbox-iframe; YAML парсится `_StrictSafeLoader` (подкласс `SafeLoader`); shell-инъекций нет (нет `subprocess` в пути запроса) |
+| A04 | Insecure Design | Частично | Логика голосования (один голос/цикл, запрет правок после закрытия) соблюдена; отсутствует собственный rate-limit на API — принято: аутентификация через Supabase (есть свои лимиты), сервис внутренний. Рекомендация: rate-limit на `/voting` при публичном доступе |
+| A05 | Security Misconfiguration | Исправлено | SEC-10: добавлены заголовки безопасности (backend + Vercel); CORS ограничен allow-list `API_CORS_ORIGINS`; `/docs`/`/openapi.json` открыты — принято (внутренний API, риск низкий) |
+| A06 | Vulnerable & Outdated Components | OK | `npm audit` + `pip-audit` в CI; исправлены SEC-05/08/09; lockfile'ы зафиксированы (`uv.lock`, `package-lock.json`) |
+| A07 | Identification & Authentication Failures | OK | Supabase Auth; JWT-верификация; доменная policy на сервере (`403 domain_not_allowed`); OAuth `redirectTo` из `window.location.origin` (без open redirect); нет фиксации сессии |
+| A08 | Software & Data Integrity Failures | OK | SEC-01: `workflow_run` больше не исполняет недоверенный код с секретами; `uv sync --frozen`; сборка/тесты как гейт. Рекомендация: Dependabot |
+| A09 | Security Logging & Monitoring Failures | Частично | JSON-логи с `request_id`, уровни по статусу, без секретов; `/health` и `/health/ready` + UptimeRobot. Пробел: нет алерта на всплеск 401/403 — рекомендация |
+| A10 | SSRF | OK | Серверные HTTP-вызовы только на фиксированные хосты: YouTube oEmbed (`youtube_oembed.py`, хост задан кодом, URL собирается из video id), DeepSeek/OpenAI `base_url` из env, Supabase URL из env; пользователь не управляет хостом |
+
+**Вывод:** критичных и высоких проблем по OWASP Top 10 не выявлено; единственная новая
+находка (A05, SEC-10) исправлена. Практические пробелы (A04 rate-limit, A09 алерты по 401/403)
+задокументированы как рекомендации.
 
 ## Принятые риски (false positives)
 
