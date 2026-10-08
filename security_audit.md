@@ -135,6 +135,10 @@ indexed source-map в `source-map-js` `1.0.0–1.2.1`.
 находка (A05, SEC-10) исправлена. Практические пробелы (A04 rate-limit, A09 алерты по 401/403)
 задокументированы как рекомендации.
 
+Проверено на живых деплоях: backend `…/health` и фронтенд `digest-cds.vercel.app` отдают
+`X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy`,
+`Permissions-Policy` (backend также HSTS).
+
 ## Принятые риски (false positives)
 
 ### SEC-06 (Low) — `bandit B506: yaml_load`
