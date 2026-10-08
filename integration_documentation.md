@@ -107,6 +107,10 @@
   Проверено в продакшн-бандле: присутствуют `mc.yandex.ru`, `tag.js`, `?id=`, `webvisor`,
   `dataLayer`, `reachGoal`, `accurateTrackBounce`, число `113475972`. Page-view уходит на каждой
   смене маршрута; события — `login/login_oauth/vote/search/material_open/digest_send`.
+- **Экран входа обязателен (`VITE_REQUIRE_LOGIN=true`):** открытие сайта переводит на `/login`
+  (форма входа), а не показывает мок-пользователя. После входа в шапке отображается введённый
+  email. Проверено headless-браузером на живом URL: `/` → `/login?returnUrl=%2F`, поле email
+  видно, текста «Мария Сидорова» нет, после входа identity = `analyst@sberbank.ru`.
 - **Автодеплой frontend:** Vercel Git-интеграция подключена к `Yarkiller/digest_cds`,
   production branch `main` — push в `main` автоматически запускает сборку и деплой.
   Проверено эмпирически: push `609b41d` → Vercel-деплой `source=git`, `target=production`, `READY`.
@@ -368,6 +372,7 @@ github.event.workflow_run.head_repository.full_name == github.repository
 |---|---|
 | `VITE_API_BASE_URL` | базовый URL backend для браузера |
 | `VITE_USE_MOCKS` | `false` в продакшене (иначе фронт работает на mock-данных) |
+| `VITE_REQUIRE_LOGIN` | `true` на проде — требовать форму входа (даже с mock-данными) |
 | `LOG_LEVEL` | уровень логов backend: `debug/info/warning/error` |
 | `API_CORS_ORIGINS` | origin-allow-list для CORS |
 | `SITE_URL` | абсолютный origin для ссылок в письмах |
