@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, NavLink, Outlet } from 'react-router-dom'
 import SearchPill from './SearchPill.jsx'
 import { getAccessToken } from '../services/authApi.js'
-import { isMocksEnabled } from '../services/authEnv.js'
+import { isLoginRequired, isMocksEnabled } from '../services/authEnv.js'
 import { fetchMe } from '../services/meApi.js'
 
 const MOCK_SHELL_IDENTITY = 'Мария Сидорова'
@@ -13,15 +13,15 @@ const linkClass = ({ isActive }) =>
     isActive ? 'bg-accent text-accent-ink' : 'text-ink-2 hover:bg-paper-2',
   ].join(' ')
 
+/** Fallback identity for local mock browsing — never shown when login is required. */
 function mockIdentity() {
-  return isMocksEnabled() ? MOCK_SHELL_IDENTITY : ''
+  return isMocksEnabled() && !isLoginRequired() ? MOCK_SHELL_IDENTITY : ''
 }
 
 async function resolveShellSession(token) {
   if (!token) {
-    if (!isMocksEnabled()) return { identity: '', appRole: 'employee' }
     const me = await fetchMe(null)
-    return { identity: MOCK_SHELL_IDENTITY, appRole: me.role ?? 'employee' }
+    return { identity: mockIdentity(), appRole: me.role ?? 'employee' }
   }
   const me = await fetchMe(token)
   const identity = me.display_name?.trim() || me.email || mockIdentity()
@@ -29,7 +29,7 @@ async function resolveShellSession(token) {
 }
 
 export default function AppShell() {
-  const [identity, setIdentity] = useState(() => (isMocksEnabled() ? MOCK_SHELL_IDENTITY : ''))
+  const [identity, setIdentity] = useState(() => mockIdentity())
   const [appRole, setAppRole] = useState(/** @type {string | null} */ (null))
 
   useEffect(() => {
