@@ -111,6 +111,12 @@
   (форма входа), а не показывает мок-пользователя. После входа в шапке отображается введённый
   email. Проверено headless-браузером на живом URL: `/` → `/login?returnUrl=%2F`, поле email
   видно, текста «Мария Сидорова» нет, после входа identity = `analyst@sberbank.ru`.
+- **Боевой режим (`VITE_USE_MOCKS=false`):** приложение использует реальный Supabase Auth
+  (`VITE_SUPABASE_URL=https://knowledge-db.ru`, `VITE_SUPABASE_PUBLISHABLE_KEY`) и живой backend
+  на Railway (`APP_CONTAINER=live`). В БД Supabase есть данные: материалы (`ready`), разборы
+  (published/announcement), профили. Тестовые учётные записи: `test@sberbank.ru` (роль admin),
+  `yarkiller@sberbank.ru` (employee), `test2@omega.sbrf.ru`, `uat3.…@sberbank.ru` — все с
+  подтверждённым корпоративным email.
 - **Автодеплой frontend:** Vercel Git-интеграция подключена к `Yarkiller/digest_cds`,
   production branch `main` — push в `main` автоматически запускает сборку и деплой.
   Проверено эмпирически: push `609b41d` → Vercel-деплой `source=git`, `target=production`, `READY`.
